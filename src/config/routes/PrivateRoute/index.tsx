@@ -1,32 +1,36 @@
-import React, { type ReactNode } from 'react';
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-
-// Placeholder for auth hook
-interface User {
-  isAuthenticated: boolean;
-  role: 'admin' | 'staff' | 'teacher' | null;
-}
-
-const useAuth = (): User => {
-  // Replace with your actual auth logic (e.g., from context)
-  return { isAuthenticated: true, role: 'admin' }; // Example
-};
+import { useAuth } from '../../../utils/AuthContext';
 
 const PrivateRoute: React.FC<{
-  children: ReactNode;
+  children: React.ReactNode;
   allowedRoles: ('admin' | 'staff' | 'teacher')[];
 }> = ({ children, allowedRoles }) => {
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated, role, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // hoặc spinner antd
+  }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
   }
 
   if (role && allowedRoles.includes(role)) {
     return <>{children}</>;
   }
 
-  return <Navigate to="/unauthorized" replace />;
+  return (
+    <Navigate
+      to="/unauthorized"
+      replace
+    />
+  );
 };
 
 export default PrivateRoute;
