@@ -14,37 +14,35 @@ const Profile: React.FC = () => {
   });
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('FLEARN_ACCESS_TOKEN');
+    localStorage.removeItem('FLEARN_REFRESH_TOKEN');
     toast.success('Bạn đã đăng xuất!');
     window.location.href = '/login';
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Spin size="large" />
+      <div className='flex justify-center items-center min-h-screen'>
+        <Spin size='large' />
       </div>
     );
   }
 
   if (isError || !data?.success) {
-    return <div className="text-center mt-10">Không thể tải thông tin.</div>;
+    return <div className='text-center mt-10'>Không thể tải thông tin.</div>;
   }
 
   const profile = data.data;
 
   return (
-    <div className="flex justify-center h-full py-10">
-      <div className="flex justify-between w-full h-full max-w-5xl">
-        <Card className="shadow-lg rounded-xl">
-          <Title
-            level={3}
-            className="text-center mb-6">
+    <div className='flex justify-center h-full py-10'>
+      <div className='flex justify-between w-full h-full max-w-5xl'>
+        <Card className='shadow-lg rounded-xl'>
+          <Title level={3} className='text-center mb-6'>
             Thông tin cá nhân
           </Title>
 
-          <div className="space-y-4">
+          <div className='space-y-4'>
             <div>
               <Text strong>User ID: </Text>
               <Text>{profile.userId}</Text>
@@ -67,46 +65,28 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
-          <Button
-            type="primary"
-            danger
-            block
-            size="large"
-            className="mt-6"
-            onClick={handleLogout}>
+          <Button type='primary' danger block size='large' className='mt-6' onClick={handleLogout}>
             Logout
           </Button>
         </Card>
 
         {/* Right: Settings */}
-        <Card
-          style={{ margin: '0 20px' }}
-          className="shadow-lg rounded-xl w-full">
-          <Title
-            level={3}
-            className="text-center mb-6">
+        <Card style={{ margin: '0 20px' }} className='shadow-lg rounded-xl w-full'>
+          <Title level={3} className='text-center mb-6'>
             Cài đặt
           </Title>
 
-          <div className="space-y-4">
-            <Button
-              style={{ margin: '4px 0' }}
-              block>
+          <div className='space-y-4'>
+            <Button style={{ margin: '4px 0' }} block>
               Đổi mật khẩu
             </Button>
-            <Button
-              style={{ margin: '4px 0' }}
-              block>
+            <Button style={{ margin: '4px 0' }} block>
               Cập nhật Email
             </Button>
-            <Button
-              style={{ margin: '4px 0' }}
-              block>
+            <Button style={{ margin: '4px 0' }} block>
               Quản lý thông báo
             </Button>
-            <Button
-              style={{ margin: '4px 0' }}
-              block>
+            <Button style={{ margin: '4px 0' }} block>
               Ngôn ngữ
             </Button>
           </div>
