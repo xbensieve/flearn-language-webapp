@@ -6,6 +6,9 @@ import Admin from '../../pages/Admin';
 import NotFoundPage from '../../pages/NotFoundPage';
 import DashboardLayout from '../../templates/AdminLayout';
 import Profile from '../../pages/Profile';
+import TeacherApplicationPage from '../../pages/Teacher';
+import LearnerLayout from '../../templates/LearnerLayout';
+import ApplicationStatus from '../../pages/Teacher/ApplicationStatus';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -33,6 +36,20 @@ const routes: RouteObject[] = [
         path: 'profile',
         element: <Profile />,
       },
+    ],
+  },
+  {
+    path: '/learner',
+    element: (
+      <PrivateRoute allowedRoles={['learner']}>
+        <LearnerLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: <TeacherApplicationPage /> },
+      { path: 'application', element: <TeacherApplicationPage /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'status', element: <ApplicationStatus /> },
     ],
   },
   {

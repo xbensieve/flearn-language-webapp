@@ -10,8 +10,8 @@ const DashboardLayout: React.FC = () => {
 
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === 'logout') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('FLEARN_ACCESS_TOKEN');
+      localStorage.removeItem('FLEARN_REFRESH_TOKEN');
       navigate('/login');
     } else {
       navigate(key);
@@ -19,19 +19,18 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className='min-h-screen'>
       <Header
         style={{ color: '#fff' }}
-        className="bg-white shadow px-4 flex items-center font-bold">
+        className='bg-white shadow px-4 flex items-center font-bold'
+      >
         Flearn Admin
       </Header>
 
       <Layout>
-        <Sider
-          width={200}
-          className="bg-white border-r">
+        <Sider width={200} className='bg-white border-r'>
           <Menu
-            mode="inline"
+            mode='inline'
             defaultSelectedKeys={['/admin']}
             style={{ height: '100%', borderRight: 0 }}
             onClick={handleMenuClick}
@@ -58,10 +57,11 @@ const DashboardLayout: React.FC = () => {
               padding: 24,
               minHeight: 280,
               borderRadius: 8,
-            }}>
+            }}
+          >
             <Outlet />
           </Content>
-          <Footer className="text-center text-gray-500">
+          <Footer className='text-center text-gray-500'>
             © {new Date().getFullYear()} Flearn Admin
           </Footer>
         </Layout>
