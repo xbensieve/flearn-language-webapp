@@ -92,6 +92,11 @@ const Login: React.FC = () => {
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
             </div>
+            <div style={{ margin: '8px 0' }} className='text-center'>
+              <Button type='link' danger onClick={() => navigate('/register')}>
+                Don&apos;t have an account? Sign up
+              </Button>
+            </div>
             <Form.Item>
               <Button
                 type='primary'
