@@ -11,12 +11,17 @@ import LearnerLayout from '../../templates/LearnerLayout';
 import ApplicationStatus from '../../pages/Teacher/ApplicationStatus';
 import StaffDashboardLayout from '../../templates/StaffLayout';
 import ApplicationsPending from '../../pages/Staff/ApplicationPending';
+import Register from '../../pages/Register';
 
 // Route configuration
 const routes: RouteObject[] = [
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <Register />,
   },
   {
     path: '/unauthorized',

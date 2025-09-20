@@ -28,3 +28,24 @@ export const logoutService = async (refreshToken: string) => {
   });
   return res.data;
 };
+
+export const register = async (payload: {
+  userName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}) => {
+  const res = await api.post<API.Response<AuthResponse>>('/auth/register', payload);
+  return res.data;
+};
+
+// New verifyOtp function
+export const verifyOtp = async (payload: { email: string; otpCode: string }) => {
+  const { data } = await api.post('/Auth/verify-otp', payload);
+  return data;
+};
+
+export const resendOtp = async (payload: { email: string }) => {
+  const { data } = await api.post('Auth/resend-otp', payload);
+  return data;
+};
