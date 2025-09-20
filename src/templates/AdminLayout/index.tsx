@@ -44,13 +44,14 @@ const DashboardLayout: React.FC = () => {
                   { key: '/admin/courses', label: 'Courses' },
                 ],
               },
+              { key: 'teacher', icon: <UserOutlined />, label: 'Teacher Application' },
               { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
               { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
             ]}
           />
         </Sider>
 
-        <Layout style={{ padding: '24px' }}>
+        <Layout style={{ padding: '24px', height: '100vh' }}>
           <Content
             style={{
               background: 'white',

@@ -27,7 +27,7 @@ const Login: React.FC = () => {
         localStorage.setItem('FLEARN_USER_ROLE', role);
         updateAuth();
         notifySuccess(data.message);
-        if (role === 'admin') {
+        if (role.toLocaleLowerCase() === 'admin') {
           navigate('/admin');
         } else if (role.toLocaleLowerCase() === 'learner') {
           navigate('/learner');

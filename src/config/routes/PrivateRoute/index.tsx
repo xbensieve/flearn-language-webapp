@@ -26,6 +26,9 @@ const PrivateRoute: React.FC<{
     return <Navigate to='/login' replace />;
   }
 
+  console.log('PrivateRoute role:', role);
+  console.log('PrivateRoute allowedRoles:', allowedRoles);
+
   if (role && allowedRoles.includes(role)) {
     return <>{children}</>;
   }

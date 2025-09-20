@@ -29,6 +29,7 @@ const routes: RouteObject[] = [
     ),
     children: [
       {
+        index: true,
         path: 'dashboard',
         element: <Admin />,
       },
