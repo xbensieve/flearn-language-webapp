@@ -4,10 +4,7 @@ import { refreshTokenService } from '../../services/auth';
 
 const api = axios.create({
   baseURL: 'http://flearn.runasp.net/api',
-  baseURL: 'http://flearn.runasp.net/api',
   headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
@@ -15,7 +12,6 @@ const api = axios.create({
 
 // Attach access token if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('FLEARN_ACCESS_TOKEN');
   const token = localStorage.getItem('FLEARN_ACCESS_TOKEN');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -65,7 +61,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('FLEARN_REFRESH_TOKEN');
         if (!refreshToken) throw new Error('No refresh token');
 
-        const res = await FLEARN_REFRESH_TOKENService(FLEARN_REFRESH_TOKEN);
+        const res = await refreshTokenService(refreshToken);
 
         const newToken = res.data?.accessToken;
         localStorage.setItem('FLEARN_ACCESS_TOKEN', newToken);
@@ -81,9 +77,6 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         processQueue(err, null);
-        localStorage.removeItem('FLEARN_ACCESS_TOKEN');
-        localStorage.removeItem('FLEARN_REFRESH_TOKEN');
-        window.location.href = '/login'; // redirect to login
         localStorage.removeItem('FLEARN_ACCESS_TOKEN');
         localStorage.removeItem('FLEARN_REFRESH_TOKEN');
         window.location.href = '/login'; // redirect to login

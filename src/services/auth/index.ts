@@ -21,3 +21,10 @@ export const refreshTokenService = async (refreshToken: string) => {
   });
   return res.data;
 };
+
+export const logoutService = async (refreshToken: string) => {
+  const res = await api.post<API.Response<IRefreshToken>>('/auth/logout', {
+    refreshToken,
+  });
+  return res.data;
+};

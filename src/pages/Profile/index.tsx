@@ -1,9 +1,9 @@
 // src/pages/Profile.tsx
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Card, Typography, Spin, Button } from 'antd';
 import { toast } from 'react-toastify';
-import { getProfile } from '../../services/auth';
+import { getProfile, logoutService } from '../../services/auth';
 
 const { Title, Text } = Typography;
 
@@ -13,6 +13,17 @@ const Profile: React.FC = () => {
     queryFn: getProfile,
   });
 
+  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+    mutationFn: (refreshToken: string) => logoutService(refreshToken),
+    onSuccess: () => {
+      handleLogout();
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
   const handleLogout = () => {
     localStorage.removeItem('FLEARN_ACCESS_TOKEN');
     localStorage.removeItem('FLEARN_REFRESH_TOKEN');
@@ -20,7 +31,7 @@ const Profile: React.FC = () => {
     window.location.href = '/login';
   };
 
-  if (isLoading) {
+  if (isLoading || isLoggingOut) {
     return (
       <div className='flex justify-center items-center min-h-screen'>
         <Spin size='large' />
@@ -65,7 +76,14 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
-          <Button type='primary' danger block size='large' className='mt-6' onClick={handleLogout}>
+          <Button
+            type='primary'
+            danger
+            block
+            size='large'
+            className='mt-6'
+            onClick={() => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') || '')}
+          >
             Logout
           </Button>
         </Card>

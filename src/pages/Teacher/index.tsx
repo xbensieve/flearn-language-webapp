@@ -37,13 +37,7 @@ const TeacherApplicationPage: React.FC = () => {
       CredentialTypes: [1],
     };
 
-    console.log(values);
-
-    try {
-      mutate(payload);
-    } catch (err) {
-      console.error('Mutate failed before sending:', err);
-    }
+    mutate(payload);
   };
 
   return (

@@ -29,17 +29,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateAuth = () => {
     const token = localStorage.getItem('FLEARN_ACCESS_TOKEN');
     const storedRole = localStorage.getItem('FLEARN_USER_ROLE');
-    console.log(storedRole?.toLocaleLowerCase());
 
     if (token && storedRole) {
       // Validate role to ensure it’s one of the allowed values
       const validRoles = Roles;
-      console.log('Role right now', validRoles.includes(storedRole.toLowerCase()));
       const role = validRoles.includes(storedRole.toLowerCase())
         ? (storedRole.toLowerCase() as Roles)
         : null;
-
-      console.log('role', role);
 
       if (role) {
         setAuth({
