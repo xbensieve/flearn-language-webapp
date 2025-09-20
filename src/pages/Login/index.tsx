@@ -1,12 +1,33 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Form, Input, Button, Typography, Card } from 'antd';
+import { Form, Input, Button, Typography, Card, Checkbox } from 'antd';
 import { login } from '../../services/auth';
 import { notifySuccess } from '../../utils/toastConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/AuthContext';
+import type { AxiosError } from 'axios';
 
 const { Title } = Typography;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rolesCase = (role: string, navigate: any) => {
+  switch (role.toLowerCase()) {
+    case 'admin':
+      navigate('/admin');
+      break;
+    case 'learner':
+      navigate('/learner');
+      break;
+    case 'teacher':
+      navigate('/teacher');
+      break;
+    case 'staff':
+      navigate('/staff');
+      break;
+    default:
+      navigate('/');
+  }
+};
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +36,8 @@ const Login: React.FC = () => {
   const { updateAuth } = useAuth();
 
   const mutation = useMutation({
-    mutationFn: (values: { usernameOrEmail: string; password: string }) =>
-      login({ ...values, rememberMe: true }),
+    mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
+      login({ ...values }),
     onMutate: () => setLoading(true),
     onSettled: () => setLoading(false),
     onSuccess: (data) => {
@@ -27,20 +48,20 @@ const Login: React.FC = () => {
         localStorage.setItem('FLEARN_USER_ROLE', role);
         updateAuth();
         notifySuccess(data.message);
-        if (role === 'admin') {
-          navigate('/admin');
-        } else if (role.toLocaleLowerCase() === 'learner') {
-          navigate('/learner');
-        }
+        rolesCase(role, navigate);
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
-      alert('Login failed: ' + err.message);
+    onError: (err: AxiosError<any>) => {
+      alert('Login failed: ' + err.response?.data.message);
     },
   });
 
-  const handleSubmit = (values: { usernameOrEmail: string; password: string }) => {
+  const handleSubmit = (values: {
+    usernameOrEmail: string;
+    password: string;
+    rememberMe: boolean;
+  }) => {
     mutation.mutate(values);
   };
 
@@ -49,17 +70,9 @@ const Login: React.FC = () => {
       <div className='container mx-auto w-[600px] px-4 flex justify-center'>
         <Card className='w-full max-w-md shadow-lg rounded-xl'>
           <Title level={2} className='text-center !mb-6'>
-            Admin Login
+            Login
           </Title>
-          <Form
-            form={form}
-            layout='vertical'
-            onFinish={handleSubmit}
-            initialValues={{
-              usernameOrEmail: 'admin@flearn.com',
-              password: 'Flearn@123',
-            }}
-          >
+          <Form form={form} layout='vertical' onFinish={handleSubmit}>
             <Form.Item
               label='Email'
               name='usernameOrEmail'
@@ -74,6 +87,11 @@ const Login: React.FC = () => {
             >
               <Input.Password placeholder='Enter password' />
             </Form.Item>
+            <div className='!mb-2'>
+              <Form.Item label='Remember me' name='rememberMe' valuePropName='checked' noStyle>
+                <Checkbox>Remember me</Checkbox>
+              </Form.Item>
+            </div>
             <Form.Item>
               <Button
                 type='primary'

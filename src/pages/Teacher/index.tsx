@@ -37,17 +37,11 @@ const TeacherApplicationPage: React.FC = () => {
       CredentialTypes: [1],
     };
 
-    console.log(values);
-
-    try {
-      mutate(payload);
-    } catch (err) {
-      console.error('Mutate failed before sending:', err);
-    }
+    mutate(payload);
   };
 
   return (
-    <div className='max-w-2xl mx-auto bg-white p-6 rounded shadow'>
+    <div className='max-w-2xl mx-auto bg-white p-6 rounded'>
       <h1 className='text-2xl font-bold mb-4'>Teacher Application</h1>
 
       <Form layout='vertical' onFinish={onFinish}>

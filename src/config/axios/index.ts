@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { AxiosError } from 'axios';
-import { FLEARN_REFRESH_TOKENService } from '../../services/auth';
+import { refreshTokenService } from '../../services/auth';
 
 const api = axios.create({
   baseURL: 'http://flearn.runasp.net/api',
@@ -58,18 +58,19 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const FLEARN_REFRESH_TOKEN = localStorage.getItem('FLEARN_REFRESH_TOKEN');
-        if (!FLEARN_REFRESH_TOKEN) throw new Error('No refresh token');
+        const refreshToken = localStorage.getItem('FLEARN_REFRESH_TOKEN');
+        if (!refreshToken) throw new Error('No refresh token');
 
-        const res = await FLEARN_REFRESH_TOKENService(FLEARN_REFRESH_TOKEN);
+        const res = await refreshTokenService(refreshToken);
 
-        const newToken = res.data?.FLEARN_ACCESS_TOKEN;
+        const newToken = res.data?.accessToken;
         localStorage.setItem('FLEARN_ACCESS_TOKEN', newToken);
-        localStorage.setItem('FLEARN_REFRESH_TOKEN', res.data?.FLEARN_REFRESH_TOKEN);
+        localStorage.setItem('FLEARN_REFRESH_TOKEN', res.data?.refreshToken);
 
         processQueue(null, newToken);
 
         if (originalRequest.headers) {
+          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
         }
 

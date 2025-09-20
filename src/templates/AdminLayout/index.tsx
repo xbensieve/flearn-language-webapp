@@ -1,22 +1,49 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Spin } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { DashboardOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useMutation } from '@tanstack/react-query';
+import { logoutService } from '../../services/auth';
+import { toast } from 'react-toastify';
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
 
+  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+    mutationFn: (refreshToken: string) => logoutService(refreshToken),
+    onSuccess: () => {
+      handleLogout();
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('FLEARN_ACCESS_TOKEN');
+    localStorage.removeItem('FLEARN_REFRESH_TOKEN');
+    toast.success('Bạn đã đăng xuất!');
+    window.location.href = '/login';
+  };
+
   const handleMenuClick = ({ key }: { key: string }) => {
     if (key === 'logout') {
-      localStorage.removeItem('FLEARN_ACCESS_TOKEN');
-      localStorage.removeItem('FLEARN_REFRESH_TOKEN');
-      navigate('/login');
+      logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') as string);
     } else {
       navigate(key);
     }
   };
+
+  if (isLoggingOut) {
+    return (
+      <div className='flex justify-center items-center min-h-screen'>
+        <Spin size='large' />
+      </div>
+    );
+  }
 
   return (
     <Layout className='min-h-screen'>
@@ -44,13 +71,14 @@ const DashboardLayout: React.FC = () => {
                   { key: '/admin/courses', label: 'Courses' },
                 ],
               },
+              { key: 'teacher', icon: <UserOutlined />, label: 'Teacher Application' },
               { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
               { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
             ]}
           />
         </Sider>
 
-        <Layout style={{ padding: '24px' }}>
+        <Layout style={{ padding: '24px', height: '100vh' }}>
           <Content
             style={{
               background: 'white',

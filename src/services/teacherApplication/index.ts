@@ -24,7 +24,6 @@ export const submitTeacherApplication = async (
   const res = await api.post('/TeacherApplication', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  console.log(res);
   return res.data;
 };
 

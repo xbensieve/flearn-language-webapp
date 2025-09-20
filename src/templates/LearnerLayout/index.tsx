@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 
 const { Header, Content, Footer, Sider } = Layout;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const LearnerLayout: React.FC = () => {
   const location = useLocation();
@@ -45,10 +45,8 @@ const LearnerLayout: React.FC = () => {
           >
             FL
           </div>
-          <div>
-            <Title level={5} style={{ margin: 0 }}>
-              Flearn - Learner Portal
-            </Title>
+          <div className='flex flex-col'>
+            <Text style={{ margin: 0 }}>Flearn - Learner Portal</Text>
             <Text type='secondary' style={{ fontSize: 12 }}>
               Apply to become a teacher • Manage profile
             </Text>

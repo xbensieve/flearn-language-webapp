@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
+export type Roles = 'admin' | 'staff' | 'teacher' | 'learner' | null;
+const Roles = ['admin', 'staff', 'teacher', 'learner'];
+
 interface AuthUser {
   isAuthenticated: boolean;
-  role: 'admin' | 'staff' | 'teacher' | 'learner' | null;
+  role: Roles | null;
   loading: boolean;
 }
 
@@ -29,9 +32,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (token && storedRole) {
       // Validate role to ensure it’s one of the allowed values
-      const validRoles = ['admin', 'staff', 'teacher', 'learner'];
+      const validRoles = Roles;
       const role = validRoles.includes(storedRole.toLowerCase())
-        ? (storedRole.toLowerCase() as 'admin' | 'staff' | 'teacher', 'learner')
+        ? (storedRole.toLowerCase() as Roles)
         : null;
 
       if (role) {

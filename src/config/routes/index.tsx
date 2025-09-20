@@ -9,12 +9,19 @@ import Profile from '../../pages/Profile';
 import TeacherApplicationPage from '../../pages/Teacher';
 import LearnerLayout from '../../templates/LearnerLayout';
 import ApplicationStatus from '../../pages/Teacher/ApplicationStatus';
+import StaffDashboardLayout from '../../templates/StaffLayout';
+import ApplicationsPending from '../../pages/Staff/ApplicationPending';
+import Register from '../../pages/Register';
 
 // Route configuration
 const routes: RouteObject[] = [
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/register',
+    element: <Register />,
   },
   {
     path: '/unauthorized',
@@ -29,8 +36,33 @@ const routes: RouteObject[] = [
     ),
     children: [
       {
+        index: true,
         path: 'dashboard',
         element: <Admin />,
+      },
+      {
+        path: 'profile',
+        element: <Profile />,
+      },
+    ],
+  },
+
+  {
+    path: '/staff',
+    element: (
+      <PrivateRoute allowedRoles={['staff']}>
+        <StaffDashboardLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        index: true,
+        path: 'dashboard',
+        element: <Admin />,
+      },
+      {
+        path: 'application/pending',
+        element: <ApplicationsPending />,
       },
       {
         path: 'profile',
