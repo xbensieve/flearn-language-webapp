@@ -12,12 +12,19 @@ import ApplicationStatus from '../../pages/Teacher/ApplicationStatus';
 import StaffDashboardLayout from '../../templates/StaffLayout';
 import ApplicationsPending from '../../pages/Staff/ApplicationPending';
 import Register from '../../pages/Register';
+import CreateSurvey from '../../pages/Teacher/CreateSurvey';
+import MySurvey from '../../pages/Teacher/MySurvey';
+import LandingPage from '../../pages/LandingPage';
 
 // Route configuration
 const routes: RouteObject[] = [
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/',
+    element: <LandingPage />,
   },
   {
     path: '/register',
@@ -78,10 +85,11 @@ const routes: RouteObject[] = [
       </PrivateRoute>
     ),
     children: [
-      { index: true, element: <TeacherApplicationPage /> },
+      { index: true, path: 'survey', element: <MySurvey /> },
       { path: 'application', element: <TeacherApplicationPage /> },
       { path: 'profile', element: <Profile /> },
       { path: 'status', element: <ApplicationStatus /> },
+      { path: 'survey/create', element: <CreateSurvey /> },
     ],
   },
   {

@@ -7,6 +7,7 @@ import {
   FileAddOutlined,
   QuestionCircleOutlined,
   SolutionOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -27,8 +28,7 @@ const LearnerLayout: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 24px',
-        }}
-      >
+        }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
@@ -41,25 +41,26 @@ const LearnerLayout: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 'bold',
-            }}
-          >
+            }}>
             FL
           </div>
-          <div className='flex flex-col'>
+          <div className="flex flex-col">
             <Text style={{ margin: 0 }}>Flearn - Learner Portal</Text>
-            <Text type='secondary' style={{ fontSize: 12 }}>
+            <Text
+              type="secondary"
+              style={{ fontSize: 12 }}>
               Apply to become a teacher • Manage profile
             </Text>
           </div>
         </div>
 
         <Menu
-          mode='horizontal'
+          mode="horizontal"
           selectedKeys={[selectedKey]}
           items={[
-            { key: '/learner/application', label: <Link to='/learner/application'>Apply</Link> },
-            { key: '/learner/profile', label: <Link to='/learner/profile'>Profile</Link> },
-            { key: '/learner/status', label: <Link to='/learner/status'>My Applications</Link> },
+            { key: '/learner/application', label: <Link to="/learner/application">Apply</Link> },
+            { key: '/learner/profile', label: <Link to="/learner/profile">Profile</Link> },
+            { key: '/learner/status', label: <Link to="/learner/status">My Applications</Link> },
           ]}
         />
       </Header>
@@ -68,45 +69,66 @@ const LearnerLayout: React.FC = () => {
         {/* Sidebar */}
         <Sider
           width={260}
-          breakpoint='lg'
-          collapsedWidth='0'
+          breakpoint="lg"
+          collapsedWidth="0"
           style={{
             background: '#fff',
             borderRight: '1px solid #f0f0f0',
             padding: '16px',
-          }}
-        >
-          <Card size='small' title='Quick Links' style={{ marginBottom: 16 }}>
+          }}>
+          <Card
+            size="small"
+            title="Quick Links"
+            style={{ marginBottom: 16 }}>
             <Menu
-              mode='inline'
+              mode="inline"
               selectedKeys={[selectedKey]}
               items={[
                 {
-                  key: '/learner/application',
-                  icon: <FileAddOutlined />,
-                  label: <Link to='/learner/application'>Apply to Teach</Link>,
+                  key: '/learner/survey',
+                  icon: <FileTextOutlined />,
+                  label: <Link to="/learner/survey">Survey</Link>,
+                  children: [
+                    {
+                      key: '/learner/survey',
+                      label: <Link to="/learner/survey">My Survey</Link>,
+                    },
+                    {
+                      key: '/learner/survey/create',
+                      label: <Link to="/learner/survey/create">Create Survey</Link>,
+                    },
+                  ],
                 },
                 {
                   key: '/learner/profile',
                   icon: <ProfileOutlined />,
-                  label: <Link to='/learner/profile'>My Profile</Link>,
+                  label: <Link to="/learner/profile">My Profile</Link>,
+                },
+                {
+                  key: '/learner/application',
+                  icon: <FileAddOutlined />,
+                  label: <Link to="/learner/application">Apply to Teach</Link>,
                 },
                 {
                   key: '/learner/status',
                   icon: <SolutionOutlined />,
-                  label: <Link to='/learner/status'>Application Status</Link>,
+                  label: <Link to="/learner/status">Application Status</Link>,
                 },
                 {
                   key: '/learner/help',
                   icon: <QuestionCircleOutlined />,
-                  label: <Link to='/learner/help'>Help & FAQ</Link>,
+                  label: <Link to="/learner/help">Help & FAQ</Link>,
                 },
               ]}
             />
           </Card>
 
-          <Card size='small' title='Tips'>
-            <Text type='secondary' style={{ fontSize: 12 }}>
+          <Card
+            size="small"
+            title="Tips">
+            <Text
+              type="secondary"
+              style={{ fontSize: 12 }}>
               Prepare your credentials (CV, certificates) before uploading. Use PDF, JPG or PNG.
             </Text>
           </Card>
