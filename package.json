@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build": "tsc -b && vite build",
+    "deploy": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.2",
