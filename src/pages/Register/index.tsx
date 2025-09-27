@@ -139,13 +139,16 @@ const Register: React.FC = () => {
         <Card className='w-full max-w-md shadow-lg rounded-xl'>
           {/* Step header */}
           <Steps
+            direction='horizontal'
+            responsive={true}
             current={step === 'register' ? 0 : 1}
             size='small'
-            className='mb-6'
             items={[{ title: 'Register' }, { title: 'Verify OTP' }]}
+            style={{ marginBottom: 16 }}
           />
 
-          <Title level={2} className='text-center !mb-6'>
+          {/* Title */}
+          <Title level={3} style={{ textAlign: 'center', marginBottom: 16 }}>
             {step === 'register' ? 'Register' : 'Verify OTP'}
           </Title>
 
@@ -189,6 +192,7 @@ const Register: React.FC = () => {
               </Form.Item>
 
               <Form.Item
+                style={{ marginBottom: '8px' }}
                 label='Confirm Password'
                 name='confirmPassword'
                 dependencies={['password']}
@@ -206,6 +210,12 @@ const Register: React.FC = () => {
               >
                 <Input.Password placeholder='Confirm password' />
               </Form.Item>
+
+              <div className='text-center mt-4'>
+                <Button type='link' danger onClick={() => (window.location.href = '/login')}>
+                  Back to Login?
+                </Button>
+              </div>
 
               <Form.Item>
                 <Button

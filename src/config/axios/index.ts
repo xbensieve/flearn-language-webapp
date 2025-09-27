@@ -71,7 +71,6 @@ api.interceptors.response.use(
 
         if (originalRequest.headers) {
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
         }
 
         return api(originalRequest);
