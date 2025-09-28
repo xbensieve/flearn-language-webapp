@@ -1,7 +1,6 @@
-// src/pages/Profile.tsx
 import React from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Card, Typography, Spin, Button } from 'antd';
+import { Card, Typography, Spin, Button, Row, Col } from 'antd';
 import { toast } from 'react-toastify';
 import { getProfile, logoutService } from '../../services/auth';
 
@@ -46,70 +45,75 @@ const Profile: React.FC = () => {
   const profile = data.data;
 
   return (
-    <div className='flex justify-center h-full py-10'>
-      <div className='flex justify-between w-full h-full max-w-5xl'>
-        <Card className='shadow-lg rounded-xl'>
-          <Title level={3} className='text-center mb-6'>
-            Thông tin cá nhân
-          </Title>
+    <div className='flex justify-center w-full h-full py-10'>
+      <Row gutter={[16, 16]} justify='center' style={{ maxWidth: '1200px', width: '100%' }}>
+        {/* Left: Profile Info */}
+        <Col xs={24} md={12}>
+          <Card className='shadow-lg rounded-xl h-full'>
+            <Title level={3} className='text-center mb-6'>
+              Thông tin cá nhân
+            </Title>
 
-          <div className='space-y-4'>
-            <div>
-              <Text strong>User ID: </Text>
-              <Text>{profile.userId}</Text>
+            <div className='space-y-4'>
+              <div>
+                <Text strong>User ID: </Text>
+                <Text>{profile.userId}</Text>
+              </div>
+              <div>
+                <Text strong>Username: </Text>
+                <Text>{profile.username}</Text>
+              </div>
+              <div>
+                <Text strong>Email: </Text>
+                <Text>{profile.email}</Text>
+              </div>
+              <div>
+                <Text strong>Created At: </Text>
+                <Text>{profile.createdAt}</Text>
+              </div>
+              <div>
+                <Text strong>Roles: </Text>
+                <Text>{profile.roles.join(', ')}</Text>
+              </div>
             </div>
-            <div>
-              <Text strong>Username: </Text>
-              <Text>{profile.username}</Text>
-            </div>
-            <div>
-              <Text strong>Email: </Text>
-              <Text>{profile.email}</Text>
-            </div>
-            <div>
-              <Text strong>Created At: </Text>
-              <Text>{profile.createdAt}</Text>
-            </div>
-            <div>
-              <Text strong>Roles: </Text>
-              <Text>{profile.roles.join(', ')}</Text>
-            </div>
-          </div>
 
-          <Button
-            type='primary'
-            danger
-            block
-            size='large'
-            className='mt-6'
-            onClick={() => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') || '')}
-          >
-            Logout
-          </Button>
-        </Card>
+            <Button
+              type='primary'
+              danger
+              block
+              size='large'
+              className='mt-6'
+              onClick={() => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') || '')}
+            >
+              Logout
+            </Button>
+          </Card>
+        </Col>
 
         {/* Right: Settings */}
-        <Card style={{ margin: '0 20px' }} className='shadow-lg rounded-xl w-full'>
-          <Title level={3} className='text-center mb-6'>
-            Cài đặt
-          </Title>
+        <Col xs={24} md={12}>
+          <Card className='shadow-lg rounded-xl h-full'>
+            <Title level={3} className='text-center mb-6'>
+              Cài đặt
+            </Title>
 
-          <div className='space-y-4'>
-            <Button style={{ margin: '4px 0' }} block>
-              Đổi mật khẩu
-            </Button>
-            <Button style={{ margin: '4px 0' }} block>
-              Cập nhật Email
-            </Button>
-            <Button style={{ margin: '4px 0' }} block>
-              Quản lý thông báo
-            </Button>
-            <Button style={{ margin: '4px 0' }} block>
-              Ngôn ngữ
-            </Button>
-          </div>
-        </Card>
-      </div>
+            <div className='space-y-4'>
+              <Button style={{ margin: '4px 0' }} block>
+                Đổi mật khẩu
+              </Button>
+              <Button style={{ margin: '4px 0' }} block>
+                Cập nhật Email
+              </Button>
+              <Button style={{ margin: '4px 0' }} block>
+                Quản lý thông báo
+              </Button>
+              <Button style={{ margin: '4px 0' }} block>
+                Ngôn ngữ
+              </Button>
+            </div>
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };

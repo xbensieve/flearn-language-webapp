@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Form, Input, Button, Typography, Card, Checkbox } from 'antd';
 import { login } from '../../services/auth';
-import { notifySuccess } from '../../utils/toastConfig';
+import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/AuthContext';
 import type { AxiosError } from 'axios';
@@ -53,7 +53,7 @@ const Login: React.FC = () => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: AxiosError<any>) => {
-      alert('Login failed: ' + err.response?.data.message);
+      notifyError(err?.response?.data?.message || 'Login failed');
     },
   });
 
