@@ -24,8 +24,8 @@ const ApplicationStatus: React.FC = () => {
   } = useQuery({
     queryKey: ['myApplication'],
     queryFn: getMyApplication,
-    retry: 2,
-    retryDelay: 1000,
+    retry: 1,
+    retryDelay: 500,
   });
   const navigate = useNavigate();
 
