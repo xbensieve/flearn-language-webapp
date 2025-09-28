@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 import { refreshTokenService } from '../../services/auth';
 
 const api = axios.create({
-  baseURL: 'http://flearn.runasp.net/api',
+  baseURL: 'https://f-learn.app/api',
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
