@@ -1,10 +1,5 @@
 import api from '../../config/axios';
-import type { Course, CourseTemplate, CreateCourseRequest } from './type';
-
-export const getCourseTemplatesService = async () => {
-  const res = await api.get<API.Response<CourseTemplate[]>>('/coursetemplates');
-  return res.data;
-};
+import type { Course, CourseTemplate, CourseTemplateQuery, CourseTemplateResponse, CreateCourseRequest } from './type';
 
 export const getCourseTemplateByIdService = async (id: string) => {
   const res = await api.get<API.Response<CourseTemplate>>(`/coursetemplates/${id}`);
@@ -89,5 +84,14 @@ export const updateCourseService = async (id: string, payload: FormData) => {
 
 export const deleteCourseService = async (id: string) => {
   const res = await api.delete(`/courses/${id}`);
+  return res.data;
+};
+
+export const getCourseTemplatesService = async (
+  { page = 1, pageSize = 10 }: Partial<CourseTemplateQuery> = {}
+): Promise<CourseTemplateResponse> => {
+  const res = await api.get<CourseTemplateResponse>('coursetemplates', {
+    params: { page, pageSize },
+  });
   return res.data;
 };

@@ -17,7 +17,8 @@ import MySurvey from '../../pages/Teacher/MySurvey';
 import LandingPage from '../../pages/LandingPage';
 import CreateCourse from '../../pages/Teacher/CreateCourse';
 import MyCourses from '../../pages/Teacher/MyCourse';
-import CreateCourseTemplate from '../../pages/Teacher/CreateCourseTemplate';
+import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
+import Goals from '../../pages/Admin/Goals';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -54,6 +55,14 @@ const routes: RouteObject[] = [
         path: 'profile',
         element: <Profile />,
       },
+      {
+        path: 'course-templates',
+        element: <CourseTemplatesPage />,
+      },
+      {
+        path: 'goals',
+        element: <Goals />,
+      },
     ],
   },
 
@@ -83,7 +92,7 @@ const routes: RouteObject[] = [
   {
     path: '/learner',
     element: (
-      <PrivateRoute allowedRoles={['learner']}>
+      <PrivateRoute allowedRoles={['learner', 'teacher']}>
         <LearnerLayout />
       </PrivateRoute>
     ),
@@ -95,23 +104,6 @@ const routes: RouteObject[] = [
       { path: 'survey/create', element: <CreateSurvey /> },
       { path: 'course', element: <MyCourses /> },
       { path: 'course/create', element: <CreateCourse /> },
-    ],
-  },
-  {
-    path: '/teacher',
-    element: (
-      <PrivateRoute allowedRoles={['learner']}>
-        <LearnerLayout />
-      </PrivateRoute>
-    ),
-    children: [
-      { index: true, path: 'survey', element: <MySurvey /> },
-      { path: 'profile', element: <Profile /> },
-      { path: 'status', element: <ApplicationStatus /> },
-      { path: 'survey/create', element: <CreateSurvey /> },
-      { path: 'course', element: <MyCourses /> },
-      { path: 'course/create', element: <CreateCourse /> },
-      { path: 'course/create-template', element: <CreateCourseTemplate /> },
     ],
   },
   {

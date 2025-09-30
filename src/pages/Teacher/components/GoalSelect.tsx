@@ -7,7 +7,7 @@ import type { Goal } from '../../../services/goals/type';
 
 const { Option } = Select;
 
-const GoalSelect: React.FC<{ form: any }> = ({ form }) => {
+const GoalSelect: React.FC<{ form: any; rules?: any }> = ({ form }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch goals
@@ -42,26 +42,29 @@ const GoalSelect: React.FC<{ form: any }> = ({ form }) => {
   return (
     <Col span={12}>
       <Form.Item
-        name='goalId'
-        label='Learning Goal'
-        rules={[{ required: true, message: 'Please select or create a goal' }]}
-      >
+        name="goalId"
+        label="Learning Goal"
+        rules={[{ required: true, message: 'Please select or create a goal' }]}>
         {goalsLoading ? (
           <Spin />
         ) : (
           <Select
-            placeholder='Select goal'
+            placeholder="Select goal"
             dropdownRender={(menu) => (
               <>
                 {menu}
-                <Button type='link' style={{ width: '100%' }} onClick={() => setIsModalOpen(true)}>
+                <Button
+                  type="link"
+                  style={{ width: '100%' }}
+                  onClick={() => setIsModalOpen(true)}>
                   + Create new goal
                 </Button>
               </>
-            )}
-          >
+            )}>
             {goals?.data.map((g) => (
-              <Option key={g.id} value={g.id}>
+              <Option
+                key={g.id}
+                value={g.id}>
                 {g.name}
               </Option>
             ))}
@@ -71,30 +74,35 @@ const GoalSelect: React.FC<{ form: any }> = ({ form }) => {
 
       {/* Modal for creating new goal */}
       <Modal
-        title='Create New Goal'
+        title="Create New Goal"
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
-        footer={null}
-      >
-        <Form layout='vertical' onFinish={handleCreateGoal}>
+        footer={null}>
+        <Form
+          layout="vertical"
+          onFinish={handleCreateGoal}>
           <Form.Item
-            label='Name'
-            name='name'
-            rules={[{ required: true, message: 'Please enter goal name' }]}
-          >
-            <Input placeholder='Enter goal name' />
+            label="Name"
+            name="name"
+            rules={[{ required: true, message: 'Please enter goal name' }]}>
+            <Input placeholder="Enter goal name" />
           </Form.Item>
 
           <Form.Item
-            label='Description'
-            name='description'
-            rules={[{ required: true, message: 'Please enter goal description' }]}
-          >
-            <Input.TextArea rows={3} placeholder='Enter description' />
+            label="Description"
+            name="description"
+            rules={[{ required: true, message: 'Please enter goal description' }]}>
+            <Input.TextArea
+              rows={3}
+              placeholder="Enter description"
+            />
           </Form.Item>
 
           <Form.Item>
-            <Button type='primary' htmlType='submit' loading={creatingGoal}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={creatingGoal}>
               Create Goal
             </Button>
           </Form.Item>

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Form, Input, Button, Select, Upload, message } from 'antd';
+import { Form, Input, Button, Select, Upload } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { getLanguages, submitTeacherApplication } from '../../services/teacherApplication';
 import type { Language, TeacherApplicationRequest } from '../../services/teacherApplication/types';
 import { toast } from 'react-toastify';
 import type { AxiosError } from 'axios';
+import { notifySuccess } from '../../utils/toastConfig';
 
 const { Option } = Select;
 
@@ -17,11 +18,11 @@ const TeacherApplicationPage: React.FC = () => {
     queryFn: getLanguages,
   });
 
-  // Mutation for submitting form
+  // Mutation
   const { mutate, isPending } = useMutation({
     mutationFn: (payload: TeacherApplicationRequest) => submitTeacherApplication(payload),
     onSuccess: () => {
-      message.success('Application submitted successfully!');
+      notifySuccess('Application submitted successfully!');
     },
     onError: (err: AxiosError<any>) => {
       toast.error(err.response?.data.message || 'Failed to submit application.');
@@ -34,73 +35,97 @@ const TeacherApplicationPage: React.FC = () => {
       Motivation: values.motivation,
       CredentialFiles: values.credentialFiles.map((file: any) => file.originFileObj),
       CredentialNames: values.credentialNames.split(',').map((s: string) => s.trim()),
-      CredentialTypes: [1],
+      CredentialTypes: [1], // still fixed here – maybe map later
     };
-
     mutate(payload);
   };
 
   return (
-    <div className='max-w-2xl mx-auto bg-white p-6 rounded'>
-      <h1 className='text-2xl font-bold mb-4'>Teacher Application</h1>
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-3xl font-extrabold text-gray-800 mb-2">Become a Teacher</h1>
+        <p className="text-gray-600 mb-8">
+          Share your knowledge and inspire learners worldwide. Fill in the application below.
+        </p>
 
-      <Form layout='vertical' onFinish={onFinish}>
-        <Form.Item
-          name='languageId'
-          label='Choose Language'
-          rules={[{ required: true, message: 'Please select a language' }]}
-        >
-          <Select placeholder='Select language' loading={loadingLanguages}>
-            {languagesData?.data.map((lang: Language) => (
-              <Option key={lang.languageId} value={lang.languageId}>
-                {lang.languageName} ({lang.languageCode})
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+        <Form
+          layout="vertical"
+          onFinish={onFinish}
+          className="space-y-6">
+          <Form.Item
+            name="languageId"
+            label={<span className="font-medium text-gray-700">Choose Language</span>}
+            rules={[{ required: true, message: 'Please select a language' }]}>
+            <Select
+              placeholder="Select language"
+              loading={loadingLanguages}
+              className="rounded-md">
+              {languagesData?.data.map((lang: Language) => (
+                <Option
+                  key={lang.languageId}
+                  value={lang.languageId}>
+                  {lang.languageName} ({lang.languageCode})
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-        <Form.Item
-          name='motivation'
-          label='Motivation'
-          rules={[{ required: true, message: 'Please enter motivation' }]}
-        >
-          <Input.TextArea rows={4} placeholder='Why do you want to teach?' />
-        </Form.Item>
+          <Form.Item
+            name="motivation"
+            label={<span className="font-medium text-gray-700">Motivation</span>}
+            rules={[{ required: true, message: 'Please enter motivation' }]}>
+            <Input.TextArea
+              rows={4}
+              placeholder="Why do you want to teach?"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-        <Form.Item
-          name='credentialFiles'
-          label='Upload Credential Files'
-          valuePropName='fileList'
-          getValueFromEvent={(e) => e.fileList}
-          rules={[{ required: true, message: 'Upload at least one file' }]}
-        >
-          <Upload multiple beforeUpload={() => false}>
-            <Button icon={<UploadOutlined />}>Upload Files</Button>
-          </Upload>
-        </Form.Item>
+          <Form.Item
+            name="credentialFiles"
+            label={<span className="font-medium text-gray-700">Upload Credentials</span>}
+            valuePropName="fileList"
+            getValueFromEvent={(e) => e.fileList}
+            rules={[{ required: true, message: 'Upload at least one file' }]}>
+            <Upload
+              multiple
+              beforeUpload={() => false}
+              className="w-full">
+              <Button icon={<UploadOutlined />}>Upload Files</Button>
+            </Upload>
+          </Form.Item>
 
-        <Form.Item
-          name='credentialNames'
-          label='Credential Names (comma separated)'
-          rules={[{ required: true }]}
-        >
-          <Input placeholder='e.g., Bachelor Degree, TESOL' />
-        </Form.Item>
+          <Form.Item
+            name="credentialNames"
+            label={<span className="font-medium text-gray-700">Credential Names</span>}
+            rules={[{ required: true }]}>
+            <Input
+              placeholder="e.g., Bachelor Degree, TESOL"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-        <Form.Item
-          name='credentialTypes'
-          label='Credential Types (comma separated integers)'
-          rules={[{ required: true }]}
-        >
-          <Input placeholder='e.g., 1, 2' />
-        </Form.Item>
+          <Form.Item
+            name="credentialTypes"
+            label={<span className="font-medium text-gray-700">Credential Types</span>}
+            rules={[{ required: true }]}>
+            <Input
+              placeholder="e.g., 1, 2"
+              className="rounded-md"
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type='primary' htmlType='submit' loading={isPending}>
-            Submit Application
-          </Button>
-        </Form.Item>
-      </Form>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isPending}
+              className="w-full h-12 text-lg font-semibold rounded-md">
+              Submit Application
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
     </div>
   );
 };

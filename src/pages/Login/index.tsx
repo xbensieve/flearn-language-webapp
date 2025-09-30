@@ -66,46 +66,57 @@ const Login: React.FC = () => {
   };
 
   return (
-    <section className='min-h-screen flex items-center justify-center bg-gray-50'>
-      <div className='container mx-auto w-[600px] px-4 flex justify-center'>
-        <Card className='w-full max-w-md shadow-lg rounded-xl'>
-          <Title level={2} className='text-center !mb-6'>
+    <section className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="container mx-auto w-[600px] px-4 flex justify-center">
+        <Card className="w-full max-w-md shadow-lg rounded-xl">
+          <Title
+            level={2}
+            className="text-center !mb-6">
             Login
           </Title>
-          <Form form={form} layout='vertical' onFinish={handleSubmit}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}>
             <Form.Item
-              label='Email'
-              name='usernameOrEmail'
-              rules={[{ required: true, message: 'Please enter your email!' }]}
-            >
-              <Input placeholder='Enter email' />
+              label="Email"
+              name="usernameOrEmail"
+              rules={[{ required: true, message: 'Please enter your email!' }]}>
+              <Input placeholder="Enter email" />
             </Form.Item>
             <Form.Item
-              label='Password'
-              name='password'
-              rules={[{ required: true, message: 'Please enter your password!' }]}
-            >
-              <Input.Password placeholder='Enter password' />
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: 'Please enter your password!' }]}>
+              <Input.Password placeholder="Enter password" />
             </Form.Item>
-            <div className='!mb-2'>
-              <Form.Item label='Remember me' name='rememberMe' valuePropName='checked' noStyle>
+            <div className="!mb-2">
+              <Form.Item
+                label="Remember me"
+                name="rememberMe"
+                valuePropName="checked"
+                noStyle>
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
             </div>
-            <div style={{ margin: '8px 0' }} className='text-center'>
-              <Button type='link' danger onClick={() => navigate('/register')}>
+            <div
+              style={{ margin: '8px 0' }}
+              className="text-center">
+              <Button
+                type="link"
+                danger
+                onClick={() => navigate('/register')}>
                 Don&apos;t have an account? Sign up
               </Button>
             </div>
             <Form.Item>
               <Button
-                type='primary'
-                htmlType='submit'
+                type="primary"
+                htmlType="submit"
                 block
-                size='large'
+                size="large"
                 loading={loading}
-                className='bg-blue-600 hover:!bg-blue-700'
-              >
+                className="bg-blue-600 hover:!bg-blue-700">
                 {loading ? 'Logging in...' : 'Login'}
               </Button>
             </Form.Item>
