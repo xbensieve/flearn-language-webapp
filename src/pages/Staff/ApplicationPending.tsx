@@ -8,6 +8,7 @@ import {
   getPendingApplications,
   reviewApplication,
 } from '../../services/staff';
+import { notifyError, notifySuccess } from '../../utils/toastConfig';
 
 const ApplicationsPending: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -31,14 +32,14 @@ const ApplicationsPending: React.FC = () => {
   const reviewMutation = useMutation({
     mutationFn: reviewApplication,
     onSuccess: () => {
-      message.success('Application reviewed successfully!');
+      notifySuccess('Application reviewed successfully!');
       setSelectedId(null);
       setShowReviewModal(false);
       setRejectReason('');
       refetch();
     },
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || 'Failed to review application');
+      notifyError(err?.response?.data?.message || 'Failed to review application');
     },
   });
 
@@ -85,7 +86,10 @@ const ApplicationsPending: React.FC = () => {
           <ul>
             {record.credentials.map((c) => (
               <li key={c.teacherCredentialID}>
-                <a href={c.credentialFileUrl} target='_blank' rel='noopener noreferrer'>
+                <a
+                  href={c.credentialFileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer">
                   {c.credentialName}
                 </a>
               </li>
@@ -99,7 +103,9 @@ const ApplicationsPending: React.FC = () => {
       title: 'Action',
       key: 'action',
       render: (_: any, record: ApplicationData) => (
-        <Button type='link' onClick={() => handleView(record.teacherApplicationID)}>
+        <Button
+          type="link"
+          onClick={() => handleView(record.teacherApplicationID)}>
           View
         </Button>
       ),
@@ -108,9 +114,9 @@ const ApplicationsPending: React.FC = () => {
 
   return (
     <div>
-      <h1 className='text-xl font-semibold mb-4'>Pending Applications</h1>
+      <h1 className="text-xl font-semibold mb-4">Pending Applications</h1>
       <Table
-        rowKey='teacherApplicationID'
+        rowKey="teacherApplicationID"
         loading={isLoading}
         columns={columns}
         dataSource={data?.data || []}
@@ -126,33 +132,39 @@ const ApplicationsPending: React.FC = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '24px',
-            }}
-          >
+            }}>
             <span>Application Detail</span>
-            <Button type='primary' onClick={() => setShowReviewModal(true)}>
+            <Button
+              type="primary"
+              onClick={() => setShowReviewModal(true)}>
               Review
             </Button>
           </div>
         }
         onCancel={handleClose}
         footer={null}
-        width={800}
-      >
+        width={800}>
         {detailLoading ? (
           <Spin />
         ) : detail?.data ? (
-          <Descriptions bordered column={1} size='small'>
-            <Descriptions.Item label='Name'>{detail.data.userName}</Descriptions.Item>
-            <Descriptions.Item label='Email'>{detail.data.email}</Descriptions.Item>
-            <Descriptions.Item label='Language'>{detail.data.languageName}</Descriptions.Item>
-            <Descriptions.Item label='Motivation'>{detail.data.motivation}</Descriptions.Item>
-            <Descriptions.Item label='Applied At'>{detail.data.appliedAt}</Descriptions.Item>
-            <Descriptions.Item label='Credentials'>
+          <Descriptions
+            bordered
+            column={1}
+            size="small">
+            <Descriptions.Item label="Name">{detail.data.userName}</Descriptions.Item>
+            <Descriptions.Item label="Email">{detail.data.email}</Descriptions.Item>
+            <Descriptions.Item label="Language">{detail.data.languageName}</Descriptions.Item>
+            <Descriptions.Item label="Motivation">{detail.data.motivation}</Descriptions.Item>
+            <Descriptions.Item label="Applied At">{detail.data.appliedAt}</Descriptions.Item>
+            <Descriptions.Item label="Credentials">
               {detail.data.credentials?.length ? (
                 <ul style={{ margin: 0, paddingLeft: 16 }}>
                   {detail.data.credentials.map((c) => (
                     <li key={c.teacherCredentialID}>
-                      <a href={c.credentialFileUrl} target='_blank' rel='noopener noreferrer'>
+                      <a
+                        href={c.credentialFileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer">
                         {c.credentialName}
                       </a>
                     </li>
@@ -171,21 +183,28 @@ const ApplicationsPending: React.FC = () => {
       {/* Review modal */}
       <Modal
         open={showReviewModal}
-        title='Review Application'
+        title="Review Application"
         onCancel={() => setShowReviewModal(false)}
-        footer={null}
-      >
-        <Space direction='vertical' style={{ width: '100%' }}>
+        footer={null}>
+        <Space
+          direction="vertical"
+          style={{ width: '100%' }}>
           <Input
-            placeholder='Rejection reason (optional if approving)'
+            placeholder="Rejection reason (optional if approving)"
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
           />
           <Space>
-            <Button type='primary' onClick={handleApprove} loading={reviewMutation.isPending}>
+            <Button
+              type="primary"
+              onClick={handleApprove}
+              loading={reviewMutation.isPending}>
               Approve
             </Button>
-            <Button danger onClick={handleReject} loading={reviewMutation.isPending}>
+            <Button
+              danger
+              onClick={handleReject}
+              loading={reviewMutation.isPending}>
               Reject
             </Button>
           </Space>

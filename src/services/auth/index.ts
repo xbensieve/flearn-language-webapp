@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { AuthResponse, IRefreshToken, ProfileResponse } from './types';
+import type { AuthResponse, IRefreshToken, ProfileResponse } from './type';
 
 export const login = async (payload: {
   usernameOrEmail: string;

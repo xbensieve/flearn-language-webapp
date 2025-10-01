@@ -1,0 +1,84 @@
+export interface CourseTemplate {
+  id: string;
+  name: string;
+  description: string;
+  requireGoal: boolean;
+  requireLevel: boolean;
+  requireSkillFocus: boolean;
+  requireTopic: boolean;
+  requireLang: boolean;
+  minUnits: number;
+  minLessonsPerUnit: number;
+  minExercisesPerLesson: number;
+}
+
+export interface Course {
+  courseID?: string;
+  title: string;
+  description: string;
+  image: string;
+  imageUrl?: string;
+  templateId: string;
+  topicIds: string[];
+  price: number;
+  discountPrice?: number;
+  courseType: number;
+  languageId: string;
+  goalId: number;
+  courseLevel?: number;
+  courseSkill?: number;
+}
+
+export interface CreateCourseRequest {
+  title: string;
+  description: string;
+  image?: File;
+  templateId: string;
+  topicIds: string[];
+  price: number;
+  discountPrice?: number;
+  courseType: number;
+  languageId: string;
+  goalId: number;
+  courseLevel?: number;
+  courseSkill?: number;
+}
+
+
+// services/coursetemplates/type.ts
+
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface ICourseTemplate {
+  id: string;
+  name: string;
+  description: string;
+  requireGoal: boolean;
+  requireLevel: boolean;
+  requireSkillFocus: boolean;
+  requireTopic: boolean;
+  requireLang: boolean;
+  minUnits: number;
+  minLessonsPerUnit: number;
+  minExercisesPerLesson: number;
+}
+
+export interface CourseTemplateResponse {
+  meta: PaginationMeta;
+  status: string;
+  code: number;
+  message: string;
+  data: CourseTemplate[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  errors?: any;
+}
+
+export interface CourseTemplateQuery {
+  page?: number;
+  pageSize?: number;
+}

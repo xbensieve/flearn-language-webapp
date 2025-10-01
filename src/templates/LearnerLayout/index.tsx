@@ -87,7 +87,7 @@ const LearnerLayout: React.FC = () => {
                 {
                   key: '/learner/survey',
                   icon: <FileTextOutlined />,
-                  label: <Link to="/learner/survey">Survey</Link>,
+                  label: <Text>Survey</Text>,
                   children: [
                     {
                       key: '/learner/survey',
@@ -96,6 +96,25 @@ const LearnerLayout: React.FC = () => {
                     {
                       key: '/learner/survey/create',
                       label: <Link to="/learner/survey/create">Create Survey</Link>,
+                    },
+                  ],
+                },
+                {
+                  key: '/learner/course',
+                  icon: <ProfileOutlined />,
+                  label: <Text>Course</Text>,
+                  children: [
+                    {
+                      key: '/learner/course',
+                      label: <Link to="/learner/course">My Course</Link>,
+                    },
+                    {
+                      key: '/learner/course/create',
+                      label: <Link to="/learner/course/create">Create Course</Link>,
+                    },
+                    {
+                      key: '/learner/course/create-template',
+                      label: <Link to="/learner/course/create-template">Create Templates</Link>,
                     },
                   ],
                 },
