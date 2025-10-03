@@ -82,3 +82,37 @@ export interface CourseTemplateQuery {
   page?: number;
   pageSize?: number;
 }
+
+
+
+export interface ICourseMock {
+  id: string;
+  title: string;
+  description: string;
+  language: string;
+  level: string;
+  teacherId: string;
+  teacherName: string;
+  duration: string;
+  price: number;
+  imageUrl?: string;
+  createdAt: string;
+}
+
+export interface TeacherProfile {
+  id: string;
+  name: string;
+  email: string;
+  bio: string;
+  languages: string[];
+  experience: string;
+  avatarUrl?: string;
+}
+
+export interface ApplicationForm {
+  name: string;
+  email: string;
+  languages: string[];
+  experience: string;
+  motivation: string;
+}

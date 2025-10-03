@@ -1,171 +1,133 @@
-// src/templates/LearnerLayout.tsx
-import React from 'react';
-import { Layout, Menu, Typography, Card } from 'antd';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import {
-  ProfileOutlined,
-  FileAddOutlined,
-  QuestionCircleOutlined,
-  SolutionOutlined,
-  FileTextOutlined,
-} from '@ant-design/icons';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Layout, Menu, Avatar, Dropdown, ConfigProvider, Spin } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { logoutService } from '../../services/auth';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import { LogOut, NotebookPen } from 'lucide-react';
 
-const { Header, Content, Footer, Sider } = Layout;
-const { Text } = Typography;
+const { Header, Content, Footer } = Layout;
 
-const LearnerLayout: React.FC = () => {
+const LearnerLayout = () => {
   const location = useLocation();
   const selectedKey = location.pathname;
+  const navigate = useNavigate();
+
+  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+    mutationFn: (refreshToken: string) => logoutService(refreshToken),
+    onSuccess: () => {
+      handleLogout();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Logout failed!');
+    },
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem('FLEARN_ACCESS_TOKEN');
+    localStorage.removeItem('FLEARN_REFRESH_TOKEN');
+    toast.success('Bạn đã đăng xuất!');
+    window.location.href = '/login';
+  };
+  const userMenu = {
+    items: [
+      {
+        key: 'logout',
+        icon: <LogOut size={18} />,
+        label: 'Logout',
+        onClick: () => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') || ''),
+      },
+      {
+        key: 'survey',
+        icon: <NotebookPen size={18} />,
+        label: 'take a survey',
+        onClick: () => navigate('survey/create'),
+      },
+    ],
+  };
+
+  if (isLoggingOut) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {/* Header */}
-      <Header
-        style={{
-          background: '#fff',
-          borderBottom: '1px solid #f0f0f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 24px',
-        }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              background: 'linear-gradient(135deg, #1677ff, #2f54eb)',
-              borderRadius: 8,
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
-            }}>
-            FL
-          </div>
-          <div className="flex flex-col">
-            <Text style={{ margin: 0 }}>Flearn - Learner Portal</Text>
-            <Text
-              type="secondary"
-              style={{ fontSize: 12 }}>
-              Apply to become a teacher • Manage profile
-            </Text>
-          </div>
-        </div>
-
-        <Menu
-          mode="horizontal"
-          selectedKeys={[selectedKey]}
-          items={[
-            { key: '/learner/application', label: <Link to="/learner/application">Apply</Link> },
-            { key: '/learner/profile', label: <Link to="/learner/profile">Profile</Link> },
-            { key: '/learner/status', label: <Link to="/learner/status">My Applications</Link> },
-          ]}
-        />
-      </Header>
-
-      <Layout>
-        {/* Sidebar */}
-        <Sider
-          width={260}
-          breakpoint="lg"
-          collapsedWidth="0"
+    <ConfigProvider
+      theme={{
+        token: {
+          colorBgBase: '#ffffff',
+          colorTextBase: '#000000',
+        },
+      }}>
+      <Layout
+        style={{ minHeight: '100vh' }}
+        className="bg-background">
+        {/* Header */}
+        <Header
+          className="flex items-center justify-between px-8 bg-white shadow-md border-b"
           style={{
             background: '#fff',
-            borderRight: '1px solid #f0f0f0',
-            padding: '16px',
+            borderBottom: '1px solid #f0f0f0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 24px',
           }}>
-          <Card
-            size="small"
-            title="Quick Links"
-            style={{ marginBottom: 16 }}>
-            <Menu
-              mode="inline"
-              selectedKeys={[selectedKey]}
-              items={[
-                {
-                  key: '/learner/survey',
-                  icon: <FileTextOutlined />,
-                  label: <Text>Survey</Text>,
-                  children: [
-                    {
-                      key: '/learner/survey',
-                      label: <Link to="/learner/survey">My Survey</Link>,
-                    },
-                    {
-                      key: '/learner/survey/create',
-                      label: <Link to="/learner/survey/create">Create Survey</Link>,
-                    },
-                  ],
-                },
-                {
-                  key: '/learner/course',
-                  icon: <ProfileOutlined />,
-                  label: <Text>Course</Text>,
-                  children: [
-                    {
-                      key: '/learner/course',
-                      label: <Link to="/learner/course">My Course</Link>,
-                    },
-                    {
-                      key: '/learner/course/create',
-                      label: <Link to="/learner/course/create">Create Course</Link>,
-                    },
-                    {
-                      key: '/learner/course/create-template',
-                      label: <Link to="/learner/course/create-template">Create Templates</Link>,
-                    },
-                  ],
-                },
-                {
-                  key: '/learner/profile',
-                  icon: <ProfileOutlined />,
-                  label: <Link to="/learner/profile">My Profile</Link>,
-                },
-                {
-                  key: '/learner/application',
-                  icon: <FileAddOutlined />,
-                  label: <Link to="/learner/application">Apply to Teach</Link>,
-                },
-                {
-                  key: '/learner/status',
-                  icon: <SolutionOutlined />,
-                  label: <Link to="/learner/status">Application Status</Link>,
-                },
-                {
-                  key: '/learner/help',
-                  icon: <QuestionCircleOutlined />,
-                  label: <Link to="/learner/help">Help & FAQ</Link>,
-                },
-              ]}
-            />
-          </Card>
+          {/* Brand */}
+          <div className="flex items-center gap-4">
+            <div
+              onClick={() => navigate('/learner')}
+              className="text-xl font-bold bg-gradient-to-r
+               from-indigo-500 to-blue-500 bg-clip-text text-transparent cursor-pointer">
+              Flearn
+            </div>
+          </div>
 
-          <Card
-            size="small"
-            title="Tips">
-            <Text
-              type="secondary"
-              style={{ fontSize: 12 }}>
-              Prepare your credentials (CV, certificates) before uploading. Use PDF, JPG or PNG.
-            </Text>
-          </Card>
-        </Sider>
+          {/* Top Menu */}
+          <Menu
+            style={{ minWidth: 600, justifyContent: 'center' }}
+            className="border-0 bg-transparent"
+            mode="horizontal"
+            selectedKeys={[selectedKey]}
+            items={[
+              { key: '/learner', label: <Link to="/learner">Home</Link> },
+              { key: '/learner/application', label: <Link to="/learner/application">Apply</Link> },
+              { key: '/learner/profile', label: <Link to="/learner/profile">Profile</Link> },
+              { key: '/learner/status', label: <Link to="/learner/status">My Applications</Link> },
+            ]}
+          />
 
-        {/* Main Content */}
-        <Layout style={{ padding: '24px' }}>
-          <Content style={{ background: '#fff', borderRadius: 8, padding: 24 }}>
+          {/* User Dropdown */}
+          <Dropdown
+            menu={userMenu}
+            placement="bottomRight">
+            <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+              <Avatar
+                icon={<UserOutlined />}
+                className="bg-primary"
+              />
+              <span className="text-foreground font-medium">Learner</span>
+            </div>
+          </Dropdown>
+        </Header>
+
+        {/* Body Layout */}
+        <Layout className="p-6">
+          <Content className="bg-card rounded-lg shadow-sm p-6">
             <Outlet />
           </Content>
         </Layout>
-      </Layout>
 
-      {/* Footer */}
-      <Footer style={{ textAlign: 'center', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
-        © {new Date().getFullYear()} Flearn. All rights reserved.
-      </Footer>
-    </Layout>
+        {/* Footer */}
+        <Footer className="text-center border-t bg-card py-4">
+          © {new Date().getFullYear()} Flearn. All rights reserved.
+        </Footer>
+      </Layout>
+    </ConfigProvider>
   );
 };
 
