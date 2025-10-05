@@ -14,13 +14,17 @@ const { Title, Text } = Typography;
 const rolesCase = (role: string, navigate: any) => {
   switch (role.toLowerCase()) {
     case 'admin':
-      navigate('/admin'); break;
+      navigate('/admin');
+      break;
     case 'learner':
-      navigate('/learner'); break;
+      navigate('/learner');
+      break;
     case 'teacher':
-      navigate('/teacher'); break;
+      navigate('/teacher');
+      break;
     case 'staff':
-      navigate('/staff'); break;
+      navigate('/staff');
+      break;
     default:
       navigate('/');
   }
@@ -41,11 +45,11 @@ const Login: React.FC = () => {
       if (data.success) {
         localStorage.setItem('FLEARN_ACCESS_TOKEN', data.data.accessToken);
         localStorage.setItem('FLEARN_REFRESH_TOKEN', data.data.refreshToken);
-        const role = data.data.roles[0];
-        localStorage.setItem('FLEARN_USER_ROLE', role);
+        const roles = data.data.roles; // Assuming this is your array of roles, e.g., ['teacher', 'admin']
+        localStorage.setItem('FLEARN_USER_ROLES', JSON.stringify(roles)); // Note: plural 'ROLES' for clarity
         updateAuth();
         notifySuccess(data.message);
-        rolesCase(role, navigate);
+        rolesCase(roles[0], navigate);
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,7 +57,9 @@ const Login: React.FC = () => {
   });
 
   const handleSubmit = (values: {
-    usernameOrEmail: string; password: string; rememberMe: boolean;
+    usernameOrEmail: string;
+    password: string;
+    rememberMe: boolean;
   }) => mutation.mutate(values);
 
   // ===== FULLSCREEN INLINE STYLES =====
@@ -68,7 +74,7 @@ const Login: React.FC = () => {
     height: '100%',
     width: '100%',
     display: 'grid',
-    gridTemplateColumns: '55% 45%',     // 2 cột full màn hình
+    gridTemplateColumns: '55% 45%', // 2 cột full màn hình
     background: '#ffffff',
     borderRadius: 0,
     overflow: 'hidden',
@@ -90,7 +96,7 @@ const Login: React.FC = () => {
     width: '100%',
     background: 'rgba(0,0,0,0.45)',
     borderRadius: 16,
-padding: '14px 18px',
+    padding: '14px 18px',
   };
 
   const right: React.CSSProperties = {
@@ -107,21 +113,48 @@ padding: '14px 18px',
   };
 
   const tabsWrap: React.CSSProperties = {
-    display: 'flex', justifyContent: 'center', gap: 12, marginTop: 12, marginBottom: 16,
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 12,
+    marginBottom: 16,
   };
   const tabBase: React.CSSProperties = {
-    border: 'none', borderRadius: 999, padding: '0 24px', height: 36, fontWeight: 600, cursor: 'pointer',
+    border: 'none',
+    borderRadius: 999,
+    padding: '0 24px',
+    height: 36,
+    fontWeight: 600,
+    cursor: 'pointer',
   };
   const tabActive: React.CSSProperties = { ...tabBase, backgroundColor: '#06b6d4', color: '#fff' };
-  const tabInactive: React.CSSProperties = { ...tabBase, backgroundColor: '#e5e7eb', color: '#374151' };
+  const tabInactive: React.CSSProperties = {
+    ...tabBase,
+    backgroundColor: '#e5e7eb',
+    color: '#374151',
+  };
 
   const desc: React.CSSProperties = { margin: '4px 0 24px', color: '#6b7280', textAlign: 'center' };
   const label: React.CSSProperties = { fontWeight: 600, color: '#374151' };
   const inputStyle: React.CSSProperties = {
-    height: 44, borderRadius: 999, border: '1.5px solid #67e8f9', paddingLeft: 12,
+    height: 44,
+    borderRadius: 999,
+    border: '1.5px solid #67e8f9',
+    paddingLeft: 12,
   };
-  const row: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 };
-  const loginBtn: React.CSSProperties = { height: 44, borderRadius: 999, border: 'none', backgroundColor: '#06b6d4', fontWeight: 700 };
+  const row: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  };
+  const loginBtn: React.CSSProperties = {
+    height: 44,
+    borderRadius: 999,
+    border: 'none',
+    backgroundColor: '#06b6d4',
+    fontWeight: 700,
+  };
 
   return (
     <section style={page}>
@@ -129,7 +162,11 @@ padding: '14px 18px',
         {/* LEFT (ảnh) */}
         <div style={left}>
           <div style={leftOverlay}>
-            <Title level={4} style={{ color: '#fff', margin: 0 }}>Lorem Ipsum is simply</Title>
+            <Title
+              level={4}
+              style={{ color: '#fff', margin: 0 }}>
+              Lorem Ipsum is simply
+            </Title>
             <Text style={{ color: '#e5e7eb' }}>Lorem Ipsum is simply</Text>
           </div>
         </div>
@@ -140,19 +177,32 @@ padding: '14px 18px',
             <div style={{ textAlign: 'center' }}>
               <Text>Chào mừng trở lại!</Text>
               <div style={tabsWrap}>
-                <button type="button" style={tabActive}>Login</button>
-                <button type="button" style={tabInactive} onClick={() => navigate('/register')}>Register</button>
+                <button
+                  type="button"
+                  style={tabActive}>
+                  Login
+                </button>
+                <button
+                  type="button"
+                  style={tabInactive}
+                  onClick={() => navigate('/register')}>
+                  Register
+                </button>
               </div>
             </div>
 
-            <p style={desc}>Nền tảng học nói cho người Việt. Đăng nhập để tiếp tục hành trình học của bạn.</p>
+            <p style={desc}>
+              Nền tảng học nói cho người Việt. Đăng nhập để tiếp tục hành trình học của bạn.
+            </p>
 
-            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}>
               <Form.Item
                 label={<span style={label}>User name</span>}
                 name="usernameOrEmail"
-                rules={[{ required: true, message: 'Please enter your user name!' }]}
-              >
+                rules={[{ required: true, message: 'Please enter your user name!' }]}>
                 <Input
                   style={inputStyle}
                   prefix={<UserOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
@@ -162,9 +212,8 @@ padding: '14px 18px',
 
               <Form.Item
                 label={<span style={label}>Password</span>}
-name="password"
-                rules={[{ required: true, message: 'Please enter your password!' }]}
-              >
+                name="password"
+                rules={[{ required: true, message: 'Please enter your password!' }]}>
                 <Input.Password
                   style={inputStyle}
                   prefix={<LockOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
@@ -173,14 +222,27 @@ name="password"
               </Form.Item>
 
               <div style={row}>
-                <Form.Item name="rememberMe" valuePropName="checked" noStyle>
+                <Form.Item
+                  name="rememberMe"
+                  valuePropName="checked"
+                  noStyle>
                   <Checkbox>Remember me</Checkbox>
                 </Form.Item>
-                <Button type="link" onClick={() => navigate('/forgot')}>Forgot Password?</Button>
+                <Button
+                  type="link"
+                  onClick={() => navigate('/forgot')}>
+                  Forgot Password?
+                </Button>
               </div>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" block size="large" loading={loading} style={loginBtn}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="large"
+                  loading={loading}
+                  style={loginBtn}>
                   {loading ? 'Logging in...' : 'Login'}
                 </Button>
               </Form.Item>

@@ -7,7 +7,7 @@ const PrivateRoute: React.FC<{
   allowedRoles: ('admin' | 'staff' | 'teacher' | 'learner')[];
 }> = ({ children, allowedRoles }) => {
   const { auth } = useAuth();
-  const { isAuthenticated, role, loading } = auth;
+  const { isAuthenticated, roles, loading } = auth;
 
   // Remove or adjust useEffect if not needed
   /*
@@ -26,7 +26,7 @@ const PrivateRoute: React.FC<{
     return <Navigate to='/login' replace />;
   }
 
-  if (role && allowedRoles.includes(role)) {
+  if (roles && roles.some((role) => allowedRoles.includes(role))) {
     return <>{children}</>;
   }
 
