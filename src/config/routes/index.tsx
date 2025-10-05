@@ -20,6 +20,7 @@ import MyCourses from '../../pages/Teacher/MyCourse';
 import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
 import Goals from '../../pages/Admin/Goals';
 import BrowseCourses from '../../pages/Learner';
+import TeacherLayout from '../../templates/TeacherLayout';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -100,6 +101,23 @@ const routes: RouteObject[] = [
     children: [
       { index: true, path: '', element: <BrowseCourses /> },
       { index: true, path: 'survey', element: <MySurvey /> },
+      { path: 'application', element: <TeacherApplicationPage /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'status', element: <ApplicationStatus /> },
+      { path: 'survey/create', element: <CreateSurvey /> },
+      { path: 'course', element: <MyCourses /> },
+      { path: 'course/create', element: <CreateCourse /> },
+    ],
+  },
+  {
+    path: '/teacher',
+    element: (
+      <PrivateRoute allowedRoles={['teacher']}>
+        <TeacherLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, path: '', element: <BrowseCourses /> },
       { path: 'application', element: <TeacherApplicationPage /> },
       { path: 'profile', element: <Profile /> },
       { path: 'status', element: <ApplicationStatus /> },
