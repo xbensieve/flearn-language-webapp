@@ -71,7 +71,7 @@ const MyCourses: React.FC = () => {
                 actions={[
                   <Button
                     type="link"
-                    onClick={() => navigate(`/courses/${course.courseID}`)}>
+                    onClick={() => navigate(`${course.courseID}`)}>
                     View Details
                   </Button>,
                 ]}>
