@@ -50,6 +50,7 @@ const Login: React.FC = () => {
         updateAuth();
         notifySuccess(data.message);
         rolesCase(roles[0], navigate);
+        rolesCase(roles[0], navigate);
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
