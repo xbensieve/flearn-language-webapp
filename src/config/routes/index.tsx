@@ -19,6 +19,7 @@ import CreateCourse from '../../pages/Teacher/CreateCourse';
 import MyCourses from '../../pages/Teacher/MyCourse';
 import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
 import Goals from '../../pages/Admin/Goals';
+import BrowseCourses from '../../pages/Learner';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -97,6 +98,7 @@ const routes: RouteObject[] = [
       </PrivateRoute>
     ),
     children: [
+      { index: true, path: '', element: <BrowseCourses /> },
       { index: true, path: 'survey', element: <MySurvey /> },
       { path: 'application', element: <TeacherApplicationPage /> },
       { path: 'profile', element: <Profile /> },
