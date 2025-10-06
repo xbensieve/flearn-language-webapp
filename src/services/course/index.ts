@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { Course, CourseTemplate, CourseTemplateQuery, CourseTemplateResponse, CreateCourseRequest } from './type';
+import type { Course, CourseTemplate, CourseTemplateQuery, CourseTemplateResponse, CourseUnitsRequest, CreateCourseRequest } from './type';
 
 export const getCourseTemplateByIdService = async (id: string) => {
   const res = await api.get<API.Response<CourseTemplate>>(`/coursetemplates/${id}`);
@@ -92,6 +92,37 @@ export const getCourseTemplatesService = async (
 ): Promise<CourseTemplateResponse> => {
   const res = await api.get<CourseTemplateResponse>('coursetemplates', {
     params: { page, pageSize },
+  });
+  return res.data;
+};
+
+export const createCourseUnitsService = async (payload: CourseUnitsRequest) => {
+  const url = `/courses/${payload.courseId}/units`;
+  const res = await api.post<CourseTemplate>(url, {
+    title: payload.title,
+    description: payload.description,
+    isPreview: payload.isPreview
+  });
+  return res.data;
+};
+
+// services/course.ts (add these exports)
+
+export const getCourseDetailService = async (id: string) => {
+  const res = await api.get(`/courses/${id}`);
+  return res.data.data;
+};
+
+export const getCourseUnitsService = async (id: string) => {
+  const res = await api.get(`/courses/${id}/units`);
+  return res.data.data;
+};
+
+export const createCourseLessonService = async (courseId: string, unitId: string, formData: FormData) => {
+  const res = await api.post(`/courses/${courseId}/units/${unitId}/lessons`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
   });
   return res.data;
 };

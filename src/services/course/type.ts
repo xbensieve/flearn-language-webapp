@@ -83,6 +83,12 @@ export interface CourseTemplateQuery {
   pageSize?: number;
 }
 
+export interface CourseUnitsRequest {
+  courseId: string;
+  title: string;
+  description: string;
+  isPreview: boolean;
+}
 
 
 export interface ICourseMock {
