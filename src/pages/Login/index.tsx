@@ -85,7 +85,7 @@ const Login: React.FC = () => {
     position: 'relative',
     height: '100%',
     backgroundImage:
-      "url('https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=1600&q=80')", // đổi sang ảnh của bạn
+      "url('https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=1600&q=80')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',
@@ -166,9 +166,9 @@ const Login: React.FC = () => {
             <Title
               level={4}
               style={{ color: '#fff', margin: 0 }}>
-              Lorem Ipsum is simply
+              Join our community
             </Title>
-            <Text style={{ color: '#e5e7eb' }}>Lorem Ipsum is simply</Text>
+            <Text style={{ color: '#e5e7eb' }}>Start your journey with us today</Text>
           </div>
         </div>
 
