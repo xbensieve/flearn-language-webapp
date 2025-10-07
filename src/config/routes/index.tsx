@@ -22,6 +22,7 @@ import Goals from '../../pages/Admin/Goals';
 import BrowseCourses from '../../pages/Learner';
 import TeacherLayout from '../../templates/TeacherLayout';
 import CourseDetail from '../../pages/Teacher/CourseDetail';
+import CourseDetailView from '../../pages/Teacher/CourseDetailView';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -125,7 +126,8 @@ const routes: RouteObject[] = [
       { path: 'survey/create', element: <CreateSurvey /> },
       { path: 'course', element: <MyCourses /> },
       { path: 'course/create', element: <CreateCourse /> },
-      { path: 'course/:id', element: <CourseDetail /> },
+      { path: 'course/:id', element: <CourseDetailView /> },
+      { path: 'course/:id/edit', element: <CourseDetail /> },
     ],
   },
   {

@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { Course, CourseTemplate, CourseTemplateQuery, CourseTemplateResponse, CourseUnitsRequest, CreateCourseRequest } from './type';
+import type { Course, CourseTemplate, CourseTemplateQuery, CourseTemplateResponse, CourseUnitsRequest, CreateCourseRequest, Lesson } from './type';
 
 export const getCourseTemplateByIdService = async (id: string) => {
   const res = await api.get<API.Response<CourseTemplate>>(`/coursetemplates/${id}`);
@@ -113,8 +113,8 @@ export const getCourseDetailService = async (id: string) => {
   return res.data.data;
 };
 
-export const getCourseUnitsService = async (id: string) => {
-  const res = await api.get(`/courses/${id}/units`);
+export const getCourseUnitsService = async ({id, page = 1, pageSize = 100}: {id: string, page?: number, pageSize?: number}) => {
+  const res = await api.get(`/courses/${id}/units?${page ? `page=${page}` : ''}&${pageSize ? `pageSize=${pageSize}` : ''}`);
   return res.data.data;
 };
 
@@ -126,3 +126,8 @@ export const createCourseLessonService = async (courseId: string, unitId: string
   });
   return res.data;
 };
+
+export const getLessonsByUnits = async ({courseId , page = 1, pageSize = 100}: {courseId: string, page?: number, pageSize?: number}): Promise<API.Response<Lesson[]>> => {
+  const res = await api.get(`courses/${courseId}/lessons?${page ? `page=${page}` : ''}&${pageSize ? `pageSize=${pageSize}` : ''}`);
+  return res.data;
+}

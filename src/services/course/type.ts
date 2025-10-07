@@ -90,6 +90,22 @@ export interface CourseUnitsRequest {
   isPreview: boolean;
 }
 
+export interface Lesson {
+  lessonID: string
+  title: string
+  content: string
+  position: number
+  skillFocus: string
+  description: string
+  videoUrl: string
+  documentUrl: string
+  courseUnitID: string
+  unitTitle: string
+  courseID: string
+  courseTitle: string
+  createdAt: string
+  updatedAt: string
+}
 
 export interface ICourseMock {
   id: string;

@@ -24,7 +24,9 @@ import {
   createCourseUnitsService,
   getCourseDetailService,
   getCourseUnitsService,
+  getLessonsByUnits,
 } from '../../services/course';
+import type { Lesson } from '../../services/course/type';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -113,11 +115,32 @@ const CourseDetail: React.FC = () => {
     refetch: refetchUnits,
   } = useQuery<Unit[]>({
     queryKey: ['units', courseId],
-    queryFn: () => getCourseUnitsService(courseId!),
+    queryFn: () => getCourseUnitsService({ id: courseId! }),
+    enabled: !!courseId,
+  });
+
+  const {
+    data: lessonsResponse,
+    isLoading: lessonsLoading,
+    refetch: refetchLessons,
+  } = useQuery({
+    queryKey: ['lessons', courseId],
+    queryFn: () => getLessonsByUnits({ courseId: courseId! }),
     enabled: !!courseId,
   });
 
   console.log(unitsData);
+
+  const lessonsByUnit = React.useMemo(() => {
+    if (!lessonsResponse?.data) return {};
+    return lessonsResponse.data.reduce((acc, lesson) => {
+      const unitId = lesson.courseUnitID;
+      if (!acc[unitId]) acc[unitId] = [];
+      acc[unitId].push(lesson);
+      return acc;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }, {} as Record<string, any[]>);
+  }, [lessonsResponse]);
 
   const createUnitMutation = useMutation({
     mutationFn: (values: { id: string; title: string; description: string; isPreview: boolean }) =>
@@ -143,6 +166,7 @@ const CourseDetail: React.FC = () => {
       setDocumentFile(null);
       setShowLessonForm(false);
       refetchUnits();
+      refetchLessons();
       queryClient.invalidateQueries({ queryKey: ['course', courseId] });
     },
   });
@@ -207,9 +231,12 @@ const CourseDetail: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-7xl mx-auto">
-        <Row gutter={24}>
+        <Row gutter={[24, 24]}>
           {/* Left Side: Course Details (Smaller) */}
-          <Col span={12}>
+          <Col
+            xs={24}
+            lg={10}
+            xl={9}>
             <Card>
               <img
                 alt={course.title}
@@ -339,183 +366,280 @@ const CourseDetail: React.FC = () => {
             </Card>
           </Col>
 
-          {/* Right Side: Collapsible Units & Lessons */}
-          <Col span={12}>
-            <Card title="Manage Units & Lessons">
+          {/* Right Side: Units & Lessons */}
+          <Col
+            xs={24}
+            lg={14}
+            xl={15}>
+            <div className="bg-white shadow-lg rounded-2xl border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <Title
+                  level={4}
+                  className="!mb-0 text-gray-800">
+                  🧩 Manage Units & Lessons
+                </Title>
+                <Tag color="geekblue">{unitsData?.length || 0} Units</Tag>
+              </div>
+
               <Collapse
-                defaultActiveKey={['add-unit']}
-                accordion={false}>
-                {/* Add Unit Panel */}
+                bordered={false}
+                expandIconPosition="end"
+                className="space-y-3"
+                accordion={false}
+                defaultActiveKey={['add-unit']}>
+                {/* Add Unit Form */}
                 <Panel
-                  header="Add New Unit"
-                  key="add-unit">
+                  header={<span className="font-semibold text-gray-700">➕ Add New Unit</span>}
+                  key="add-unit"
+                  className="bg-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 transition-all duration-300">
                   <Form
                     form={unitForm}
                     onFinish={handleUnitFinish}
                     layout="vertical"
-                    size="small">
+                    size="middle"
+                    className="space-y-3">
                     <Form.Item
                       name="title"
-                      label="Title"
+                      label={<span className="font-medium text-gray-700">Title</span>}
                       rules={[{ required: true, message: 'Title is required' }]}>
-                      <Input placeholder="Enter unit title" />
+                      <Input
+                        placeholder="Enter unit title"
+                        className="rounded-lg"
+                      />
                     </Form.Item>
+
                     <Form.Item
                       name="description"
-                      label="Description">
+                      label={<span className="font-medium text-gray-700">Description</span>}>
                       <TextArea
                         rows={2}
                         placeholder="Enter unit description"
+                        className="rounded-lg"
                       />
                     </Form.Item>
+
                     <Form.Item
                       name="isPreview"
-                      label="Is Preview"
+                      label={<span className="font-medium text-gray-700">Preview Access</span>}
                       valuePropName="checked">
                       <Switch />
                     </Form.Item>
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        loading={createUnitMutation.isPending}
-                        block
-                        size="small">
-                        Create Unit
-                      </Button>
-                    </Form.Item>
+
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={createUnitMutation.isPending}
+                      className="w-full rounded-lg">
+                      Create Unit
+                    </Button>
                   </Form>
                 </Panel>
 
-                {/* Units List Panels */}
+                {/* Existing Units */}
                 {unitsLoading ? (
-                  <Spin />
-                ) : !unitsData || unitsData.length === 0 ? (
+                  <div className="flex justify-center py-8">
+                    <Spin />
+                  </div>
+                ) : !unitsData?.length ? (
                   <Panel
+                    key="no-units"
                     header="No Units Yet"
-                    key="no-units">
-                    <Empty description="Create a unit above to get started" />
+                    className="bg-gray-50 rounded-xl">
+                    <Empty description="Create your first unit above" />
                   </Panel>
                 ) : (
-                  unitsData.map((unit) => (
-                    <Panel
-                      header={`${unit.title} (${unit.totalLessons} lessons)`}
-                      key={unit.courseUnitID}>
-                      <Paragraph ellipsis={{ rows: 2 }}>{unit.description}</Paragraph>
-                      <div className="mb-2">
-                        <Text strong>Preview: </Text>
-                        <Switch
-                          checked={unit.isPreview}
-                          disabled
-                        />
-                      </div>
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={() => handleAddLessonClick(unit.courseUnitID)}
-                        block
-                        className="mb-2">
-                        + Add Lesson to this Unit
-                      </Button>
-                      {/* Embedded Lesson Form for this Unit */}
-                      {showLessonForm && activeUnitForLesson === unit.courseUnitID && (
-                        <Collapse>
-                          <Panel
-                            header="Add Lesson"
-                            key="add-lesson">
+                  unitsData.map((unit) => {
+                    const unitLessons = lessonsByUnit[unit.courseUnitID] || [];
+
+                    return (
+                      <Panel
+                        key={unit.courseUnitID}
+                        header={
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="font-semibold text-gray-800">{unit.title}</span>
+                              <p className="text-gray-500 text-xs mt-0.5">{unit.description}</p>
+                            </div>
+                            <Tag color="blue-inverse">{unitLessons.length} Lessons</Tag>
+                          </div>
+                        }
+                        className="rounded-xl border border-gray-200 bg-gray-50 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="text-sm text-gray-600">
+                            Preview:{' '}
+                            <Switch
+                              checked={unit.isPreview}
+                              disabled
+                            />
+                          </div>
+                          <Button
+                            size="small"
+                            type="link"
+                            className="text-blue-600 hover:text-blue-700"
+                            onClick={() => handleAddLessonClick(unit.courseUnitID)}>
+                            + Add Lesson
+                          </Button>
+                        </div>
+
+                        {/* Lesson Form */}
+                        {showLessonForm && activeUnitForLesson === unit.courseUnitID && (
+                          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 shadow-sm">
+                            <Title
+                              level={5}
+                              className="!mt-0 text-gray-800">
+                              🎬 Add Lesson
+                            </Title>
                             <Form
                               form={lessonForm}
                               onFinish={handleLessonFinish}
                               layout="vertical"
-                              size="small">
+                              size="middle"
+                              className="space-y-3">
                               <Form.Item
                                 name="title"
-                                label="Title"
+                                label={<span className="font-medium text-gray-700">Title</span>}
                                 rules={[{ required: true, message: 'Title is required' }]}>
-                                <Input placeholder="Enter lesson title" />
+                                <Input
+                                  placeholder="Enter lesson title"
+                                  className="rounded-lg"
+                                />
                               </Form.Item>
                               <Form.Item
                                 name="content"
-                                label="Content"
+                                label={<span className="font-medium text-gray-700">Content</span>}
                                 rules={[{ required: true, message: 'Content is required' }]}>
                                 <TextArea
                                   rows={3}
                                   placeholder="Enter lesson content"
+                                  className="rounded-lg"
                                 />
                               </Form.Item>
                               <Form.Item
                                 name="skillFocus"
-                                label="Skill Focus"
+                                label={
+                                  <span className="font-medium text-gray-700">Skill Focus</span>
+                                }
                                 rules={[{ required: true, message: 'Skill focus is required' }]}>
-                                <Input placeholder="Enter skill focus" />
+                                <Input
+                                  placeholder="Listening, Grammar, etc."
+                                  className="rounded-lg"
+                                />
                               </Form.Item>
                               <Form.Item
                                 name="description"
-                                label="Description">
+                                label={
+                                  <span className="font-medium text-gray-700">Description</span>
+                                }>
                                 <TextArea
                                   rows={2}
-                                  placeholder="Enter lesson description"
+                                  placeholder="Brief description"
+                                  className="rounded-lg"
                                 />
                               </Form.Item>
-                              <Form.Item label="Video File">
-                                <Upload
-                                  name="videoFile"
-                                  beforeUpload={() => false}
-                                  onChange={handleVideoChange}
-                                  accept="video/*"
-                                  maxCount={1}>
-                                  <Button
-                                    icon={<VideoCameraOutlined />}
-                                    size="small">
-                                    Select Video
-                                  </Button>
-                                </Upload>
-                                {videoFile && (
-                                  <Text className="block mt-1 text-xs">{videoFile.name}</Text>
-                                )}
-                              </Form.Item>
-                              <Form.Item label="Document File">
-                                <Upload
-                                  name="documentFile"
-                                  beforeUpload={() => false}
-                                  onChange={handleDocumentChange}
-                                  accept=".pdf,.doc,.docx"
-                                  maxCount={1}>
-                                  <Button
-                                    icon={<FileOutlined />}
-                                    size="small">
-                                    Select Document
-                                  </Button>
-                                </Upload>
-                                {documentFile && (
-                                  <Text className="block mt-1 text-xs">{documentFile.name}</Text>
-                                )}
-                              </Form.Item>
-                              <Form.Item>
-                                <div className="flex space-x-2">
-                                  <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={createLessonMutation.isPending}
-                                    size="small">
-                                    Create Lesson
-                                  </Button>
-                                  <Button
-                                    onClick={() => setShowLessonForm(false)}
-                                    size="small">
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </Form.Item>
+                              <div className="grid grid-cols-2 gap-3">
+                                <Form.Item label="Video File">
+                                  <Upload
+                                    name="videoFile"
+                                    beforeUpload={() => false}
+                                    onChange={handleVideoChange}
+                                    accept="video/*"
+                                    maxCount={1}>
+                                    <Button icon={<VideoCameraOutlined />}>Select Video</Button>
+                                  </Upload>
+                                  {videoFile && (
+                                    <Text className="block mt-1 text-xs">{videoFile.name}</Text>
+                                  )}
+                                </Form.Item>
+
+                                <Form.Item label="Document File">
+                                  <Upload
+                                    name="documentFile"
+                                    beforeUpload={() => false}
+                                    onChange={handleDocumentChange}
+                                    accept=".pdf,.doc,.docx"
+                                    maxCount={1}>
+                                    <Button icon={<FileOutlined />}>Select Document</Button>
+                                  </Upload>
+                                  {documentFile && (
+                                    <Text className="block mt-1 text-xs">{documentFile.name}</Text>
+                                  )}
+                                </Form.Item>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button
+                                  type="primary"
+                                  htmlType="submit"
+                                  loading={createLessonMutation.isPending}>
+                                  Save Lesson
+                                </Button>
+                                <Button onClick={() => setShowLessonForm(false)}>Cancel</Button>
+                              </div>
                             </Form>
-                          </Panel>
-                        </Collapse>
-                      )}
-                    </Panel>
-                  ))
+                          </div>
+                        )}
+
+                        {/* Lesson List */}
+                        <div className="grid grid-cols-1 gap-3">
+                          {lessonsLoading ? (
+                            <div className="flex justify-center py-6">
+                              <Spin />
+                            </div>
+                          ) : unitLessons.length === 0 ? (
+                            <Empty description="No lessons yet" />
+                          ) : (
+                            unitLessons.map((lesson: Lesson) => (
+                              <div
+                                key={lesson.lessonID}
+                                className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+                                <div className="flex items-center justify-between mb-1">
+                                  <h4 className="text-gray-800 font-semibold text-sm">
+                                    {lesson.title}
+                                  </h4>
+                                  {lesson.skillFocus && (
+                                    <Tag
+                                      color="blue-inverse"
+                                      className="text-xs">
+                                      {lesson.skillFocus}
+                                    </Tag>
+                                  )}
+                                </div>
+                                <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                                  {lesson.description}
+                                </p>
+                                <div className="flex space-x-2">
+                                  {lesson.videoUrl && (
+                                    <Button
+                                      type="default"
+                                      size="small"
+                                      icon={<VideoCameraOutlined />}
+                                      href={lesson.videoUrl}
+                                      target="_blank"
+                                      className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-400 rounded-lg">
+                                      Video
+                                    </Button>
+                                  )}
+                                  {lesson.documentUrl && (
+                                    <Button
+                                      type="default"
+                                      size="small"
+                                      icon={<FileOutlined />}
+                                      href={lesson.documentUrl}
+                                      target="_blank"
+                                      className="text-green-600 hover:text-green-700 border-green-200 hover:border-green-400 rounded-lg">
+                                      Document
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </Panel>
+                    );
+                  })
                 )}
               </Collapse>
-            </Card>
+            </div>
           </Col>
         </Row>
       </div>
