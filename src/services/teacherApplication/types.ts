@@ -1,17 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Response for language list
 export interface Language {
-  languageId: string;
-  languageName: string;
-  languageCode: string;
+  id: string
+  langName: string
+  langCode: string
 }
 
 // Request payload for teacher application
 export interface TeacherApplicationRequest {
-  LanguageID: string;
-  Motivation: string;
-  CredentialFiles: File[];
-  CredentialNames: string[];
-  CredentialTypes: number[];
+  LangCode: string;
+  FullName: string;
+  BirthDate: string;
+  Bio: string;
+  Avatar?: File;
+  Email: string;
+  PhoneNumber: string;
+  TeachingExperience: string;
+  MeetingUrl: string;
+  CertificateImages: File[];
+  CertificateTypeIds: string[];
 }
 
 // src/services/teacherApplication/types.ts
@@ -24,20 +31,30 @@ export interface Credential {
 }
 
 export interface ApplicationData {
-  teacherApplicationID: string;
-  userID: string;
-  userName: string;
-  email: string;
-  languageID: string;
-  languageName: string;
-  motivation: string;
-  appliedAt: string;
-  submitAt: string;
-  reviewAt?: string | null;
-  reviewedBy?: string | null;
-  reviewerName?: string | null;
-  rejectionReason: string;
-  status: number;
-  credentials: Credential[];
-  createdAt: string;
+  applicationID: string
+  userID: string
+  languageID: string
+  fullName: string
+  birthDate: string
+  bio: string
+  avatar: string
+  email: string
+  phoneNumber: string
+  teachingExperience: string
+  meetingUrl: string
+  rejectionReason: any
+  status: string
+  reviewedBy: any
+  reviewedByName: any
+  submittedAt: string
+  reviewedAt: string
+  language: Language
+  user: User
+  certificates: any[]
+}
+
+export interface User {
+  userId: string
+  userName: string
+  email: string
 }

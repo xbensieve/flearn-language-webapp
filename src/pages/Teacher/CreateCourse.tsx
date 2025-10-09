@@ -19,12 +19,12 @@ import type { UploadFile, UploadProps } from 'antd';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createCourseService, getCourseTemplatesService } from '../../services/course';
 import { getTopicsService } from '../../services/topics';
-import { getLanguages } from '../../services/teacherApplication';
 import type { CreateCourseRequest } from '../../services/course/type';
 import { notifyError } from '../../utils/toastConfig';
 import type { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getGoalsService } from '../../services/goals';
+import { getLanguages } from '../../services/teacherApplication';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -73,6 +73,7 @@ const CreateCourse: React.FC = () => {
     queryKey: ['topics'],
     queryFn: getTopicsService,
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: languages, isLoading: languagesLoading } = useQuery({
     queryKey: ['languages'],
     queryFn: getLanguages,
@@ -140,6 +141,8 @@ const CreateCourse: React.FC = () => {
     setFormValues((prev) => ({ ...prev, ...values }));
     setCurrentStep((s) => s - 1);
   };
+
+  console.log(languages?.data);
 
   const onFinish = (values: CourseFormValues) => {
     const payload: CreateCourseRequest = {
@@ -335,7 +338,7 @@ const CreateCourse: React.FC = () => {
                 </Form.Item>
               </Col>
               <Col span={12}>
-                <Form.Item
+                {/* <Form.Item
                   name="languageId"
                   label="Language"
                   rules={[{ required: true, message: 'Please select language' }]}>
@@ -345,13 +348,13 @@ const CreateCourse: React.FC = () => {
                     loading={languagesLoading}>
                     {languages?.data.map((lang) => (
                       <Option
-                        key={lang.languageId}
+                        key={lang.id}
                         value={lang.languageId}>
                         {lang.languageName}
                       </Option>
                     ))}
                   </Select>
-                </Form.Item>
+                </Form.Item> */}
               </Col>
               <Col span={12}>
                 <Form.Item

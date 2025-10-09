@@ -3,7 +3,7 @@ import type { ApplicationData, Language, TeacherApplicationRequest } from './typ
 
 // Get list of languages
 export const getLanguages = async (): Promise<API.Response<Language[]>> => {
-  const res = await api.get('/TeacherApplication/languages');
+  const res = await api.get('languages');
   return res.data;
 };
 
@@ -12,23 +12,47 @@ export const submitTeacherApplication = async (
   payload: TeacherApplicationRequest
 ): Promise<API.Response<null>> => {
   const formData = new FormData();
-  formData.append('LanguageID', payload.LanguageID);
-  formData.append('Motivation', payload.Motivation);
 
-  payload.CredentialFiles.forEach((file) => formData.append('CredentialFiles', file));
+  // Append simple text fields
+  formData.append('LangCode', payload.LangCode);
+  formData.append('FullName', payload.FullName);
+  formData.append('BirthDate', payload.BirthDate);
+  formData.append('Bio', payload.Bio);
+  formData.append('Email', payload.Email);
+  formData.append('PhoneNumber', payload.PhoneNumber);
+  formData.append('TeachingExperience', payload.TeachingExperience);
+  formData.append('MeetingUrl', payload.MeetingUrl);
 
-  payload.CredentialNames.forEach((name) => formData.append('CredentialNames', name));
+  // Optional file (avatar)
+  if (payload.Avatar) {
+    formData.append('Avatar', payload.Avatar);
+  }
 
-  payload.CredentialTypes.forEach((type) => formData.append('CredentialTypes', type.toString()));
+  // Multiple certificate images
+  if (payload.CertificateImages?.length) {
+    payload.CertificateImages.forEach((file) =>
+      formData.append('CertificateImages', file)
+    );
+  }
 
-  const res = await api.post('/TeacherApplication', formData, {
+  // Multiple certificate type IDs
+  if (payload.CertificateTypeIds?.length) {
+    payload.CertificateTypeIds.forEach((id) =>
+      formData.append('CertificateTypeIds', id)
+    );
+  }
+
+  // Make request
+  const res = await api.post('applications', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+
   return res.data;
 };
 
+
 // Fetch logged-in user's teacher application
-export const getMyApplication = async (): Promise<API.Response<ApplicationData>> => {
-  const res = await api.get('/TeacherApplication/my-application');
+export const getMyApplication = async () => {
+  const res = await api.get<API.Response<ApplicationData>>('applications/me');
   return res.data;
 };

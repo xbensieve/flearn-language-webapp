@@ -41,6 +41,7 @@ const Login: React.FC = () => {
       login({ ...values }),
     onMutate: () => setLoading(true),
     onSettled: () => setLoading(false),
+    retry: 1,
     onSuccess: (data) => {
       if (data.success) {
         localStorage.setItem('FLEARN_ACCESS_TOKEN', data.data.accessToken);

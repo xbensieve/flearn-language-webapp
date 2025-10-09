@@ -3,7 +3,7 @@ import type { ApplicationData } from '../teacherApplication/types';
 
 // Pending list
 export const getPendingApplications = async (): Promise<API.Response<ApplicationData[]>> => {
-  const res = await api.get('/TeacherApplication/pending', {
+  const res = await api.get('staff/applications', {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
       Accept: 'application/json',
@@ -24,12 +24,23 @@ export const getApplicationDetail = async (id: string): Promise<API.Response<App
 };
 
 // Review
-export const reviewApplication = async (payload: {
+export const reviewApproveApplication = async (payload: {
   applicationId: string;
-  isApproved: boolean;
-  rejectionReason?: string;
 }): Promise<API.Response<null>> => {
-  const res = await api.post('/TeacherApplication/review', payload, {
+  const res = await api.put(`staff/applications/${payload.applicationId}/approve`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+      Accept: 'application/json',
+    },
+  });
+  return res.data;
+};
+
+export const reviewRejectApplication = async (payload: {
+  applicationId: string;
+  reason?: string;
+}): Promise<API.Response<null>> => {
+  const res = await api.put(`staff/applications/${payload.applicationId}/reject`, payload, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
       Accept: 'application/json',
