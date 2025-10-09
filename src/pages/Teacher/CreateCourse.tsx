@@ -73,8 +73,7 @@ const CreateCourse: React.FC = () => {
     queryKey: ['topics'],
     queryFn: getTopicsService,
   });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: languages, isLoading: languagesLoading } = useQuery({
+  const { data: languages } = useQuery({
     queryKey: ['languages'],
     queryFn: getLanguages,
   });

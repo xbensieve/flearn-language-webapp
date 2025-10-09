@@ -46,7 +46,7 @@ const TeacherApplicationPage: React.FC = () => {
 
   // ✅ Submit handler
   const onFinish = (values: any) => {
-    console.log(values.Avatar[0]);
+    console.log(values);
     const payload: TeacherApplicationRequest = {
       LangCode: values.LangCode,
       FullName: values.FullName,
