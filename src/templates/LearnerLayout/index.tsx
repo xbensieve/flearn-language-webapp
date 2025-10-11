@@ -50,6 +50,12 @@ const LearnerLayout = () => {
         label: 'Teacher Workspace',
         onClick: () => navigate('/teacher'),
       },
+      {
+        key: 'profile',
+        icon: <NotebookPen size={18} />,
+        label: 'Profile',
+        onClick: () => navigate('/learner/profile'),
+      },
     ],
   };
 
@@ -101,9 +107,9 @@ const LearnerLayout = () => {
             mode='horizontal'
             selectedKeys={[selectedKey]}
             items={[
-              { key: '/learner', label: <Link to='/learner'>Home</Link> },
+              // { key: '/learner', label: <Link to='/learner'>Home</Link> },
               { key: '/learner/application', label: <Link to='/learner/application'>Apply</Link> },
-              { key: '/learner/profile', label: <Link to='/learner/profile'>Profile</Link> },
+              // { key: '/learner/profile', label: <Link to='/learner/profile'>Profile</Link> },
               { key: '/learner/status', label: <Link to='/learner/status'>My Applications</Link> },
             ]}
           />
