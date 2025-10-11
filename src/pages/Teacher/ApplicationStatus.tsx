@@ -15,6 +15,11 @@ const statusMap: Record<string, { text: string; color: string }> = {
   '3': { text: 'Rejected', color: 'red' },
 };
 
+// truncate function
+function truncate(str: string, n: number) {
+  return str.length > n ? str.substr(0, n - 1) + '...' : str;
+}
+
 const ApplicationStatus: React.FC = () => {
   const navigate = useNavigate();
 
@@ -32,20 +37,18 @@ const ApplicationStatus: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Spin size="large" />
+      <div className='flex items-center justify-center h-screen'>
+        <Spin size='large' />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen text-center">
+      <div className='flex flex-col justify-center items-center h-screen text-center'>
         <Title level={3}>Something went wrong</Title>
         <Paragraph>{(error as any)?.response?.data?.message ?? 'Unknown error occurred'}</Paragraph>
-        <Button
-          type="primary"
-          onClick={() => navigate('/learner/application')}>
+        <Button type='primary' onClick={() => navigate('/learner/application')}>
           Apply to Teach
         </Button>
       </div>
@@ -55,11 +58,9 @@ const ApplicationStatus: React.FC = () => {
   const data = response?.data;
   if (!data) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen text-center">
+      <div className='flex flex-col justify-center items-center h-screen text-center'>
         <Title level={3}>No application found</Title>
-        <Button
-          type="primary"
-          onClick={() => navigate('/learner/application')}>
+        <Button type='primary' onClick={() => navigate('/learner/application')}>
           Apply Now
         </Button>
       </div>
@@ -71,67 +72,63 @@ const ApplicationStatus: React.FC = () => {
       <Title level={3}>Application Status</Title>
 
       <Card style={{ marginBottom: 24 }}>
-        <Descriptions
-          bordered
-          column={1}
-          size="middle">
-          <Descriptions.Item label="Application ID">{data.applicationID}</Descriptions.Item>
-          <Descriptions.Item label="Name">{data.fullName}</Descriptions.Item>
-          <Descriptions.Item label="Email">{data.email}</Descriptions.Item>
-          <Descriptions.Item label="Language">{data.language?.langName ?? 'N/A'}</Descriptions.Item>
-          <Descriptions.Item label="Motivation">{data.bio}</Descriptions.Item>
-          <Descriptions.Item label="Applied At">
+        <Descriptions bordered column={1} size='middle'>
+          <Descriptions.Item label='Application ID'>{data.applicationID}</Descriptions.Item>
+          <Descriptions.Item label='Name'>{data.fullName}</Descriptions.Item>
+          <Descriptions.Item label='Email'>{data.email}</Descriptions.Item>
+          <Descriptions.Item label='Language'>{data.language?.langName ?? 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label='Motivation'>{data.bio}</Descriptions.Item>
+          <Descriptions.Item label='Applied At'>
             {new Date(data.submittedAt).toLocaleString()}
           </Descriptions.Item>
-          <Descriptions.Item label="Status">
+          <Descriptions.Item label='Status'>
             <Tag color={statusMap[data.status]?.color ?? 'default'}>{data.status ?? 'Unknown'}</Tag>
           </Descriptions.Item>
           {data.rejectionReason && (
-            <Descriptions.Item label="Rejection Reason">{data.rejectionReason}</Descriptions.Item>
+            <Descriptions.Item label='Rejection Reason'>{data.rejectionReason}</Descriptions.Item>
           )}
         </Descriptions>
       </Card>
 
       {/* ✅ Fixed: certificates is an array */}
       {data.certificates?.length ? (
-        <Card title="Uploaded Certificates">
+        <Card title='Uploaded Certificates'>
           <Table
             dataSource={data.certificates}
-            rowKey={(record) => record.teacherCredentialID ?? record.credentialName}
+            rowKey={(record) => record.applicationCertTypeId}
             pagination={false}
             columns={[
               {
-                title: 'Name',
-                dataIndex: 'credentialName',
-                key: 'credentialName',
+                title: 'Certificate Image',
+                dataIndex: 'certificateImageUrl',
+                key: 'certificateImageUrl',
+                render: (url: string) => (
+                  <a href={url} target='_blank' rel='noopener noreferrer'>
+                    {truncate(url, 40)}
+                  </a>
+                ),
               },
               {
-                title: 'File',
-                dataIndex: 'credentialFileUrl',
-                key: 'credentialFileUrl',
-                render: (url: string) =>
-                  url ? (
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer">
-                      View File
-                    </a>
-                  ) : (
-                    'N/A'
-                  ),
+                title: 'Certificate Type Name',
+                key: 'certificateType',
+                render: (_: any, record: any) => (
+                  <>
+                    <Typography.Text strong>
+                      {record.certificateType?.name || 'N/A'}
+                    </Typography.Text>
+                  </>
+                ),
               },
               {
-                title: 'Type',
-                dataIndex: 'type',
-                key: 'type',
-                render: (type: number) => (type === 1 ? 'Certificate' : 'Other'),
-              },
-              {
-                title: 'Uploaded At',
-                dataIndex: 'createdAt',
-                key: 'createdAt',
-                render: (date: string) => (date ? new Date(date).toLocaleString() : 'Unknown'),
+                title: 'Certificate Type Description',
+                key: 'certificateType',
+                render: (_: any, record: any) => (
+                  <>
+                    <Typography.Text type='secondary'>
+                      {record.certificateType?.description || 'No description'}
+                    </Typography.Text>
+                  </>
+                ),
               },
             ]}
           />
