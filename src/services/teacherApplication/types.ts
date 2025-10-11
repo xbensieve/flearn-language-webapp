@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Response for language list
 export interface Language {
-  id: string
-  langName: string
-  langCode: string
+  id: string;
+  langName: string;
+  langCode: string;
 }
 
 // Request payload for teacher application
@@ -17,7 +17,7 @@ export interface TeacherApplicationRequest {
   PhoneNumber: string;
   TeachingExperience: string;
   MeetingUrl: string;
-  CertificateImages: File[];
+  CertificateImages: any[];
   CertificateTypeIds: string[];
 }
 
@@ -31,30 +31,30 @@ export interface Credential {
 }
 
 export interface ApplicationData {
-  applicationID: string
-  userID: string
-  languageID: string
-  fullName: string
-  birthDate: string
-  bio: string
-  avatar: string
-  email: string
-  phoneNumber: string
-  teachingExperience: string
-  meetingUrl: string
-  rejectionReason: any
-  status: string
-  reviewedBy: any
-  reviewedByName: any
-  submittedAt: string
-  reviewedAt: string
-  language: Language
-  user: User
-  certificates: any[]
+  applicationID: string;
+  userID: string;
+  languageID: string;
+  fullName: string;
+  birthDate: string;
+  bio: string;
+  avatar: string;
+  email: string;
+  phoneNumber: string;
+  teachingExperience: string;
+  meetingUrl: string;
+  rejectionReason: any;
+  status: string;
+  reviewedBy: any;
+  reviewedByName: any;
+  submittedAt: string;
+  reviewedAt: string;
+  language: Language;
+  user: User;
+  certificates: any[];
 }
 
 export interface User {
-  userId: string
-  userName: string
-  email: string
+  userId: string;
+  userName: string;
+  email: string;
 }

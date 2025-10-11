@@ -30,18 +30,11 @@ export const submitTeacherApplication = async (
 
   // Multiple certificate images
   if (payload.CertificateImages?.length) {
-    payload.CertificateImages.forEach((file) =>
-      formData.append('CertificateImages', file)
-    );
+    payload.CertificateImages.forEach((file) => formData.append('CertificateImages', file));
   }
 
-  // Multiple certificate type IDs
-  if (payload.CertificateTypeIds?.length) {
-    payload.CertificateTypeIds.forEach((id) =>
-      formData.append('CertificateTypeIds', id)
-    );
-  }
-
+  console.log('services Payload', payload.CertificateTypeIds);
+  formData.append('CertificateTypeIds', payload.CertificateTypeIds.join(','));
   // Make request
   const res = await api.post('applications', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -49,7 +42,6 @@ export const submitTeacherApplication = async (
 
   return res.data;
 };
-
 
 // Fetch logged-in user's teacher application
 export const getMyApplication = async () => {
