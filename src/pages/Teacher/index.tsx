@@ -48,6 +48,11 @@ const TeacherApplicationPage: React.FC = () => {
   const onFinish = (values: any) => {
     const certificateImages = values.Certificates.map((c: any) => c.CertificateImage);
     const CertificateTypeId = values.Certificates.map((c: any) => c.CertificateTypeId);
+    const certificateImagesList = values.Certificates.map(
+      (c: any) => c.CertificateImage?.[0]?.originFileObj
+    ) // ✅ directly get File
+      .filter(Boolean); // remove undefined/null
+
     const payload: TeacherApplicationRequest = {
       LangCode: values.LangCode,
       FullName: values.FullName,
@@ -58,11 +63,10 @@ const TeacherApplicationPage: React.FC = () => {
       PhoneNumber: values.PhoneNumber || '',
       TeachingExperience: values.TeachingExperience || '',
       MeetingUrl: values.MeetingUrl || '',
-      CertificateImages: Array.isArray(certificateImages)
-        ? [certificateImages.map((f: any) => f?.[0].originFileObj || f)]
-        : [],
+      CertificateImages: certificateImagesList,
       CertificateTypeIds: Array.isArray(CertificateTypeId) ? CertificateTypeId : [],
     };
+    console.log(certificateImages.map((f: any) => f?.[0].originFileObj));
     mutate(payload);
   };
 

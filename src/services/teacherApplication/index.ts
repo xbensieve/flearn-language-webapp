@@ -26,11 +26,19 @@ export const submitTeacherApplication = async (
   // Optional file (avatar)
   if (payload.Avatar) {
     formData.append('Avatar', payload.Avatar);
+    console.log('services Payload', payload.Avatar);
   }
 
-  // Multiple certificate images
-  if (payload.CertificateImages?.length) {
-    payload.CertificateImages.forEach((file) => formData.append('CertificateImages', file));
+  // // Multiple certificate images
+  // if (payload.CertificateImages?.length) {
+  //   payload.CertificateImages.forEach((file) => formData.append('CertificateImages', file.join));
+  // }
+  if (Array.isArray(payload.CertificateImages) && payload.CertificateImages.length > 0) {
+    payload.CertificateImages.forEach((file: File) => {
+      if (file instanceof File) {
+        formData.append('CertificateImages', file); // ✅ append binary directly
+      }
+    });
   }
 
   console.log('services Payload', payload.CertificateTypeIds);

@@ -17,7 +17,7 @@ export interface TeacherApplicationRequest {
   PhoneNumber: string;
   TeachingExperience: string;
   MeetingUrl: string;
-  CertificateImages: any[];
+  CertificateImages: File[];
   CertificateTypeIds: string[];
 }
 
