@@ -14,21 +14,10 @@ export const submitTeacherApplication = async (
   const formData = new FormData();
 
   // Append simple text fields
-  formData.append('LangCode', payload.LangCode);
-  formData.append('FullName', payload.FullName);
-  formData.append('BirthDate', payload.BirthDate);
+  console.log('services Payload', payload.CertificateTypeIds);
+  formData.append('CertificateTypeIds', payload.CertificateTypeIds.join(','));
   formData.append('Bio', payload.Bio);
-  formData.append('Email', payload.Email);
-  formData.append('PhoneNumber', payload.PhoneNumber);
-  formData.append('TeachingExperience', payload.TeachingExperience);
-  formData.append('MeetingUrl', payload.MeetingUrl);
-
-  // Optional file (avatar)
-  if (payload.Avatar) {
-    formData.append('Avatar', payload.Avatar);
-    console.log('services Payload', payload.Avatar);
-  }
-
+  formData.append('BirthDate', payload.BirthDate);
   // // Multiple certificate images
   // if (payload.CertificateImages?.length) {
   //   payload.CertificateImages.forEach((file) => formData.append('CertificateImages', file.join));
@@ -40,9 +29,18 @@ export const submitTeacherApplication = async (
       }
     });
   }
+  formData.append('MeetingUrl', payload.MeetingUrl);
+  formData.append('TeachingExperience', payload.TeachingExperience);
+  formData.append('PhoneNumber', payload.PhoneNumber);
+  // Optional file (avatar)
+  if (payload.Avatar) {
+    formData.append('Avatar', payload.Avatar);
+    console.log('services Payload', payload.Avatar);
+  }
+  formData.append('FullName', payload.FullName);
+  formData.append('LangCode', payload.LangCode.toLowerCase());
+  formData.append('Email', payload.Email);
 
-  console.log('services Payload', payload.CertificateTypeIds);
-  formData.append('CertificateTypeIds', payload.CertificateTypeIds.join(','));
   // Make request
   const res = await api.post('applications', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
