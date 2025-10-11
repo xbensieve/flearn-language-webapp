@@ -17,7 +17,7 @@ const rolesCase = (role: string, navigate: any) => {
       navigate('/admin');
       break;
     case 'learner':
-      navigate('/learner');
+      navigate('/learner/application');
       break;
     case 'teacher':
       navigate('/teacher');
@@ -136,7 +136,7 @@ const Login: React.FC = () => {
     color: '#374151',
   };
 
-  const desc: React.CSSProperties = { margin: '4px 0 24px', color: '#6b7280', textAlign: 'center' };
+  const desc: React.CSSProperties = { margin: '4px 0 24px', color: '#6b7280', textAlign: 'center', fontSize: 16};
   const label: React.CSSProperties = { fontWeight: 600, color: '#374151' };
   const inputStyle: React.CSSProperties = {
     height: 44,
@@ -177,7 +177,7 @@ const Login: React.FC = () => {
         <div style={right}>
           <div style={rightInner}>
             <div style={{ textAlign: 'center' }}>
-              <Text>Chào mừng trở lại!</Text>
+              <Text style={{ fontSize: 24, fontWeight: 600 }}>Welcome back!</Text>
               <div style={tabsWrap}>
                 <button
                   type="button"
@@ -194,7 +194,8 @@ const Login: React.FC = () => {
             </div>
 
             <p style={desc}>
-              Nền tảng học nói cho người Việt. Đăng nhập để tiếp tục hành trình học của bạn.
+              Speaking platform for Vietnamese people. Log in to continue your learning journey
+.
             </p>
 
             <Form

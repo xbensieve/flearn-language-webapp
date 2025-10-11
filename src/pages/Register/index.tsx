@@ -212,7 +212,7 @@ const Register: React.FC = () => {
         <div style={right}>
           <div style={rightInner}>
             <div style={{ textAlign: 'center' }}>
-              <Text>Tạo tài khoản mới</Text>
+              <Text style={{ fontSize: 28, fontWeight: 700 }}>Create a new account</Text>
               <div style={{ marginTop: 12, marginBottom: 16 }}>
                 <Button
                   type="default"
@@ -228,7 +228,7 @@ const Register: React.FC = () => {
               </div>
             </div>
 
-            <p style={desc}>Hãy đăng ký để bắt đầu hành trình học tập và trải nghiệm nền tảng.</p>
+            <p style={desc}>Sign up to start your learning journey and experience the platform.</p>
 
             <Steps
               current={step === 'register' ? 0 : 1}
