@@ -23,6 +23,7 @@ import BrowseCourses from '../../pages/Learner';
 import TeacherLayout from '../../templates/TeacherLayout';
 import CourseDetail from '../../pages/Teacher/CourseDetail';
 import CourseDetailView from '../../pages/Teacher/CourseDetailView';
+import UnitsManager from '../../pages/Teacher/UnitsManager';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -128,6 +129,7 @@ const routes: RouteObject[] = [
       { path: 'course/create', element: <CreateCourse /> },
       { path: 'course/:id', element: <CourseDetailView /> },
       { path: 'course/:id/edit', element: <CourseDetail /> },
+      { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
     ],
   },
   {

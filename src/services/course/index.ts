@@ -1,5 +1,13 @@
 import api from '../../config/axios';
-import type { Course, CourseTemplate, CourseTemplateQuery, CourseTemplateResponse, CourseUnitsRequest, CreateCourseRequest, Lesson } from './type';
+import type {
+  Course,
+  CourseTemplate,
+  CourseTemplateQuery,
+  CourseTemplateResponse,
+  CourseUnitsRequest,
+  CreateCourseRequest,
+  Lesson,
+} from './type';
 
 export const getCourseTemplateByIdService = async (id: string) => {
   const res = await api.get<API.Response<CourseTemplate>>(`/coursetemplates/${id}`);
@@ -26,6 +34,17 @@ export const deleteCourseTemplateService = async (id: string) => {
 
 export const getCoursesService = async () => {
   const res = await api.get<API.Response<Course[]>>('/courses');
+  return res.data;
+};
+
+export const getMyCoursesService = async (params: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+}) => {
+  const res = await api.get<API.Response<Course[]>>('courses/by-teacher', {
+    params,
+  });
   return res.data;
 };
 
@@ -57,11 +76,10 @@ export const createCourseService = async (
   }
 
   formData.append('CourseType', payload.courseType.toString());
-  formData.append('LanguageID', payload.languageId);
   formData.append('GoalId', payload.goalId.toString());
 
-  if (payload.courseLevel !== undefined) {
-    formData.append('CourseLevel', payload.courseLevel.toString());
+  if (payload.Level !== undefined) {
+    formData.append('Level', payload.Level.toString());
   }
 
   if (payload.courseSkill !== undefined) {
@@ -87,9 +105,10 @@ export const deleteCourseService = async (id: string) => {
   return res.data;
 };
 
-export const getCourseTemplatesService = async (
-  { page = 1, pageSize = 10 }: Partial<CourseTemplateQuery> = {}
-): Promise<CourseTemplateResponse> => {
+export const getCourseTemplatesService = async ({
+  page = 1,
+  pageSize = 10,
+}: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
   const res = await api.get<CourseTemplateResponse>('coursetemplates', {
     params: { page, pageSize },
   });
@@ -101,7 +120,7 @@ export const createCourseUnitsService = async (payload: CourseUnitsRequest) => {
   const res = await api.post<CourseTemplate>(url, {
     title: payload.title,
     description: payload.description,
-    isPreview: payload.isPreview
+    isPreview: payload.isPreview,
   });
   return res.data;
 };
@@ -113,13 +132,38 @@ export const getCourseDetailService = async (id: string) => {
   return res.data.data;
 };
 
-export const getCourseUnitsService = async ({id, page = 1, pageSize = 100}: {id: string, page?: number, pageSize?: number}) => {
-  const res = await api.get(`/courses/${id}/units?${page ? `page=${page}` : ''}&${pageSize ? `pageSize=${pageSize}` : ''}`);
+export const getCourseUnitsService = async ({
+  id,
+  page = 1,
+  pageSize = 100,
+}: {
+  id: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  const res = await api.get(
+    `/courses/${id}/units?${page ? `page=${page}` : ''}&${pageSize ? `pageSize=${pageSize}` : ''}`
+  );
   return res.data.data;
 };
 
-export const createCourseLessonService = async (courseId: string, unitId: string, formData: FormData) => {
-  const res = await api.post(`/courses/${courseId}/units/${unitId}/lessons`, formData, {
+export const getUnitByIdService = async ({
+  id,
+  page = 1,
+  pageSize = 100,
+}: {
+  id: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  const res = await api.get(
+    `/units/${id}?${page ? `page=${page}` : ''}&${pageSize ? `pageSize=${pageSize}` : ''}`
+  );
+  return res.data.data;
+};
+
+export const createCourseLessonService = async (unitId: string, formData: FormData) => {
+  const res = await api.post(`/units/${unitId}/lessons`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -127,7 +171,42 @@ export const createCourseLessonService = async (courseId: string, unitId: string
   return res.data;
 };
 
-export const getLessonsByUnits = async ({courseId , page = 1, pageSize = 100}: {courseId: string, page?: number, pageSize?: number}): Promise<API.Response<Lesson[]>> => {
-  const res = await api.get(`courses/${courseId}/lessons?${page ? `page=${page}` : ''}&${pageSize ? `pageSize=${pageSize}` : ''}`);
+export const getLessonsByUnits = async ({
+  unitId,
+  page = 1,
+  pageSize = 100,
+}: {
+  unitId: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<API.Response<Lesson[]>> => {
+  const res = await api.get(
+    `units/${unitId}/lessons?${page ? `page=${page}` : ''}&${
+      pageSize ? `pageSize=${pageSize}` : ''
+    }`
+  );
   return res.data;
-}
+};
+
+export const updateLessonCourseService = async (payload: {
+  id: string;
+  unitId: string;
+  payload: FormData;
+}) => {
+  const data = new FormData();
+  const dataRequestBody = payload.payload;
+  data.append('Title', dataRequestBody.get('Title') as string);
+  data.append('Description', dataRequestBody.get('Description') as string);
+  data.append('Content', dataRequestBody.get('Content') as string);
+  data.append('VideoFile', dataRequestBody.get('VideoFile') as File);
+  data.append('DocumentFile', dataRequestBody.get('DocumentFile') as File);
+  const res = await api.put<Course>(`/units/${payload.unitId}/lessons/${payload.id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+};
+
+export const submitCourseService = async (courseId: string) => {
+  const res = await api.post(`/courses/${courseId}/submit`);
+  return res.data;
+};

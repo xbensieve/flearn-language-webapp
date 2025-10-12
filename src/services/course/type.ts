@@ -25,6 +25,7 @@ export interface Course {
   courseType: number;
   languageId: string;
   goalId: number;
+  status: string;
   courseLevel?: number;
   courseSkill?: number;
 }
@@ -38,12 +39,10 @@ export interface CreateCourseRequest {
   price: number;
   discountPrice?: number;
   courseType: number;
-  languageId: string;
   goalId: number;
-  courseLevel?: number;
+  Level?: number;
   courseSkill?: number;
 }
-
 
 // services/coursetemplates/type.ts
 
@@ -91,20 +90,20 @@ export interface CourseUnitsRequest {
 }
 
 export interface Lesson {
-  lessonID: string
-  title: string
-  content: string
-  position: number
-  skillFocus: string
-  description: string
-  videoUrl: string
-  documentUrl: string
-  courseUnitID: string
-  unitTitle: string
-  courseID: string
-  courseTitle: string
-  createdAt: string
-  updatedAt: string
+  lessonID: string;
+  title: string;
+  content: string;
+  position: number;
+  description: string;
+  totalExercises: number;
+  videoUrl: string;
+  documentUrl: string;
+  courseUnitID: string;
+  unitTitle: string;
+  courseID: string;
+  courseTitle: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ICourseMock {
@@ -137,4 +136,40 @@ export interface ApplicationForm {
   languages: string[];
   experience: string;
   motivation: string;
+}
+
+export interface CourseDetail {
+  courseID: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  templateInfo: { id: string; name: string };
+  price: number;
+  discountPrice?: number;
+  courseType: string;
+  teacherInfo: { id: string; fullName: string; avatarUrl: string };
+  languageInfo: { id: string; name: string; code: string };
+  goalInfo: { id: number; name: string; description: string };
+  courseLevel: string;
+  courseSkill: string;
+  publishedAt: string;
+  status: string;
+  createdAt: string;
+  modifiedAt: string;
+  numLessons: number;
+  approvedBy?: { id: string; fullName: string; avatarUrl: string };
+  approvedAt?: string;
+  topics: Array<{ topicId: string; topicName: string; topicDescription: string; imageUrl: string }>;
+}
+export interface Unit {
+  courseUnitID: string;
+  title: string;
+  description: string;
+  position: number;
+  courseID: string;
+  courseTitle: string;
+  totalLessons: number;
+  isPreview: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
