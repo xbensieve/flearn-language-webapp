@@ -93,7 +93,7 @@ export const createCourseService = async (
   return res.data;
 };
 
-export const updateCourseService = async (id: string, payload: FormData) => {
+export const updateCourseService = async ({id, payload}: {id: string; payload: FormData}) => {
   const res = await api.put<Course>(`/courses/${id}`, payload, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
@@ -107,7 +107,7 @@ export const deleteCourseService = async (id: string) => {
 
 export const getCourseTemplatesService = async ({
   page = 1,
-  pageSize = 10,
+  pageSize = 100,
 }: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
   const res = await api.get<CourseTemplateResponse>('coursetemplates', {
     params: { page, pageSize },

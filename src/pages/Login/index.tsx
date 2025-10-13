@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Form, Input, Button, Typography, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
@@ -35,6 +35,13 @@ const Login: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { updateAuth } = useAuth();
+  const roles = localStorage.getItem('FLEARN_ACCESS_TOKEN');
+
+  useEffect(() => {
+    if (roles) {
+      navigate('/learner');
+    }
+  }, [navigate, roles]);
 
   const mutation = useMutation({
     mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
@@ -136,7 +143,12 @@ const Login: React.FC = () => {
     color: '#374151',
   };
 
-  const desc: React.CSSProperties = { margin: '4px 0 24px', color: '#6b7280', textAlign: 'center', fontSize: 16};
+  const desc: React.CSSProperties = {
+    margin: '4px 0 24px',
+    color: '#6b7280',
+    textAlign: 'center',
+    fontSize: 16,
+  };
   const label: React.CSSProperties = { fontWeight: 600, color: '#374151' };
   const inputStyle: React.CSSProperties = {
     height: 44,
@@ -194,8 +206,7 @@ const Login: React.FC = () => {
             </div>
 
             <p style={desc}>
-              Speaking platform for Vietnamese people. Log in to continue your learning journey
-.
+              Speaking platform for Vietnamese people. Log in to continue your learning journey .
             </p>
 
             <Form

@@ -9,24 +9,26 @@ import {
   Button,
   Row,
   Col,
-  message,
   Steps,
   Result,
+  message,
   Spin,
+  Typography,
+  Card,
 } from 'antd';
-import { UploadOutlined, BookOutlined, DollarOutlined, StarOutlined } from '@ant-design/icons';
-import type { UploadFile, UploadProps } from 'antd';
+import { UploadOutlined, BookOutlined, DollarOutlined, SettingOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { createCourseService, getCourseTemplatesService } from '../../services/course';
 import { getTopicsService } from '../../services/topics';
-import type { CreateCourseRequest } from '../../services/course/type';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import type { AxiosError } from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { getGoalsService } from '../../services/goals';
+import { getLevelTypeService, getSkillTypeService } from '../../services/enums';
+import { notifyError, notifySuccess } from '../../utils/toastConfig';
+import type { CreateCourseRequest } from '../../services/course/type';
+import type { AxiosError } from 'axios';
 import { getLanguages } from '../../services/teacherApplication';
-import { getLevelTypeService } from '../../services/enums';
 
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -44,73 +46,61 @@ interface CourseFormValues {
 }
 
 const CreateCourse: React.FC = () => {
+  const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
   const [form] = Form.useForm<CourseFormValues>();
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [fileList, setFileList] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState<Partial<CourseFormValues>>({});
   const navigate = useNavigate();
 
-  // mutation
-  const { mutate: createCourse, isPending } = useMutation({
-    mutationFn: createCourseService,
-    onSuccess: () => {
-      notifySuccess('Course created successfully!');
-      form.resetFields();
-      setFileList([]);
-      setCurrentStep(0);
-    },
-    onError: (err: AxiosError<any>) => {
-      notifyError(err.response?.data?.message || 'Failed to create course. Please try again.');
-    },
-  });
-
-  // fetch data
+  // Fetch data
   const { data: templates, isLoading: templatesLoading } = useQuery({
     queryKey: ['courseTemplates'],
     queryFn: () => getCourseTemplatesService(),
   });
+
   const { data: topics, isLoading: topicsLoading } = useQuery({
     queryKey: ['topics'],
     queryFn: getTopicsService,
   });
-  const { data: languages } = useQuery({
-    queryKey: ['languages'],
-    queryFn: getLanguages,
-  });
-
-  // Fetch goals
   const { data: goals, isLoading: goalsLoading } = useQuery({
     queryKey: ['goals'],
     queryFn: getGoalsService,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { data: languages, isLoading: languagesLoading } = useQuery({
+    queryKey: ['languages'],
+    queryFn: getLanguages,
+  });
+
   const { data: levels, isLoading: levelsLoading } = useQuery({
     queryKey: ['levels'],
-    queryFn: () => getLevelTypeService(),
+    queryFn: getLevelTypeService,
     select: (data) => data.map((level) => ({ value: level.id, label: level.name })),
   });
 
-  // Course settings lists
-  const courseTypes = [
-    { value: 0, label: 'Video Course' },
-    { value: 1, label: 'Interactive Course' },
-    { value: 2, label: 'Live Course' },
-    { value: 3, label: 'Self-Paced Course' },
-  ];
+  const { data: skills, isLoading: skillsLoading } = useQuery({
+    queryKey: ['skills'],
+    queryFn: getSkillTypeService,
+    select: (data) => data.map((level) => ({ value: level.id, label: level.name })),
+  });
 
-  const skills = [
-    { value: 1, label: 'Basic' },
-    { value: 2, label: 'Practical' },
-    { value: 3, label: 'Professional' },
-    { value: 4, label: 'Mastery' },
-  ];
-
-  const uploadProps: UploadProps = {
-    onRemove: () => {
+  const { mutate: createCourse, isPending } = useMutation({
+    mutationFn: createCourseService,
+    onSuccess: () => {
+      notifySuccess('🎉 Course created successfully!');
+      form.resetFields();
       setFileList([]);
+      setCurrentStep(0);
     },
-    beforeUpload: (file) => {
+    onError: (err: AxiosError<any>) => {
+      notifyError(err.response?.data?.message || 'Failed to create course.');
+    },
+  });
+
+  const uploadProps = {
+    onRemove: () => setFileList([]),
+    beforeUpload: (file: any) => {
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         message.error('You can only upload image files!');
@@ -132,8 +122,8 @@ const CreateCourse: React.FC = () => {
       const values = await form.validateFields();
       setFormValues((prev) => ({ ...prev, ...values }));
       setCurrentStep((s) => s + 1);
-    } catch (err) {
-      console.log(err);
+    } catch {
+      return;
     }
   };
 
@@ -143,7 +133,11 @@ const CreateCourse: React.FC = () => {
     setCurrentStep((s) => s - 1);
   };
 
-  console.log(languages?.data);
+  const handleTemplateChange = (value: string) => {
+    const tpl = templates?.data?.find((t) => t.id === value);
+    setSelectedTemplate(tpl || null);
+    form.setFieldsValue({ templateId: value });
+  };
 
   const onFinish = (values: CourseFormValues) => {
     const payload: CreateCourseRequest = {
@@ -162,305 +156,377 @@ const CreateCourse: React.FC = () => {
     createCourse(payload);
   };
 
+  const courseTypes = [
+    { value: 0, label: 'Video Course' },
+    { value: 1, label: 'Interactive Course' },
+    { value: 2, label: 'Live Course' },
+    { value: 3, label: 'Self-Paced Course' },
+  ];
+
   return (
-    <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 p-6'>
-      {/* Left: Form */}
-      <div className='bg-white rounded-xl shadow-md p-6'>
-        <Steps
-          current={currentStep}
-          items={[
-            { title: 'Basic Info', icon: <BookOutlined /> },
-            { title: 'Pricing', icon: <DollarOutlined /> },
-            { title: 'Settings', icon: <StarOutlined /> },
-          ]}
-          size='small'
-          style={{ marginBottom: 32 }}
-        />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 p-8">
+      <div className="max-w-7xl mx-auto">
+        <Title
+          level={2}
+          className="text-gray-800 mb-6">
+          ✏️ Create New Course
+        </Title>
 
-        <Form
-          form={form}
-          initialValues={formValues}
-          onFinish={onFinish}
-          preserve={true}
-          layout='vertical'
-        >
-          {/* Step 0: Basic Info */}
-          {currentStep === 0 && (
-            <Row gutter={24}>
-              <Col span={24}>
-                <Form.Item
-                  name='title'
-                  label='Course Title'
-                  rules={[{ required: true, message: 'Please enter course title' }]}
-                  tooltip='Give your course a catchy title'
-                >
-                  <Input size='large' placeholder='e.g. Mastering Business English' />
-                </Form.Item>
-              </Col>
-              <Col span={24}>
-                <Form.Item
-                  name='description'
-                  label='Course Description'
-                  rules={[{ required: true, message: 'Please enter description' }]}
-                  tooltip='Briefly describe your course'
-                >
-                  <TextArea
-                    rows={4}
-                    placeholder='Write a short description to attract learners...'
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name='templateId'
-                  label='Course Template'
-                  rules={[{ required: true, message: 'Please select a template' }]}
-                >
-                  <Select
-                    size='large'
-                    placeholder='Select template'
-                    loading={templatesLoading}
-                    dropdownRender={(menu) => (
-                      <>
-                        {menu}
-                        <Button
-                          type='link'
-                          style={{ width: '100%' }}
-                          onClick={() => navigate('/teacher/course/create-template')}
-                        >
-                          + Create new template
-                        </Button>
-                      </>
-                    )}
-                  >
-                    {templates?.data?.map((tpl) => (
-                      <Option key={tpl.id} value={tpl.id}>
-                        {tpl.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name='topicIds'
-                  label='Course Topics'
-                  rules={[{ required: true, message: 'Please select at least one topic' }]}
-                >
-                  {topics?.data?.length ? (
-                    <Select
-                      size='large'
-                      mode='multiple'
-                      placeholder='Select topics'
-                      loading={topicsLoading}
-                    >
-                      {topics.data.map((t) => (
-                        <Option key={t.topicId} value={t.topicId}>
-                          {t.topicName}
-                        </Option>
-                      ))}
-                    </Select>
-                  ) : (
-                    <Result
-                      status='warning'
-                      title='No topics available'
-                      subTitle='Create topics before adding a course.'
-                      extra={<Button href='/topics/create'>Create Topic</Button>}
+        <Card className="shadow-lg rounded-2xl p-8">
+          <Steps
+            current={currentStep}
+            items={[
+              { title: 'Basic Info', icon: <BookOutlined /> },
+              { title: 'Pricing', icon: <DollarOutlined /> },
+              { title: 'Settings', icon: <SettingOutlined /> },
+            ]}
+            className="mb-10"
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left: Form */}
+            <div className="space-y-6">
+              <Form
+                form={form}
+                initialValues={formValues}
+                onFinish={onFinish}
+                layout="vertical"
+                preserve>
+                {currentStep === 0 && (
+                  <>
+                    <Form.Item
+                      name="title"
+                      label="Course Title"
+                      rules={[{ required: true, message: 'Please enter course title' }]}>
+                      <Input
+                        size="large"
+                        placeholder="e.g. Mastering Business English"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="description"
+                      label="Description"
+                      rules={[{ required: true, message: 'Please enter description' }]}>
+                      <TextArea
+                        rows={4}
+                        placeholder="Describe what learners will gain..."
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="templateId"
+                      label="Course Template"
+                      rules={[{ required: true, message: 'Please select a template' }]}>
+                      <Select
+                        size="large"
+                        placeholder="Select template"
+                        loading={templatesLoading}
+                        onChange={handleTemplateChange}
+                        dropdownRender={(menu) => (
+                          <>
+                            {menu}
+                            <Button
+                              type="link"
+                              style={{ width: '100%' }}
+                              onClick={() => navigate('/teacher/course/create-template')}>
+                              + Create new template
+                            </Button>
+                          </>
+                        )}>
+                        {templates?.data?.map((tpl) => (
+                          <Option
+                            key={tpl.id}
+                            value={tpl.id}>
+                            {tpl.name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                      name="topicIds"
+                      label="Topics"
+                      rules={[{ required: true, message: 'Please select topics' }]}>
+                      {topics?.data?.length ? (
+                        <Select
+                          mode="multiple"
+                          placeholder="Select topics"
+                          loading={topicsLoading}>
+                          {topics.data.map((t) => (
+                            <Option
+                              key={t.topicId}
+                              value={t.topicId}>
+                              {t.topicName}
+                            </Option>
+                          ))}
+                        </Select>
+                      ) : (
+                        <Result
+                          status="warning"
+                          title="No topics found"
+                          subTitle="Create topics before adding a course."
+                        />
+                      )}
+                    </Form.Item>
+
+                    <Form.Item label="Course Image">
+                      <Upload.Dragger
+                        {...uploadProps}
+                        listType="picture-card">
+                        <p className="ant-upload-drag-icon">
+                          <UploadOutlined />
+                        </p>
+                        <p className="ant-upload-text">Click or drag to upload</p>
+                        <p className="ant-upload-hint">JPG/PNG only, max 10MB</p>
+                      </Upload.Dragger>
+                    </Form.Item>
+                  </>
+                )}
+
+                {currentStep === 1 && (
+                  <>
+                    <Form.Item
+                      name="price"
+                      label="Base Price"
+                      rules={[{ required: true, message: 'Please enter course price' }]}>
+                      <InputNumber
+                        min={0}
+                        prefix="$"
+                        size="large"
+                        className="w-full"
+                        placeholder="e.g. 100"
+                      />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="discountPrice"
+                      label="Discount Price (optional)">
+                      <InputNumber
+                        min={0}
+                        prefix="$"
+                        size="large"
+                        className="w-full"
+                        placeholder="e.g. 80"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+
+                {currentStep === 2 && (
+                  <>
+                    <Form.Item
+                      name="courseType"
+                      label="Course Type"
+                      rules={[{ required: true, message: 'Please select course type' }]}>
+                      <Select
+                        size="large"
+                        placeholder="Select type">
+                        {courseTypes.map((ct) => (
+                          <Option
+                            key={ct.value}
+                            value={ct.value}>
+                            {ct.label}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                      name="goalId"
+                      label="Learning Goal"
+                      rules={
+                        selectedTemplate?.requireGoal
+                          ? [{ required: true, message: 'Goal is required for this template' }]
+                          : []
+                      }>
+                      {goalsLoading ? (
+                        <Spin />
+                      ) : (
+                        <Select
+                          size="large"
+                          placeholder="Select goal">
+                          {goals?.data.map((g) => (
+                            <Option
+                              key={g.id}
+                              value={g.id}>
+                              {g.name}
+                            </Option>
+                          ))}
+                        </Select>
+                      )}
+                    </Form.Item>
+
+                    <Row gutter={16}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="Level"
+                          label="Level"
+                          rules={
+                            selectedTemplate?.requireLevel
+                              ? [{ required: true, message: 'Level is required for this template' }]
+                              : []
+                          }>
+                          <Select
+                            loading={levelsLoading}
+                            size="large"
+                            placeholder="Select level">
+                            {levels?.map((l) => (
+                              <Option
+                                key={l.value}
+                                value={l.value}>
+                                {l.label}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="courseSkill"
+                          rules={
+                            selectedTemplate?.requireSkillFocus
+                              ? [
+                                  {
+                                    required: true,
+                                    message: 'Skill Focus is required for this template',
+                                  },
+                                ]
+                              : []
+                          }
+                          label="Skill Level">
+                          <Select
+                            loading={skillsLoading}
+                            size="large"
+                            placeholder="Select skill">
+                            {skills?.map((s) => (
+                              <Option
+                                key={s.value}
+                                value={s.value}>
+                                {s.label}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Form.Item
+                          name="languageId"
+                          label="Language"
+                          rules={
+                            selectedTemplate?.requireLang
+                              ? [
+                                  {
+                                    required: true,
+                                    message: 'Language is required for this template',
+                                  },
+                                ]
+                              : []
+                          }>
+                          <Select
+                            loading={languagesLoading}
+                            size="large"
+                            placeholder="Select language">
+                            {languages?.data?.map((lang) => (
+                              <Option
+                                key={lang.id}
+                                value={lang.langCode}>
+                                {lang.langName}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </>
+                )}
+
+                {/* Navigation */}
+                <div className="flex justify-end gap-3 pt-6 border-t">
+                  {currentStep > 0 && (
+                    <Button
+                      size="large"
+                      onClick={prev}>
+                      ← Previous
+                    </Button>
+                  )}
+                  {currentStep < 2 && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={next}>
+                      Next →
+                    </Button>
+                  )}
+                  {currentStep === 2 && (
+                    <Button
+                      type="primary"
+                      size="large"
+                      htmlType="submit"
+                      loading={isPending}>
+                      🚀 Submit
+                    </Button>
+                  )}
+                </div>
+              </Form>
+            </div>
+
+            {/* Right: Preview */}
+            <div className="sticky top-10">
+              <Card className="rounded-xl shadow-md overflow-hidden">
+                <div className="h-56 bg-gray-100 relative">
+                  {fileList.length > 0 ? (
+                    <img
+                      src={URL.createObjectURL(fileList[0] as any)}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
                     />
-                  )}
-                </Form.Item>
-              </Col>
-              <Col span={24}>
-                <Form.Item label='Course Image'>
-                  <Upload.Dragger {...uploadProps} listType='picture-card'>
-                    <p className='ant-upload-drag-icon'>
-                      <UploadOutlined />
-                    </p>
-                    <p className='ant-upload-text'>Click or drag image to upload</p>
-                    <p className='ant-upload-hint'>Supports JPG/PNG up to 10MB</p>
-                  </Upload.Dragger>
-                </Form.Item>
-              </Col>
-            </Row>
-          )}
-          {/* Step 1: Pricing */}
-          {currentStep === 1 && (
-            <Row gutter={24}>
-              <Col span={12}>
-                <Form.Item
-                  name='price'
-                  label='Base Price'
-                  rules={[{ required: true, message: 'Please enter course price' }]}
-                >
-                  <InputNumber
-                    min={0}
-                    size='large'
-                    prefix='$'
-                    className='w-full'
-                    placeholder='e.g. 100'
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='discountPrice' label='Discount Price (optional)'>
-                  <InputNumber
-                    min={0}
-                    size='large'
-                    prefix='$'
-                    className='w-full'
-                    placeholder='e.g. 80'
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          )}
-          {/* Step 2: Settings */}
-          {currentStep === 2 && (
-            <Row gutter={24}>
-              <Col span={12}>
-                <Form.Item
-                  name='courseType'
-                  label='Course Type'
-                  rules={[{ required: true, message: 'Please select course type' }]}
-                >
-                  <Select size='large' placeholder='Select type'>
-                    {courseTypes.map((ct) => (
-                      <Option key={ct.label} value={ct.value}>
-                        {ct.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                {/* <Form.Item
-                  name="languageId"
-                  label="Language"
-                  rules={[{ required: true, message: 'Please select language' }]}>
-                  <Select
-                    size="large"
-                    placeholder="Select language"
-                    loading={languagesLoading}>
-                    {languages?.data.map((lang) => (
-                      <Option
-                        key={lang.id}
-                        value={lang.languageId}>
-                        {lang.languageName}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item> */}
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name='goalId'
-                  label='Learning Goal'
-                  rules={[{ required: true, message: 'Please select or create a goal' }]}
-                >
-                  {goalsLoading ? (
-                    <Spin />
                   ) : (
-                    <Select placeholder='Select goal'>
-                      {goals?.data.map((g) => (
-                        <Option key={g.id} value={g.id}>
-                          {g.name}
-                        </Option>
-                      ))}
-                    </Select>
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      No image uploaded
+                    </div>
                   )}
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='Level' label='Level'>
-                  <Select size='large' placeholder='Select level'>
-                    {levels?.map((l) => (
-                      <Option key={l.value} value={l.value}>
-                        {l.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='courseSkill' label='Skill Level'>
-                  <Select size='large' placeholder='Select skill'>
-                    {skills.map((s) => (
-                      <Option key={s.value} value={s.value}>
-                        {s.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          )}
-          {/* Navigation */}
-          <div className='flex justify-end gap-3 mt-6'>
-            {currentStep > 0 && (
-              <Button size='large' onClick={prev}>
-                Previous
-              </Button>
-            )}
-            {currentStep < 2 && (
-              <Button type='primary' size='large' onClick={next}>
-                Next →
-              </Button>
-            )}
-            {currentStep === 2 && (
-              <Button type='primary' size='large' htmlType='submit' loading={isPending}>
-                🚀 Submit
-              </Button>
-            )}
-          </div>
-        </Form>
-      </div>
+                </div>
+                <div className="p-5">
+                  <Title level={4}>{formValues.title || 'Course Title Preview'}</Title>
+                  <Text
+                    type="secondary"
+                    className="block mb-3">
+                    {formValues.description || 'Course description will appear here.'}
+                  </Text>
 
-      {/* Right: Preview Card */}
-      <div>
-        <div className='bg-white rounded-xl shadow-lg overflow-hidden'>
-          {/* Image */}
-          <div className='relative h-48 bg-gray-200'>
-            {fileList.length > 0 ? (
-              <img
-                src={URL.createObjectURL(fileList[0] as any)}
-                alt='Preview'
-                className='w-full h-full object-cover'
-              />
-            ) : (
-              <div className='flex items-center justify-center h-full text-gray-400'>
-                No image uploaded
-              </div>
-            )}
-          </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Text
+                      strong
+                      className="text-indigo-600 text-lg">
+                      ${formValues.price || '0.00'}
+                    </Text>
+                    {formValues.discountPrice && (
+                      <Text
+                        delete
+                        className="text-gray-500">
+                        ${formValues.discountPrice}
+                      </Text>
+                    )}
+                  </div>
 
-          {/* Content */}
-          <div className='p-4'>
-            <h2 className='text-xl font-bold text-gray-800 mb-2'>
-              {formValues.title || 'Course Title Preview'}
-            </h2>
-            <p className='text-gray-600 text-sm mb-3 line-clamp-3'>
-              {formValues.description || 'Course description will appear here...'}
-            </p>
-
-            <div className='flex items-center justify-between mb-3'>
-              <span className='text-indigo-600 font-semibold'>${formValues.price || '0.00'}</span>
-              {formValues.discountPrice ? (
-                <span className='text-gray-500 line-through ml-2'>${formValues.discountPrice}</span>
-              ) : null}
-            </div>
-
-            <div className='flex gap-2 text-xs text-gray-500'>
-              {formValues.Level && (
-                <span className='bg-gray-100 px-2 py-1 rounded'>Level {formValues.Level}</span>
-              )}
-              {formValues.courseSkill && (
-                <span className='bg-gray-100 px-2 py-1 rounded'>
-                  Skill {formValues.courseSkill}
-                </span>
-              )}
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {formValues.Level && (
+                      <span className="bg-gray-100 px-3 py-1 rounded-full">
+                        Level {formValues.Level}
+                      </span>
+                    )}
+                    {formValues.courseSkill && (
+                      <span className="bg-gray-100 px-3 py-1 rounded-full">
+                        Skill {formValues.courseSkill}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Card>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

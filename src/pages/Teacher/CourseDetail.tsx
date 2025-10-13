@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Card,
@@ -30,6 +30,7 @@ const { Panel } = Collapse;
 
 const CourseDetail: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeKey, setActiveKey] = useState<string | string[]>('');
 
@@ -78,41 +79,49 @@ const CourseDetail: React.FC = () => {
 
   if (loadingCourse || loadingUnits)
     return (
-      <div className='flex justify-center items-center min-h-[60vh]'>
-        <Spin size='large' />
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Spin size="large" />
       </div>
     );
 
-  if (!course) return <Empty description='Course not found' />;
+  if (!course) return <Empty description="Course not found" />;
 
   return (
-    <div className='max-w-6xl mx-auto py-10 px-4'>
+    <div className="max-w-6xl mx-auto py-10 px-4">
       <Row gutter={[24, 24]}>
         {/* LEFT: Course Info */}
-        <Col xs={24} md={10}>
+        <Col
+          xs={24}
+          md={10}>
           <Card>
             <img
               src={course.imageUrl}
               alt={course.title}
-              className='w-full h-48 object-cover rounded-lg mb-4'
+              className="w-full h-48 object-cover rounded-lg mb-4"
             />
             <Title level={3}>{course.title}</Title>
             <Paragraph>{course.description}</Paragraph>
 
-            <div className='flex items-center mb-3'>
-              <Avatar src={course.teacherInfo.avatarUrl} size={32} className='mr-2' />
+            <div className="flex items-center mb-3">
+              <Avatar
+                src={course.teacherInfo.avatarUrl}
+                size={32}
+                className="mr-2"
+              />
               <Text>{course.teacherInfo.fullName}</Text>
             </div>
 
-            <Row gutter={4} className='mb-4'>
+            <Row
+              gutter={4}
+              className="mb-4">
               <Col>
-                <Tag color='blue'>{course.languageInfo.name}</Tag>
+                <Tag color="blue">{course.languageInfo.name}</Tag>
               </Col>
               <Col>
-                <Tag color='green'>{course.courseLevel}</Tag>
+                <Tag color="green">{course.courseLevel}</Tag>
               </Col>
               <Col>
-                <Tag color='purple'>{course.courseSkill}</Tag>
+                <Tag color="purple">{course.courseSkill}</Tag>
               </Col>
             </Row>
 
@@ -121,43 +130,58 @@ const CourseDetail: React.FC = () => {
 
             <Text strong>Price: </Text>
             <Paragraph>${course.discountPrice || course.price}</Paragraph>
+            <Button
+              type="primary"
+              onClick={() => navigate(`/teacher/course/${course.courseID}/edit-course`)}>
+              Edit Course
+            </Button>
           </Card>
         </Col>
 
         {/* RIGHT: Units + Lessons */}
-        <Col xs={24} md={14}>
+        <Col
+          xs={24}
+          md={14}>
           <Card
-            title='Units Overview'
+            title="Units Overview"
             extra={
               <Button
-                type='primary'
+                type="primary"
                 icon={activeKey === 'create' ? null : <PlusOutlined />}
-                onClick={() => setActiveKey(activeKey === 'create' ? '' : 'create')}
-              >
+                onClick={() => setActiveKey(activeKey === 'create' ? '' : 'create')}>
                 {activeKey === 'create' ? 'Cancel' : 'Add Unit'}
               </Button>
-            }
-          >
+            }>
             <Collapse
               style={{ marginBottom: 12 }}
               activeKey={activeKey}
               onChange={(key) => setActiveKey(key)}
-              className='mb-4'
-            >
-              <Panel header='Create New Unit' key='create'>
-                <Form layout='vertical' onFinish={handleAddUnit}>
+              className="mb-4">
+              <Panel
+                header="Create New Unit"
+                key="create">
+                <Form
+                  layout="vertical"
+                  onFinish={handleAddUnit}>
                   <Form.Item
-                    name='title'
-                    label='Unit Title'
-                    rules={[{ required: true, message: 'Please enter unit title' }]}
-                  >
-                    <Input placeholder='e.g., Introduction to Basics' />
+                    name="title"
+                    label="Unit Title"
+                    rules={[{ required: true, message: 'Please enter unit title' }]}>
+                    <Input placeholder="e.g., Introduction to Basics" />
                   </Form.Item>
-                  <Form.Item name='description' label='Description'>
-                    <Input.TextArea rows={2} placeholder='Short description for this unit' />
+                  <Form.Item
+                    name="description"
+                    label="Description">
+                    <Input.TextArea
+                      rows={2}
+                      placeholder="Short description for this unit"
+                    />
                   </Form.Item>
-                  <div className='flex justify-end'>
-                    <Button type='primary' htmlType='submit' loading={createUnitMutation.isPending}>
+                  <div className="flex justify-end">
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={createUnitMutation.isPending}>
                       Save Unit
                     </Button>
                   </div>
@@ -166,9 +190,14 @@ const CourseDetail: React.FC = () => {
             </Collapse>
 
             {units?.length ? (
-              units.map((unit) => <UnitWithLessons key={unit.courseUnitID} unit={unit} />)
+              units.map((unit) => (
+                <UnitWithLessons
+                  key={unit.courseUnitID}
+                  unit={unit}
+                />
+              ))
             ) : (
-              <Empty description='No units found' />
+              <Empty description="No units found" />
             )}
           </Card>
         </Col>
@@ -189,48 +218,63 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
   const lessons: Lesson[] = lessonsResponse?.data || [];
 
   return (
-    <Card style={{ marginBottom: 8 }} size='small' className='mb-3 border-gray-200'>
-      <div className='flex justify-between items-center mb-2'>
+    <Card
+      style={{ marginBottom: 8 }}
+      size="small"
+      className="mb-3 border-gray-200">
+      <div className="flex justify-between items-center mb-2">
         <div>
           <Text strong>{unit.title}</Text>
-          <Paragraph className='text-xs text-gray-500 mb-1'>{unit.description}</Paragraph>
-          <Tag color='default'>Lessons: {unit.totalLessons}</Tag>
+          <Paragraph className="text-xs text-gray-500 mb-1">{unit.description}</Paragraph>
+          <Tag color="default">Lessons: {unit.totalLessons}</Tag>
         </div>
         <Link to={`unit/${unit.courseUnitID}`}>
-          <Button size='small' type='link'>
+          <Button
+            size="small"
+            type="link">
             Edit Lessons
           </Button>
         </Link>
       </div>
 
       {isLoading ? (
-        <div className='flex justify-center py-2'>
-          <Spin size='small' />
+        <div className="flex justify-center py-2">
+          <Spin size="small" />
         </div>
       ) : lessons.length === 0 ? (
-        <Empty description='No lessons yet' image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        <Empty
+          description="No lessons yet"
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+        />
       ) : (
-        <div className='space-y-2'>
+        <div className="space-y-2">
           {lessons.map((lesson) => (
             <Card
               style={{ marginBottom: 8 }}
               key={lesson.lessonID}
-              size='small'
-              className='border-gray-100'
-            >
-              <div className='flex justify-between items-center'>
+              size="small"
+              className="border-gray-100">
+              <div className="flex justify-between items-center">
                 <Text>{lesson.title}</Text>
-                <Tag color='blue-inverse'>#{lesson.position}</Tag>
+                <Tag color="blue-inverse">#{lesson.position}</Tag>
               </div>
-              <Paragraph className='text-xs text-gray-500 mb-1'>{lesson.description}</Paragraph>
-              <div className='flex space-x-2'>
+              <Paragraph className="text-xs text-gray-500 mb-1">{lesson.description}</Paragraph>
+              <div className="flex space-x-2">
                 {lesson.videoUrl && (
-                  <Button size='small' type='link' href={lesson.videoUrl} target='_blank'>
+                  <Button
+                    size="small"
+                    type="link"
+                    href={lesson.videoUrl}
+                    target="_blank">
                     Video
                   </Button>
                 )}
                 {lesson.documentUrl && (
-                  <Button size='small' type='link' href={lesson.documentUrl} target='_blank'>
+                  <Button
+                    size="small"
+                    type="link"
+                    href={lesson.documentUrl}
+                    target="_blank">
                     Document
                   </Button>
                 )}

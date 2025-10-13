@@ -4,10 +4,18 @@ import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Form, Input, Button, Select, Upload, DatePicker, Typography, Spin } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import { getLanguages } from '../../services/teacherApplication';
+import {
+  getLanguages,
+  getMyApplication,
+  updateSubmitTeacherApplication,
+} from '../../services/teacherApplication';
 import { submitTeacherApplication } from '../../services/teacherApplication';
 import { getCertificatesByLanguageService } from '../../services/certificates';
-import type { Language, TeacherApplicationRequest } from '../../services/teacherApplication/types';
+import type {
+  ApplicationData,
+  Language,
+  TeacherApplicationRequest,
+} from '../../services/teacherApplication/types';
 import { toast } from 'react-toastify';
 import { notifySuccess } from '../../utils/toastConfig';
 import type { AxiosError } from 'axios';
@@ -17,6 +25,12 @@ const { Option } = Select;
 const { Title, Paragraph } = Typography;
 
 const TeacherApplicationPage: React.FC = () => {
+  const { data: response, isLoading } = useQuery<{ data: ApplicationData }>({
+    queryKey: ['myApplication'],
+    queryFn: getMyApplication,
+    retry: 1,
+    retryDelay: 500,
+  });
   const [form] = Form.useForm();
 
   // ✅ Watch language select
@@ -36,8 +50,17 @@ const TeacherApplicationPage: React.FC = () => {
   });
 
   // ✅ Submit mutation
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: submitTeacherApplication,
+    onSuccess: () => notifySuccess('Application submitted successfully!'),
+    onError: (err: AxiosError<any>) => {
+      toast.error(err.response?.data.errors || 'Failed to submit application.');
+    },
+  });
+
+  // ✅ Submit mutation
+  const { mutate: updateMutate, isPending: isUpdating } = useMutation({
+    mutationFn: updateSubmitTeacherApplication,
     onSuccess: () => notifySuccess('Application submitted successfully!'),
     onError: (err: AxiosError<any>) => {
       toast.error(err.response?.data.errors || 'Failed to submit application.');
@@ -67,17 +90,30 @@ const TeacherApplicationPage: React.FC = () => {
       CertificateTypeIds: Array.isArray(CertificateTypeId) ? CertificateTypeId : [],
     };
     console.log(certificateImages.map((f: any) => f?.[0].originFileObj));
-    mutate(payload);
+    if (
+      response?.data.status.toLowerCase() === 'pending' ||
+      response?.data.status.toLowerCase() === 'rejected'
+    ) {
+      updateMutate(payload);
+    } else {
+      mutate(payload);
+    }
   };
 
-  return (
-    <div className='min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex flex-col'>
+  return isLoading ? (
+    <div className="flex justify-center items-center min-h-screen">
+      <Spin size="large" />
+    </div>
+  ) : (
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex flex-col">
       {/* Header */}
-      <div className='text-center py-16 px-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white'>
-        <Title level={2} className='!text-4xl !font-extrabold mb-3'>
+      <div className="text-center py-16 px-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
+        <Title
+          level={2}
+          className="!text-4xl !font-extrabold mb-3">
           Join Our Global Teaching Community
         </Title>
-        <Paragraph className='!text-lg text-blue-100 max-w-2xl mx-auto mb-0'>
+        <Paragraph className="!text-lg text-blue-100 max-w-2xl mx-auto mb-0">
           Inspire learners worldwide and grow your teaching career with Flearn.
         </Paragraph>
       </div>
@@ -87,26 +123,31 @@ const TeacherApplicationPage: React.FC = () => {
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className='max-w-3xl mx-auto -mt-16 bg-white rounded-2xl shadow-xl p-10 w-[90%]'
-      >
-        <Title level={3} className='text-center text-gray-800 font-bold mb-6'>
+        className="max-w-3xl mx-auto -mt-16 bg-white rounded-2xl shadow-xl p-10 w-[90%]">
+        <Title
+          level={3}
+          className="text-center text-gray-800 font-bold mb-6">
           Become a Teacher
         </Title>
 
-        <Form form={form} layout='vertical' onFinish={onFinish} size='large'>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}
+          size="large">
           {/* Language */}
           <Form.Item
-            name='LangCode'
-            label='Language'
-            rules={[{ required: true, message: 'Please select a language' }]}
-          >
+            name="LangCode"
+            label="Language"
+            rules={[{ required: true, message: 'Please select a language' }]}>
             <Select
               placeholder={loadingLanguages ? 'Loading languages...' : 'Select a language'}
               loading={loadingLanguages}
-              disabled={loadingLanguages}
-            >
+              disabled={loadingLanguages}>
               {languagesData?.data?.map((lang: Language) => (
-                <Option key={lang.langCode} value={lang.langCode}>
+                <Option
+                  key={lang.langCode}
+                  value={lang.langCode}>
                   {lang.langName} ({lang.langCode})
                 </Option>
               ))}
@@ -114,70 +155,92 @@ const TeacherApplicationPage: React.FC = () => {
           </Form.Item>
 
           {/* Basic Info */}
-          <Form.Item name='FullName' label='Full Name' rules={[{ required: true }]}>
-            <Input placeholder='Your full name' />
-          </Form.Item>
-
-          <Form.Item name='BirthDate' label='Birth Date' rules={[{ required: true }]}>
-            <DatePicker className='w-full' />
-          </Form.Item>
-
-          <Form.Item name='Bio' label='Bio' rules={[{ required: true }]}>
-            <Input.TextArea rows={3} placeholder='Write a short bio about yourself' />
-          </Form.Item>
-
-          <Form.Item name='Email' label='Email' rules={[{ required: true, type: 'email' }]}>
-            <Input placeholder='you@example.com' />
-          </Form.Item>
-
-          <Form.Item name='PhoneNumber' label='Phone Number' rules={[{ required: true }]}>
-            <Input placeholder='+84...' />
+          <Form.Item
+            name="FullName"
+            label="Full Name"
+            rules={[{ required: true }]}>
+            <Input placeholder="Your full name" />
           </Form.Item>
 
           <Form.Item
-            name='TeachingExperience'
-            label='Teaching Experience'
-            rules={[{ required: true }]}
-          >
-            <Input.TextArea rows={3} placeholder='Describe your teaching experience' />
+            name="BirthDate"
+            label="Birth Date"
+            rules={[{ required: true }]}>
+            <DatePicker className="w-full" />
           </Form.Item>
 
-          <Form.Item name='MeetingUrl' label='Meeting URL'>
-            <Input placeholder='https://zoom.us/...' />
+          <Form.Item
+            name="Bio"
+            label="Bio"
+            rules={[{ required: true }]}>
+            <Input.TextArea
+              rows={3}
+              placeholder="Write a short bio about yourself"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="Email"
+            label="Email"
+            rules={[{ required: true, type: 'email' }]}>
+            <Input placeholder="you@example.com" />
+          </Form.Item>
+
+          <Form.Item
+            name="PhoneNumber"
+            label="Phone Number"
+            rules={[{ required: true }]}>
+            <Input placeholder="+84..." />
+          </Form.Item>
+
+          <Form.Item
+            name="TeachingExperience"
+            label="Teaching Experience"
+            rules={[{ required: true }]}>
+            <Input.TextArea
+              rows={3}
+              placeholder="Describe your teaching experience"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="MeetingUrl"
+            label="Meeting URL">
+            <Input placeholder="https://zoom.us/..." />
           </Form.Item>
 
           {/* Avatar Upload */}
           <Form.Item
-            name='Avatar'
-            label='Profile Picture'
-            valuePropName='fileList'
-            getValueFromEvent={(e) => e.fileList}
-          >
-            <Upload beforeUpload={() => false} listType='picture'>
+            name="Avatar"
+            label="Profile Picture"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => e.fileList}>
+            <Upload
+              beforeUpload={() => false}
+              listType="picture">
               <Button icon={<UploadOutlined />}>Upload Avatar</Button>
             </Upload>
           </Form.Item>
 
           {/* Certificates Section */}
-          <Form.List name='Certificates'>
+          <Form.List name="Certificates">
             {(fields, { add, remove }) => (
               <div>
-                <div className='flex items-center justify-between mb-3'>
-                  <div className='font-semibold text-gray-700 flex items-center gap-2'>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="font-semibold text-gray-700 flex items-center gap-2">
                     🎓 Certificates
                   </div>
                   <Button
-                    type='dashed'
+                    type="dashed"
                     onClick={() => add()}
                     disabled={!langCode}
-                    icon={<UploadOutlined />}
-                  >
+                    icon={<UploadOutlined />}>
                     Add Certificate
                   </Button>
                 </div>
 
                 {loadingCertificates && (
-                  <div className='flex justify-center py-4'>
+                  <div className="flex justify-center py-4">
                     <Spin />
                   </div>
                 )}
@@ -188,24 +251,23 @@ const TeacherApplicationPage: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className='border rounded-xl p-4 mb-4 bg-gray-50 relative'
-                  >
-                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                    className="border rounded-xl p-4 mb-4 bg-gray-50 relative">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Certificate Type */}
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateTypeId']}
-                        label='Certificate Type'
-                        rules={[{ required: true, message: 'Select a certificate type' }]}
-                      >
+                        label="Certificate Type"
+                        rules={[{ required: true, message: 'Select a certificate type' }]}>
                         <Select
                           placeholder={
                             langCode ? 'Select certificate type' : 'Select a language first'
                           }
-                          disabled={!langCode || loadingCertificates}
-                        >
+                          disabled={!langCode || loadingCertificates}>
                           {certificatesData?.data?.map((cert: Certificate) => (
-                            <Option key={cert.certificateId} value={cert.certificateId}>
+                            <Option
+                              key={cert.certificateId}
+                              value={cert.certificateId}>
                               {cert.name}
                             </Option>
                           ))}
@@ -213,21 +275,19 @@ const TeacherApplicationPage: React.FC = () => {
                       </Form.Item>
 
                       {/* Certificate Image */}
-                      <div className='w-full justify-center'>
+                      <div className="w-full justify-center">
                         <Form.Item
                           {...restField}
                           name={[name, 'CertificateImage']}
-                          label='Certificate Image'
-                          valuePropName='fileList'
+                          label="Certificate Image"
+                          valuePropName="fileList"
                           getValueFromEvent={(e) => e.fileList}
-                          rules={[{ required: true, message: 'Please upload an image' }]}
-                        >
+                          rules={[{ required: true, message: 'Please upload an image' }]}>
                           <Upload
                             beforeUpload={() => false}
-                            listType='picture-card'
+                            listType="picture-card"
                             maxCount={1}
-                            accept='image/*'
-                          >
+                            accept="image/*">
                             <div>
                               <UploadOutlined />
                               <div style={{ marginTop: 8 }}>Upload</div>
@@ -238,11 +298,10 @@ const TeacherApplicationPage: React.FC = () => {
                     </div>
 
                     <Button
-                      type='text'
+                      type="text"
                       danger
-                      className='absolute top-2 right-2'
-                      onClick={() => remove(name)}
-                    >
+                      className="absolute top-2 right-2"
+                      onClick={() => remove(name)}>
                       Remove
                     </Button>
                   </motion.div>
@@ -254,11 +313,10 @@ const TeacherApplicationPage: React.FC = () => {
           {/* Submit */}
           <Form.Item>
             <Button
-              type='primary'
-              htmlType='submit'
-              loading={isPending}
-              className='w-full h-12 text-lg font-semibold rounded-md bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 shadow-md'
-            >
+              type="primary"
+              htmlType="submit"
+              loading={isSubmitting || loadingCertificates || loadingLanguages || isUpdating}
+              className="w-full h-12 text-lg font-semibold rounded-md bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-500 hover:to-blue-400 shadow-md">
               Submit Application
             </Button>
           </Form.Item>
@@ -266,7 +324,7 @@ const TeacherApplicationPage: React.FC = () => {
       </motion.div>
 
       {/* Footer */}
-      <div className='text-center mt-10 text-gray-500 text-sm mb-6'>
+      <div className="text-center mt-10 text-gray-500 text-sm mb-6">
         © {new Date().getFullYear()} Flearn — Empowering Global Education 🌍
       </div>
     </div>
