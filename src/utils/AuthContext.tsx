@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type Roles = 'admin' | 'staff' | 'teacher' | 'learner' | null;
-const Roles = ['admin', 'staff', 'teacher', 'learner'];
+export type UserRole = 'admin' | 'staff' | 'teacher' | 'learner';
+export type UserRoles = UserRole[] | null;
+
+const validRoles: UserRole[] = ['admin', 'staff', 'teacher', 'learner'];
 
 interface AuthUser {
   isAuthenticated: boolean;
-  role: Roles | null;
+  roles: UserRoles;
   loading: boolean;
 }
 
@@ -15,42 +17,50 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  auth: { isAuthenticated: false, role: null, loading: true },
+  auth: { isAuthenticated: false, roles: null, loading: true },
   updateAuth: () => {},
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [auth, setAuth] = useState<AuthUser>({
     isAuthenticated: false,
-    role: null,
+    roles: null,
     loading: true,
   });
 
   const updateAuth = () => {
     const token = localStorage.getItem('FLEARN_ACCESS_TOKEN');
-    const storedRole = localStorage.getItem('FLEARN_USER_ROLE');
+    const storedRolesJson = localStorage.getItem('FLEARN_USER_ROLES');
 
-    if (token && storedRole) {
-      // Validate role to ensure it’s one of the allowed values
-      const validRoles = Roles;
-      const role = validRoles.includes(storedRole.toLowerCase())
-        ? (storedRole.toLowerCase() as Roles)
-        : null;
+    if (token && storedRolesJson) {
+      try {
+        const storedRoles: string[] = JSON.parse(storedRolesJson);
 
-      if (role) {
-        setAuth({
-          isAuthenticated: true,
-          role,
-          loading: false,
-        });
-        return;
+        // Validate that all roles are valid and array is non-empty
+        const validUserRoles = storedRoles
+          .map((role) => role.toLowerCase())
+          .filter((role) => validRoles.includes(role as UserRole));
+
+        if (validUserRoles.length > 0) {
+          // Cast to UserRoles after validation
+          const roles: UserRoles = validUserRoles as UserRoles;
+          setAuth({
+            isAuthenticated: true,
+            roles,
+            loading: false,
+          });
+          return;
+        }
+      } catch (error) {
+        // Invalid JSON, treat as invalid
+        console.error('Invalid roles data in localStorage:', error);
       }
     }
 
-    // If token or valid role is missing, clear storage and set unauthenticated
+    // If token or valid roles are missing/invalid, clear storage and set unauthenticated
     localStorage.removeItem('FLEARN_ACCESS_TOKEN');
-    localStorage.removeItem('FLEARN_USER_ROLE');
-    setAuth({ isAuthenticated: false, role: null, loading: false });
+    localStorage.removeItem('FLEARN_USER_ROLES');
+    setAuth({ isAuthenticated: false, roles: null, loading: false });
   };
 
   useEffect(() => {

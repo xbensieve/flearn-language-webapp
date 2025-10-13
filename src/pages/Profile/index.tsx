@@ -56,20 +56,12 @@ const Profile: React.FC = () => {
 
             <div className='space-y-4'>
               <div>
-                <Text strong>User ID: </Text>
-                <Text>{profile.userId}</Text>
-              </div>
-              <div>
                 <Text strong>Username: </Text>
                 <Text>{profile.username}</Text>
               </div>
               <div>
                 <Text strong>Email: </Text>
                 <Text>{profile.email}</Text>
-              </div>
-              <div>
-                <Text strong>Created At: </Text>
-                <Text>{profile.createdAt}</Text>
               </div>
               <div>
                 <Text strong>Roles: </Text>
@@ -90,29 +82,7 @@ const Profile: React.FC = () => {
           </Card>
         </Col>
 
-        {/* Right: Settings */}
-        <Col xs={24} md={12}>
-          <Card className='shadow-lg rounded-xl h-full'>
-            <Title level={3} className='text-center mb-6'>
-              Cài đặt
-            </Title>
-
-            <div className='space-y-4'>
-              <Button style={{ margin: '4px 0' }} block>
-                Đổi mật khẩu
-              </Button>
-              <Button style={{ margin: '4px 0' }} block>
-                Cập nhật Email
-              </Button>
-              <Button style={{ margin: '4px 0' }} block>
-                Quản lý thông báo
-              </Button>
-              <Button style={{ margin: '4px 0' }} block>
-                Ngôn ngữ
-              </Button>
-            </div>
-          </Card>
-        </Col>
+      
       </Row>
     </div>
   );

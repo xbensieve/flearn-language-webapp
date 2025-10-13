@@ -20,6 +20,11 @@ import MyCourses from '../../pages/Teacher/MyCourse';
 import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
 import Goals from '../../pages/Admin/Goals';
 import BrowseCourses from '../../pages/Learner';
+import TeacherLayout from '../../templates/TeacherLayout';
+import CourseDetail from '../../pages/Teacher/CourseDetail';
+import CourseDetailView from '../../pages/Teacher/CourseDetailView';
+import UnitsManager from '../../pages/Teacher/UnitsManager';
+import EditCoursePage from '../../pages/Teacher/EditCoursePage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -106,6 +111,27 @@ const routes: RouteObject[] = [
       { path: 'survey/create', element: <CreateSurvey /> },
       { path: 'course', element: <MyCourses /> },
       { path: 'course/create', element: <CreateCourse /> },
+    ],
+  },
+  {
+    path: '/teacher',
+    element: (
+      <PrivateRoute allowedRoles={['teacher']}>
+        <TeacherLayout />
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, path: '', element: <BrowseCourses /> },
+      { path: 'application', element: <TeacherApplicationPage /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'status', element: <ApplicationStatus /> },
+      { path: 'survey/create', element: <CreateSurvey /> },
+      { path: 'course', element: <MyCourses /> },
+      { path: 'course/create', element: <CreateCourse /> },
+      { path: 'course/:id', element: <CourseDetailView /> },
+      { path: 'course/:id/edit', element: <CourseDetail /> },
+      { path: 'course/:id/edit-course', element: <EditCoursePage /> },
+      { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
     ],
   },
   {

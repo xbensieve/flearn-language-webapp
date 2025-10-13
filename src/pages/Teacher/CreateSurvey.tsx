@@ -26,6 +26,8 @@ const CreateSurvey: React.FC = () => {
     queryFn: getLanguages,
   });
 
+  console.log(languages?.data);
+
   // Mutation for submit
   const mutation = useMutation<any, AxiosError<any>, SurveyCompleteRequest>({
     mutationFn: completeSurvey,
@@ -114,7 +116,7 @@ const CreateSurvey: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Form.Item
+                  {/* <Form.Item
                     name="preferredLanguageID"
                     label={
                       <span className="text-foreground font-semibold">Preferred Language</span>
@@ -132,7 +134,7 @@ const CreateSurvey: React.FC = () => {
                         </Option>
                       ))}
                     </Select>
-                  </Form.Item>
+                  </Form.Item> */}
 
                   <Form.Item
                     name="currentLevel"

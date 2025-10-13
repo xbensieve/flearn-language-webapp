@@ -150,8 +150,8 @@ const Register: React.FC = () => {
   const left: React.CSSProperties = {
     position: 'relative',
     height: '100%',
-    backgroundImage:
-      "url('https://images.unsplash.com/photo-1581092787765-6d1f1d3f9f8d?auto=format&fit=crop&w=1600&q=80')",
+    width: '100%',
+    backgroundImage: "url('https://foyle.eu/wp-content/uploads/2020/01/languages.png')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',
@@ -199,7 +199,11 @@ const Register: React.FC = () => {
         {/* LEFT */}
         <div style={left}>
           <div style={leftOverlay}>
-            <Title level={4} style={{ color: '#fff', margin: 0 }}>Join our community</Title>
+            <Title
+              level={4}
+              style={{ color: '#fff', margin: 0 }}>
+              Join our community
+            </Title>
             <Text style={{ color: '#e5e7eb' }}>Start your journey with us today</Text>
           </div>
         </div>
@@ -208,24 +212,23 @@ const Register: React.FC = () => {
         <div style={right}>
           <div style={rightInner}>
             <div style={{ textAlign: 'center' }}>
-              <Text>Tạo tài khoản mới</Text>
+              <Text style={{ fontSize: 28, fontWeight: 700 }}>Create a new account</Text>
               <div style={{ marginTop: 12, marginBottom: 16 }}>
                 <Button
                   type="default"
                   style={{ marginRight: 8 }}
-                  onClick={() => navigate('/login')}
-                >
+                  onClick={() => navigate('/login')}>
                   Login
                 </Button>
-                <Button type="primary" style={{ backgroundColor: '#06b6d4', border: 'none' }}>
+                <Button
+                  type="primary"
+                  style={{ backgroundColor: '#06b6d4', border: 'none' }}>
                   Register
                 </Button>
               </div>
             </div>
 
-            <p style={desc}>
-              Hãy đăng ký để bắt đầu hành trình học tập và trải nghiệm nền tảng.
-            </p>
+            <p style={desc}>Sign up to start your learning journey and experience the platform.</p>
 
             <Steps
               current={step === 'register' ? 0 : 1}
@@ -235,12 +238,14 @@ const Register: React.FC = () => {
             />
 
             {step === 'register' ? (
-              <Form form={form} layout="vertical" onFinish={handleRegister}>
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={handleRegister}>
                 <Form.Item
                   label="Username"
                   name="userName"
-                  rules={[{ required: true, message: 'Please enter your username!' }]}
-                >
+                  rules={[{ required: true, message: 'Please enter your username!' }]}>
                   <Input placeholder="Enter username" />
                 </Form.Item>
 
@@ -250,16 +255,14 @@ const Register: React.FC = () => {
                   rules={[
                     { required: true, message: 'Please enter your email!' },
                     { type: 'email', message: 'Please enter a valid email!' },
-                  ]}
-                >
+                  ]}>
                   <Input placeholder="Enter email" />
                 </Form.Item>
 
                 <Form.Item
                   label="Password"
                   name="password"
-                  rules={[{ required: true, message: 'Please enter your password!' }]}
-                >
+                  rules={[{ required: true, message: 'Please enter your password!' }]}>
                   <Input.Password placeholder="Enter password" />
                 </Form.Item>
 
@@ -277,8 +280,7 @@ const Register: React.FC = () => {
                         return Promise.reject(new Error('Passwords do not match!'));
                       },
                     }),
-                  ]}
-                >
+                  ]}>
                   <Input.Password placeholder="Confirm password" />
                 </Form.Item>
 
@@ -289,14 +291,16 @@ const Register: React.FC = () => {
                     block
                     size="large"
                     loading={loading}
-                    style={loginBtn}
-                  >
+                    style={loginBtn}>
                     {loading ? 'Registering...' : 'Register'}
                   </Button>
                 </Form.Item>
               </Form>
             ) : (
-              <Form form={otpForm} layout="vertical" onFinish={handleVerify}>
+              <Form
+                form={otpForm}
+                layout="vertical"
+                onFinish={handleVerify}>
                 <Form.Item>
                   <p style={{ textAlign: 'center' }}>
                     We have sent an OTP to <strong>{userEmail}</strong>
@@ -306,9 +310,12 @@ const Register: React.FC = () => {
                 <Form.Item
                   label="OTP Code"
                   name="otpCode"
-                  rules={[{ required: true, message: 'Please enter the OTP code!' }]}
-                >
-                  <Input.OTP length={6} size="large" formatter={(str) => str.replace(/\D/g, '')} />
+                  rules={[{ required: true, message: 'Please enter the OTP code!' }]}>
+                  <Input.OTP
+                    length={6}
+                    size="large"
+                    formatter={(str) => str.replace(/\D/g, '')}
+                  />
                 </Form.Item>
 
                 <Form.Item>
@@ -318,14 +325,16 @@ const Register: React.FC = () => {
                     block
                     size="large"
                     loading={loading}
-                    style={loginBtn}
-                  >
+                    style={loginBtn}>
                     {loading ? 'Verifying...' : 'Verify OTP'}
                   </Button>
                 </Form.Item>
 
                 <div style={{ textAlign: 'center', marginTop: 12 }}>
-                  <Button type="link" danger onClick={resetRegistration}>
+                  <Button
+                    type="link"
+                    danger
+                    onClick={resetRegistration}>
                     Not you? Start over
                   </Button>
                 </div>
@@ -334,11 +343,8 @@ const Register: React.FC = () => {
                   <Button
                     type="link"
                     onClick={() => resendMutation.mutate()}
-                    disabled={timeLeft > 0 || resendMutation.isPending}
-                  >
-                    {timeLeft > 0
-                      ? `Resend available in ${formatTime(timeLeft)}`
-                      : 'Resend OTP'}
+                    disabled={timeLeft > 0 || resendMutation.isPending}>
+                    {timeLeft > 0 ? `Resend available in ${formatTime(timeLeft)}` : 'Resend OTP'}
                   </Button>
                 </div>
               </Form>
