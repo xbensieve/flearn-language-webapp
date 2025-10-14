@@ -27,6 +27,7 @@ const statusOptions = [
   { value: 'PendingApproval', label: 'Pending Approval' },
   { value: 'Published', label: 'Published' },
   { value: 'Rejected', label: 'Rejected' },
+  { value: 'Approved', label: 'Approved' },
 ];
 
 const ReviewCourses: React.FC = () => {
