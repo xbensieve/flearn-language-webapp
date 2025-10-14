@@ -5,6 +5,7 @@ import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useMutation } from '@tanstack/react-query';
 import { logoutService } from '../../services/auth';
 import { toast } from 'react-toastify';
+import { Book } from 'lucide-react';
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -39,25 +40,26 @@ const StaffDashboardLayout: React.FC = () => {
 
   if (isLoggingOut) {
     return (
-      <div className='flex justify-center items-center min-h-screen'>
-        <Spin size='large' />
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <Layout className='min-h-screen'>
+    <Layout className="min-h-screen">
       <Header
         style={{ color: '#fff' }}
-        className='bg-white shadow px-4 flex items-center font-bold'
-      >
+        className="bg-white shadow px-4 flex items-center font-bold">
         Flearn Admin
       </Header>
 
       <Layout>
-        <Sider width={200} className='bg-white border-r'>
+        <Sider
+          width={200}
+          className="bg-white border-r">
           <Menu
-            mode='inline'
+            mode="inline"
             defaultSelectedKeys={['/admin']}
             style={{ height: '100%', borderRight: 0 }}
             onClick={handleMenuClick}
@@ -71,6 +73,7 @@ const StaffDashboardLayout: React.FC = () => {
               //     { key: '/staff/courses', label: 'Courses' },
               //   ],
               // },
+              { key: 'courses/pending', icon: <Book size={18} />, label: 'Course Application' },
               { key: 'application/pending', icon: <UserOutlined />, label: 'Teacher Application' },
               { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
               { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
@@ -78,18 +81,17 @@ const StaffDashboardLayout: React.FC = () => {
           />
         </Sider>
 
-        <Layout style={{ padding: '24px', height: '100vh' }}>
+        <Layout style={{ padding: '24px', height: '100vh', overflow: 'auto' }}>
           <Content
             style={{
               background: 'white',
               padding: 24,
               minHeight: 280,
               borderRadius: 8,
-            }}
-          >
+            }}>
             <Outlet />
           </Content>
-          <Footer className='text-center text-gray-500'>
+          <Footer className="text-center text-gray-500">
             © {new Date().getFullYear()} Flearn Admin
           </Footer>
         </Layout>

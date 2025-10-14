@@ -1,11 +1,13 @@
 import api from '../../config/axios';
 import type {
   Course,
+  CourseDetail,
   CourseTemplate,
   CourseTemplateQuery,
   CourseTemplateResponse,
   CourseUnitsRequest,
   CreateCourseRequest,
+  ICourseDataStaff,
   Lesson,
 } from './type';
 
@@ -48,10 +50,36 @@ export const getMyCoursesService = async (params: {
   return res.data;
 };
 
+export const getCoursesSubmitedService = async (params: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+}) => {
+  const res = await api.get<API.Response<ICourseDataStaff[]>>('/courses/submissions/by-staff', {
+    params,
+  });
+  return res.data;
+};
+
 export const getCourseByIdService = async (id: string) => {
   const res = await api.get<API.Response<Course>>(`/courses/${id}`);
   return res.data;
 };
+
+export const getCourseByIdStaffService = async (id: string) => {
+  const res = await api.get<API.Response<CourseDetail>>(`/courses/${id}`);
+  return res.data;
+};
+
+export const approveCourseService = async (id: string) => {
+  const res = await api.put(`/courses/submissions/${id}/approve`);
+  return res.data;
+}
+
+export const rejectedCourseService = async ({id, reason}: {id: string; reason: string}) => {
+  const res = await api.put(`/courses/submissions/${id}/reject`, {reason});
+  return res.data;
+}
 
 export const createCourseService = async (
   payload: CreateCourseRequest

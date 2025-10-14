@@ -10,23 +10,30 @@ import type { AxiosError } from 'axios';
 
 const { Title, Text } = Typography;
 
+const ROLE_PATHS: Record<string, string> = {
+  admin: '/admin',
+  staff: '/staff',
+  teacher: '/teacher',
+  learner: '/learner/application',
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rolesCase = (role: string, navigate: any) => {
-  switch (role.toLowerCase()) {
-    case 'admin':
-      navigate('/admin');
-      break;
-    case 'learner':
-      navigate('/learner/application');
-      break;
-    case 'teacher':
-      navigate('/teacher');
-      break;
-    case 'staff':
-      navigate('/staff');
-      break;
-    default:
-      navigate('/');
+const rolesCase = (roles: string[], navigate: any) => {
+  if (!roles || roles.length === 0) {
+    navigate('/');
+    return;
+  }
+
+  // define priority order (highest first)
+  const priority = ['admin', 'staff', 'teacher', 'learner'];
+
+  // find the first matching role in priority order
+  const matchedRole = priority.find((r) => roles.some((userRole) => userRole.toLowerCase() === r));
+
+  if (matchedRole) {
+    navigate(ROLE_PATHS[matchedRole]);
+  } else {
+    navigate('/');
   }
 };
 
@@ -35,13 +42,22 @@ const Login: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { updateAuth } = useAuth();
-  const roles = localStorage.getItem('FLEARN_ACCESS_TOKEN');
+  const rolesString = localStorage.getItem('FLEARN_USER_ROLES');
 
   useEffect(() => {
-    if (roles) {
-      navigate('/learner');
+    if (rolesString) {
+      try {
+        const roles = JSON.parse(rolesString);
+        if (Array.isArray(roles)) {
+          rolesCase(roles, navigate);
+        } else {
+          console.warn('Roles data is not an array:', roles);
+        }
+      } catch (error) {
+        console.error('Failed to parse roles from localStorage:', error);
+      }
     }
-  }, [navigate, roles]);
+  }, [navigate, rolesString]);
 
   const mutation = useMutation({
     mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
@@ -57,8 +73,8 @@ const Login: React.FC = () => {
         localStorage.setItem('FLEARN_USER_ROLES', JSON.stringify(roles)); // Note: plural 'ROLES' for clarity
         updateAuth();
         notifySuccess(data.message);
-        rolesCase(roles[0], navigate);
-        rolesCase(roles[0], navigate);
+        console.log(roles);
+        rolesCase(roles, navigate);
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

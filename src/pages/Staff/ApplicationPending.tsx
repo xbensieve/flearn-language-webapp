@@ -115,7 +115,10 @@ const ApplicationsPending: React.FC = () => {
           <ul>
             {record.certificates.map((c: any, idx: number) => (
               <li key={idx}>
-                <a href={c.credentialFileUrl} target='_blank' rel='noopener noreferrer'>
+                <a
+                  href={c.certificateImageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer">
                   {c.credentialName || 'View File'}
                 </a>
               </li>
@@ -131,12 +134,13 @@ const ApplicationsPending: React.FC = () => {
       render: (_: any, record: ApplicationData) => (
         <Space>
           <Popconfirm
-            title='Approve this application?'
+            title="Approve this application?"
             onConfirm={() => handleApprove(record.applicationID)}
-            okText='Yes'
-            cancelText='No'
-          >
-            <Button type='primary' loading={approveMutation.isPending}>
+            okText="Yes"
+            cancelText="No">
+            <Button
+              type="primary"
+              loading={approveMutation.isPending}>
               Approve
             </Button>
           </Popconfirm>
@@ -144,8 +148,7 @@ const ApplicationsPending: React.FC = () => {
           <Button
             danger
             onClick={() => openRejectModal(record.applicationID)}
-            loading={rejectMutation.isPending}
-          >
+            loading={rejectMutation.isPending}>
             Reject
           </Button>
         </Space>
@@ -155,9 +158,9 @@ const ApplicationsPending: React.FC = () => {
 
   return (
     <div>
-      <h1 className='text-xl font-semibold mb-4'>Pending Applications</h1>
+      <h1 className="text-xl font-semibold mb-4">Pending Applications</h1>
       <Table
-        rowKey='applicationID'
+        rowKey="applicationID"
         loading={isLoading}
         columns={columns}
         dataSource={data?.data || []}
@@ -167,17 +170,16 @@ const ApplicationsPending: React.FC = () => {
       {/* Reject Modal */}
       <Modal
         open={rejectModalOpen}
-        title='Reject Application'
+        title="Reject Application"
         onCancel={() => setRejectModalOpen(false)}
         onOk={handleConfirmReject}
         confirmLoading={rejectMutation.isPending}
-        okText='Reject'
-        okButtonProps={{ danger: true }}
-      >
+        okText="Reject"
+        okButtonProps={{ danger: true }}>
         <p>Please provide a reason for rejection:</p>
         <Input.TextArea
           rows={4}
-          placeholder='Enter rejection reason'
+          placeholder="Enter rejection reason"
           value={rejectReason}
           onChange={(e) => setRejectReason(e.target.value)}
         />
