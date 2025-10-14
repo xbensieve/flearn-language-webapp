@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
+import { Table, Button, message, Space, Tag, Popconfirm, Modal, Input, Select } from 'antd';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Table, Button, message, Space, Tag, Popconfirm, Modal, Input } from 'antd';
 import type { ApplicationData } from '../../services/teacherApplication/types';
 import {
   getPendingApplications,
@@ -10,38 +10,38 @@ import {
 } from '../../services/staff';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 
-// Map for status display
+const { Option } = Select;
+
 const statusMap: Record<string, { text: string; color: string }> = {
-  '0': { text: 'Pending', color: 'blue' },
-  '1': { text: 'Submitted', color: 'gold' },
-  '2': { text: 'Reviewed', color: 'green' },
-  '3': { text: 'Rejected', color: 'red' },
+  Pending: { text: 'Pending', color: 'blue' },
+  Approved: { text: 'Approved', color: 'green' },
+  Rejected: { text: 'Rejected', color: 'red' },
 };
 
-const ApplicationsPending: React.FC = () => {
+const ApplicationsManagement: React.FC = () => {
+  const [filterStatus, setFilterStatus] = useState<string>('Pending'); // default: pending
   const [rejectReason, setRejectReason] = useState('');
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedRejectId, setSelectedRejectId] = useState<string | null>(null);
 
-  // Fetch pending list
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['pendingApplications'],
-    queryFn: getPendingApplications,
+  // Fetch applications with filter
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['applications', filterStatus],
+    queryFn: () => getPendingApplications({ status: filterStatus }), // <-- must support status param in service
   });
 
-  // --- Mutation for approve ---
+  // --- Approve mutation ---
   const approveMutation = useMutation({
     mutationFn: (payload: { applicationId: string }) => reviewApproveApplication(payload),
     onSuccess: () => {
       notifySuccess('Application approved successfully!');
       refetch();
     },
-    onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to approve application');
-    },
+    onError: (err: any) =>
+      notifyError(err?.response?.data?.message || 'Failed to approve application'),
   });
 
-  // --- Mutation for reject ---
+  // --- Reject mutation ---
   const rejectMutation = useMutation({
     mutationFn: (payload: { applicationId: string; reason?: string }) =>
       reviewRejectApplication(payload),
@@ -52,33 +52,29 @@ const ApplicationsPending: React.FC = () => {
       setSelectedRejectId(null);
       refetch();
     },
-    onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to reject application');
-    },
+    onError: (err: any) =>
+      notifyError(err?.response?.data?.message || 'Failed to reject application'),
   });
 
-  // --- Approve handler ---
+  // --- Handlers ---
   const handleApprove = (applicationId: string) => {
-    if (!applicationId) return;
     approveMutation.mutate({ applicationId });
   };
 
-  // --- Reject (open modal) ---
   const openRejectModal = (applicationId: string) => {
     setSelectedRejectId(applicationId);
     setRejectModalOpen(true);
   };
 
-  // --- Confirm reject from modal ---
   const handleConfirmReject = () => {
-    if (!rejectReason) {
-      return message.warning('Please enter a rejection reason');
-    }
+    if (!rejectReason.trim()) return message.warning('Please enter a rejection reason');
     if (!selectedRejectId) return;
-    rejectMutation.mutate({
-      applicationId: selectedRejectId,
-      reason: rejectReason,
-    });
+    rejectMutation.mutate({ applicationId: selectedRejectId, reason: rejectReason });
+  };
+
+  const handleFilterChange = (value: string) => {
+    setFilterStatus(value);
+    refetch();
   };
 
   const columns = [
@@ -97,9 +93,10 @@ const ApplicationsPending: React.FC = () => {
     {
       title: 'Status',
       key: 'status',
-      render: (_: any, record: ApplicationData) => (
-        <Tag color={statusMap[record.status]?.color ?? 'default'}>{record.status ?? 'Unknown'}</Tag>
-      ),
+      render: (_: any, record: ApplicationData) => {
+        const map = statusMap[record.status] || { text: 'Unknown', color: 'default' };
+        return <Tag color={map.color}>{map.text}</Tag>;
+      },
     },
     {
       title: 'Applied At',
@@ -140,7 +137,8 @@ const ApplicationsPending: React.FC = () => {
             cancelText="No">
             <Button
               type="primary"
-              loading={approveMutation.isPending}>
+              loading={approveMutation.isPending}
+              disabled={record.status !== 'Pending'}>
               Approve
             </Button>
           </Popconfirm>
@@ -148,7 +146,8 @@ const ApplicationsPending: React.FC = () => {
           <Button
             danger
             onClick={() => openRejectModal(record.applicationID)}
-            loading={rejectMutation.isPending}>
+            loading={rejectMutation.isPending}
+            disabled={record.status !== 'Pending'}>
             Reject
           </Button>
         </Space>
@@ -158,13 +157,29 @@ const ApplicationsPending: React.FC = () => {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Pending Applications</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-semibold">Teacher Applications</h1>
+
+        <Space>
+          <Select
+            value={filterStatus}
+            onChange={handleFilterChange}
+            style={{ width: 180 }}
+            loading={isFetching}>
+            <Option value="pending">Pending</Option>
+            <Option value="approved">Approved</Option>
+            <Option value="rejected">Rejected</Option>
+          </Select>
+          <Button onClick={() => refetch()}>Refresh</Button>
+        </Space>
+      </div>
+
       <Table
         rowKey="applicationID"
         loading={isLoading}
         columns={columns}
         dataSource={data?.data || []}
-        style={{ overflow: 'auto' }}
+        pagination={{ pageSize: 10 }}
       />
 
       {/* Reject Modal */}
@@ -188,4 +203,4 @@ const ApplicationsPending: React.FC = () => {
   );
 };
 
-export default ApplicationsPending;
+export default ApplicationsManagement;
