@@ -28,7 +28,7 @@ import {
   submitCourseService,
 } from '../../services/course';
 import type { Lesson, Unit } from '../../services/course/type';
-import { Check } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { formatStatusLabel } from '../../utils/mapping';
 import type { AxiosError } from 'axios';
@@ -197,11 +197,19 @@ const CourseDetailView: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <Title
-            level={2}
-            className="!mb-0 text-gray-800">
-            Course Detail
-          </Title>
+          <div className="flex items-center gap-2.5">
+            <Button
+              onClick={() => navigate(-1)}
+              type="default"
+              className="mr-2">
+              <ArrowLeft size={14} />
+            </Button>
+            <Title
+              level={2}
+              className="!mb-0 text-gray-800">
+              Course Detail
+            </Title>
+          </div>
           <div className="space-x-2">
             {isEditMode ? (
               <>

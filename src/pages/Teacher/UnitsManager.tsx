@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Button,
   Typography,
@@ -35,6 +35,7 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import type { AxiosError } from 'axios';
+import { ArrowLeft } from 'lucide-react';
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -43,7 +44,7 @@ const UnitsManager: React.FC = () => {
   const { id: unitId } = useParams<{ id: string }>();
   const [form] = Form.useForm();
   const [activeKey, setActiveKey] = useState<string | string[]>('');
-
+  const navigate = useNavigate();
   // Fetch unit
   const {
     data: unit,
@@ -102,11 +103,19 @@ const UnitsManager: React.FC = () => {
     <div className="max-w-6xl mx-auto py-8 px-4">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Title
-            level={3}
-            className="!mb-1">
-            {unit.title}
-          </Title>
+          <div className="flex gap-2.5">
+            <Button
+              onClick={() => navigate(-1)}
+              type="default"
+              className="mr-2">
+              <ArrowLeft size={14} />
+            </Button>
+            <Title
+              level={3}
+              className="!mb-1">
+              {unit.title}
+            </Title>
+          </div>
           <Paragraph className="text-gray-500 mb-1">{unit.description}</Paragraph>
           <Tag color="blue">Lessons: {unit.totalLessons}</Tag>
         </div>

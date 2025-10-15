@@ -94,6 +94,12 @@ const CourseDetail: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
+      <Button
+        onClick={() => navigate(-1)}
+        type="default"
+        className="mb-4">
+        ← Back
+      </Button>
       <Row gutter={[24, 24]}>
         {/* LEFT: Course Info */}
         <Col

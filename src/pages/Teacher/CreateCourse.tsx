@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
@@ -94,7 +95,22 @@ const CreateCourse: React.FC = () => {
       setCurrentStep(0);
     },
     onError: (err: AxiosError<any>) => {
-      notifyError(err.response?.data?.message || 'Failed to create course.');
+      const errorData = err.response?.data;
+
+      if (errorData?.errors && typeof errorData.errors === 'object') {
+        // Loop through backend field errors and show all messages
+        Object.entries(errorData.errors).forEach(([field, messages]) => {
+          if (Array.isArray(messages)) {
+            messages.forEach((msg) => notifyError(`${field}: ${msg}`));
+          } else {
+            notifyError(`${field}: ${String(messages)}`);
+          }
+        });
+        return;
+      }
+
+      // Fallback for generic message
+      notifyError(errorData?.message || 'Failed to create course.');
     },
   });
 
@@ -285,32 +301,48 @@ const CreateCourse: React.FC = () => {
                 )}
 
                 {currentStep === 1 && (
-                  <>
-                    <Form.Item
-                      name="price"
-                      label="Base Price"
-                      rules={[{ required: true, message: 'Please enter course price' }]}>
-                      <InputNumber
-                        min={0}
-                        prefix="$"
-                        size="large"
-                        className="w-full"
-                        placeholder="e.g. 100"
-                      />
-                    </Form.Item>
+                  <Row gutter={16}>
+                    <Col
+                      xs={24}
+                      md={12}>
+                      <Form.Item
+                        name="price"
+                        label="Base Price (VNĐ)"
+                        rules={[{ required: true, message: 'Please enter course price' }]}>
+                        <InputNumber<number>
+                          min={0}
+                          size="large"
+                          className="w-full"
+                          style={{ width: '100%' }}
+                          placeholder="e.g. 1,000,000"
+                          formatter={(value) =>
+                            value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
+                          }
+                          parser={(value) => Number(value?.replace(/\₫\s?|(,*)/g, '') || 0)}
+                        />
+                      </Form.Item>
+                    </Col>
 
-                    <Form.Item
-                      name="discountPrice"
-                      label="Discount Price (optional)">
-                      <InputNumber
-                        min={0}
-                        prefix="$"
-                        size="large"
-                        className="w-full"
-                        placeholder="e.g. 80"
-                      />
-                    </Form.Item>
-                  </>
+                    <Col
+                      xs={24}
+                      md={12}>
+                      <Form.Item
+                        name="discountPrice"
+                        label="Discount Price (VNĐ, optional)">
+                        <InputNumber<number>
+                          min={0}
+                          size="large"
+                          className="w-full"
+                          style={{ width: '100%' }}
+                          placeholder="e.g. 800,000"
+                          formatter={(value) =>
+                            value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
+                          }
+                          parser={(value) => Number(value?.replace(/\₫\s?|(,*)/g, '') || 0)}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
                 )}
 
                 {currentStep === 2 && (
@@ -499,13 +531,16 @@ const CreateCourse: React.FC = () => {
                     <Text
                       strong
                       className="text-indigo-600 text-lg">
-                      ${formValues.price || '0.00'}
+                      {formValues.discountPrice
+                        ? `${Number(formValues.discountPrice).toLocaleString('vi-VN')} ₫`
+                        : `${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`}
                     </Text>
+
                     {formValues.discountPrice && (
                       <Text
                         delete
                         className="text-gray-500">
-                        ${formValues.discountPrice}
+                        {`${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`}
                       </Text>
                     )}
                   </div>
