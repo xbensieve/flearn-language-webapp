@@ -120,7 +120,9 @@ const MyCourses: React.FC = () => {
                       <span>
                         {course.discountPrice ? (
                           <>
-                            <span className="line-through text-gray-400 mr-2">${course.price}</span>
+                            <span className="line-through text-gray-400 mr-2">
+                              {Number(course.price).toLocaleString('vi-VN')} VNĐ
+                            </span>
                             <span className="text-green-600 font-bold">
                               {Number(course.discountPrice).toLocaleString('vi-VN')} VNĐ
                             </span>
