@@ -19,7 +19,7 @@ const statusMap: Record<string, { text: string; color: string }> = {
 };
 
 const ApplicationsManagement: React.FC = () => {
-  const [filterStatus, setFilterStatus] = useState<string>('Pending'); // default: pending
+  const [filterStatus, setFilterStatus] = useState<string>('Pending');
   const [rejectReason, setRejectReason] = useState('');
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [selectedRejectId, setSelectedRejectId] = useState<string | null>(null);
@@ -27,7 +27,7 @@ const ApplicationsManagement: React.FC = () => {
   // Fetch applications with filter
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['applications', filterStatus],
-    queryFn: () => getPendingApplications({ status: filterStatus }), // <-- must support status param in service
+    queryFn: () => getPendingApplications({ status: filterStatus }),
   });
 
   // --- Approve mutation ---

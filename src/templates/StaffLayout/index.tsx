@@ -2,12 +2,25 @@ import React from 'react';
 import { Layout, Menu, Spin } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { useMutation } from '@tanstack/react-query';
-import { logoutService } from '../../services/auth';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getProfile, logoutService } from '../../services/auth';
 import { toast } from 'react-toastify';
 import { Book } from 'lucide-react';
 
 const { Header, Sider, Content, Footer } = Layout;
+
+const getStaffLanguages = (data: string) => {
+  switch (data.toLowerCase()) {
+    case 'staffen':
+      return 'English Staff';
+    case 'staffzh':
+      return 'Chinese Staff';
+    case 'staffja':
+      return 'Japanese Staff';
+    default:
+      return 'Ngoại ngữ';
+  }
+};
 
 const StaffDashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +34,12 @@ const StaffDashboardLayout: React.FC = () => {
     onError: (error: any) => {
       toast.error(error.message);
     },
+  });
+
+  const { data } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    retry: 1,
   });
 
   const handleLogout = () => {
@@ -51,7 +70,7 @@ const StaffDashboardLayout: React.FC = () => {
       <Header
         style={{ color: '#fff' }}
         className="bg-white shadow px-4 flex items-center font-bold">
-        Flearn Admin
+        {getStaffLanguages(data?.data.username || '')}
       </Header>
 
       <Layout>
