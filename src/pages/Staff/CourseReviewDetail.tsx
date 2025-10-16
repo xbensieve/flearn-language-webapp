@@ -253,7 +253,7 @@ const CourseReviewDetail: React.FC = () => {
               <Paragraph
                 type="secondary"
                 className="mb-0">
-                Teacher ID: {course.teacherInfo.teacherId}
+                Teacher Email: {course.teacherInfo.email}
               </Paragraph>
             </div>
           </div>

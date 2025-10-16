@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu, Spin } from 'antd';
+import { Image, Layout, Menu, Spin } from 'antd';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -12,11 +12,41 @@ const { Header, Sider, Content, Footer } = Layout;
 const getStaffLanguages = (data: string) => {
   switch (data.toLowerCase()) {
     case 'staffen':
-      return 'English Staff';
+      return (
+        <div className="flex justify-center items-center">
+          <p className="!mb-0 mr-4">English Staff</p>
+          <Image
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Flag_of_the_United_States.svg/2560px-Flag_of_the_United_States.svg.png"
+            width={20}
+            height={20}
+            preview={false}
+          />
+        </div>
+      );
     case 'staffzh':
-      return 'Chinese Staff';
+      return (
+        <div className="flex justify-center items-center">
+          <p className="!mb-0 mr-4">Chinese Staff</p>
+          <Image
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Flag_of_the_People%27s_Republic_of_China.svg/330px-Flag_of_the_People%27s_Republic_of_China.svg.png"
+            width={20}
+            height={20}
+            preview={false}
+          />
+        </div>
+      );
     case 'staffja':
-      return 'Japanese Staff';
+      return (
+        <div className="flex justify-center items-center">
+          <p className="!mb-0 mr-4">Japanese Staff</p>
+          <Image
+            src="https://upload.wikimedia.org/wikipedia/en/thumb/9/9e/Flag_of_Japan.svg/1200px-Flag_of_Japan.svg.png"
+            width={20}
+            height={20}
+            preview={false}
+          />
+        </div>
+      );
     default:
       return 'Ngoại ngữ';
   }
