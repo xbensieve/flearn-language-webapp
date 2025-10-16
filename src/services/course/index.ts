@@ -104,7 +104,8 @@ export const createCourseService = async (
   }
 
   formData.append('CourseType', payload.courseType.toString());
-  formData.append('GoalId', payload.goalId.toString());
+  // payload.goalIds.forEach((id) => formData.append('GoalIds', id));
+  formData.append('GoalIds', payload.goalIds?.join(',') || '');
 
   if (payload.Level !== undefined) {
     formData.append('Level', payload.Level.toString());

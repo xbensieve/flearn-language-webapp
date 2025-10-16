@@ -39,7 +39,7 @@ interface CourseFormValues {
   price: number;
   discountPrice?: number;
   courseType: number;
-  goalId: number;
+  goalIds: number[];
   Level?: number;
   courseSkill?: number;
 }
@@ -147,7 +147,7 @@ const CreateCourse: React.FC = () => {
       description: formValues.description || values.description,
       topicIds: formValues.topicIds || values.topicIds,
       courseType: Number(values.courseType || 0),
-      goalId: Number(values.goalId),
+      goalIds: values.goalIds || [],
       Level: Number(values.Level),
       templateId: formValues.templateId || values.templateId,
       price: Number(formValues.price || 0),
@@ -342,19 +342,20 @@ const CreateCourse: React.FC = () => {
                 {currentStep === 2 && (
                   <>
                     <Form.Item
-                      name="goalId"
-                      label="Learning Goal"
+                      name="goalIds"
+                      label="Learning Goals"
                       rules={
                         selectedTemplate?.requireGoal
-                          ? [{ required: true, message: 'Goal is required for this template' }]
+                          ? [{ required: true, message: 'Please select at least one goal' }]
                           : []
                       }>
                       {goalsLoading ? (
                         <Spin />
                       ) : (
                         <Select
+                          mode="multiple" // ⬅️ enables multi-select
                           size="large"
-                          placeholder="Select goal">
+                          placeholder="Select one or more goals">
                           {goals?.data.map((g) => (
                             <Option
                               key={g.id}

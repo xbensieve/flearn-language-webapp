@@ -39,7 +39,7 @@ export interface CreateCourseRequest {
   price: number;
   discountPrice?: number;
   courseType: number;
-  goalId: number;
+  goalIds?: number[];
   Level?: number;
   courseSkill?: number;
 }
