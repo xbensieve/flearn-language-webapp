@@ -49,3 +49,8 @@ export const resendOtp = async (payload: { email: string }) => {
   const { data } = await api.post('Auth/resend-otp', payload);
   return data;
 };
+
+export const loginWithGoogle = async (idToken: string) => {
+  const { data } = await api.post('/Auth/google', { idToken });
+  return data;
+};

@@ -16,6 +16,7 @@ import type { AxiosError } from 'axios';
 import { getTopicsService } from '../../services/topics';
 import { getGoalsService } from '../../services/goals';
 import { getLevelTypeService, getSkillTypeService } from '../../services/enums';
+import { ArrowLeft } from 'lucide-react';
 
 const { Option } = Select;
 
@@ -71,7 +72,7 @@ const EditCoursePage: React.FC = () => {
     mutationFn: (payload: FormData) => updateCourseService({ id: courseId!, payload }),
     onSuccess: () => {
       message.success('Course updated successfully');
-      navigate(`/teacher/courses/${courseId}`);
+      navigate(`/teacher/course/${courseId}`);
     },
     onError: (error: AxiosError<any>) => {
       message.error(error.response?.data?.message || 'Failed to update course');
@@ -173,194 +174,206 @@ const EditCoursePage: React.FC = () => {
 
   // --- JSX ---
   return (
-    <Card
-      title="Edit Course"
-      className="max-w-4xl mx-auto mt-10">
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFinish}>
-        {/* Template */}
-        <Form.Item
-          label="Course Template"
-          name="templateId"
-          rules={[{ required: true, message: 'Template is required' }]}>
-          <Select
-            placeholder="Select a course template"
-            loading={templatesLoading}
-            allowClear>
-            {templates?.data?.map((tpl: CourseTemplate) => (
-              <Option
-                key={tpl.id}
-                value={tpl.id}>
-                {tpl.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+    <div>
+      <Card
+        title={
+          <div className="flex items-baseline gap-2.5">
+            <Button
+              onClick={() => navigate(-1)}
+              type="default"
+              className="mb-4">
+              <ArrowLeft size={14} />
+            </Button>
+            <h2 className="mb-0">Edit Course</h2>
+          </div>
+        }
+        className="max-w-4xl mx-auto mt-10">
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleFinish}>
+          {/* Template */}
+          <Form.Item
+            label="Course Template"
+            name="templateId"
+            rules={[{ required: true, message: 'Template is required' }]}>
+            <Select
+              placeholder="Select a course template"
+              loading={templatesLoading}
+              allowClear>
+              {templates?.data?.map((tpl: CourseTemplate) => (
+                <Option
+                  key={tpl.id}
+                  value={tpl.id}>
+                  {tpl.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-        <Form.Item
-          label="Course Title"
-          name="title"
-          rules={[{ required: true, message: 'Please enter course title' }]}>
-          <Input />
-        </Form.Item>
+          <Form.Item
+            label="Course Title"
+            name="title"
+            rules={[{ required: true, message: 'Please enter course title' }]}>
+            <Input />
+          </Form.Item>
 
-        <Form.Item
-          label="Description"
-          name="description"
-          rules={[{ required: true, message: 'Please enter course description' }]}>
-          <Input.TextArea rows={3} />
-        </Form.Item>
+          <Form.Item
+            label="Description"
+            name="description"
+            rules={[{ required: true, message: 'Please enter course description' }]}>
+            <Input.TextArea rows={3} />
+          </Form.Item>
 
-        <Row gutter={16}>
-          <Col span={12}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                label="Price"
+                name="price"
+                rules={[{ required: true, message: 'Please enter price' }]}>
+                <Input type="number" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="Discount Price"
+                name="discountPrice">
+                <Input type="number" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Course type */}
+          <Form.Item
+            label="Course Type"
+            name="type"
+            rules={[{ required: true, message: 'Please select course type' }]}>
+            <Select placeholder="Select type">
+              <Option value="1">Basic</Option>
+              <Option value="2">Advanced</Option>
+            </Select>
+          </Form.Item>
+
+          {/* Conditional fields */}
+          {selectedTemplate?.requireLang && (
             <Form.Item
-              label="Price"
-              name="price"
-              rules={[{ required: true, message: 'Please enter price' }]}>
-              <Input type="number" />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Discount Price"
-              name="discountPrice">
-              <Input type="number" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        {/* Course type */}
-        <Form.Item
-          label="Course Type"
-          name="type"
-          rules={[{ required: true, message: 'Please select course type' }]}>
-          <Select placeholder="Select type">
-            <Option value="1">Basic</Option>
-            <Option value="2">Advanced</Option>
-          </Select>
-        </Form.Item>
-
-        {/* Conditional fields */}
-        {selectedTemplate?.requireLang && (
-          <Form.Item
-            label="Language"
-            name="language"
-            rules={[{ required: true, message: 'Language is required' }]}>
-            <Select
-              placeholder="Select language"
-              loading={languagesLoading}
-              options={languages?.data.map((lang) => ({
-                value: lang.langCode,
-                label: lang.langName,
-              }))}
-            />
-          </Form.Item>
-        )}
-
-        {selectedTemplate?.requireGoal && (
-          <Form.Item
-            label="Goal"
-            name="goalId"
-            rules={[{ required: true, message: 'Goal is required' }]}>
-            <Select
-              placeholder="Select goal"
-              loading={goalsLoading}
-              options={goals?.data.map((goal: any) => ({
-                value: goal.id,
-                label: goal.name,
-              }))}
-            />
-          </Form.Item>
-        )}
-
-        {selectedTemplate?.requireLevel && (
-          <Form.Item
-            label="Level"
-            name="level"
-            rules={[{ required: true, message: 'Level is required' }]}>
-            <Select
-              placeholder="Select level"
-              loading={levelsLoading}
-              options={levels}
-            />
-          </Form.Item>
-        )}
-
-        {selectedTemplate?.requireSkillFocus && (
-          <Form.Item
-            label="Skill Focus"
-            name="skills"
-            rules={[{ required: true, message: 'Please select skills' }]}>
-            <Select
-              mode="multiple"
-              placeholder="Select skills"
-              loading={skillsLoading}
-              options={skills}
-            />
-          </Form.Item>
-        )}
-
-        {selectedTemplate?.requireTopic && (
-          <Form.Item
-            label="Topics"
-            name="topics"
-            rules={[{ required: true, message: 'Select at least one topic' }]}>
-            <Select
-              mode="multiple"
-              placeholder="Select topics"
-              loading={topicsLoading}
-              options={topics?.data.map((topic: Topic) => ({
-                value: topic.topicId,
-                label: topic.topicName,
-              }))}
-            />
-          </Form.Item>
-        )}
-
-        {/* Image */}
-        <Form.Item label="Course Image">
-          {currentImage && !removeImage && (
-            <div className="mb-3">
-              <img
-                src={currentImage}
-                alt="course"
-                className="w-48 h-32 object-cover rounded"
+              label="Language"
+              name="language"
+              rules={[{ required: true, message: 'Language is required' }]}>
+              <Select
+                placeholder="Select language"
+                loading={languagesLoading}
+                options={languages?.data.map((lang) => ({
+                  value: lang.langCode,
+                  label: lang.langName,
+                }))}
               />
-              <div className="mt-2">
-                <Switch
-                  checked={removeImage}
-                  onChange={setRemoveImage}
-                  checkedChildren="Remove"
-                  unCheckedChildren="Keep"
-                />
-              </div>
-            </div>
-          )}
-          {!removeImage && (
-            <Form.Item
-              name="image"
-              valuePropName="file">
-              <Upload
-                beforeUpload={() => false}
-                maxCount={1}>
-                <Button icon={<UploadOutlined />}>Upload new image</Button>
-              </Upload>
             </Form.Item>
           )}
-        </Form.Item>
 
-        <div className="flex justify-end">
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={updateMutation.isPending}>
-            Save Changes
-          </Button>
-        </div>
-      </Form>
-    </Card>
+          {selectedTemplate?.requireGoal && (
+            <Form.Item
+              label="Goal"
+              name="goalId"
+              rules={[{ required: true, message: 'Goal is required' }]}>
+              <Select
+                placeholder="Select goal"
+                loading={goalsLoading}
+                options={goals?.data.map((goal: any) => ({
+                  value: goal.id,
+                  label: goal.name,
+                }))}
+              />
+            </Form.Item>
+          )}
+
+          {selectedTemplate?.requireLevel && (
+            <Form.Item
+              label="Level"
+              name="level"
+              rules={[{ required: true, message: 'Level is required' }]}>
+              <Select
+                placeholder="Select level"
+                loading={levelsLoading}
+                options={levels}
+              />
+            </Form.Item>
+          )}
+
+          {selectedTemplate?.requireSkillFocus && (
+            <Form.Item
+              label="Skill Focus"
+              name="skills"
+              rules={[{ required: true, message: 'Please select skills' }]}>
+              <Select
+                mode="multiple"
+                placeholder="Select skills"
+                loading={skillsLoading}
+                options={skills}
+              />
+            </Form.Item>
+          )}
+
+          {selectedTemplate?.requireTopic && (
+            <Form.Item
+              label="Topics"
+              name="topics"
+              rules={[{ required: true, message: 'Select at least one topic' }]}>
+              <Select
+                mode="multiple"
+                placeholder="Select topics"
+                loading={topicsLoading}
+                options={topics?.data.map((topic: Topic) => ({
+                  value: topic.topicId,
+                  label: topic.topicName,
+                }))}
+              />
+            </Form.Item>
+          )}
+
+          {/* Image */}
+          <Form.Item label="Course Image">
+            {currentImage && !removeImage && (
+              <div className="mb-3">
+                <img
+                  src={currentImage}
+                  alt="course"
+                  className="w-48 h-32 object-cover rounded"
+                />
+                <div className="mt-2">
+                  <Switch
+                    checked={removeImage}
+                    onChange={setRemoveImage}
+                    checkedChildren="Remove"
+                    unCheckedChildren="Keep"
+                  />
+                </div>
+              </div>
+            )}
+            {!removeImage && (
+              <Form.Item
+                name="image"
+                valuePropName="file">
+                <Upload
+                  beforeUpload={() => false}
+                  maxCount={1}>
+                  <Button icon={<UploadOutlined />}>Upload new image</Button>
+                </Upload>
+              </Form.Item>
+            )}
+          </Form.Item>
+
+          <div className="flex justify-end">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={updateMutation.isPending}>
+              Save Changes
+            </Button>
+          </div>
+        </Form>
+      </Card>
+    </div>
   );
 };
 

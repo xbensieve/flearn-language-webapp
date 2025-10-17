@@ -25,6 +25,8 @@ import CourseDetail from '../../pages/Teacher/CourseDetail';
 import CourseDetailView from '../../pages/Teacher/CourseDetailView';
 import UnitsManager from '../../pages/Teacher/UnitsManager';
 import EditCoursePage from '../../pages/Teacher/EditCoursePage';
+import ReviewCourses from '../../pages/Staff/ReviewCourses';
+import CourseReviewDetail from '../../pages/Staff/CourseReviewDetail';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -88,6 +90,14 @@ const routes: RouteObject[] = [
       {
         path: 'application/pending',
         element: <ApplicationsPending />,
+      },
+      {
+        path: 'courses/pending',
+        element: <ReviewCourses />,
+      },
+      {
+        path: 'courses/pending/:id/:courseSubmissionID',
+        element: <CourseReviewDetail />,
       },
       {
         path: 'profile',

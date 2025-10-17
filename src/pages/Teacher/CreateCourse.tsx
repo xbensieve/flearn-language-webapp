@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
@@ -18,15 +19,13 @@ import {
 } from 'antd';
 import { UploadOutlined, BookOutlined, DollarOutlined, SettingOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { createCourseService, getCourseTemplatesService } from '../../services/course';
 import { getTopicsService } from '../../services/topics';
 import { getGoalsService } from '../../services/goals';
-import { getLevelTypeService, getSkillTypeService } from '../../services/enums';
+import { getLevelTypeService } from '../../services/enums';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import type { CreateCourseRequest } from '../../services/course/type';
 import type { AxiosError } from 'axios';
-import { getLanguages } from '../../services/teacherApplication';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -40,7 +39,7 @@ interface CourseFormValues {
   price: number;
   discountPrice?: number;
   courseType: number;
-  goalId: number;
+  goalIds: number[];
   Level?: number;
   courseSkill?: number;
 }
@@ -51,7 +50,6 @@ const CreateCourse: React.FC = () => {
   const [fileList, setFileList] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState<Partial<CourseFormValues>>({});
-  const navigate = useNavigate();
 
   // Fetch data
   const { data: templates, isLoading: templatesLoading } = useQuery({
@@ -68,20 +66,9 @@ const CreateCourse: React.FC = () => {
     queryFn: getGoalsService,
   });
 
-  const { data: languages, isLoading: languagesLoading } = useQuery({
-    queryKey: ['languages'],
-    queryFn: getLanguages,
-  });
-
   const { data: levels, isLoading: levelsLoading } = useQuery({
     queryKey: ['levels'],
     queryFn: getLevelTypeService,
-    select: (data) => data.map((level) => ({ value: level.id, label: level.name })),
-  });
-
-  const { data: skills, isLoading: skillsLoading } = useQuery({
-    queryKey: ['skills'],
-    queryFn: getSkillTypeService,
     select: (data) => data.map((level) => ({ value: level.id, label: level.name })),
   });
 
@@ -94,7 +81,22 @@ const CreateCourse: React.FC = () => {
       setCurrentStep(0);
     },
     onError: (err: AxiosError<any>) => {
-      notifyError(err.response?.data?.message || 'Failed to create course.');
+      const errorData = err.response?.data;
+
+      if (errorData?.errors && typeof errorData.errors === 'object') {
+        // Loop through backend field errors and show all messages
+        Object.entries(errorData.errors).forEach(([field, messages]) => {
+          if (Array.isArray(messages)) {
+            messages.forEach((msg) => notifyError(`${field}: ${msg}`));
+          } else {
+            notifyError(`${field}: ${String(messages)}`);
+          }
+        });
+        return;
+      }
+
+      // Fallback for generic message
+      notifyError(errorData?.message || 'Failed to create course.');
     },
   });
 
@@ -144,23 +146,20 @@ const CreateCourse: React.FC = () => {
       title: formValues.title || values.title,
       description: formValues.description || values.description,
       topicIds: formValues.topicIds || values.topicIds,
-      courseType: Number(values.courseType),
-      goalId: Number(values.goalId),
+      courseType: Number(values.courseType || 0),
+      goalIds: values.goalIds || [],
       Level: Number(values.Level),
-      courseSkill: Number(values.courseSkill),
       templateId: formValues.templateId || values.templateId,
-      price: Number(formValues.price),
-      discountPrice: Number(formValues.discountPrice),
+      price: Number(formValues.price || 0),
+      discountPrice: Number(formValues.discountPrice || 0),
       image: fileList[0] as unknown as File,
     };
     createCourse(payload);
   };
 
   const courseTypes = [
-    { value: 0, label: 'Video Course' },
-    { value: 1, label: 'Interactive Course' },
-    { value: 2, label: 'Live Course' },
-    { value: 3, label: 'Self-Paced Course' },
+    { value: 0, label: 'Free Course' },
+    { value: 1, label: 'Paid Course' },
   ];
 
   return (
@@ -222,23 +221,29 @@ const CreateCourse: React.FC = () => {
                         size="large"
                         placeholder="Select template"
                         loading={templatesLoading}
-                        onChange={handleTemplateChange}
-                        dropdownRender={(menu) => (
-                          <>
-                            {menu}
-                            <Button
-                              type="link"
-                              style={{ width: '100%' }}
-                              onClick={() => navigate('/teacher/course/create-template')}>
-                              + Create new template
-                            </Button>
-                          </>
-                        )}>
+                        onChange={handleTemplateChange}>
                         {templates?.data?.map((tpl) => (
                           <Option
                             key={tpl.id}
                             value={tpl.id}>
                             {tpl.name}
+                          </Option>
+                        ))}
+                      </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                      name="courseType"
+                      label="Course Type"
+                      rules={[{ required: true, message: 'Please select course type' }]}>
+                      <Select
+                        size="large"
+                        placeholder="Select type">
+                        {courseTypes.map((ct) => (
+                          <Option
+                            key={ct.value}
+                            value={ct.value}>
+                            {ct.label}
                           </Option>
                         ))}
                       </Select>
@@ -285,67 +290,72 @@ const CreateCourse: React.FC = () => {
                 )}
 
                 {currentStep === 1 && (
-                  <>
-                    <Form.Item
-                      name="price"
-                      label="Base Price"
-                      rules={[{ required: true, message: 'Please enter course price' }]}>
-                      <InputNumber
-                        min={0}
-                        prefix="$"
-                        size="large"
-                        className="w-full"
-                        placeholder="e.g. 100"
-                      />
-                    </Form.Item>
+                  <Row gutter={16}>
+                    <Col
+                      xs={24}
+                      md={12}>
+                      <Form.Item
+                        name="price"
+                        label="Base Price (VNĐ)"
+                        rules={[
+                          {
+                            required: formValues.courseType === 1,
+                            message: 'Please enter course price',
+                          },
+                        ]}>
+                        <InputNumber<number>
+                          min={0}
+                          size="large"
+                          className="w-full"
+                          style={{ width: '100%' }}
+                          placeholder="e.g. 1,000,000"
+                          formatter={(value) =>
+                            value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
+                          }
+                          parser={(value) => Number(value?.replace(/\₫\s?|(,*)/g, '') || 0)}
+                        />
+                      </Form.Item>
+                    </Col>
 
-                    <Form.Item
-                      name="discountPrice"
-                      label="Discount Price (optional)">
-                      <InputNumber
-                        min={0}
-                        prefix="$"
-                        size="large"
-                        className="w-full"
-                        placeholder="e.g. 80"
-                      />
-                    </Form.Item>
-                  </>
+                    <Col
+                      xs={24}
+                      md={12}>
+                      <Form.Item
+                        name="discountPrice"
+                        label="Discount Price (VNĐ, optional)">
+                        <InputNumber<number>
+                          min={0}
+                          size="large"
+                          className="w-full"
+                          style={{ width: '100%' }}
+                          placeholder="e.g. 800,000"
+                          formatter={(value) =>
+                            value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
+                          }
+                          parser={(value) => Number(value?.replace(/\₫\s?|(,*)/g, '') || 0)}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
                 )}
 
                 {currentStep === 2 && (
                   <>
                     <Form.Item
-                      name="courseType"
-                      label="Course Type"
-                      rules={[{ required: true, message: 'Please select course type' }]}>
-                      <Select
-                        size="large"
-                        placeholder="Select type">
-                        {courseTypes.map((ct) => (
-                          <Option
-                            key={ct.value}
-                            value={ct.value}>
-                            {ct.label}
-                          </Option>
-                        ))}
-                      </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                      name="goalId"
-                      label="Learning Goal"
+                      name="goalIds"
+                      label="Learning Goals"
                       rules={
                         selectedTemplate?.requireGoal
-                          ? [{ required: true, message: 'Goal is required for this template' }]
+                          ? [{ required: true, message: 'Please select at least one goal' }]
                           : []
                       }>
                       {goalsLoading ? (
                         <Spin />
                       ) : (
                         <Select
+                          mode="multiple" // ⬅️ enables multi-select
                           size="large"
-                          placeholder="Select goal">
+                          placeholder="Select one or more goals">
                           {goals?.data.map((g) => (
                             <Option
                               key={g.id}
@@ -376,62 +386,6 @@ const CreateCourse: React.FC = () => {
                                 key={l.value}
                                 value={l.value}>
                                 {l.label}
-                              </Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="courseSkill"
-                          rules={
-                            selectedTemplate?.requireSkillFocus
-                              ? [
-                                  {
-                                    required: true,
-                                    message: 'Skill Focus is required for this template',
-                                  },
-                                ]
-                              : []
-                          }
-                          label="Skill Level">
-                          <Select
-                            loading={skillsLoading}
-                            size="large"
-                            placeholder="Select skill">
-                            {skills?.map((s) => (
-                              <Option
-                                key={s.value}
-                                value={s.value}>
-                                {s.label}
-                              </Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="languageId"
-                          label="Language"
-                          rules={
-                            selectedTemplate?.requireLang
-                              ? [
-                                  {
-                                    required: true,
-                                    message: 'Language is required for this template',
-                                  },
-                                ]
-                              : []
-                          }>
-                          <Select
-                            loading={languagesLoading}
-                            size="large"
-                            placeholder="Select language">
-                            {languages?.data?.map((lang) => (
-                              <Option
-                                key={lang.id}
-                                value={lang.langCode}>
-                                {lang.langName}
                               </Option>
                             ))}
                           </Select>
@@ -499,13 +453,16 @@ const CreateCourse: React.FC = () => {
                     <Text
                       strong
                       className="text-indigo-600 text-lg">
-                      ${formValues.price || '0.00'}
+                      {formValues.discountPrice
+                        ? `${Number(formValues.discountPrice).toLocaleString('vi-VN')} ₫`
+                        : `${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`}
                     </Text>
+
                     {formValues.discountPrice && (
                       <Text
                         delete
                         className="text-gray-500">
-                        ${formValues.discountPrice}
+                        {`${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`}
                       </Text>
                     )}
                   </div>

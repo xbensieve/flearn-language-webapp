@@ -39,7 +39,7 @@ export interface CreateCourseRequest {
   price: number;
   discountPrice?: number;
   courseType: number;
-  goalId: number;
+  goalIds?: number[];
   Level?: number;
   courseSkill?: number;
 }
@@ -139,27 +139,26 @@ export interface ApplicationForm {
 }
 
 export interface CourseDetail {
-  courseID: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  templateInfo: { id: string; name: string };
-  price: number;
-  discountPrice?: number;
-  courseType: string;
-  teacherInfo: { id: string; fullName: string; avatarUrl: string };
-  languageInfo: { id: string; name: string; code: string };
-  goalInfo: { id: number; name: string; description: string };
-  courseLevel: string;
-  courseSkill: string;
-  publishedAt: string;
-  status: string;
-  createdAt: string;
-  modifiedAt: string;
-  numLessons: number;
-  approvedBy?: { id: string; fullName: string; avatarUrl: string };
-  approvedAt?: string;
-  topics: Array<{ topicId: string; topicName: string; topicDescription: string; imageUrl: string }>;
+  courseID: string
+  title: string
+  description: string
+  imageUrl: string
+  templateInfo: TemplateInfo
+  price: number
+  discountPrice: number
+  courseType: string
+  teacherInfo: TeacherInfo
+  languageInfo: LanguageInfo
+  goalInfo: GoalInfo
+  courseLevel: string
+  publishedAt: string
+  status: string
+  createdAt: string
+  modifiedAt: string
+  numLessons: number
+  approvedBy: ApprovedBy
+  approvedAt: string
+  topics: Topic[]
 }
 export interface Unit {
   courseUnitID: string;
@@ -172,4 +171,72 @@ export interface Unit {
   isPreview: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ICourseDataStaff {
+  courseSubmissionID: string
+  submissionStatus: string
+  feedback: string
+  submittedAt: string
+  reviewedAt: string
+  course: ICourseStaff
+}
+
+export interface ICourseStaff {
+  courseID: string
+  title: string
+  description: string
+  imageUrl: string
+  templateInfo: TemplateInfo
+  price: number
+  discountPrice: number
+  courseType: string
+  teacherInfo: TeacherInfo
+  languageInfo: LanguageInfo
+  goalInfo: GoalInfo
+  courseLevel: string
+  publishedAt: string
+  status: string
+  createdAt: string
+  modifiedAt: string
+  numLessons: number
+  approvedBy: string
+  approvedAt: string
+  topics: Topic[]
+}
+
+export interface TemplateInfo {
+  templateId: string
+  name: string
+}
+
+export interface TeacherInfo {
+  teacherId: string
+  fullName: string
+  avatar: string
+  email: string
+  phoneNumber: string
+}
+
+export interface LanguageInfo {
+  name: string
+  code: string
+}
+
+export interface GoalInfo {
+  name: string
+  description: string
+}
+
+export interface Topic {
+  topicId: string
+  topicName: string
+  topicDescription: string
+  imageUrl: string
+}
+
+export interface ApprovedBy {
+  staffId: string
+  userName: string
+  email: string
 }

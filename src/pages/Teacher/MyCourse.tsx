@@ -38,17 +38,19 @@ const MyCourses: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center min-h-[60vh]'>
-        <Spin size='large' />
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 py-10 px-4'>
-      <div className='max-w-7xl mx-auto'>
-        <div className='flex justify-between items-center mb-8'>
-          <Title level={2} className='mb-0'>
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <Title
+            level={2}
+            className="mb-0">
             My Courses
           </Title>
 
@@ -57,16 +59,20 @@ const MyCourses: React.FC = () => {
               value={status}
               onChange={handleStatusChange}
               style={{ width: 200 }}
-              placeholder='Filter by status'
-            >
+              placeholder="Filter by status">
               {statusOptions.map((s) => (
-                <Option key={s.value} value={s.value}>
+                <Option
+                  key={s.value}
+                  value={s.value}>
                   {s.label}
                 </Option>
               ))}
             </Select>
 
-            <Button type='primary' icon={<PlusOutlined />} onClick={() => navigate('create')}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate('create')}>
               Create Course
             </Button>
           </Space>
@@ -78,7 +84,11 @@ const MyCourses: React.FC = () => {
               const canEdit = ['Draft', 'Rejected'].includes(course.status);
 
               return (
-                <Col key={course.courseID} xs={24} sm={12} lg={8}>
+                <Col
+                  key={course.courseID}
+                  xs={24}
+                  sm={12}
+                  lg={8}>
                   <Card
                     hoverable
                     cover={
@@ -88,38 +98,44 @@ const MyCourses: React.FC = () => {
                         style={{ height: 200, objectFit: 'cover' }}
                       />
                     }
-                    className='shadow-md rounded-lg'
+                    className="shadow-md rounded-lg"
                     actions={[
-                      <Button type='link' onClick={() => navigate(`${course.courseID}`)}>
+                      <Button
+                        type="link"
+                        onClick={() => navigate(`${course.courseID}`)}>
                         View Details
                       </Button>,
                       canEdit && (
                         <Button
-                          type='link'
-                          key='edit'
-                          onClick={() => navigate(`${course.courseID}/edit`)}
-                        >
+                          type="link"
+                          key="edit"
+                          onClick={() => navigate(`${course.courseID}/edit`)}>
                           Edit
                         </Button>
                       ),
-                    ].filter(Boolean)}
-                  >
+                    ].filter(Boolean)}>
                     <Title level={4}>{course.title}</Title>
                     <Paragraph ellipsis={{ rows: 2 }}>{course.description}</Paragraph>
-                    <div className='flex justify-between items-center mt-2'>
+                    <div className="flex justify-between items-center mt-2">
                       <span>
                         {course.discountPrice ? (
                           <>
-                            <span className='line-through text-gray-400 mr-2'>${course.price}</span>
-                            <span className='text-green-600 font-bold'>
-                              ${course.discountPrice}
+                            <span className="line-through text-gray-400 mr-2">
+                              {Number(course.price).toLocaleString('vi-VN')} VNĐ
+                            </span>
+                            <span className="text-green-600 font-bold">
+                              {Number(course.discountPrice).toLocaleString('vi-VN')} VNĐ
                             </span>
                           </>
                         ) : (
-                          <span className='text-primary font-bold'>${course.price}</span>
+                          <span className="text-primary font-bold">
+                            {Number(course.price).toLocaleString('vi-VN')} VNĐ
+                          </span>
                         )}
                       </span>
-                      <Tag color='blue' style={{ marginRight: 0 }}>
+                      <Tag
+                        color="blue"
+                        style={{ marginRight: 0 }}>
                         {formatStatusLabel(course.status)}
                       </Tag>
                     </div>
@@ -129,8 +145,11 @@ const MyCourses: React.FC = () => {
             })}
           </Row>
         ) : (
-          <div className='flex flex-col justify-center items-center min-h-[60vh]'>
-            <Empty description='No courses found' image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          <div className="flex flex-col justify-center items-center min-h-[60vh]">
+            <Empty
+              description="No courses found"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
           </div>
         )}
       </div>

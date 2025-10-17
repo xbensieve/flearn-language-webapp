@@ -24,6 +24,8 @@ import {
 } from '../../services/course';
 import type { Unit, Lesson } from '../../services/course/type';
 import { PlusOutlined } from '@ant-design/icons';
+import type { AxiosError } from 'axios';
+import { notifyError } from '../../utils/toastConfig';
 
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
@@ -66,6 +68,10 @@ const CourseDetail: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['course', courseId] });
       refetchUnits();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: AxiosError<any>) => {
+      notifyError(error.response?.data?.message || 'Failed to create unit');
+    },
   });
 
   const handleAddUnit = (values: { title: string; description: string }) => {
@@ -88,6 +94,12 @@ const CourseDetail: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-4">
+      <Button
+        onClick={() => navigate(-1)}
+        type="default"
+        className="mb-4">
+        ← Back
+      </Button>
       <Row gutter={[24, 24]}>
         {/* LEFT: Course Info */}
         <Col

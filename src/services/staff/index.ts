@@ -2,8 +2,12 @@ import api from '../../config/axios';
 import type { ApplicationData } from '../teacherApplication/types';
 
 // Pending list
-export const getPendingApplications = async (): Promise<API.Response<ApplicationData[]>> => {
-  const res = await api.get('staff/applications');
+export const getPendingApplications = async (params: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+}): Promise<API.Response<ApplicationData[]>> => {
+  const res = await api.get('staff/applications', {params});
   return res.data;
 };
 

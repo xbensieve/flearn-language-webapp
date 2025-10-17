@@ -107,7 +107,7 @@ const LearnerLayout = () => {
             mode="horizontal"
             selectedKeys={[selectedKey]}
             items={
-              roles?.includes('teacher')
+              roles?.includes('Teacher')
                 ? [
                     // { key: '/learner/profile', label: <Link to='/learner/profile'>Profile</Link> },
                     {
