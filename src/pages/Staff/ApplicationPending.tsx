@@ -1,217 +1,206 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
+import { Table, Button, message, Space, Tag, Popconfirm, Modal, Input, Select } from 'antd';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Table, Modal, Button, Descriptions, message, Space, Input, Spin } from 'antd';
 import type { ApplicationData } from '../../services/teacherApplication/types';
 import {
-  getApplicationDetail,
   getPendingApplications,
-  reviewApplication,
+  reviewApproveApplication,
+  reviewRejectApplication,
 } from '../../services/staff';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 
-const ApplicationsPending: React.FC = () => {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+const { Option } = Select;
+
+const statusMap: Record<string, { text: string; color: string }> = {
+  Pending: { text: 'Pending', color: 'blue' },
+  Approved: { text: 'Approved', color: 'green' },
+  Rejected: { text: 'Rejected', color: 'red' },
+};
+
+const ApplicationsManagement: React.FC = () => {
+  const [filterStatus, setFilterStatus] = useState<string>('Pending');
   const [rejectReason, setRejectReason] = useState('');
-  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [selectedRejectId, setSelectedRejectId] = useState<string | null>(null);
 
-  // Fetch pending list
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['pendingApplications'],
-    queryFn: getPendingApplications,
+  // Fetch applications with filter
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['applications', filterStatus],
+    queryFn: () => getPendingApplications({ status: filterStatus }),
   });
 
-  // Fetch application detail (only enabled when a row is selected)
-  const { data: detail, isLoading: detailLoading } = useQuery({
-    queryKey: ['applicationDetail', selectedId],
-    queryFn: () => getApplicationDetail(selectedId as string),
-    enabled: !!selectedId,
-  });
-
-  // Review mutation
-  const reviewMutation = useMutation({
-    mutationFn: reviewApplication,
+  // --- Approve mutation ---
+  const approveMutation = useMutation({
+    mutationFn: (payload: { applicationId: string }) => reviewApproveApplication(payload),
     onSuccess: () => {
-      notifySuccess('Application reviewed successfully!');
-      setSelectedId(null);
-      setShowReviewModal(false);
-      setRejectReason('');
+      notifySuccess('Application approved successfully!');
       refetch();
     },
-    onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to review application');
-    },
+    onError: (err: any) =>
+      notifyError(err?.response?.data?.message || 'Failed to approve application'),
   });
 
-  const handleView = (id: string) => {
-    setSelectedId(id);
+  // --- Reject mutation ---
+  const rejectMutation = useMutation({
+    mutationFn: (payload: { applicationId: string; reason?: string }) =>
+      reviewRejectApplication(payload),
+    onSuccess: () => {
+      notifySuccess('Application rejected successfully!');
+      setRejectModalOpen(false);
+      setRejectReason('');
+      setSelectedRejectId(null);
+      refetch();
+    },
+    onError: (err: any) =>
+      notifyError(err?.response?.data?.message || 'Failed to reject application'),
+  });
+
+  // --- Handlers ---
+  const handleApprove = (applicationId: string) => {
+    approveMutation.mutate({ applicationId });
   };
 
-  const handleClose = () => {
-    setSelectedId(null);
-    setRejectReason('');
-    setShowReviewModal(false);
+  const openRejectModal = (applicationId: string) => {
+    setSelectedRejectId(applicationId);
+    setRejectModalOpen(true);
   };
 
-  const handleApprove = () => {
-    if (!detail?.data) return;
-    reviewMutation.mutate({
-      applicationId: detail.data.teacherApplicationID,
-      isApproved: true,
-    });
+  const handleConfirmReject = () => {
+    if (!rejectReason.trim()) return message.warning('Please enter a rejection reason');
+    if (!selectedRejectId) return;
+    rejectMutation.mutate({ applicationId: selectedRejectId, reason: rejectReason });
   };
 
-  const handleReject = () => {
-    if (!detail?.data) return;
-    if (!rejectReason) {
-      return message.warning('Please enter a rejection reason');
-    }
-    reviewMutation.mutate({
-      applicationId: detail.data.teacherApplicationID,
-      isApproved: false,
-      rejectionReason: rejectReason,
-    });
+  const handleFilterChange = (value: string) => {
+    setFilterStatus(value);
+    refetch();
   };
 
   const columns = [
-    { title: 'Applicant', dataIndex: 'userName', key: 'userName' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
-    { title: 'Language', dataIndex: 'languageName', key: 'languageName' },
-    { title: 'Applied At', dataIndex: 'appliedAt', key: 'appliedAt' },
     {
-      title: 'Credentials',
-      key: 'credentials',
+      title: 'Applicant',
+      dataIndex: 'fullName',
+      key: 'fullName',
+      render: (text: string) => text || 'N/A',
+    },
+    { title: 'Email', dataIndex: 'email', key: 'email' },
+    {
+      title: 'Language',
+      key: 'language',
+      render: (_: any, record: ApplicationData) => record.language?.langName ?? 'N/A',
+    },
+    {
+      title: 'Status',
+      key: 'status',
+      render: (_: any, record: ApplicationData) => {
+        const map = statusMap[record.status] || { text: 'Unknown', color: 'default' };
+        return <Tag color={map.color}>{map.text}</Tag>;
+      },
+    },
+    {
+      title: 'Applied At',
+      dataIndex: 'submittedAt',
+      key: 'submittedAt',
+      render: (date: string) => (date ? new Date(date).toLocaleString() : 'Unknown'),
+    },
+    {
+      title: 'Certificates',
+      key: 'certificates',
       render: (_: any, record: ApplicationData) =>
-        record.credentials?.length ? (
+        record.certificates?.length ? (
           <ul>
-            {record.credentials.map((c) => (
-              <li key={c.teacherCredentialID}>
+            {record.certificates.map((c: any, idx: number) => (
+              <li key={idx}>
                 <a
-                  href={c.credentialFileUrl}
+                  href={c.certificateImageUrl}
                   target="_blank"
                   rel="noopener noreferrer">
-                  {c.credentialName}
+                  {c.credentialName || 'View File'}
                 </a>
               </li>
             ))}
           </ul>
         ) : (
-          'No credentials'
+          'No certificates'
         ),
     },
     {
-      title: 'Action',
-      key: 'action',
+      title: 'Actions',
+      key: 'actions',
       render: (_: any, record: ApplicationData) => (
-        <Button
-          type="link"
-          onClick={() => handleView(record.teacherApplicationID)}>
-          View
-        </Button>
+        <Space>
+          <Popconfirm
+            title="Approve this application?"
+            onConfirm={() => handleApprove(record.applicationID)}
+            okText="Yes"
+            cancelText="No">
+            <Button
+              type="primary"
+              loading={approveMutation.isPending}
+              disabled={record.status !== 'Pending'}>
+              Approve
+            </Button>
+          </Popconfirm>
+
+          <Button
+            danger
+            onClick={() => openRejectModal(record.applicationID)}
+            loading={rejectMutation.isPending}
+            disabled={record.status !== 'Pending'}>
+            Reject
+          </Button>
+        </Space>
       ),
     },
   ];
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">Pending Applications</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-semibold">Teacher Applications</h1>
+
+        <Space>
+          <Select
+            value={filterStatus}
+            onChange={handleFilterChange}
+            style={{ width: 180 }}
+            loading={isFetching}>
+            <Option value="pending">Pending</Option>
+            <Option value="approved">Approved</Option>
+            <Option value="rejected">Rejected</Option>
+          </Select>
+          <Button onClick={() => refetch()}>Refresh</Button>
+        </Space>
+      </div>
+
       <Table
-        rowKey="teacherApplicationID"
+        rowKey="applicationID"
         loading={isLoading}
         columns={columns}
         dataSource={data?.data || []}
+        pagination={{ pageSize: 10 }}
       />
 
-      {/* Detail modal */}
+      {/* Reject Modal */}
       <Modal
-        open={!!selectedId}
-        title={
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '24px',
-            }}>
-            <span>Application Detail</span>
-            <Button
-              type="primary"
-              onClick={() => setShowReviewModal(true)}>
-              Review
-            </Button>
-          </div>
-        }
-        onCancel={handleClose}
-        footer={null}
-        width={800}>
-        {detailLoading ? (
-          <Spin />
-        ) : detail?.data ? (
-          <Descriptions
-            bordered
-            column={1}
-            size="small">
-            <Descriptions.Item label="Name">{detail.data.userName}</Descriptions.Item>
-            <Descriptions.Item label="Email">{detail.data.email}</Descriptions.Item>
-            <Descriptions.Item label="Language">{detail.data.languageName}</Descriptions.Item>
-            <Descriptions.Item label="Motivation">{detail.data.motivation}</Descriptions.Item>
-            <Descriptions.Item label="Applied At">{detail.data.appliedAt}</Descriptions.Item>
-            <Descriptions.Item label="Credentials">
-              {detail.data.credentials?.length ? (
-                <ul style={{ margin: 0, paddingLeft: 16 }}>
-                  {detail.data.credentials.map((c) => (
-                    <li key={c.teacherCredentialID}>
-                      <a
-                        href={c.credentialFileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer">
-                        {c.credentialName}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                'No credentials'
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-        ) : (
-          <p>No data found</p>
-        )}
-      </Modal>
-
-      {/* Review modal */}
-      <Modal
-        open={showReviewModal}
-        title="Review Application"
-        onCancel={() => setShowReviewModal(false)}
-        footer={null}>
-        <Space
-          direction="vertical"
-          style={{ width: '100%' }}>
-          <Input
-            placeholder="Rejection reason (optional if approving)"
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-          />
-          <Space>
-            <Button
-              type="primary"
-              onClick={handleApprove}
-              loading={reviewMutation.isPending}>
-              Approve
-            </Button>
-            <Button
-              danger
-              onClick={handleReject}
-              loading={reviewMutation.isPending}>
-              Reject
-            </Button>
-          </Space>
-        </Space>
+        open={rejectModalOpen}
+        title="Reject Application"
+        onCancel={() => setRejectModalOpen(false)}
+        onOk={handleConfirmReject}
+        confirmLoading={rejectMutation.isPending}
+        okText="Reject"
+        okButtonProps={{ danger: true }}>
+        <p>Please provide a reason for rejection:</p>
+        <Input.TextArea
+          rows={4}
+          placeholder="Enter rejection reason"
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
       </Modal>
     </div>
   );
 };
 
-export default ApplicationsPending;
+export default ApplicationsManagement;

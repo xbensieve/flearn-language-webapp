@@ -13,6 +13,7 @@ const LearnerLayout = () => {
   const location = useLocation();
   const selectedKey = location.pathname;
   const navigate = useNavigate();
+  const roles = localStorage.getItem('FLEARN_USER_ROLES');
 
   const { mutate: logout, isPending: isLoggingOut } = useMutation({
     mutationFn: (refreshToken: string) => logoutService(refreshToken),
@@ -43,6 +44,18 @@ const LearnerLayout = () => {
         icon: <NotebookPen size={18} />,
         label: 'take a survey',
         onClick: () => navigate('survey/create'),
+      },
+      {
+        key: 'teacher',
+        icon: <NotebookPen size={18} />,
+        label: 'Teacher Workspace',
+        onClick: () => navigate('/teacher'),
+      },
+      {
+        key: 'profile',
+        icon: <NotebookPen size={18} />,
+        label: 'Profile',
+        onClick: () => navigate('/learner/profile'),
       },
     ],
   };
@@ -93,12 +106,28 @@ const LearnerLayout = () => {
             className="border-0 bg-transparent"
             mode="horizontal"
             selectedKeys={[selectedKey]}
-            items={[
-              { key: '/learner', label: <Link to="/learner">Home</Link> },
-              { key: '/learner/application', label: <Link to="/learner/application">Apply</Link> },
-              { key: '/learner/profile', label: <Link to="/learner/profile">Profile</Link> },
-              { key: '/learner/status', label: <Link to="/learner/status">My Applications</Link> },
-            ]}
+            items={
+              roles?.includes('Teacher')
+                ? [
+                    // { key: '/learner/profile', label: <Link to='/learner/profile'>Profile</Link> },
+                    {
+                      key: '/learner/status',
+                      label: <Link to="/learner/status">My Applications</Link>,
+                    },
+                  ]
+                : [
+                    // { key: '/learner', label: <Link to='/learner'>Home</Link> },
+                    {
+                      key: '/learner/application',
+                      label: <Link to="/learner/application">Apply</Link>,
+                    },
+                    // { key: '/learner/profile', label: <Link to='/learner/profile'>Profile</Link> },
+                    {
+                      key: '/learner/status',
+                      label: <Link to="/learner/status">My Applications</Link>,
+                    },
+                  ]
+            }
           />
 
           {/* User Dropdown */}

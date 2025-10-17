@@ -34,11 +34,16 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Response interceptor to handle 401
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
+
+    // 👇 Skip token refresh for login or refresh endpoints
+    const skipUrls = ['/login', '/auth/login', '/auth/refresh'];
+    if (skipUrls.some((url) => originalRequest?.url?.includes(url))) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -78,7 +83,7 @@ api.interceptors.response.use(
         processQueue(err, null);
         localStorage.removeItem('FLEARN_ACCESS_TOKEN');
         localStorage.removeItem('FLEARN_REFRESH_TOKEN');
-        window.location.href = '/login'; // redirect to login
+        window.location.href = '/login';
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
@@ -88,5 +93,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default api;
