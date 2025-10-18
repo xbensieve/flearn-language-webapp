@@ -5,7 +5,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { logoutService } from '../../services/auth';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { LogOut, NotebookPen } from 'lucide-react';
+import { LogOut, } from 'lucide-react';
 
 const { Header, Content, Footer } = Layout;
 
@@ -39,24 +39,7 @@ const LearnerLayout = () => {
         label: 'Logout',
         onClick: () => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') || ''),
       },
-      {
-        key: 'survey',
-        icon: <NotebookPen size={18} />,
-        label: 'take a survey',
-        onClick: () => navigate('survey/create'),
-      },
-      {
-        key: 'teacher',
-        icon: <NotebookPen size={18} />,
-        label: 'Teacher Workspace',
-        onClick: () => navigate('/teacher'),
-      },
-      {
-        key: 'profile',
-        icon: <NotebookPen size={18} />,
-        label: 'Profile',
-        onClick: () => navigate('/learner/profile'),
-      },
+     
     ],
   };
 
@@ -139,7 +122,7 @@ const LearnerLayout = () => {
                 icon={<UserOutlined />}
                 className="bg-primary"
               />
-              <span className="text-foreground font-medium">Learner</span>
+              <span className="text-foreground font-medium">{localStorage.getItem('FLEARN_USER_NAME')}</span>
             </div>
           </Dropdown>
         </Header>

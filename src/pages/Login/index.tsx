@@ -19,7 +19,6 @@ const ROLE_PATHS: Record<string, string> = {
   learner: '/learner/application',
 };
 
-// role-based redirect
 const rolesCase = (roles: string[], navigate: any) => {
   const priority = ['admin', 'staff', 'teacher', 'learner'];
   const matchedRole = priority.find((r) => roles.some((ur) => ur.toLowerCase() === r));
@@ -32,7 +31,6 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { updateAuth } = useAuth();
 
-  // Check local roles
   useEffect(() => {
     const rolesString = localStorage.getItem('FLEARN_USER_ROLES');
     if (rolesString) {
@@ -45,16 +43,14 @@ const Login: React.FC = () => {
     }
   }, [navigate]);
 
-  // ===== NORMAL LOGIN =====
+  // ===== LOGIN API =====
   const mutation = useMutation({
     mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
       login(values),
     onMutate: () => setLoading(true),
     onSettled: () => setLoading(false),
     onSuccess: (data) => {
-      if (data.success) {
-        handleAuthSuccess(data.data);
-      }
+      if (data.success) handleAuthSuccess(data.data);
     },
     onError: (err: AxiosError<any>) => notifyError(err?.response?.data?.message || 'Login failed'),
   });
@@ -63,9 +59,7 @@ const Login: React.FC = () => {
   const googleMutation = useMutation({
     mutationFn: (idToken: string) => loginWithGoogle(idToken),
     onSuccess: (data: any) => {
-      if (data.success) {
-        handleAuthSuccess(data.data);
-      }
+      if (data.success) handleAuthSuccess(data.data);
     },
     onError: (err: AxiosError<any>) => {
       notifyError(err?.response?.data?.message || 'Google login failed');
@@ -83,7 +77,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = (values: any) => mutation.mutate(values);
 
-  // ===== GOOGLE BUTTON INITIALIZATION =====
+  // ===== GOOGLE BUTTON INIT =====
   useEffect(() => {
     // @ts-expect-error
     if (window.google) {
@@ -103,85 +97,117 @@ const Login: React.FC = () => {
   }, []);
 
   const handleGoogleCallback = (response: any) => {
-    if (response.credential) {
-      googleMutation.mutate(response.credential);
-    } else {
-      notifyError('Failed to get Google token');
-    }
+    if (response.credential) googleMutation.mutate(response.credential);
+    else notifyError('Failed to get Google token');
   };
 
-  // ===== UI STYLES =====
-  const page: React.CSSProperties = {
-    height: '100vh',
+  // ===== CSS =====
+  const wrapper: React.CSSProperties = {
     width: '100vw',
-    background: '#e5e7eb',
+    height: '100vh',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
-  const container: React.CSSProperties = {
-    background: '#fff',
-    borderRadius: 16,
-    display: 'grid',
-    gridTemplateColumns: '55% 45%',
+    flexDirection: 'row',
     overflow: 'hidden',
-    width: '90%',
-    maxWidth: 1000,
-    boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
   };
 
   const left: React.CSSProperties = {
+    flex: 1,
     backgroundImage:
       "url('https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=1600&q=80')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     position: 'relative',
+    display: 'flex',
+    alignItems: 'flex-end',
   };
 
   const overlay: React.CSSProperties = {
-    position: 'absolute',
-    bottom: 0,
-    background: 'rgba(0,0,0,0.45)',
-    padding: 24,
+    width: '100%',
+    padding: '24px 32px',
+    background: 'rgba(0, 0, 0, 0.5)',
     color: '#fff',
   };
 
   const right: React.CSSProperties = {
-    padding: '48px 64px',
+    flex: 1,
+    background: '#fff',
     display: 'flex',
-    flexDirection: 'column',
+    alignItems: 'center',
     justifyContent: 'center',
+    padding: '60px 80px',
+  };
+
+  const formBox: React.CSSProperties = {
+    width: '100%',
+    maxWidth: 380,
+  };
+
+  const switchButtons: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 12,
+    marginBottom: 28,
   };
 
   return (
-    <section style={page}>
-      <div style={container}>
-        {/* LEFT SIDE */}
-        <div style={left}>
-          <div style={overlay}>
-            <Title level={4} style={{ color: '#fff', margin: 0 }}>
-              Join our community
-            </Title>
-            <Text style={{ color: '#e5e7eb' }}>Start your journey with us today</Text>
-          </div>
+    <div style={wrapper}>
+      {/* LEFT IMAGE */}
+      <div style={left}>
+        <div style={overlay}>
+          <Title level={4} style={{ color: '#fff', margin: 0 }}>
+            Join our community
+          </Title>
+          <Text style={{ color: '#e5e7eb' }}>Start your journey with us today</Text>
         </div>
+      </div>
 
-        {/* RIGHT SIDE */}
-        <div style={right}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Text style={{ fontSize: 24, fontWeight: 600 }}>Welcome back!</Text>
+      {/* RIGHT FORM */}
+      <div style={right}>
+        <div style={formBox}>
+          {/* TITLE */}
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <Text style={{ fontSize: 26, fontWeight: 600 }}>Welcome back!</Text>
           </div>
 
+          {/* Login / Register Switch */}
+          <div style={switchButtons}>
+            <Button
+              type='primary'
+              shape='round'
+              onClick={() => navigate('/login')}
+              style={{ backgroundColor: '#06b6d4', fontWeight: 600 }}
+            >
+              Login
+            </Button>
+            <Button
+              shape='round'
+              onClick={() => navigate('/register')}
+              style={{
+                borderColor: '#06b6d4',
+                color: '#06b6d4',
+                fontWeight: 600,
+              }}
+            >
+              Register
+            </Button>
+          </div>
+
+          {/* FORM */}
           <Form form={form} layout='vertical' onFinish={handleSubmit}>
             <Form.Item
-              label='User name'
+              label='Username or Email'
               name='usernameOrEmail'
-              rules={[{ required: true, message: 'Please enter your user name!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter your username or email!',
+                },
+              ]}
             >
               <Input
                 prefix={<UserOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
-                placeholder='Enter your User name'
+                placeholder='Enter your username or email'
               />
             </Form.Item>
 
@@ -192,13 +218,31 @@ const Login: React.FC = () => {
             >
               <Input.Password
                 prefix={<LockOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
-                placeholder='Enter your Password'
+                placeholder='Enter your password'
               />
             </Form.Item>
 
-            <Form.Item name='rememberMe' valuePropName='checked'>
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
+            {/* Forgot Password link */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 20,
+              }}
+            >
+              <Form.Item name='rememberMe' valuePropName='checked' noStyle>
+                <Checkbox>Remember me</Checkbox>
+              </Form.Item>
+
+              <Button
+                type='link'
+                onClick={() => navigate('/forgot-password')}
+                style={{ padding: 0, color: '#06b6d4', fontWeight: 500 }}
+              >
+                Forgot password?
+              </Button>
+            </div>
 
             <Button
               type='primary'
@@ -216,6 +260,11 @@ const Login: React.FC = () => {
               {loading ? 'Logging in...' : 'Login'}
             </Button>
           </Form>
+
+          {/* Divider */}
+          <div style={{ textAlign: 'center', marginTop: 16, color: '#9ca3af' }}>
+            <Link to='/register'>Register now</Link>
+          </div>
 
           {/* Divider */}
           <div style={{ textAlign: 'center', marginTop: 16, color: '#9ca3af' }}>
@@ -246,7 +295,7 @@ const Login: React.FC = () => {
           </Button>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
