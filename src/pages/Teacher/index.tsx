@@ -2,7 +2,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { Form, Input, Button, Select, Upload, DatePicker, Typography, Spin, Steps } from 'antd';
+import {
+  Form,
+  Input,
+  Button,
+  Select,
+  Upload,
+  DatePicker,
+  Typography,
+  Spin,
+  Steps,
+  Avatar,
+} from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import {
   getLanguages,
@@ -56,7 +67,10 @@ const TeacherApplicationPage: React.FC = () => {
   // ✅ Submit / Update
   const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: submitTeacherApplication,
-    onSuccess: () => notifySuccess('Application submitted successfully!'),
+    onSuccess: () => {
+      notifySuccess('Application submitted successfully!');
+      navigate('/teacher');
+    },
     onError: (err: AxiosError<any>) => {
       toast.error(err.response?.data.errors || 'Failed to submit application.');
     },
@@ -96,6 +110,7 @@ const TeacherApplicationPage: React.FC = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      console.log(values);
       const allData = { ...formData, ...values };
 
       const certificateImagesList = allData.Certificates?.map(
@@ -118,10 +133,12 @@ const TeacherApplicationPage: React.FC = () => {
         CertificateTypeIds: Array.isArray(CertificateTypeId) ? CertificateTypeId : [],
       };
 
-      if (
-        response?.data.status.toLowerCase() === 'pending' ||
-        response?.data.status.toLowerCase() === 'rejected'
-      ) {
+      if (!response?.data && !response?.data.status) {
+        mutate(payload);
+        return;
+      }
+
+      if (response?.data.status === 'Pending' || response?.data.status === 'Rejected') {
         updateMutate(payload);
       } else {
         mutate(payload);
@@ -137,21 +154,18 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Language',
       content: (
-        <Form
-          form={form}
-          layout="vertical"
-          size="large">
+        <Form form={form} layout='vertical' size='large'>
           <Form.Item
-            name="LangCode"
-            label="Language"
-            rules={[{ required: true, message: 'Please select a language' }]}>
+            name='LangCode'
+            label='Language'
+            rules={[{ required: true, message: 'Please select a language' }]}
+          >
             <Select
               placeholder={loadingLanguages ? 'Loading...' : 'Select a language'}
-              loading={loadingLanguages}>
+              loading={loadingLanguages}
+            >
               {languagesData?.data?.map((lang: Language) => (
-                <Option
-                  key={lang.langCode}
-                  value={lang.langCode}>
+                <Option key={lang.langCode} value={lang.langCode}>
                   {lang.langName} ({lang.langCode})
                 </Option>
               ))}
@@ -163,72 +177,50 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Basic Information',
       content: (
-        <Form
-          form={form}
-          layout="vertical"
-          size="large">
-          <Form.Item
-            name="FullName"
-            label="Full Name"
-            rules={[{ required: true }]}>
-            <Input placeholder="Your full name" />
+        <Form form={form} layout='vertical' size='large'>
+          <Form.Item name='FullName' label='Full Name' rules={[{ required: true }]}>
+            <Input placeholder='Your full name' />
+          </Form.Item>
+
+          <Form.Item name='BirthDate' label='Birth Date' rules={[{ required: true }]}>
+            <DatePicker className='w-full' />
+          </Form.Item>
+
+          <Form.Item name='Bio' label='Bio' rules={[{ required: true }]}>
+            <Input.TextArea rows={3} placeholder='Write a short bio' />
           </Form.Item>
 
           <Form.Item
-            name="BirthDate"
-            label="Birth Date"
-            rules={[{ required: true }]}>
-            <DatePicker className="w-full" />
+            name='Email'
+            label='Email'
+            rules={[{ required: true, type: 'email', message: 'Invalid email' }]}
+          >
+            <Input placeholder='you@example.com' />
+          </Form.Item>
+
+          <Form.Item name='PhoneNumber' label='Phone Number' rules={[{ required: true }]}>
+            <Input placeholder='+84...' />
           </Form.Item>
 
           <Form.Item
-            name="Bio"
-            label="Bio"
-            rules={[{ required: true }]}>
-            <Input.TextArea
-              rows={3}
-              placeholder="Write a short bio"
-            />
+            name='TeachingExperience'
+            label='Teaching Experience'
+            rules={[{ required: true }]}
+          >
+            <Input.TextArea rows={3} placeholder='Describe your experience' />
+          </Form.Item>
+
+          <Form.Item name='MeetingUrl' label='Meeting URL'>
+            <Input placeholder='https://zoom.us/...' />
           </Form.Item>
 
           <Form.Item
-            name="Email"
-            label="Email"
-            rules={[{ required: true, type: 'email', message: 'Invalid email' }]}>
-            <Input placeholder="you@example.com" />
-          </Form.Item>
-
-          <Form.Item
-            name="PhoneNumber"
-            label="Phone Number"
-            rules={[{ required: true }]}>
-            <Input placeholder="+84..." />
-          </Form.Item>
-
-          <Form.Item
-            name="TeachingExperience"
-            label="Teaching Experience"
-            rules={[{ required: true }]}>
-            <Input.TextArea
-              rows={3}
-              placeholder="Describe your experience"
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="MeetingUrl"
-            label="Meeting URL">
-            <Input placeholder="https://zoom.us/..." />
-          </Form.Item>
-
-          <Form.Item
-            name="Avatar"
-            label="Profile Picture"
-            valuePropName="fileList"
-            getValueFromEvent={(e) => e.fileList}>
-            <Upload
-              beforeUpload={() => false}
-              listType="picture">
+            name='Avatar'
+            label='Profile Picture'
+            valuePropName='fileList'
+            getValueFromEvent={(e) => e.fileList}
+          >
+            <Upload beforeUpload={() => false} listType='picture'>
               <Button icon={<UploadOutlined />}>Upload Avatar</Button>
             </Upload>
           </Form.Item>
@@ -238,28 +230,26 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Certificates',
       content: (
-        <Form
-          form={form}
-          layout="vertical"
-          size="large">
-          <Form.List name="Certificates">
+        <Form form={form} layout='vertical' size='large'>
+          <Form.List name='Certificates'>
             {(fields, { add, remove }) => (
               <>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="font-semibold text-gray-700 flex items-center gap-2">
+                <div className='flex items-center justify-between mb-3'>
+                  <div className='font-semibold text-gray-700 flex items-center gap-2'>
                     🎓 Certificates
                   </div>
                   <Button
-                    type="dashed"
+                    type='dashed'
                     onClick={() => add()}
                     disabled={!selectedLanguage}
-                    icon={<UploadOutlined />}>
+                    icon={<UploadOutlined />}
+                  >
                     Add Certificate
                   </Button>
                 </div>
 
                 {loadingCertificates && (
-                  <div className="flex justify-center py-4">
+                  <div className='flex justify-center py-4'>
                     <Spin />
                   </div>
                 )}
@@ -270,20 +260,21 @@ const TeacherApplicationPage: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="border rounded-xl p-4 mb-4 bg-gray-50 relative">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    className='border rounded-xl p-4 mb-4 bg-gray-50 relative'
+                  >
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateTypeId']}
-                        label="Certificate Type"
-                        rules={[{ required: true }]}>
+                        label='Certificate Type'
+                        rules={[{ required: true }]}
+                      >
                         <Select
-                          placeholder="Select certificate type"
-                          disabled={!selectedLanguage || loadingCertificates}>
+                          placeholder='Select certificate type'
+                          disabled={!selectedLanguage || loadingCertificates}
+                        >
                           {certificatesData?.data?.map((cert: Certificate) => (
-                            <Option
-                              key={cert.certificateId}
-                              value={cert.certificateId}>
+                            <Option key={cert.certificateId} value={cert.certificateId}>
                               {cert.name}
                             </Option>
                           ))}
@@ -293,14 +284,12 @@ const TeacherApplicationPage: React.FC = () => {
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateImage']}
-                        label="Certificate Image"
-                        valuePropName="fileList"
+                        label='Certificate Image'
+                        valuePropName='fileList'
                         getValueFromEvent={(e) => e.fileList}
-                        rules={[{ required: true, message: 'Please upload image' }]}>
-                        <Upload
-                          beforeUpload={() => false}
-                          listType="picture-card"
-                          maxCount={1}>
+                        rules={[{ required: true, message: 'Please upload image' }]}
+                      >
+                        <Upload beforeUpload={() => false} listType='picture-card' maxCount={1}>
                           <div>
                             <UploadOutlined />
                             <div style={{ marginTop: 8 }}>Upload</div>
@@ -310,10 +299,11 @@ const TeacherApplicationPage: React.FC = () => {
                     </div>
 
                     <Button
-                      type="text"
+                      type='text'
                       danger
-                      className="absolute top-2 right-2"
-                      onClick={() => remove(name)}>
+                      className='absolute top-2 right-2'
+                      onClick={() => remove(name)}
+                    >
                       Remove
                     </Button>
                   </motion.div>
@@ -327,35 +317,109 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Review & Submit',
       content: (
-        <div className="text-center">
-          <Paragraph className="text-gray-600 mb-4">
-            Please review your information before submitting your application.
-          </Paragraph>
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            loading={isSubmitting || isUpdating}
-            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-indigo-600 to-blue-500">
-            Submit Application
-          </Button>
+        <div className='space-y-6'>
+          <Title level={4} className='text-center text-indigo-600 mb-6'>
+            Review Your Application
+          </Title>
+
+          {/* Language */}
+          <div className='border rounded-lg p-4 bg-gray-50'>
+            <Paragraph className='text-gray-700 font-semibold mb-1'>Language</Paragraph>
+            <p className='text-gray-800'>
+              {languagesData?.data?.find((l: any) => l.langCode === formData.LangCode)?.langName ||
+                'Not selected'}{' '}
+              ({formData.LangCode})
+            </p>
+          </div>
+
+          {/* Basic Info */}
+          <div className='border rounded-lg p-4 bg-gray-50'>
+            <Paragraph className='text-gray-700 font-semibold mb-2'>Basic Information</Paragraph>
+
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-800'>
+              {/* Avatar + Name */}
+              <div className='flex items-center gap-3'>
+                {formData.Avatar?.[0] && (
+                  <Avatar
+                    src={URL.createObjectURL(formData.Avatar[0].originFileObj)}
+                    alt='Avatar Preview'
+                    className='!w-10 !h-10 border object-cover rounded-full'
+                  />
+                )}
+                <span className='font-medium'>{formData.FullName || '-'}</span>
+              </div>
+
+              {/* Info Fields */}
+              {[
+                { label: 'Birth Date', value: formData.BirthDate?.format?.('YYYY-MM-DD') },
+                { label: 'Email', value: formData.Email },
+                { label: 'Phone', value: formData.PhoneNumber },
+                { label: 'Meeting URL', value: formData.MeetingUrl },
+                { label: 'Bio', value: formData.Bio, full: true },
+                { label: 'Teaching Experience', value: formData.TeachingExperience, full: true },
+              ].map((field, idx) => (
+                <p key={idx} className={field.full ? 'sm:col-span-2' : ''}>
+                  <strong>{field.label}:</strong> {field.value || '-'}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* Certificates */}
+          {formData.Certificates && formData.Certificates.length > 0 && (
+            <div className='border rounded-lg p-4 bg-gray-50'>
+              <Paragraph className='text-gray-700 font-semibold mb-2'>Certificates</Paragraph>
+              <div className='space-y-4'>
+                {formData.Certificates.map((cert: any, idx: number) => {
+                  const certInfo = certificatesData?.data?.find(
+                    (c: Certificate) => c.certificateId === cert.CertificateTypeId
+                  );
+                  return (
+                    <div key={idx} className='border rounded-lg p-3 bg-white shadow-sm'>
+                      <p className='font-semibold text-gray-800 mb-1'>
+                        {certInfo?.name || 'Unknown Certificate'}
+                      </p>
+                      {cert.CertificateImage?.[0] && (
+                        <img
+                          src={URL.createObjectURL(cert.CertificateImage[0].originFileObj)}
+                          alt='Certificate'
+                          className='mt-2 w-full max-w-sm border rounded-lg'
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <div className='text-center mt-6'>
+            <Button
+              type='primary'
+              onClick={() => handleSubmit()}
+              loading={isSubmitting || isUpdating}
+              className='w-full h-12 text-lg font-semibold bg-gradient-to-r from-indigo-600 to-blue-500'
+            >
+              Submit Application
+            </Button>
+          </div>
         </div>
       ),
     },
   ];
 
   return isLoading ? (
-    <div className="flex justify-center items-center min-h-screen">
-      <Spin size="large" />
+    <div className='flex justify-center items-center min-h-screen'>
+      <Spin size='large' />
     </div>
   ) : (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex flex-col">
-      <div className="text-center py-16 px-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
-        <Title
-          level={2}
-          className="!text-4xl !font-extrabold mb-3">
+    <div className='min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 flex flex-col'>
+      <div className='text-center py-16 px-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white'>
+        <Title level={2} className='!text-4xl !font-extrabold mb-3'>
           Join Our Global Teaching Community
         </Title>
-        <Paragraph className="!text-lg text-blue-100 max-w-2xl mx-auto mb-0">
+        <Paragraph className='!text-lg text-blue-100 max-w-2xl mx-auto mb-0'>
           Inspire learners worldwide and grow your teaching career with Flearn.
         </Paragraph>
       </div>
@@ -364,34 +428,31 @@ const TeacherApplicationPage: React.FC = () => {
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-3xl mx-auto -mt-16 bg-white rounded-2xl shadow-xl p-10 w-[90%]">
-        <Steps
-          current={currentStep}
-          items={steps.map((s) => ({ title: s.title }))}
-        />
+        className='max-w-3xl mx-auto -mt-16 bg-white rounded-2xl shadow-xl p-10 w-[90%]'
+      >
+        <Steps current={currentStep} items={steps.map((s) => ({ title: s.title }))} />
 
-        <div className="mt-10">{steps[currentStep].content}</div>
+        <div className='mt-10'>{steps[currentStep].content}</div>
 
-        <div className="mt-8 flex justify-between">
+        <div className='mt-8 flex justify-between'>
           {currentStep > 0 && (
-            <Button
-              onClick={prev}
-              className="px-6">
+            <Button onClick={prev} className='px-6'>
               Previous
             </Button>
           )}
           {currentStep < steps.length - 1 && (
             <Button
-              type="primary"
+              type='primary'
               onClick={next}
-              className="px-6 bg-gradient-to-r from-indigo-600 to-blue-500">
+              className='px-6 bg-gradient-to-r from-indigo-600 to-blue-500'
+            >
               Next
             </Button>
           )}
         </div>
       </motion.div>
 
-      <div className="text-center mt-10 text-gray-500 text-sm mb-6">
+      <div className='text-center mt-10 text-gray-500 text-sm mb-6'>
         © {new Date().getFullYear()} Flearn — Empowering Global Education 🌍
       </div>
     </div>

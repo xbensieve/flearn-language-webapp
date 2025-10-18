@@ -6,7 +6,7 @@ import { Form, Input, Button, Typography, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { login, loginWithGoogle } from '../../services/auth';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/AuthContext';
 import type { AxiosError } from 'axios';
 
@@ -160,9 +160,7 @@ const Login: React.FC = () => {
         {/* LEFT SIDE */}
         <div style={left}>
           <div style={overlay}>
-            <Title
-              level={4}
-              style={{ color: '#fff', margin: 0 }}>
+            <Title level={4} style={{ color: '#fff', margin: 0 }}>
               Join our community
             </Title>
             <Text style={{ color: '#e5e7eb' }}>Start your journey with us today</Text>
@@ -175,51 +173,54 @@ const Login: React.FC = () => {
             <Text style={{ fontSize: 24, fontWeight: 600 }}>Welcome back!</Text>
           </div>
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}>
+          <Form form={form} layout='vertical' onFinish={handleSubmit}>
             <Form.Item
-              label="User name"
-              name="usernameOrEmail"
-              rules={[{ required: true, message: 'Please enter your user name!' }]}>
+              label='User name'
+              name='usernameOrEmail'
+              rules={[{ required: true, message: 'Please enter your user name!' }]}
+            >
               <Input
                 prefix={<UserOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
-                placeholder="Enter your User name"
+                placeholder='Enter your User name'
               />
             </Form.Item>
 
             <Form.Item
-              label="Password"
-              name="password"
-              rules={[{ required: true, message: 'Please enter your password!' }]}>
+              label='Password'
+              name='password'
+              rules={[{ required: true, message: 'Please enter your password!' }]}
+            >
               <Input.Password
                 prefix={<LockOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
-                placeholder="Enter your Password"
+                placeholder='Enter your Password'
               />
             </Form.Item>
 
-            <Form.Item
-              name="rememberMe"
-              valuePropName="checked">
+            <Form.Item name='rememberMe' valuePropName='checked'>
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
 
             <Button
-              type="primary"
-              htmlType="submit"
+              type='primary'
+              htmlType='submit'
               block
-              size="large"
+              size='large'
               loading={loading}
               style={{
                 height: 44,
                 borderRadius: 999,
                 backgroundColor: '#06b6d4',
                 fontWeight: 700,
-              }}>
+              }}
+            >
               {loading ? 'Logging in...' : 'Login'}
             </Button>
           </Form>
+
+          {/* Divider */}
+          <div style={{ textAlign: 'center', marginTop: 16, color: '#9ca3af' }}>
+            <Link to='/register'>Register now</Link>
+          </div>
 
           {/* Divider */}
           <div style={{ textAlign: 'center', margin: '16px 0', color: '#9ca3af' }}>
@@ -227,9 +228,7 @@ const Login: React.FC = () => {
           </div>
 
           {/* GOOGLE BUTTON */}
-          <div
-            id="googleSignInDiv"
-            style={{ width: '100%' }}></div>
+          {/* <div id='googleSignInDiv' style={{ width: '100%' }}></div> */}
 
           {/* Optional manual fallback */}
           <Button
@@ -241,7 +240,8 @@ const Login: React.FC = () => {
               border: '1px solid #d1d5db',
               height: 44,
             }}
-            onClick={() => notifyError('Google Sign-In not initialized yet')}>
+            onClick={() => notifyError('Google Sign-In not initialized yet')}
+          >
             Sign in with Google
           </Button>
         </div>
