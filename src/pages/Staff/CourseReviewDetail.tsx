@@ -31,8 +31,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatStatusLabel } from '../../utils/mapping';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { Topic, Unit, Lesson } from '../../services/course/type';
+import type { Topic, Unit } from '../../services/course/type';
 import {
   getCourseByIdStaffService,
   approveCourseService,
@@ -44,7 +43,6 @@ import type { AxiosError } from 'axios';
 import { UnitLessons } from '../Teacher/CourseDetailView';
 
 const { Title, Paragraph, Text } = Typography;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Panel } = Collapse;
 
 const CourseReviewDetail: React.FC = () => {

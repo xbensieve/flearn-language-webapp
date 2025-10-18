@@ -58,7 +58,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
   // Delete mutation
   const { mutate: deleteExercise, isPending: isDeleting } = useMutation({
     mutationFn: deleteExercisesByLesson,
-    onSuccess: (data, exerciseId) => {
+    onSuccess: (exerciseId) => {
       notifySuccess('Exercise deleted successfully');
       // Invalidate exercises query to refresh data
       queryClient.invalidateQueries({ queryKey: ['exercises', selectedExercise?.lessonID] });
