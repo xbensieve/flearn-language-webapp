@@ -44,7 +44,7 @@ const TeacherApplicationPage: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
 
   // ✅ Get my application
-  const { data: response, isLoading } = useQuery<{ data: ApplicationData }>({
+  const { data: response, isLoading } = useQuery<{ data: ApplicationData[] }>({
     queryKey: ['myApplication'],
     queryFn: getMyApplication,
     retry: 1,
@@ -69,7 +69,7 @@ const TeacherApplicationPage: React.FC = () => {
     mutationFn: submitTeacherApplication,
     onSuccess: () => {
       notifySuccess('Application submitted successfully!');
-      navigate('/teacher');
+      navigate('/learner/status');
     },
     onError: (err: AxiosError<any>) => {
       toast.error(err.response?.data.errors || 'Failed to submit application.');
@@ -133,12 +133,20 @@ const TeacherApplicationPage: React.FC = () => {
         CertificateTypeIds: Array.isArray(CertificateTypeId) ? CertificateTypeId : [],
       };
 
-      if (!response?.data && !response?.data.status) {
-        mutate(payload);
-        return;
-      }
+      const now = new Date();
+      const closestApplication = response?.data.reduce((closest: any, current: any) => {
+        const currentDate = new Date(current.submittedAt);
+        const closestDate = closest ? new Date(closest.submittedAt) : null;
+        const currentDiff = Math.abs(now.getTime() - currentDate.getTime());
+        const closestDiff = closestDate
+          ? Math.abs(now.getTime() - closestDate.getTime())
+          : Infinity;
+        return currentDiff < closestDiff ? current : closest;
+      }, null);
 
-      if (response?.data.status === 'Pending' || response?.data.status === 'Rejected') {
+      console.log('closestApplication', closestApplication);
+
+      if (closestApplication && closestApplication.status.toLowerCase() === 'pending') {
         updateMutate(payload);
       } else {
         mutate(payload);

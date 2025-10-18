@@ -7,6 +7,9 @@ import type {
   CourseTemplateResponse,
   CourseUnitsRequest,
   CreateCourseRequest,
+  Exercise,
+  ExerciseData,
+  ExercisePayload,
   ICourseDataStaff,
   Lesson,
 } from './type';
@@ -74,45 +77,50 @@ export const getCourseByIdStaffService = async (id: string) => {
 export const approveCourseService = async (id: string) => {
   const res = await api.put(`/courses/submissions/${id}/approve`);
   return res.data;
-}
+};
 
-export const rejectedCourseService = async ({id, reason}: {id: string; reason: string}) => {
-  const res = await api.put(`/courses/submissions/${id}/reject`, {reason});
+export const rejectedCourseService = async ({ id, reason }: { id: string; reason: string }) => {
+  const res = await api.put(`/courses/submissions/${id}/reject`, { reason });
   return res.data;
-}
+};
 
 export const createCourseService = async (
   payload: CreateCourseRequest
 ): Promise<API.Response<Course>> => {
   const formData = new FormData();
 
-  formData.append('Title', payload.title);
-  formData.append('Description', payload.description);
+  try {
+    console.log('inservice', payload);
+    formData.append('Title', payload.title);
+    formData.append('Description', payload.description);
 
-  if (payload.image) {
-    formData.append('Image', payload.image);
-  }
+    if (payload.image) {
+      formData.append('Image', payload.image);
+    }
 
-  formData.append('TemplateId', payload.templateId);
+    formData.append('TemplateId', payload.templateId);
 
-  payload.topicIds.forEach((id) => formData.append('TopicIds', id));
+    payload.topicIds.forEach((id) => formData.append('TopicIds', id));
+    payload.goalIds?.forEach((id) => formData.append('GoalIds', id.toString()));
 
-  formData.append('Price', payload.price.toString());
+    formData.append('Price', payload.price.toString());
 
-  if (payload.discountPrice !== undefined) {
-    formData.append('DiscountPrice', payload.discountPrice.toString());
-  }
+    if (payload.discountPrice !== undefined) {
+      formData.append('DiscountPrice', payload.discountPrice.toString());
+    }
 
-  formData.append('CourseType', payload.courseType.toString());
-  // payload.goalIds.forEach((id) => formData.append('GoalIds', id));
-  formData.append('GoalIds', payload.goalIds?.join(',') || '');
+    formData.append('CourseType', payload.courseType.toString());
+    // formData.append('GoalIds', payload.goalIds?.join(',') || '');
 
-  if (payload.Level !== undefined) {
-    formData.append('Level', payload.Level.toString());
-  }
+    if (payload.Level !== undefined) {
+      formData.append('Level', payload.Level.toString());
+    }
 
-  if (payload.courseSkill !== undefined) {
-    formData.append('CourseSkill', payload.courseSkill.toString());
+    if (payload.courseSkill !== undefined) {
+      formData.append('CourseSkill', payload.courseSkill.toString());
+    }
+  } catch (error) {
+    console.log(error);
   }
 
   const res = await api.post('/courses', formData, {
@@ -122,7 +130,7 @@ export const createCourseService = async (
   return res.data;
 };
 
-export const updateCourseService = async ({id, payload}: {id: string; payload: FormData}) => {
+export const updateCourseService = async ({ id, payload }: { id: string; payload: FormData }) => {
   const res = await api.put<Course>(`/courses/${id}`, payload, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
@@ -238,4 +246,37 @@ export const updateLessonCourseService = async (payload: {
 export const submitCourseService = async (courseId: string) => {
   const res = await api.post(`/courses/${courseId}/submit`);
   return res.data;
+};
+
+export const createExerciseService = async (
+  lessonId: string,
+  payload: ExercisePayload
+): Promise<Exercise> => {
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+  });
+
+  const { data } = await api.post(`/lessons/${lessonId}/exercises`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  return data;
+};
+
+export const getExercisesByLesson = async (lessonId: string) => {
+  const res = await api.get<API.Response<ExerciseData[]>>(`/lessons/${lessonId}/exercises`);
+  return res.data.data;
+};
+
+export const deleteExercisesByLesson = async (lessonId: string) => {
+  const res = await api.delete(`/exercises/${lessonId}`);
+  return res.data.data;
 };

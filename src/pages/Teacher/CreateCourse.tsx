@@ -26,6 +26,7 @@ import { getLevelTypeService } from '../../services/enums';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import type { CreateCourseRequest } from '../../services/course/type';
 import type { AxiosError } from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -44,12 +45,20 @@ interface CourseFormValues {
   courseSkill?: number;
 }
 
+const courseTypes = [
+  { value: 0, label: 'Free Course' },
+  { value: 1, label: 'Paid Course' },
+];
+
 const CreateCourse: React.FC = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+  const navigate = useNavigate();
   const [form] = Form.useForm<CourseFormValues>();
   const [fileList, setFileList] = useState<any[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState<Partial<CourseFormValues>>({});
+
+  const courseTypeWatch = Form.useWatch('courseType', form);
 
   // Fetch data
   const { data: templates, isLoading: templatesLoading } = useQuery({
@@ -79,9 +88,11 @@ const CreateCourse: React.FC = () => {
       form.resetFields();
       setFileList([]);
       setCurrentStep(0);
+      navigate('/teacher/course');
     },
     onError: (err: AxiosError<any>) => {
       const errorData = err.response?.data;
+      console.log(errorData);
 
       if (errorData?.errors && typeof errorData.errors === 'object') {
         // Loop through backend field errors and show all messages
@@ -123,16 +134,24 @@ const CreateCourse: React.FC = () => {
     try {
       const values = await form.validateFields();
       setFormValues((prev) => ({ ...prev, ...values }));
-      setCurrentStep((s) => s + 1);
+      setCurrentStep((s) => {
+        // Skip Pricing step for free courses (courseType === 0)
+        if (values.courseType === 0 && s === 0) return 2;
+        return s + 1;
+      });
     } catch {
-      return;
+      // Validation failed, stay on current step
     }
   };
 
   const prev = async () => {
-    const values = await form.getFieldsValue();
+    const values = await form.getFieldsValue(true); // Include all fields, even if not validated
     setFormValues((prev) => ({ ...prev, ...values }));
-    setCurrentStep((s) => s - 1);
+    setCurrentStep((s) => {
+      // Skip Pricing step for free courses when going back
+      if (formValues.courseType === 0 && s === 2) return 0;
+      return s - 1;
+    });
   };
 
   const handleTemplateChange = (value: string) => {
@@ -142,11 +161,13 @@ const CreateCourse: React.FC = () => {
   };
 
   const onFinish = (values: CourseFormValues) => {
+    console.log(form.getFieldsError());
+    console.log('values', formValues);
     const payload: CreateCourseRequest = {
       title: formValues.title || values.title,
       description: formValues.description || values.description,
       topicIds: formValues.topicIds || values.topicIds,
-      courseType: formValues.courseType || values.courseType,
+      courseType: formValues.courseType || 0,
       goalIds: values.goalIds || [],
       Level: Number(values.Level),
       templateId: formValues.templateId || values.templateId,
@@ -157,75 +178,72 @@ const CreateCourse: React.FC = () => {
     createCourse(payload);
   };
 
-  const courseTypes = [
-    { value: 0, label: 'Free Course' },
-    { value: 1, label: 'Paid Course' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <Title
-          level={2}
-          className="text-gray-800 mb-6">
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 p-8'>
+      <div className='max-w-7xl mx-auto'>
+        <Title level={2} className='text-gray-800 mb-6'>
           ✏️ Create New Course
         </Title>
 
-        <Card className="shadow-lg rounded-2xl p-8">
+        <Card className='shadow-lg rounded-2xl p-8'>
           <Steps
             current={currentStep}
-            items={[
-              { title: 'Basic Info', icon: <BookOutlined /> },
-              { title: 'Pricing', icon: <DollarOutlined /> },
-              { title: 'Settings', icon: <SettingOutlined /> },
-            ]}
-            className="mb-10"
+            items={
+              courseTypeWatch === 0
+                ? [
+                    { title: 'Basic Info', icon: <BookOutlined /> },
+                    { title: 'Settings', icon: <SettingOutlined /> },
+                  ]
+                : [
+                    { title: 'Basic Info', icon: <BookOutlined /> },
+                    { title: 'Pricing', icon: <DollarOutlined /> },
+                    { title: 'Settings', icon: <SettingOutlined /> },
+                  ]
+            }
+            className='mb-10'
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
             {/* Left: Form */}
-            <div className="space-y-6">
+            <div className='space-y-6'>
               <Form
                 form={form}
                 initialValues={formValues}
                 onFinish={onFinish}
-                layout="vertical"
-                preserve>
+                layout='vertical'
+                preserve
+              >
                 {currentStep === 0 && (
                   <>
                     <Form.Item
-                      name="title"
-                      label="Course Title"
-                      rules={[{ required: true, message: 'Please enter course title' }]}>
-                      <Input
-                        size="large"
-                        placeholder="e.g. Mastering Business English"
-                      />
+                      name='title'
+                      label='Course Title'
+                      rules={[{ required: true, message: 'Please enter course title' }]}
+                    >
+                      <Input size='large' placeholder='e.g. Mastering Business English' />
                     </Form.Item>
 
                     <Form.Item
-                      name="description"
-                      label="Description"
-                      rules={[{ required: true, message: 'Please enter description' }]}>
-                      <TextArea
-                        rows={4}
-                        placeholder="Describe what learners will gain..."
-                      />
+                      name='description'
+                      label='Description'
+                      rules={[{ required: true, message: 'Please enter description' }]}
+                    >
+                      <TextArea rows={4} placeholder='Describe what learners will gain...' />
                     </Form.Item>
 
                     <Form.Item
-                      name="templateId"
-                      label="Course Template"
-                      rules={[{ required: true, message: 'Please select a template' }]}>
+                      name='templateId'
+                      label='Course Template'
+                      rules={[{ required: true, message: 'Please select a template' }]}
+                    >
                       <Select
-                        size="large"
-                        placeholder="Select template"
+                        size='large'
+                        placeholder='Select template'
                         loading={templatesLoading}
-                        onChange={handleTemplateChange}>
+                        onChange={handleTemplateChange}
+                      >
                         {templates?.data?.map((tpl) => (
-                          <Option
-                            key={tpl.id}
-                            value={tpl.id}>
+                          <Option key={tpl.id} value={tpl.id}>
                             {tpl.name}
                           </Option>
                         ))}
@@ -233,16 +251,13 @@ const CreateCourse: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                      name="courseType"
-                      label="Course Type"
-                      rules={[{ required: true, message: 'Please select course type' }]}>
-                      <Select
-                        size="large"
-                        placeholder="Select type">
+                      name='courseType'
+                      label='Course Type'
+                      rules={[{ required: true, message: 'Please select course type' }]}
+                    >
+                      <Select size='large' placeholder='Select type'>
                         {courseTypes.map((ct) => (
-                          <Option
-                            key={ct.value}
-                            value={ct.value}>
+                          <Option key={ct.value} value={ct.value}>
                             {ct.label}
                           </Option>
                         ))}
@@ -250,65 +265,58 @@ const CreateCourse: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                      name="topicIds"
-                      label="Topics"
-                      rules={[{ required: true, message: 'Please select topics' }]}>
+                      name='topicIds'
+                      label='Topics'
+                      rules={[{ required: true, message: 'Please select topics' }]}
+                    >
                       {topics?.data?.length ? (
-                        <Select
-                          mode="multiple"
-                          placeholder="Select topics"
-                          loading={topicsLoading}>
+                        <Select mode='multiple' placeholder='Select topics' loading={topicsLoading}>
                           {topics.data.map((t) => (
-                            <Option
-                              key={t.topicId}
-                              value={t.topicId}>
+                            <Option key={t.topicId} value={t.topicId}>
                               {t.topicName}
                             </Option>
                           ))}
                         </Select>
                       ) : (
                         <Result
-                          status="warning"
-                          title="No topics found"
-                          subTitle="Create topics before adding a course."
+                          status='warning'
+                          title='No topics found'
+                          subTitle='Create topics before adding a course.'
                         />
                       )}
                     </Form.Item>
 
-                    <Form.Item label="Course Image">
-                      <Upload.Dragger
-                        {...uploadProps}
-                        listType="picture-card">
-                        <p className="ant-upload-drag-icon">
+                    <Form.Item label='Course Image'>
+                      <Upload.Dragger {...uploadProps} listType='picture-card'>
+                        <p className='ant-upload-drag-icon'>
                           <UploadOutlined />
                         </p>
-                        <p className="ant-upload-text">Click or drag to upload</p>
-                        <p className="ant-upload-hint">JPG/PNG only, max 10MB</p>
+                        <p className='ant-upload-text'>Click or drag to upload</p>
+                        <p className='ant-upload-hint'>JPG/PNG only, max 10MB</p>
                       </Upload.Dragger>
                     </Form.Item>
                   </>
                 )}
 
-                {currentStep === 1 && (
+                {currentStep === 1 && formValues.courseType === 1 && (
                   <Row gutter={16}>
-                    <Col
-                      xs={24}
-                      md={12}>
+                    <Col xs={24} md={12}>
                       <Form.Item
-                        name="price"
-                        label="Base Price (VNĐ)"
+                        name='price'
+                        label='Base Price (VNĐ)'
                         rules={[
                           {
                             required: formValues.courseType === 1,
                             message: 'Please enter course price',
                           },
-                        ]}>
+                        ]}
+                      >
                         <InputNumber<number>
                           min={0}
-                          size="large"
-                          className="w-full"
+                          size='large'
+                          className='w-full'
                           style={{ width: '100%' }}
-                          placeholder="e.g. 1,000,000"
+                          placeholder='e.g. 1,000,000'
                           formatter={(value) =>
                             value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
                           }
@@ -317,18 +325,14 @@ const CreateCourse: React.FC = () => {
                       </Form.Item>
                     </Col>
 
-                    <Col
-                      xs={24}
-                      md={12}>
-                      <Form.Item
-                        name="discountPrice"
-                        label="Discount Price (VNĐ, optional)">
+                    <Col xs={24} md={12}>
+                      <Form.Item name='discountPrice' label='Discount Price (VNĐ, optional)'>
                         <InputNumber<number>
                           min={0}
-                          size="large"
-                          className="w-full"
+                          size='large'
+                          className='w-full'
                           style={{ width: '100%' }}
-                          placeholder="e.g. 800,000"
+                          placeholder='e.g. 800,000'
                           formatter={(value) =>
                             value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
                           }
@@ -342,24 +346,24 @@ const CreateCourse: React.FC = () => {
                 {currentStep === 2 && (
                   <>
                     <Form.Item
-                      name="goalIds"
-                      label="Learning Goals"
+                      name='goalIds'
+                      label='Learning Goals'
                       rules={
                         selectedTemplate?.requireGoal
                           ? [{ required: true, message: 'Please select at least one goal' }]
                           : []
-                      }>
+                      }
+                    >
                       {goalsLoading ? (
                         <Spin />
                       ) : (
                         <Select
-                          mode="multiple" // ⬅️ enables multi-select
-                          size="large"
-                          placeholder="Select one or more goals">
+                          mode='multiple' // ⬅️ enables multi-select
+                          size='large'
+                          placeholder='Select one or more goals'
+                        >
                           {goals?.data.map((g) => (
-                            <Option
-                              key={g.id}
-                              value={g.id}>
+                            <Option key={g.id} value={g.id}>
                               {g.name}
                             </Option>
                           ))}
@@ -370,21 +374,17 @@ const CreateCourse: React.FC = () => {
                     <Row gutter={16}>
                       <Col span={12}>
                         <Form.Item
-                          name="Level"
-                          label="Level"
+                          name='Level'
+                          label='Level'
                           rules={
                             selectedTemplate?.requireLevel
                               ? [{ required: true, message: 'Level is required for this template' }]
                               : []
-                          }>
-                          <Select
-                            loading={levelsLoading}
-                            size="large"
-                            placeholder="Select level">
+                          }
+                        >
+                          <Select loading={levelsLoading} size='large' placeholder='Select level'>
                             {levels?.map((l) => (
-                              <Option
-                                key={l.value}
-                                value={l.value}>
+                              <Option key={l.value} value={l.value}>
                                 {l.label}
                               </Option>
                             ))}
@@ -396,28 +396,24 @@ const CreateCourse: React.FC = () => {
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-end gap-3 pt-6 border-t">
+                <div className='flex justify-end gap-3 pt-6 border-t'>
                   {currentStep > 0 && (
-                    <Button
-                      size="large"
-                      onClick={prev}>
+                    <Button size='large' onClick={prev}>
                       ← Previous
                     </Button>
                   )}
                   {currentStep < 2 && (
-                    <Button
-                      type="primary"
-                      size="large"
-                      onClick={next}>
+                    <Button type='primary' size='large' onClick={next}>
                       Next →
                     </Button>
                   )}
                   {currentStep === 2 && (
                     <Button
-                      type="primary"
-                      size="large"
-                      htmlType="submit"
-                      loading={isPending}>
+                      type='primary'
+                      size='large'
+                      onClick={() => onFinish(form.getFieldsValue())}
+                      loading={isPending}
+                    >
                       🚀 Submit
                     </Button>
                   )}
@@ -426,55 +422,49 @@ const CreateCourse: React.FC = () => {
             </div>
 
             {/* Right: Preview */}
-            <div className="sticky top-10">
-              <Card className="rounded-xl shadow-md overflow-hidden">
-                <div className="h-56 bg-gray-100 relative">
+            <div className='sticky top-10'>
+              <Card className='rounded-xl shadow-md overflow-hidden'>
+                <div className='h-56 bg-gray-100 relative'>
                   {fileList.length > 0 ? (
                     <img
                       src={URL.createObjectURL(fileList[0] as any)}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
+                      alt='Preview'
+                      className='w-full h-full object-cover'
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
+                    <div className='flex items-center justify-center h-full text-gray-400'>
                       No image uploaded
                     </div>
                   )}
                 </div>
-                <div className="p-5">
+                <div className='p-5'>
                   <Title level={4}>{formValues.title || 'Course Title Preview'}</Title>
-                  <Text
-                    type="secondary"
-                    className="block mb-3">
+                  <Text type='secondary' className='block mb-3'>
                     {formValues.description || 'Course description will appear here.'}
                   </Text>
 
-                  <div className="flex items-center gap-2 mb-3">
-                    <Text
-                      strong
-                      className="text-indigo-600 text-lg">
+                  <div className='flex items-center gap-2 mb-3'>
+                    <Text strong className='text-indigo-600 text-lg'>
                       {formValues.discountPrice
                         ? `${Number(formValues.discountPrice).toLocaleString('vi-VN')} ₫`
                         : `${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`}
                     </Text>
 
                     {formValues.discountPrice && (
-                      <Text
-                        delete
-                        className="text-gray-500">
+                      <Text delete className='text-gray-500'>
                         {`${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`}
                       </Text>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 text-xs">
+                  <div className='flex flex-wrap gap-2 text-xs'>
                     {formValues.Level && (
-                      <span className="bg-gray-100 px-3 py-1 rounded-full">
+                      <span className='bg-gray-100 px-3 py-1 rounded-full'>
                         Level {formValues.Level}
                       </span>
                     )}
                     {formValues.courseSkill && (
-                      <span className="bg-gray-100 px-3 py-1 rounded-full">
+                      <span className='bg-gray-100 px-3 py-1 rounded-full'>
                         Skill {formValues.courseSkill}
                       </span>
                     )}

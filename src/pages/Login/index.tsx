@@ -267,11 +267,6 @@ const Login: React.FC = () => {
           </div>
 
           {/* Divider */}
-          <div style={{ textAlign: 'center', marginTop: 16, color: '#9ca3af' }}>
-            <Link to='/register'>Register now</Link>
-          </div>
-
-          {/* Divider */}
           <div style={{ textAlign: 'center', margin: '16px 0', color: '#9ca3af' }}>
             — or continue with —
           </div>
