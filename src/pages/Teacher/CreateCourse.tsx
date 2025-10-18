@@ -146,7 +146,7 @@ const CreateCourse: React.FC = () => {
       title: formValues.title || values.title,
       description: formValues.description || values.description,
       topicIds: formValues.topicIds || values.topicIds,
-      courseType: Number(values.courseType || 0),
+      courseType: formValues.courseType || values.courseType,
       goalIds: values.goalIds || [],
       Level: Number(values.Level),
       templateId: formValues.templateId || values.templateId,

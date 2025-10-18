@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Form, Input, Button, Typography, Checkbox } from 'antd';
-import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { login, loginWithGoogle } from '../../services/auth';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { useNavigate } from 'react-router-dom';
@@ -19,10 +19,11 @@ const ROLE_PATHS: Record<string, string> = {
   learner: '/learner/application',
 };
 
-// role-based redirect
 const rolesCase = (roles: string[], navigate: any) => {
   const priority = ['admin', 'staff', 'teacher', 'learner'];
-  const matchedRole = priority.find((r) => roles.some((ur) => ur.toLowerCase() === r));
+  const matchedRole = priority.find((r) =>
+    roles.some((ur) => ur.toLowerCase() === r)
+  );
   navigate(matchedRole ? ROLE_PATHS[matchedRole] : '/');
 };
 
@@ -32,7 +33,6 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { updateAuth } = useAuth();
 
-  // Check local roles
   useEffect(() => {
     const rolesString = localStorage.getItem('FLEARN_USER_ROLES');
     if (rolesString) {
@@ -45,27 +45,27 @@ const Login: React.FC = () => {
     }
   }, [navigate]);
 
-  // ===== NORMAL LOGIN =====
+  // ===== LOGIN API =====
   const mutation = useMutation({
-    mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
-      login(values),
+    mutationFn: (values: {
+      usernameOrEmail: string;
+      password: string;
+      rememberMe: boolean;
+    }) => login(values),
     onMutate: () => setLoading(true),
     onSettled: () => setLoading(false),
     onSuccess: (data) => {
-      if (data.success) {
-        handleAuthSuccess(data.data);
-      }
+      if (data.success) handleAuthSuccess(data.data);
     },
-    onError: (err: AxiosError<any>) => notifyError(err?.response?.data?.message || 'Login failed'),
+    onError: (err: AxiosError<any>) =>
+      notifyError(err?.response?.data?.message || 'Login failed'),
   });
 
   // ===== GOOGLE LOGIN =====
   const googleMutation = useMutation({
     mutationFn: (idToken: string) => loginWithGoogle(idToken),
     onSuccess: (data: any) => {
-      if (data.success) {
-        handleAuthSuccess(data.data);
-      }
+      if (data.success) handleAuthSuccess(data.data);
     },
     onError: (err: AxiosError<any>) => {
       notifyError(err?.response?.data?.message || 'Google login failed');
@@ -83,7 +83,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = (values: any) => mutation.mutate(values);
 
-  // ===== GOOGLE BUTTON INITIALIZATION =====
+  // ===== GOOGLE BUTTON INIT =====
   useEffect(() => {
     // @ts-expect-error
     if (window.google) {
@@ -94,122 +94,172 @@ const Login: React.FC = () => {
       });
 
       // @ts-ignore
-      window.google.accounts.id.renderButton(document.getElementById('googleSignInDiv'), {
-        theme: 'outline',
-        size: 'large',
-        width: '100%',
-      });
+      window.google.accounts.id.renderButton(
+        document.getElementById('googleSignInDiv'),
+        {
+          theme: 'outline',
+          size: 'large',
+          width: '100%',
+        }
+      );
     }
   }, []);
 
   const handleGoogleCallback = (response: any) => {
-    if (response.credential) {
-      googleMutation.mutate(response.credential);
-    } else {
-      notifyError('Failed to get Google token');
-    }
+    if (response.credential) googleMutation.mutate(response.credential);
+    else notifyError('Failed to get Google token');
   };
 
-  // ===== UI STYLES =====
-  const page: React.CSSProperties = {
-    height: '100vh',
+  // ===== CSS =====
+  const wrapper: React.CSSProperties = {
     width: '100vw',
-    background: '#e5e7eb',
+    height: '100vh',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
-  const container: React.CSSProperties = {
-    background: '#fff',
-    borderRadius: 16,
-    display: 'grid',
-    gridTemplateColumns: '55% 45%',
+    flexDirection: 'row',
     overflow: 'hidden',
-    width: '90%',
-    maxWidth: 1000,
-    boxShadow: '0 6px 20px rgba(0,0,0,0.1)',
   };
 
   const left: React.CSSProperties = {
+    flex: 1,
     backgroundImage:
       "url('https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=1600&q=80')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     position: 'relative',
+    display: 'flex',
+    alignItems: 'flex-end',
   };
 
   const overlay: React.CSSProperties = {
-    position: 'absolute',
-    bottom: 0,
-    background: 'rgba(0,0,0,0.45)',
-    padding: 24,
+    width: '100%',
+    padding: '24px 32px',
+    background: 'rgba(0, 0, 0, 0.5)',
     color: '#fff',
   };
 
   const right: React.CSSProperties = {
-    padding: '48px 64px',
+    flex: 1,
+    background: '#fff',
     display: 'flex',
-    flexDirection: 'column',
+    alignItems: 'center',
     justifyContent: 'center',
+    padding: '60px 80px',
+  };
+
+  const formBox: React.CSSProperties = {
+    width: '100%',
+    maxWidth: 380,
+  };
+
+  const switchButtons: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 12,
+    marginBottom: 28,
   };
 
   return (
-    <section style={page}>
-      <div style={container}>
-        {/* LEFT SIDE */}
-        <div style={left}>
-          <div style={overlay}>
-            <Title
-              level={4}
-              style={{ color: '#fff', margin: 0 }}>
-              Join our community
-            </Title>
-            <Text style={{ color: '#e5e7eb' }}>Start your journey with us today</Text>
-          </div>
+    <div style={wrapper}>
+      {/* LEFT IMAGE */}
+      <div style={left}>
+        <div style={overlay}>
+          <Title level={4} style={{ color: '#fff', margin: 0 }}>
+            Join our community
+          </Title>
+          <Text style={{ color: '#e5e7eb' }}>
+            Start your journey with us today
+          </Text>
         </div>
+      </div>
 
-        {/* RIGHT SIDE */}
-        <div style={right}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Text style={{ fontSize: 24, fontWeight: 600 }}>Welcome back!</Text>
+      {/* RIGHT FORM */}
+      <div style={right}>
+        <div style={formBox}>
+          {/* TITLE */}
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <Text style={{ fontSize: 26, fontWeight: 600 }}>Welcome back!</Text>
           </div>
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSubmit}>
+          {/* Login / Register Switch */}
+          <div style={switchButtons}>
+            <Button
+              type='primary'
+              shape='round'
+              onClick={() => navigate('/login')}
+              style={{ backgroundColor: '#06b6d4', fontWeight: 600 }}>
+              Login
+            </Button>
+            <Button
+              shape='round'
+              onClick={() => navigate('/register')}
+              style={{
+                borderColor: '#06b6d4',
+                color: '#06b6d4',
+                fontWeight: 600,
+              }}>
+              Register
+            </Button>
+          </div>
+
+          {/* FORM */}
+          <Form form={form} layout='vertical' onFinish={handleSubmit}>
             <Form.Item
-              label="User name"
-              name="usernameOrEmail"
-              rules={[{ required: true, message: 'Please enter your user name!' }]}>
+              label='Username or Email'
+              name='usernameOrEmail'
+              rules={[
+                {
+                  required: true,
+                  message: 'Please enter your username or email!',
+                },
+              ]}>
               <Input
-                prefix={<UserOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
-                placeholder="Enter your User name"
+                prefix={
+                  <UserOutlined style={{ marginRight: 6, opacity: 0.7 }} />
+                }
+                placeholder='Enter your username or email'
               />
             </Form.Item>
 
             <Form.Item
-              label="Password"
-              name="password"
-              rules={[{ required: true, message: 'Please enter your password!' }]}>
+              label='Password'
+              name='password'
+              rules={[
+                { required: true, message: 'Please enter your password!' },
+              ]}>
               <Input.Password
-                prefix={<LockOutlined style={{ marginRight: 6, opacity: 0.7 }} />}
-                placeholder="Enter your Password"
+                prefix={
+                  <LockOutlined style={{ marginRight: 6, opacity: 0.7 }} />
+                }
+                placeholder='Enter your password'
               />
             </Form.Item>
 
-            <Form.Item
-              name="rememberMe"
-              valuePropName="checked">
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
+            {/* Forgot Password link */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 20,
+              }}>
+              <Form.Item name='rememberMe' valuePropName='checked' noStyle>
+                <Checkbox>Remember me</Checkbox>
+              </Form.Item>
+
+              <Button
+                type='link'
+                onClick={() => navigate('/forgot-password')}
+                style={{ padding: 0, color: '#06b6d4', fontWeight: 500 }}>
+                Forgot password?
+              </Button>
+            </div>
 
             <Button
-              type="primary"
-              htmlType="submit"
+              type='primary'
+              htmlType='submit'
               block
-              size="large"
+              size='large'
               loading={loading}
               style={{
                 height: 44,
@@ -222,31 +272,16 @@ const Login: React.FC = () => {
           </Form>
 
           {/* Divider */}
-          <div style={{ textAlign: 'center', margin: '16px 0', color: '#9ca3af' }}>
+          <div
+            style={{ textAlign: 'center', margin: '16px 0', color: '#9ca3af' }}>
             — or continue with —
           </div>
 
           {/* GOOGLE BUTTON */}
-          <div
-            id="googleSignInDiv"
-            style={{ width: '100%' }}></div>
-
-          {/* Optional manual fallback */}
-          <Button
-            icon={<GoogleOutlined />}
-            block
-            style={{
-              marginTop: 12,
-              borderRadius: 999,
-              border: '1px solid #d1d5db',
-              height: 44,
-            }}
-            onClick={() => notifyError('Google Sign-In not initialized yet')}>
-            Sign in with Google
-          </Button>
+          <div id='googleSignInDiv' style={{ width: '100%' }}></div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 

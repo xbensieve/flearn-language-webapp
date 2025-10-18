@@ -391,9 +391,9 @@ const TeacherApplicationPage: React.FC = () => {
         </div>
       </motion.div>
 
-      <div className="text-center mt-10 text-gray-500 text-sm mb-6">
+      {/* <div className="text-center mt-10 text-gray-500 text-sm mb-6">
         © {new Date().getFullYear()} Flearn — Empowering Global Education 🌍
-      </div>
+      </div> */}
     </div>
   );
 };
