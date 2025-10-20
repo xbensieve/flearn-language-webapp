@@ -187,7 +187,7 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: 'Basic Information',
+      title: ' Information',
       content: (
         <Form
           form={form}
@@ -311,8 +311,9 @@ const TeacherApplicationPage: React.FC = () => {
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateTypeId']}
-                        label="Certificate Type"
-                        rules={[{ required: true }]}>
+                        label=' Type'
+                        rules={[{ required: true }]}
+                      >
                         <Select
                           placeholder="Select certificate type"
                           disabled={!selectedLanguage || loadingCertificates}>
@@ -329,8 +330,8 @@ const TeacherApplicationPage: React.FC = () => {
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateImage']}
-                        label="Certificate Image"
-                        valuePropName="fileList"
+                        label=' Image'
+                        valuePropName='fileList'
                         getValueFromEvent={(e) => e.fileList}
                         rules={[{ required: true, message: 'Please upload image' }]}>
                         <Upload

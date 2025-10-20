@@ -215,28 +215,13 @@ const CreateCourse: React.FC = () => {
             items={
               courseTypeWatch === 0
                 ? [
-                    {
-                      title: 'Basic Info',
-                      icon: <BookOutlined />,
-                    },
-                    {
-                      title: 'Settings',
-                      icon: <SettingOutlined />,
-                    },
+                    { title: 'Infomation', icon: <BookOutlined /> },
+                    { title: 'Settings', icon: <SettingOutlined /> },
                   ]
                 : [
-                    {
-                      title: 'Basic Info',
-                      icon: <BookOutlined />,
-                    },
-                    {
-                      title: 'Pricing',
-                      icon: <DollarOutlined />,
-                    },
-                    {
-                      title: 'Settings',
-                      icon: <SettingOutlined />,
-                    },
+                    { title: 'Infomation', icon: <BookOutlined /> },
+                    { title: 'Pricing', icon: <DollarOutlined /> },
+                    { title: 'Settings', icon: <SettingOutlined /> },
                   ]
             }
             className="!mb-10"
