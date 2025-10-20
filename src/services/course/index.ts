@@ -165,7 +165,7 @@ export const createCourseUnitsService = async (payload: CourseUnitsRequest) => {
 // services/course.ts (add these exports)
 
 export const getCourseDetailService = async (id: string) => {
-  const res = await api.get(`/courses/${id}`);
+  const res = await api.get<API.Response<CourseDetail>>(`/courses/${id}`);
   return res.data.data;
 };
 

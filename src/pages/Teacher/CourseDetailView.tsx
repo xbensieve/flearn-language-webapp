@@ -11,9 +11,11 @@ import {
   Col,
   Spin,
   Empty,
-  Avatar,
   Button,
   message,
+  Alert,
+  Tooltip,
+  Avatar,
 } from 'antd';
 import {
   EditOutlined,
@@ -29,7 +31,20 @@ import {
   submitCourseService,
 } from '../../services/course';
 import type { Lesson, Unit } from '../../services/course/type';
-import { ArrowLeft, Check } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  Lightbulb,
+  BookOpen,
+  Target,
+  GraduationCap,
+  DollarSign,
+  Users,
+  Calendar,
+  Sparkles,
+  Play,
+  FileText,
+} from 'lucide-react';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { formatStatusLabel } from '../../utils/mapping';
 import type { AxiosError } from 'axios';
@@ -58,85 +73,108 @@ export const UnitLessons: React.FC<{ unit: Unit; isEditMode?: boolean }> = ({
 
   if (lessonsLoading) {
     return (
-      <div className='flex justify-center py-6'>
+      <div className="flex justify-center py-6">
         <Spin />
       </div>
     );
   }
 
   if (isError || !lessonsResponse?.data || lessonsResponse.data.length === 0) {
-    return <Empty description='No lessons found for this unit' />;
+    return <Empty description="No lessons found for this unit" />;
   }
 
   const lessons = [...lessonsResponse.data].sort((a, b) => a.position - b.position);
 
   return (
-    <div>
+    <div className="space-y-4">
       {lessons.map((lesson: Lesson) => (
         <Card
           key={lesson?.lessonID}
-          className='rounded-xl border-gray-200 hover:shadow-md transition-all duration-300'
-        >
-          <div className='flex items-center justify-between mb-2'>
-            <Text strong className='text-gray-800'>
-              {lesson?.title ?? 'Untitled Lesson'}
-            </Text>
-            <Tag color='blue-inverse'>Lesson {lesson?.position ?? '-'}</Tag>
+          className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br from-white to-blue-50"
+          hoverable={!isEditMode}>
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <Play className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <Text
+                  strong
+                  className="text-gray-800 block">
+                  {lesson?.title ?? 'Untitled Lesson'}
+                </Text>
+                <Tag
+                  color="blue"
+                  className="mt-1 px-2 py-1 text-xs">
+                  Lesson {lesson?.position ?? '-'}
+                </Tag>
+              </div>
+            </div>
+            {isEditMode && (
+              <Button
+                size="small"
+                icon={<EditOutlined />}
+                className="text-gray-600 border-gray-300 hover:border-gray-400 rounded-lg flex-shrink-0"
+                onClick={() => navigate(`/teacher/lesson/${lesson?.lessonID}/edit`)}>
+                Edit
+              </Button>
+            )}
           </div>
 
-          <Paragraph className='text-gray-600 text-sm mb-3 line-clamp-2'>
+          <Paragraph className="text-gray-600 text-sm mb-3 line-clamp-2">
             {lesson?.description ?? 'No description provided'}
           </Paragraph>
 
           {lesson?.content && (
             <div
-              className='prose prose-sm max-w-none text-gray-800'
+              className="prose prose-sm max-w-none text-gray-800 bg-gray-50 p-3 rounded-lg"
               dangerouslySetInnerHTML={{ __html: lesson.content }}
             />
           )}
 
           {/* Video Preview */}
           {lesson?.videoUrl && (
-            <div className='relative aspect-video rounded-lg overflow-hidden border border-gray-200 bg-black'>
-              <video controls src={lesson.videoUrl} className='w-full h-full object-cover' />
-              <div className='absolute inset-0 flex items-center justify-center bg-black/10 pointer-events-none'>
-                <PlayCircleOutlined className='text-white text-3xl opacity-80' />
+            <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-black mb-4">
+              <video
+                controls
+                src={lesson.videoUrl}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none rounded-xl">
+                <PlayCircleOutlined className="text-white text-4xl opacity-80" />
               </div>
             </div>
           )}
 
           {/* Actions */}
-          <div className='flex flex-wrap gap-2 mt-3'>
+          <div className="flex flex-wrap gap-2">
             {lesson?.documentUrl && (
-              <Button
-                type='default'
-                size='small'
-                icon={<FileOutlined />}
-                href={lesson.documentUrl}
-                target='_blank'
-                className='text-green-600 border-green-200 hover:border-green-400 rounded-lg'
-              >
-                View Document
-              </Button>
+              <Tooltip title="Open in new tab">
+                <Button
+                  type="default"
+                  size="small"
+                  icon={<FileOutlined />}
+                  href={lesson.documentUrl}
+                  target="_blank"
+                  className="text-green-600 border-green-200 hover:border-green-400 rounded-lg flex items-center gap-1">
+                  <FileText className="w-3 h-3" />
+                  Document
+                </Button>
+              </Tooltip>
             )}
             <Button
-              size='small'
+              size="small"
               icon={<PlayCircleOutlined />}
               onClick={() => navigate(`/teacher/lesson/${lesson?.lessonID}`)}
-            >
-              View Lesson
+              className="rounded-lg flex items-center gap-1">
+              <Play className="w-3 h-3" />
+              Preview
             </Button>
-            {isEditMode && (
-              <Button
-                size='small'
-                icon={<EditOutlined />}
-                className='text-gray-600 border-gray-300 hover:border-gray-400 rounded-lg'
-              >
-                Edit Lesson
-              </Button>
-            )}
           </div>
-          <ExercisesList lessonId={lesson?.lessonID ?? ''} readonly={!isEditMode} />
+          <ExercisesList
+            lessonId={lesson?.lessonID ?? ''}
+            readonly={!isEditMode}
+          />
         </Card>
       ))}
     </div>
@@ -187,56 +225,99 @@ const CourseDetailView: React.FC = () => {
 
   if (courseLoading || unitsLoading) {
     return (
-      <div className='flex justify-center items-center min-h-[70vh]'>
-        <Spin size='large' />
+      <div className="flex justify-center items-center min-h-[70vh] bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <Spin
+            size="large"
+            className="mb-4"
+          />
+          <Title
+            level={4}
+            className="text-gray-600">
+            Loading course details...
+          </Title>
+        </div>
       </div>
     );
   }
 
   if (!courseData) {
-    return <Empty description='Course not found' />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
+        <Empty description="Course not found" />
+      </div>
+    );
   }
 
   const course = courseData;
 
   return (
-    <div className='min-h-screen bg-gray-50 py-10 px-4'>
-      <div className='max-w-6xl mx-auto space-y-8'>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className='flex justify-between items-center'>
-          <div className='flex items-center gap-2.5'>
-            <Button onClick={() => navigate(-1)} type='default' className='mr-2'>
-              <ArrowLeft size={14} />
-            </Button>
-            <Title level={2} className='!mb-0 text-gray-800'>
-              Course Detail
-            </Title>
+        <div className="flex justify-between items-center bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3">
+            <Tooltip title="Back to courses">
+              <Button
+                onClick={() => navigate(-1)}
+                type="default"
+                className="rounded-xl shadow-sm border-gray-200 hover:border-indigo-300 transition-colors">
+                <ArrowLeft size={16} />
+              </Button>
+            </Tooltip>
+            <div className="flex items-center gap-2">
+              <Title
+                level={2}
+                className="!mb-0 text-gray-800">
+                Course Overview
+              </Title>
+            </div>
           </div>
-          <div className='space-x-2'>
+          <div className="space-x-2 flex items-center">
             {isEditMode ? (
               <>
-                <Button type='primary' icon={<SaveOutlined />} onClick={handleToggleEdit}>
-                  Save
-                </Button>
-                <Button danger icon={<CloseOutlined />} onClick={() => setIsEditMode(false)}>
-                  Cancel
-                </Button>
+                <Tooltip title="Save changes">
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={handleToggleEdit}
+                    className="rounded-xl shadow-md hover:shadow-lg transition-all">
+                    Save Changes
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Cancel editing">
+                  <Button
+                    danger
+                    icon={<CloseOutlined />}
+                    onClick={() => setIsEditMode(false)}
+                    className="rounded-xl">
+                    Cancel
+                  </Button>
+                </Tooltip>
               </>
             ) : (
-              <div className='flex justify-center items-center gap-1.5'>
+              <div className="flex items-center gap-2">
                 {course?.status?.toLowerCase() === 'draft' && (
-                  <Button type='primary' onClick={handleSubmitCourse} icon={<Check size={14} />}>
-                    Submit
-                  </Button>
+                  <Tooltip title="Submit for review">
+                    <Button
+                      type="primary"
+                      onClick={handleSubmitCourse}
+                      icon={<Check size={16} />}
+                      className="rounded-xl shadow-md hover:shadow-lg transition-all">
+                      Submit Course
+                    </Button>
+                  </Tooltip>
                 )}
                 {(course?.status?.toLowerCase() === 'draft' ||
                   course?.status?.toLowerCase() === 'rejected') && (
-                  <Button
-                    icon={<EditOutlined />}
-                    onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
-                  >
-                    Edit
-                  </Button>
+                  <Tooltip title="Edit course details">
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
+                      className="rounded-xl border-gray-300 hover:border-indigo-400 transition-colors">
+                      Edit
+                    </Button>
+                  </Tooltip>
                 )}
               </div>
             )}
@@ -244,104 +325,249 @@ const CourseDetailView: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className='relative rounded-2xl overflow-hidden shadow-md'>
+        <div className="rounded-3xl overflow-hidden shadow-xl border-0 relative bg-gradient-to-r from-indigo-600 to-purple-700">
           <img
             src={course?.imageUrl ?? '/default-course.jpg'}
             alt={course?.title ?? 'Course Image'}
-            className='w-full h-64 object-cover'
+            className="w-full h-72 object-cover brightness-75"
           />
-          <div className='absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent' />
-          <div className='absolute bottom-4 left-6 text-white'>
-            <Title level={2} className='!text-white mb-0'>
-              {course?.title ?? 'Untitled Course'}
-            </Title>
-            <Paragraph className='text-gray-200 mt-1 max-w-xl'>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute top-6 right-6">
+            <Tag
+              color="gold"
+              className="px-3 py-2 text-sm font-medium shadow-lg">
+              <Sparkles className="w-3 h-3 inline mr-1" />
+              {formatStatusLabel(course?.status ?? 'unknown')}
+            </Tag>
+          </div>
+          <div className="absolute bottom-6 left-6 text-white max-w-2xl">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <BookOpen className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <Title
+                  level={1}
+                  className="!text-white !mb-1">
+                  {course?.title ?? 'Untitled Course'}
+                </Title>
+                <Text className="!text-indigo-100 text-sm">
+                  <Avatar
+                    src={course?.teacherInfo?.avatar}
+                    className="!mr-2"
+                  />
+                  By {course?.teacherInfo?.fullName ?? 'Unknown Teacher'}
+                </Text>
+              </div>
+            </div>
+            <Paragraph className="!text-gray-200 leading-relaxed">
               {course?.description ?? 'No description available'}
             </Paragraph>
-            <div className='flex items-center mt-3 space-x-3'>
-              <Avatar src={course?.teacherInfo?.avatarUrl} />
-              <Text className='text-gray-100 text-sm'>
-                {course?.teacherInfo?.fullName ?? 'Unknown Teacher'}
-              </Text>
+            <div className="flex items-center gap-4 mt-4">
+              <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
+                <Target className="w-4 h-4 text-white" />
+                <Text className="!text-white text-sm">
+                  {course?.languageInfo?.name ?? 'Unknown Language'}
+                </Text>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
+                <GraduationCap className="w-4 h-4 text-white" />
+                <Text className="!text-white text-sm">{course?.courseLevel ?? 'N/A'}</Text>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Course Info */}
-        <Card className='rounded-2xl shadow-sm border border-gray-100'>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={6}>
-              <Tag color='blue'>{course?.languageInfo?.name ?? 'Unknown Language'}</Tag>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Tag color='green'>{course?.courseLevel ?? 'N/A'}</Tag>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Tag color={course?.status === 'published' ? 'success' : 'default'}>
-                {formatStatusLabel(course?.status ?? 'unknown')}
-              </Tag>
-            </Col>
-          </Row>
-
-          <div className='mt-6 space-y-1'>
-            <Text strong className='block text-sm'>
-              🎯 Goal:
-            </Text>
-            <Paragraph className='text-gray-600 text-sm mb-2'>
-              {course?.goalInfo?.description ?? 'No goal description provided'}
-            </Paragraph>
-
-            <Text strong className='block text-sm'>
-              💰 Price:
-            </Text>
-            {course?.discountPrice ? (
-              <>
-                <Text delete className='text-gray-500 text-sm mr-1'>
-                  {Number(course?.price ?? 0).toLocaleString('vi-VN')} VNĐ
-                </Text>
-                <Text type='success' strong>
-                  {Number(course?.discountPrice ?? 0).toLocaleString('vi-VN')} VNĐ
-                </Text>
-              </>
-            ) : (
-              <Text className='text-gray-800 font-semibold'>
-                {Number(course?.price ?? 0).toLocaleString('vi-VN')} VNĐ
+        <Card className="rounded-2xl shadow-sm border-0 bg-white">
+          <div className="p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <Lightbulb className="w-6 h-6 text-yellow-500" />
+              <Text
+                strong
+                className="text-xl text-gray-800">
+                Quick Stats
               </Text>
-            )}
+            </div>
+            <Row
+              gutter={[16, 16]}
+              className="mb-6">
+              <Col
+                xs={24}
+                sm={12}
+                md={8}>
+                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Users className="w-5 h-5 text-blue-600" />
+                    <Text
+                      strong
+                      className="text-blue-800">
+                      Language
+                    </Text>
+                  </div>
+                  <Text className="text-gray-900 font-medium">
+                    {course?.languageInfo?.name ?? 'N/A'}
+                  </Text>
+                </div>
+              </Col>
+              <Col
+                xs={24}
+                sm={12}
+                md={8}>
+                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <GraduationCap className="w-5 h-5 text-green-600" />
+                    <Text
+                      strong
+                      className="text-green-800">
+                      Level
+                    </Text>
+                  </div>
+                  <Text className="text-gray-900 font-medium">{course?.courseLevel ?? 'N/A'}</Text>
+                </div>
+              </Col>
+              <Col
+                xs={24}
+                sm={12}
+                md={8}>
+                <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="w-5 h-5 text-purple-600" />
+                    <Text
+                      strong
+                      className="text-purple-800">
+                      Status
+                    </Text>
+                  </div>
+                  <Tag
+                    color={course?.status === 'published' ? 'success' : 'default'}
+                    className="px-3 py-1">
+                    {formatStatusLabel(course?.status ?? 'unknown')}
+                  </Tag>
+                </div>
+              </Col>
+            </Row>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-5 h-5 text-indigo-600" />
+                  <Text
+                    strong
+                    className="text-indigo-800">
+                    Learning Goal
+                  </Text>
+                </div>
+                <Paragraph className="text-gray-700 leading-relaxed">
+                  {course?.goalInfo?.description ?? 'No goal description provided'}
+                </Paragraph>
+              </div>
+
+              <div className="p-4 bg-green-50 rounded-xl border border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  <Text
+                    strong
+                    className="text-green-800">
+                    Pricing
+                  </Text>
+                </div>
+                <div className="flex items-center gap-2">
+                  {course?.discountPrice ? (
+                    <>
+                      <Text
+                        delete
+                        className="text-gray-500 text-lg">
+                        {Number(course?.price ?? 0).toLocaleString('vi-VN')} VNĐ
+                      </Text>
+                      <Text
+                        type="success"
+                        strong
+                        className="text-2xl">
+                        {Number(course?.discountPrice ?? 0).toLocaleString('vi-VN')} VNĐ
+                      </Text>
+                    </>
+                  ) : (
+                    <Text className="text-gray-800 font-bold text-2xl">
+                      {Number(course?.price ?? 0).toLocaleString('vi-VN')} VNĐ
+                    </Text>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
 
         {/* Units + Lessons */}
-        <div>
-          <Title level={3} className='text-gray-800 mb-4'>
-            📘 Course Content
-          </Title>
+        <Card className="rounded-2xl shadow-sm border-0 bg-white">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <BookOpen className="w-6 h-6 text-blue-600" />
+              <Title
+                level={3}
+                className="!mb-0 text-gray-800">
+                Course Content
+              </Title>
+            </div>
 
-          {!Array.isArray(unitsData) || unitsData.length === 0 ? (
-            <Empty description='No units found' />
-          ) : (
-            <Collapse bordered={false} expandIconPosition='end' className='space-y-3'>
-              {unitsData.map((unit: Unit, index: number) => (
-                <Panel
-                  key={unit?.courseUnitID ?? index}
-                  header={
-                    <div>
-                      <h4 className='text-gray-800 font-semibold'>
-                        {unit?.title ?? 'Untitled Unit'}
-                      </h4>
-                      <p className='text-gray-500 text-sm mt-1'>
-                        {unit?.description ?? 'No description provided'}
-                      </p>
-                    </div>
-                  }
-                  className='bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all'
-                >
-                  <UnitLessons unit={unit} isEditMode={isEditMode} />
-                </Panel>
-              ))}
-            </Collapse>
-          )}
-        </div>
+            {!Array.isArray(unitsData) || unitsData.length === 0 ? (
+              <Empty description="No units found" />
+            ) : (
+              <Collapse
+                bordered={false}
+                expandIconPosition="end"
+                defaultActiveKey={unitsData.map((_, idx) => idx.toString())}
+                className="space-y-3">
+                {unitsData.map((unit: Unit, index: number) => (
+                  <Panel
+                    key={unit?.courseUnitID ?? index}
+                    header={
+                      <div className="flex items-center gap-3 p-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50">
+                        <div className="w-8 h-8 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-gray-800 font-semibold truncate">
+                            {unit?.title ?? 'Untitled Unit'}
+                          </h4>
+                          <Text className="text-gray-500 text-sm block truncate mt-1">
+                            {unit?.description ?? 'No description provided'}
+                          </Text>
+                        </div>
+                        <Tag
+                          color="blue"
+                          className="px-2 py-1 text-xs flex-shrink-0">
+                          Unit {index + 1}
+                        </Tag>
+                      </div>
+                    }
+                    className="rounded-2xl border border-gray-200 bg-white hover:shadow-md transition-all">
+                    <UnitLessons
+                      unit={unit}
+                      isEditMode={isEditMode}
+                    />
+                  </Panel>
+                ))}
+              </Collapse>
+            )}
+          </div>
+        </Card>
+
+        {course?.status?.toLowerCase() === 'rejected' && (
+          <Alert
+            message="Course Feedback"
+            description="Your course was rejected. Review the notes and edit to resubmit."
+            type="warning"
+            className="rounded-2xl"
+            action={
+              <Button
+                size="small"
+                onClick={() => navigate(`/teacher/course/${courseId}/edit`)}>
+                Edit Now
+              </Button>
+            }
+          />
+        )}
       </div>
     </div>
   );

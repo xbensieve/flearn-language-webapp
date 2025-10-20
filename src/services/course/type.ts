@@ -148,6 +148,7 @@ export interface CourseDetail {
   teacherInfo: TeacherInfo;
   languageInfo: LanguageInfo;
   goalInfo: GoalInfo;
+  goals: GoalInfo[];
   courseLevel: string;
   publishedAt: string;
   status: string;
@@ -222,6 +223,7 @@ export interface LanguageInfo {
 }
 
 export interface GoalInfo {
+  id?: number;
   name: string;
   description: string;
 }

@@ -11,7 +11,6 @@ import {
   Drawer,
   Descriptions,
   Modal,
-  Image,
 } from 'antd';
 import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ExerciseData } from '../../../services/course/type';
@@ -106,26 +105,31 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
   }
 
   if (!data?.length) {
-    return <Empty description='No exercises yet' className='py-8' />;
+    return (
+      <Empty
+        description="No exercises yet"
+        className="py-8"
+      />
+    );
   }
 
   return (
-    <div className='p-4'>
+    <div className="p-4">
       {readonly ? (
         <div>
           <Typography.Title level={3}>Exercises</Typography.Title>
         </div>
       ) : (
-        <div className='mb-4 flex gap-4'>
+        <div className="mb-4 flex gap-4">
           <Input
-            placeholder='Search exercises by title'
+            placeholder="Search exercises by title"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ width: 200 }}
           />
         </div>
       )}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data?.map((exercise, index) => (
           <div
             key={exercise.exerciseID}
@@ -133,74 +137,74 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
             onDragStart={(e) => onDragStart?.(e, index)}
             onDragOver={onDragOver}
             onDrop={(e) => onDrop?.(e, index)}
-            className='cursor-move'
-          >
+            className="cursor-move">
             <Card
               hoverable
-              className='shadow-md rounded-xl'
+              className="shadow-md rounded-xl"
               actions={
                 readonly
                   ? [
                       <Button
-                        type='link'
+                        type="link"
                         icon={<EyeOutlined />}
                         onClick={() => {
                           handleOpenDrawer(exercise, 'preview');
                           onPreview?.(exercise);
-                        }}
-                      >
+                        }}>
                         Preview
                       </Button>,
                     ]
                   : [
                       <Button
-                        type='link'
+                        type="link"
                         icon={<EyeOutlined />}
                         onClick={() => {
                           handleOpenDrawer(exercise, 'preview');
                           onPreview?.(exercise);
-                        }}
-                      >
+                        }}>
                         Preview
                       </Button>,
                       <Button
-                        type='link'
+                        type="link"
                         icon={<EditOutlined />}
                         onClick={() => {
                           handleOpenDrawer(exercise, 'edit');
-                        }}
-                      >
+                        }}>
                         Edit
                       </Button>,
                       <Button
-                        type='link'
+                        type="link"
                         icon={<DeleteOutlined />}
                         danger
                         onClick={() => handleDelete(exercise.exerciseID)}
-                        loading={isDeleting}
-                      >
+                        loading={isDeleting}>
                         Delete
                       </Button>,
                     ]
-              }
-            >
+              }>
               <Card.Meta
                 title={
-                  <Space size='small' wrap>
+                  <Space
+                    size="small"
+                    wrap>
                     <Text strong>{exercise.title}</Text>
-                    <Tag color='blue'>{exercise.exerciseType}</Tag>
-                    <Tag color='orange'>{exercise.difficulty}</Tag>
+                    <Tag color="blue">{exercise.exerciseType}</Tag>
+                    <Tag color="orange">{exercise.difficulty}</Tag>
                   </Space>
                 }
                 description={
                   <div>
-                    <Paragraph ellipsis={{ rows: 2 }} className='mb-2'>
+                    <Paragraph
+                      ellipsis={{ rows: 2 }}
+                      className="mb-2">
                       {exercise.prompt}
                     </Paragraph>
-                    <Space direction='vertical' size='small'>
-                      <Text type='secondary'>Max Score: {exercise.maxScore}</Text>
-                      <Text type='secondary'>Pass Score: {exercise.passScore}</Text>
-                      {exercise.mediaUrl && <Text type='secondary'>Has Media</Text>}
+                    <Space
+                      direction="vertical"
+                      size="small">
+                      <Text type="secondary">Max Score: {exercise.maxScore}</Text>
+                      <Text type="secondary">Pass Score: {exercise.passScore}</Text>
+                      {exercise.mediaUrl && <Text type="secondary">Has Media</Text>}
                     </Space>
                   </div>
                 }
@@ -214,11 +218,10 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
         <Modal
           visible={confirmDeleteVisible}
           onCancel={handleCancelDelete}
-          onOk={handleConfirmDelete}
-        >
+          onOk={handleConfirmDelete}>
           <div>
-            <h3 className='text-lg font-semibold mb-4'>Delete Exercise</h3>
-            <p className='text-gray-600 mb-6'>
+            <h3 className="text-lg font-semibold mb-4">Delete Exercise</h3>
+            <p className="text-gray-600 mb-6">
               Are you sure you want to delete this exercise? This action cannot be undone.
             </p>
           </div>
@@ -233,41 +236,42 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
         }
         width={600}
         open={drawerVisible}
-        onClose={handleCloseDrawer}
-      >
+        onClose={handleCloseDrawer}>
         {selectedExercise && (
           <>
             {drawerMode === 'preview' ? (
               <div>
                 {selectedExercise.mediaUrl && (
-                  <div>
-                    <Image src={selectedExercise.mediaUrl} alt={selectedExercise.title} />
+                  <div className="mt-4 !mb-4 p-4 bg-white rounded-xl shadow-sm">
+                    <Text
+                      strong
+                      className="block mb-2">
+                      Audio Preview:
+                    </Text>
+                    <audio
+                      src={selectedExercise.mediaUrl}
+                      controls
+                      className="w-full rounded-lg"
+                    />
                   </div>
                 )}
-                <Descriptions bordered column={1}>
-                  <Descriptions.Item label='Title'>{selectedExercise.title}</Descriptions.Item>
-                  <Descriptions.Item label='Prompt'>{selectedExercise.prompt}</Descriptions.Item>
-                  <Descriptions.Item label='Type'>
+                <Descriptions
+                  bordered
+                  column={1}>
+                  <Descriptions.Item label="Title">{selectedExercise.title}</Descriptions.Item>
+                  <Descriptions.Item label="Prompt">{selectedExercise.prompt}</Descriptions.Item>
+                  <Descriptions.Item label="Type">
                     {selectedExercise.exerciseType}
                   </Descriptions.Item>
-                  <Descriptions.Item label='Difficulty'>
+                  <Descriptions.Item label="Difficulty">
                     {selectedExercise.difficulty}
                   </Descriptions.Item>
-                  <Descriptions.Item label='Max Score'>
+                  <Descriptions.Item label="Max Score">
                     {selectedExercise.maxScore}
                   </Descriptions.Item>
-                  <Descriptions.Item label='Pass Score'>
+                  <Descriptions.Item label="Pass Score">
                     {selectedExercise.passScore}
                   </Descriptions.Item>
-                  {selectedExercise.mediaUrl && (
-                    <Descriptions.Item label='Media'>
-                      <img
-                        src={selectedExercise.mediaUrl}
-                        alt='Exercise Media'
-                        style={{ maxWidth: '100%', borderRadius: 8 }}
-                      />
-                    </Descriptions.Item>
-                  )}
                 </Descriptions>
               </div>
             ) : (
