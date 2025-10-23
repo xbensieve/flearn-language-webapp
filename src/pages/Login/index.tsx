@@ -1,28 +1,34 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { Form, Input, Button, Typography, Checkbox, Card } from 'antd';
-import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
-import { login, loginWithGoogle } from '../../services/auth';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import {  useNavigate } from 'react-router-dom';
-import { useAuth } from '../../utils/AuthContext';
-import type { AxiosError } from 'axios';
+import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { Form, Input, Button, Typography, Checkbox } from "antd";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { login } from "../../services/auth";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../utils/AuthContext";
+import type { AxiosError } from "axios";
+import LoginGoogleButton from "../../components/LoginGoogleButton";
 
 const { Title, Text } = Typography;
 
-const ROLE_PATHS: Record<string, string> = {
-  admin: '/admin',
-  staff: '/staff',
-  teacher: '/teacher',
-  learner: '/learner/application',
-};
-
-const rolesCase = (roles: string[], navigate: any) => {
-  const priority = ['admin', 'staff', 'teacher', 'learner'];
-  const matchedRole = priority.find((r) => roles.some((ur) => ur.toLowerCase() === r));
-  navigate(matchedRole ? ROLE_PATHS[matchedRole] : '/');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rolesCase = (role: string, navigate: any) => {
+  switch (role.toLowerCase()) {
+    case "admin":
+      navigate("/admin");
+      break;
+    case "learner":
+      navigate("/learner");
+      break;
+    case "teacher":
+      navigate("/teacher");
+      break;
+    case "staff":
+      navigate("/staff");
+      break;
+    default:
+      navigate("/");
+  }
 };
 
 const Login: React.FC = () => {
@@ -31,213 +37,245 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { updateAuth } = useAuth();
 
-  useEffect(() => {
-    const rolesString = localStorage.getItem('FLEARN_USER_ROLES');
-    if (rolesString) {
-      try {
-        const roles = JSON.parse(rolesString);
-        if (Array.isArray(roles)) rolesCase(roles, navigate);
-      } catch {
-        localStorage.removeItem('FLEARN_USER_ROLES');
-      }
-    }
-  }, [navigate]);
-
-  // ===== LOGIN API =====
   const mutation = useMutation({
-    mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
-      login(values),
+    mutationFn: (values: {
+      usernameOrEmail: string;
+      password: string;
+      rememberMe: boolean;
+    }) => login({ ...values }),
     onMutate: () => setLoading(true),
     onSettled: () => setLoading(false),
     onSuccess: (data) => {
-      if (data.success) handleAuthSuccess(data.data);
+      if (data.success) {
+        localStorage.setItem("FLEARN_ACCESS_TOKEN", data.data.accessToken);
+        localStorage.setItem("FLEARN_REFRESH_TOKEN", data.data.refreshToken);
+        const role = data.data.roles[0];
+        localStorage.setItem("FLEARN_USER_ROLE", role);
+        updateAuth();
+        notifySuccess(data.message);
+        rolesCase(role, navigate);
+      }
     },
-    onError: (err: AxiosError<any>) => notifyError(err?.response?.data?.message || 'Login failed'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: AxiosError<any>) =>
+      notifyError(err?.response?.data?.message || "Login failed"),
   });
 
-  // ===== GOOGLE LOGIN =====
-  const googleMutation = useMutation({
-    mutationFn: (idToken: string) => loginWithGoogle(idToken),
-    onSuccess: (data: any) => {
-      if (data.success) handleAuthSuccess(data.data);
-    },
-    onError: (err: AxiosError<any>) => {
-      notifyError(err?.response?.data?.message || 'Google login failed');
-    },
-  });
+  const handleSubmit = (values: {
+    usernameOrEmail: string;
+    password: string;
+    rememberMe: boolean;
+  }) => mutation.mutate(values);
 
-  const handleAuthSuccess = (data: any) => {
-    localStorage.setItem('FLEARN_ACCESS_TOKEN', data.accessToken);
-    localStorage.setItem('FLEARN_REFRESH_TOKEN', data.refreshToken);
-    localStorage.setItem('FLEARN_USER_ROLES', JSON.stringify(data.roles));
-    updateAuth();
-    notifySuccess('Login successful!');
-    rolesCase(data.roles, navigate);
+  // ===== FULLSCREEN INLINE STYLES =====
+  const page: React.CSSProperties = {
+    height: "100vh",
+    width: "100vw",
+    margin: 0,
+    background: "#e5e7eb",
   };
 
-  const handleSubmit = (values: any) => mutation.mutate(values);
-
-  // ===== GOOGLE BUTTON INIT =====
-  useEffect(() => {
-    // @ts-expect-error
-    if (window.google) {
-      // @ts-expect-error
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleGoogleCallback,
-      });
-
-      // @ts-ignore
-      window.google.accounts.id.renderButton(document.getElementById('googleSignInDiv'), {
-        theme: 'outline',
-        size: 'large',
-        width: '100%',
-      });
-    }
-  }, []);
-
-  const handleGoogleCallback = (response: any) => {
-    if (response.credential) googleMutation.mutate(response.credential);
-    else notifyError('Failed to get Google token');
-  };
-
-  // ===== CSS =====
-  const wrapper: React.CSSProperties = {
-    display: 'flex',
-    width: '100vw',
-    height: '100vh',
+  const shell: React.CSSProperties = {
+    height: "100%",
+    width: "100%",
+    display: "grid",
+    gridTemplateColumns: "55% 45%", // 2 cột full màn hình
+    background: "#ffffff",
+    borderRadius: 0,
+    overflow: "hidden",
   };
 
   const left: React.CSSProperties = {
-    flex: 2,
+    position: "relative",
+    height: "100%",
     backgroundImage:
-      "url('https://media.istockphoto.com/id/490922474/vi/vec-to/h%C3%ACnh-%C4%91%E1%BA%A1i-di%E1%BB%87n-con-ng%C6%B0%E1%BB%9Di-tr%C3%AAn-b%E1%BA%A3n-%C4%91%E1%BB%93-th%E1%BA%BF-gi%E1%BB%9Bi-bong-b%C3%B3ng-gi%E1%BB%8Dng-n%C3%B3i-b%E1%BA%B1ng-c%C3%A1c-ng%C3%B4n-ng%E1%BB%AF-kh%C3%A1c-nhau.jpg?s=612x612&w=0&k=20&c=NxwxBu1lMnYxkKqlg1jNLNGu2yNiuHJehyZw3z5ys54=')",
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
+      "url('https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=1600&q=80')", // đổi sang ảnh của bạn
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    display: "flex",
+    alignItems: "flex-end",
+    padding: 32,
+  };
+
+  const leftOverlay: React.CSSProperties = {
+    width: "100%",
+    background: "rgba(0,0,0,0.45)",
+    borderRadius: 16,
+    padding: "14px 18px",
   };
 
   const right: React.CSSProperties = {
-    flex: 1.2,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(to bottom, #ffffff, #e0f2fe)',
+    height: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "48px 64px",
+    overflowY: "auto", // nếu nội dung dài vẫn giữ full-height
   };
 
-  const cardBox: React.CSSProperties = {
-    width: '100%',
-    maxWidth: 400,
-    padding: '40px 32px',
-    borderRadius: 16,
-    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-    background: '#fff',
+  const rightInner: React.CSSProperties = {
+    width: "min(520px, 100%)",
+  };
+
+  const tabsWrap: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    gap: 12,
+    marginTop: 12,
+    marginBottom: 16,
+  };
+  const tabBase: React.CSSProperties = {
+    border: "none",
+    borderRadius: 999,
+    padding: "0 24px",
+    height: 36,
+    fontWeight: 600,
+    cursor: "pointer",
+  };
+  const tabActive: React.CSSProperties = {
+    ...tabBase,
+    backgroundColor: "#06b6d4",
+    color: "#fff",
+  };
+  const tabInactive: React.CSSProperties = {
+    ...tabBase,
+    backgroundColor: "#e5e7eb",
+    color: "#374151",
+  };
+
+  const desc: React.CSSProperties = {
+    margin: "4px 0 24px",
+    color: "#6b7280",
+    textAlign: "center",
+  };
+  const label: React.CSSProperties = { fontWeight: 600, color: "#374151" };
+  const inputStyle: React.CSSProperties = {
+    height: 44,
+    borderRadius: 999,
+    border: "1.5px solid #67e8f9",
+    paddingLeft: 12,
+  };
+  const row: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  };
+  const loginBtn: React.CSSProperties = {
+    height: 44,
+    borderRadius: 999,
+    border: "none",
+    backgroundColor: "#06b6d4",
+    fontWeight: 700,
   };
 
   return (
-    <div style={wrapper}>
-      {/* LEFT SIDE IMAGE */}
-      <div style={left}></div>
-
-      {/* RIGHT SIDE - LOGIN BOX */}
-      <div style={right}>
-        <Card bordered={false} style={cardBox}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Title level={3} style={{ margin: 0, color: '#06b6d4', fontWeight: 700 }}>
-              Welcome Back
+    <section style={page}>
+      <div style={shell}>
+        {/* LEFT (ảnh) */}
+        <div style={left}>
+          <div style={leftOverlay}>
+            <Title level={4} style={{ color: "#fff", margin: 0 }}>
+              Lorem Ipsum is simply
             </Title>
-            <Text type='secondary'>Login to your account</Text>
+            <Text style={{ color: "#e5e7eb" }}>Lorem Ipsum is simply</Text>
           </div>
+        </div>
 
-          <Form form={form} layout='vertical' onFinish={handleSubmit}>
-            <Form.Item
-              label='Username or Email'
-              name='usernameOrEmail'
-              rules={[{ required: true, message: 'Please enter your username or email!' }]}
-            >
-              <Input
-                size='large'
-                prefix={<UserOutlined style={{ opacity: 0.6 }} />}
-                placeholder='Enter your username or email'
-              />
-            </Form.Item>
+        {/* RIGHT (form) */}
+        <div style={right}>
+          <div style={rightInner}>
+            <div style={{ textAlign: "center" }}>
+              <Text>Chào mừng trở lại!</Text>
+              <div style={tabsWrap}>
+                <button type="button" style={tabActive}>
+                  Login
+                </button>
+                <button
+                  type="button"
+                  style={tabInactive}
+                  onClick={() => navigate("/register")}
+                >
+                  Register
+                </button>
+              </div>
+            </div>
 
-            <Form.Item
-              label='Password'
-              name='password'
-              rules={[{ required: true, message: 'Please enter your password!' }]}
-            >
-              <Input.Password
-                size='large'
-                prefix={<LockOutlined style={{ opacity: 0.6 }} />}
-                placeholder='Enter your password'
-              />
-            </Form.Item>
+            <p style={desc}>
+              Nền tảng học nói cho người Việt. Đăng nhập để tiếp tục hành trình
+              học của bạn.
+            </p>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 16,
-              }}
-            >
-              <Form.Item name='rememberMe' valuePropName='checked' noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-              <Button
-                type='link'
-                onClick={() => navigate('/forgot-password')}
-                style={{ padding: 0, color: '#06b6d4' }}
+            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+              <Form.Item
+                label={<span style={label}>User name</span>}
+                name="usernameOrEmail"
+                rules={[
+                  { required: true, message: "Please enter your user name!" },
+                ]}
               >
-                Forgot password?
-              </Button>
+                <Input
+                  style={inputStyle}
+                  prefix={
+                    <UserOutlined style={{ marginRight: 6, opacity: 0.7 }} />
+                  }
+                  placeholder="Enter your User name"
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={<span style={label}>Password</span>}
+                name="password"
+                rules={[
+                  { required: true, message: "Please enter your password!" },
+                ]}
+              >
+                <Input.Password
+                  style={inputStyle}
+                  prefix={
+                    <LockOutlined style={{ marginRight: 6, opacity: 0.7 }} />
+                  }
+                  placeholder="Enter your Password"
+                />
+              </Form.Item>
+
+              <div style={row}>
+                <Form.Item name="rememberMe" valuePropName="checked" noStyle>
+                  <Checkbox>Remember me</Checkbox>
+                </Form.Item>
+                <Button type="link" onClick={() => navigate("/forgot")}>
+                  Forgot Password?
+                </Button>
+              </div>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="large"
+                  loading={loading}
+                  style={loginBtn}
+                >
+                  {loading ? "Logging in..." : "Login"}
+                </Button>
+              </Form.Item>
+            </Form>
+            <div className="flex items-center justify-center gap-2 my-4">
+              <span className="text-gray-400 text-sm">— or —</span>
             </div>
-
-            <Button
-              type='primary'
-              htmlType='submit'
-              block
-              size='large'
-              loading={loading}
-              style={{
-                height: 44,
-                borderRadius: 999,
-                backgroundColor: '#06b6d4',
-                fontWeight: 600,
-              }}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <Text>Don't have an account? </Text>
-              <Button type='link' onClick={() => navigate('/register')} style={{ padding: 0 }}>
-                Register
-              </Button>
-            </div>
-
-            <div style={{ textAlign: 'center', color: '#9ca3af', margin: '12px 0' }}>
-              — or continue with —
-            </div>
-
-            <Button
-              icon={<GoogleOutlined />}
-              block
-              size='large'
-              style={{
-                borderRadius: 999,
-                border: '1px solid #d1d5db',
-                height: 44,
-              }}
-              onClick={() => notifyError('Google Sign-In not initialized yet')}
-            >
-              Sign in with Google
-            </Button>
-          </Form>
-        </Card>
+            <LoginGoogleButton />
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Responsive fallback cho màn nhỏ */}
+      <style>{`
+        @media (max-width: 1024px) {
+          section > div { grid-template-columns: 1fr; }
+        }
+      `}</style>
+    </section>
   );
 };
 
