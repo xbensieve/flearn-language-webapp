@@ -38,6 +38,7 @@ const LoginGoogleButton = () => {
         googleMutation.mutate(idToken);
       }}
       onError={() => notifyError("Google sign-in was cancelled or failed")}
+      useOneTap={false}
       theme="outline"
       size="large"
       shape="pill"
