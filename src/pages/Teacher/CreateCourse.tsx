@@ -239,18 +239,18 @@ const CreateCourse: React.FC = () => {
                 {currentStep === 0 && (
                   <div className="p-4 bg-blue-50 rounded-2xl border border-blue-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
-                      <Text
+                      {/* <BookOpen className="w-5 h-5 text-blue-600" /> */}
+                      {/* <Text
                         strong
                         className="text-blue-800">
                         Basic Information
-                      </Text>
+                      </Text> */}
                     </div>
                     <Form.Item
                       name="title"
                       label={
                         <span className="flex items-center gap-1">
-                          Course Title <Sparkles className="w-4 h-4 text-yellow-500" />
+                           Title <Sparkles className="w-4 h-4 text-yellow-500" />
                         </span>
                       }
                       rules={[{ required: true, message: 'Please enter course title' }]}>
@@ -279,7 +279,7 @@ const CreateCourse: React.FC = () => {
                       name="templateId"
                       label={
                         <span className="flex items-center gap-1">
-                          Course Template <Settings className="w-4 h-4 text-purple-500" />
+                           Template <Settings className="w-4 h-4 text-purple-500" />
                         </span>
                       }
                       rules={[{ required: true, message: 'Please select a template' }]}>
@@ -303,7 +303,7 @@ const CreateCourse: React.FC = () => {
                       name="courseType"
                       label={
                         <span className="flex items-center gap-1">
-                          Course Type <Users className="w-4 h-4 text-green-500" />
+                           Type <Users className="w-4 h-4 text-green-500" />
                         </span>
                       }
                       rules={[{ required: true, message: 'Please select course type' }]}>
@@ -357,7 +357,7 @@ const CreateCourse: React.FC = () => {
                     <Form.Item
                       label={
                         <span className="flex items-center gap-1">
-                          Course Image <ImageIcon className="w-4 h-4 text-pink-500" />
+                          Image <ImageIcon className="w-4 h-4 text-pink-500" />
                         </span>
                       }>
                       <Upload.Dragger
@@ -377,12 +377,12 @@ const CreateCourse: React.FC = () => {
                 {currentStep === 1 && formValues.courseType === 1 && (
                   <div className="p-4 bg-green-50 rounded-2xl border border-green-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <DollarSign className="w-5 h-5 text-green-600" />
+                      {/* <DollarSign className="w-5 h-5 text-green-600" />
                       <Text
                         strong
                         className="text-green-800">
                         Pricing Details
-                      </Text>
+                      </Text> */}
                     </div>
                     <Row gutter={16}>
                       <Col
@@ -416,7 +416,7 @@ const CreateCourse: React.FC = () => {
                         </Form.Item>
                       </Col>
 
-                      <Col
+                      {/* <Col
                         xs={24}
                         md={12}>
                         <Form.Item
@@ -440,7 +440,7 @@ const CreateCourse: React.FC = () => {
                             prefix={<DollarSign className="text-gray-400 mr-2 w-4 h-4" />}
                           />
                         </Form.Item>
-                      </Col>
+                      </Col> */}
                     </Row>
                   </div>
                 )}
@@ -448,12 +448,12 @@ const CreateCourse: React.FC = () => {
                 {currentStep === 2 && (
                   <div className="p-4 bg-purple-50 rounded-2xl border border-purple-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <Settings className="w-5 h-5 text-purple-600" />
+                      {/* <Settings className="w-5 h-5 text-purple-600" />
                       <Text
                         strong
                         className="text-purple-800">
                         Advanced Settings
-                      </Text>
+                      </Text> */}
                     </div>
                     <Form.Item
                       name="goalIds"

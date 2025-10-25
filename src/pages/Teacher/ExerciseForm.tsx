@@ -161,7 +161,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                             size={16}
                             className="text-gray-600"
                           />
-                          Exercise Title
+                         Title
                         </span>
                       }
                       rules={[{ required: true, message: 'Please enter a title' }]}>
