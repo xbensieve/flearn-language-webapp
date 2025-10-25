@@ -27,6 +27,7 @@ import UnitsManager from '../../pages/Teacher/UnitsManager';
 import EditCoursePage from '../../pages/Teacher/EditCoursePage';
 import ReviewCourses from '../../pages/Staff/ReviewCourses';
 import CourseReviewDetail from '../../pages/Staff/CourseReviewDetail';
+import ConversationPromptPage from '../../pages/Admin/ConversationPromptPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -70,6 +71,10 @@ const routes: RouteObject[] = [
       {
         path: 'goals',
         element: <Goals />,
+      },
+      {
+        path: 'conversation-prompts',
+        element: <ConversationPromptPage />,
       },
     ],
   },
