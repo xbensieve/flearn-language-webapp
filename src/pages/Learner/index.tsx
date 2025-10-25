@@ -1,264 +1,197 @@
-import { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
-import type { ICourseMock } from '../../services/course/type';
-import { CourseCard } from '../../components/CourseCard';
-import type { RecommendedCourse } from '../../services/survey/types';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMySurvey, regenerateRecommendations } from '../../services/survey';
-import { Button, Card, Skeleton, Spin } from 'antd';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
+import { Card, Typography, Progress, Button } from 'antd';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from 'recharts';
 
-export default function BrowseCourses() {
-  const queryClient = useQueryClient();
-  const [courses, setCourses] = useState<ICourseMock[]>([]);
-  const [filteredCourses, setFilteredCourses] = useState<ICourseMock[]>();
-  const [selectedLanguage, setSelectedLanguage] = useState<'all'>('all');
+const { Title, Text } = Typography;
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['mySurvey'],
-    queryFn: getMySurvey,
-  });
+const Dashboard = () => {
+  // Dữ liệu giả lập
+  const studentStats = [
+    { name: 'Class A', value: 30 },
+    { name: 'Class B', value: 50 },
+    { name: 'Class C', value: 25 },
+    { name: 'Class D', value: 40 },
+    { name: 'Class E', value: 60 },
+  ];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { mutate: handleRegenerate, isPending } = useMutation({
-    mutationFn: regenerateRecommendations,
-    onSuccess: () => {
-      notifySuccess('Recommendations regenerated!');
-      queryClient.invalidateQueries({ queryKey: ['mySurvey'] });
+  const attendance = [
+    { name: 'Week 1', value: 20 },
+    { name: 'Week 2', value: 35 },
+    { name: 'Week 3', value: 50 },
+    { name: 'Week 4', value: 70 },
+  ];
+
+  const classProgress = [
+    { name: 'Class A', percent: 32 },
+    { name: 'Class B', percent: 43 },
+    { name: 'Class C', percent: 67 },
+    { name: 'Class D', percent: 56 },
+  ];
+
+  const activities = [
+    { date: '31', title: 'Meeting with the VC', status: 'Due soon' },
+    { date: '04', title: 'Meeting with the J...', status: 'Upcoming' },
+    { date: '12', title: 'Class B middle sess...', status: 'Upcoming' },
+    { date: '16', title: 'Send Mr Ayo class...', status: 'Upcoming' },
+  ];
+
+  const staffRoom = [
+    { name: 'Adepyo Ademola', time: '10:25 AM', msg: 'Get your class report' },
+    {
+      name: 'Badiru Pomile',
+      time: '12:35 PM',
+      msg: 'Please schedule class test',
     },
-    onError: () => {
-      notifyError('Failed to regenerate recommendations');
-    },
-  });
+    { name: 'Emmanuel John', time: '04:30 PM', msg: 'Last session statistic' },
+  ];
 
-  const recommendations = data?.data?.aiRecommendations?.recommendedCourses || [];
-  const reasoning = data?.data?.aiRecommendations;
-
-  // 🔄 Convert RecommendedCourse → ICourseMock
-  const mapCourse = (course: RecommendedCourse): ICourseMock => ({
-    id: course.courseID,
-    title: course.courseName,
-    description: course.courseDescription,
-    language: course.level.toLowerCase(), // or map properly if backend gives language separately
-    level: course.level,
-    teacherId: 'ai-generated', // placeholder if no teacher info
-    teacherName: 'AI Recommendation',
-    duration: `${course.estimatedDuration} hours`,
-    price: 0, // AI recs may not include price
-    createdAt: new Date().toISOString(),
-  });
-
-  const initialCourses: ICourseMock[] = recommendations.map(mapCourse);
-
-  useEffect(() => {
-    if (initialCourses.length) {
-      setCourses(initialCourses);
-      setFilteredCourses(initialCourses);
-    }
-  }, [data]);
-
-  const handleFilter = (language: 'all', search: string) => {
-    let filtered = courses;
-
-    if (language !== 'all') {
-      filtered = filtered.filter((c) => c.language === language);
-    }
-
-    if (search) {
-      filtered = filtered.filter(
-        (c) =>
-          c.title.toLowerCase().includes(search.toLowerCase()) ||
-          c.description.toLowerCase().includes(search.toLowerCase())
-      );
-    }
-
-    setFilteredCourses(filtered);
-  };
-
-  const handleLanguageChange = (language: 'all') => {
-    setSelectedLanguage(language);
-    handleFilter(language, searchTerm);
-  };
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    handleFilter(selectedLanguage, value);
-  };
-
-  useEffect(() => {
-    if (isError) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      notifyError((error as any)?.response?.data?.message || 'Failed to fetch survey');
-    }
-  }, [isError, error]);
-
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Spin size="large" />
-      </div>
-    );
-
-  if (isPending) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 space-y-8">
-        {/* Header Skeleton */}
-        <Skeleton
-          active
-          title
-          paragraph={{ rows: 1 }}
-        />
-
-        {/* Filters Skeleton */}
-        <Card>
-          <Skeleton.Input
-            active
-            style={{ width: 200, marginRight: 16 }}
-          />
-          <Skeleton.Input
-            active
-            style={{ width: 120 }}
-          />
-        </Card>
-
-        {/* Courses Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, idx) => (
-            <Card key={idx}>
-              <Skeleton
-                active
-                paragraph={{ rows: 3 }}
-              />
-            </Card>
-          ))}
-        </div>
-
-        {/* AI Sections Skeleton */}
-        <Card>
-          <Skeleton
-            active
-            paragraph={{ rows: 3 }}
-          />
-        </Card>
-        <Card>
-          <Skeleton
-            active
-            paragraph={{ rows: 4 }}
-          />
-        </Card>
-        <Card>
-          <Skeleton
-            active
-            paragraph={{ rows: 5 }}
-          />
-        </Card>
-      </div>
-    );
-  }
+  const documents = [
+    { name: 'Class A 1st semester result', date: '04 May, 09:20 AM' },
+    { name: 'Kelvin college application', date: '01 Aug, 04:20 PM' },
+    { name: 'Class E attendance sheet', date: '01 Oct, 08:20 AM' },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      {/* Header */}
-      <div className="mb-8 flex justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Browse Courses</h1>
-          <p className="text-gray-600">Discover language courses from expert teachers</p>
-        </div>
-        <div>
-          <Button
-            type="primary"
-            loading={isPending}
-            onClick={() => handleRegenerate()}
-            style={{ marginBottom: 16 }}>
-            🔄 Regenerate
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl p-6 shadow mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search input */}
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-
-          {/* Dropdown */}
-          <select
-            value={selectedLanguage}
-            onChange={(e) => handleLanguageChange(e.target.value as 'all')}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-            <option value="all">All Languages</option>
-            <option value="chinese">Chinese</option>
-            <option value="japanese">Japanese</option>
-            <option value="english">English</option>
-          </select>
-        </div>
-
-        {/* Quick filters */}
-        <div className="flex flex-wrap gap-2 mt-4 items-center">
-          <span className="text-sm text-gray-500">Quick filters:</span>
-          {['all', 'chinese', 'japanese', 'english'].map((lang) => (
-            <button
-              key={lang}
-              onClick={() => handleLanguageChange(lang as 'all')}
-              className={`px-3 py-1 rounded-full text-sm font-medium border transition ${
-                selectedLanguage === lang
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
-              }`}>
-              {lang === 'all' ? 'All' : lang.charAt(0).toUpperCase() + lang.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Courses */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCourses?.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={course}
-          />
-        ))}
-      </div>
-
-      {/* AI Reasoning */}
-      {reasoning?.reasoningExplanation && (
-        <Card title="🧠 AI Reasoning">
-          <p className="whitespace-pre-line">{reasoning.reasoningExplanation}</p>
+    <div className='min-h-screen bg-[#f7faff] px-6 py-8'>
+      {/* Main grid */}
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mt-8'>
+        {/* Student Statistic */}
+        <Card className='shadow-md rounded-xl'>
+          <Title level={5}>Student Statistic</Title>
+          <ResponsiveContainer width='100%' height={200}>
+            <BarChart data={studentStats}>
+              <CartesianGrid strokeDasharray='3 3' />
+              <XAxis dataKey='name' />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey='value' fill='#0d6efd' radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </Card>
-      )}
 
-      {/* Learning Path */}
-      {reasoning?.learningPath && (
-        <Card title="🎯 Learning Path">
-          <div className="prose">{reasoning.learningPath}</div>
-        </Card>
-      )}
-
-      {/* Study Tips */}
-      {reasoning?.studyTips && reasoning?.studyTips?.length > 0 && (
-        <Card title="💡 Study Tips">
-          <ul className="list-disc pl-6 space-y-2">
-            {reasoning.studyTips.map((tip: string, idx: number) => (
-              <li
-                key={idx}
-                className="text-gray-700">
-                {tip}
-              </li>
+        {/* Class Progress */}
+        <Card className='shadow-md rounded-xl'>
+          <Title level={5}>Class Progress</Title>
+          <div className='space-y-4'>
+            {classProgress.map((c) => (
+              <div key={c.name} className='flex justify-between items-center'>
+                <div>
+                  <Text className='font-medium'>{c.name}</Text>
+                  <Text className='block text-gray-400 text-sm'>
+                    {c.percent}% complete
+                  </Text>
+                </div>
+                <Progress
+                  percent={c.percent}
+                  size='small'
+                  strokeColor='#0d6efd'
+                  showInfo={false}
+                  className='w-1/2'
+                />
+              </div>
             ))}
-          </ul>
+          </div>
         </Card>
-      )}
+
+        {/* Upcoming Activities */}
+        <Card className='shadow-md rounded-xl'>
+          <div className='flex justify-between items-center mb-3'>
+            <Title level={5} className='!mb-0'>
+              Upcoming Activities
+            </Title>
+            <Button type='link' className='!p-0 text-blue-500'>
+              See all
+            </Button>
+          </div>
+          {activities.map((a) => (
+            <div
+              key={a.date}
+              className='flex items-center justify-between py-2 border-b last:border-0'>
+              <div className='flex items-center gap-3'>
+                <div className='bg-blue-100 text-blue-600 font-bold rounded-lg w-10 h-10 flex items-center justify-center'>
+                  {a.date}
+                </div>
+                <div>
+                  <Text className='block font-medium'>{a.title}</Text>
+                  <Text className='text-gray-400 text-sm'>{a.status}</Text>
+                </div>
+              </div>
+            </div>
+          ))}
+        </Card>
+
+        {/* Attendance */}
+        <Card className='shadow-md rounded-xl md:col-span-1'>
+          <Title level={5}>Attendance</Title>
+          <ResponsiveContainer width='100%' height={200}>
+            <LineChart data={attendance}>
+              <CartesianGrid strokeDasharray='3 3' />
+              <XAxis dataKey='name' />
+              <YAxis />
+              <Tooltip />
+              <Line
+                type='monotone'
+                dataKey='value'
+                stroke='#0d6efd'
+                strokeWidth={3}
+                dot={{ r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Staff Room */}
+        <Card className='shadow-md rounded-xl'>
+          <div className='flex justify-between items-center mb-3'>
+            <Title level={5} className='!mb-0'>
+              Staff Room
+            </Title>
+            <Button type='link' className='!p-0 text-blue-500'>
+              See all
+            </Button>
+          </div>
+          {staffRoom.map((s) => (
+            <div
+              key={s.name}
+              className='flex justify-between py-2 border-b last:border-0'>
+              <div>
+                <Text className='font-medium'>{s.name}</Text>
+                <Text className='block text-gray-400 text-sm'>{s.msg}</Text>
+              </div>
+              <Text className='text-gray-500 text-sm'>{s.time}</Text>
+            </div>
+          ))}
+        </Card>
+
+        {/* Documents */}
+        <Card className='shadow-md rounded-xl'>
+          <div className='flex justify-between items-center mb-3'>
+            <Title level={5} className='!mb-0'>
+              Documents
+            </Title>
+            <Button type='link' className='!p-0 text-blue-500'>
+              See all
+            </Button>
+          </div>
+          {documents.map((d) => (
+            <div key={d.name} className='py-2 border-b last:border-0'>
+              <Text className='block font-medium'>{d.name}</Text>
+              <Text className='text-gray-400 text-sm'>{d.date}</Text>
+            </div>
+          ))}
+        </Card>
+      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

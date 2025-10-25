@@ -92,6 +92,6 @@ export const updateSubmitTeacherApplication = async (
 
 // Fetch logged-in user's teacher application
 export const getMyApplication = async () => {
-  const res = await api.get<API.Response<ApplicationData>>('applications/me');
+  const res = await api.get<API.Response<ApplicationData[]>>('applications/me');
   return res.data;
 };

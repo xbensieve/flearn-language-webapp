@@ -1,48 +1,83 @@
-import { Avatar } from 'antd';
+import { Avatar, Spin, Typography } from 'antd';
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { getProfile } from '../../services/auth';
+import { useQuery } from '@tanstack/react-query';
+import {
+  DashboardOutlined,
+  BookOutlined,
+  PlusOutlined,
+  CheckCircleOutlined,
+  MenuOutlined,
+  CloseOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { Book, ChevronDown } from 'lucide-react';
 
 const TeacherLayout: React.FC = () => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+  });
 
   // Helper to check if a path is active
   const isActive = (path: string) => {
     return location.pathname === `/teacher${path}`;
   };
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        Error loading profile
+      </div>
+    );
+  }
+
+  return isLoading ? (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Spin size="large" />
+    </div>
+  ) : (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-blue-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-blue-100">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-4">
             {/* Hamburger Menu for Mobile */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden text-gray-600 hover:text-gray-900">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
+              className="md:hidden text-blue-600 hover:text-blue-800 transition-colors duration-200 p-2 rounded-lg hover:bg-blue-50">
+              <MenuOutlined className="w-6 h-6" />
             </button>
-            <h1 className="text-xl font-semibold text-gray-900">Teacher Dashboard</h1>
+            <div className="flex items-center space-x-3">
+              <div className="!p-2 !block bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-md">
+                <Book className="text-white w-6 h-6" />
+              </div>
+              <h1 className="text-2xl !mb-0 font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                Teacher Dashboard
+              </h1>
+            </div>
           </div>
           <div className="flex items-center space-x-4">
-            {/* User Profile Dropdown - Simplified */}
-            <div className="relative">
+            {/* User Profile Dropdown - Enhanced */}
+            <div className="relative group">
               <Link
                 to="/teacher/profile"
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
-                <Avatar />
+                className="flex items-center space-x-3 px-4 py-2 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all duration-200 hover:scale-105 shadow-sm border border-blue-200">
+                <Avatar
+                  size="small"
+                  icon={<UserOutlined />}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600"
+                />
+                <Typography.Text
+                  strong
+                  className="hidden sm:block ml-2">
+                  {data?.data.username}
+                </Typography.Text>
+                <ChevronDown className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -54,40 +89,37 @@ const TeacherLayout: React.FC = () => {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-opacity-50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/50 z-40 md:hidden animate-fade-in"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-sm border-r border-gray-200 transform transition-transform duration-200 ease-in-out md:relative md:translate-x-0 md:flex-shrink-0 ${
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-md shadow-2xl border-r border-blue-100 transform transition-all duration-300 ease-in-out md:relative md:translate-x-0 md:flex-shrink-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}>
-          <nav className="p-4 h-full flex flex-col">
-            <ul className="space-y-2 flex-1">
+          } overflow-y-auto`}>
+          <nav className="p-6 h-full flex flex-col">
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">Navigation</h2>
+              <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"></div>
+            </div>
+            <ul className="space-y-1 flex-1">
               {/* Dashboard */}
               <li>
                 <Link
                   to="/teacher"
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 transform hover:scale-[1.02] group ${
                     isActive('')
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md'
                   }`}
                   onClick={() => setSidebarOpen(false)}>
-                  <svg
-                    className="w-5 h-5 mr-3 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                    />
-                  </svg>
+                  <DashboardOutlined
+                    className={`w-5 h-5 mr-4 flex-shrink-0 transition-colors ${
+                      isActive('') ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'
+                    }`}
+                  />
                   Dashboard
                 </Link>
               </li>
@@ -96,24 +128,17 @@ const TeacherLayout: React.FC = () => {
               <li>
                 <Link
                   to="/teacher/course"
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 transform hover:scale-[1.02] group ${
                     isActive('/course')
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md'
                   }`}
                   onClick={() => setSidebarOpen(false)}>
-                  <svg
-                    className="w-5 h-5 mr-3 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
+                  <BookOutlined
+                    className={`w-5 h-5 mr-4 flex-shrink-0 transition-colors ${
+                      isActive('/course') ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'
+                    }`}
+                  />
                   My Courses
                 </Link>
               </li>
@@ -122,24 +147,19 @@ const TeacherLayout: React.FC = () => {
               <li>
                 <Link
                   to="/teacher/course/create"
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 transform hover:scale-[1.02] group ${
                     isActive('/course/create')
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-green-500 to-blue-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-700 hover:shadow-md'
                   }`}
                   onClick={() => setSidebarOpen(false)}>
-                  <svg
-                    className="w-5 h-5 mr-3 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    />
-                  </svg>
+                  <PlusOutlined
+                    className={`w-5 h-5 mr-4 flex-shrink-0 transition-colors ${
+                      isActive('/course/create')
+                        ? 'text-white'
+                        : 'text-gray-500 group-hover:text-green-600'
+                    }`}
+                  />
                   Create Course
                 </Link>
               </li>
@@ -148,24 +168,17 @@ const TeacherLayout: React.FC = () => {
               <li>
                 <Link
                   to="/teacher/status"
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 transform hover:scale-[1.02] group ${
                     isActive('/status')
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md'
                   }`}
                   onClick={() => setSidebarOpen(false)}>
-                  <svg
-                    className="w-5 h-5 mr-3 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <CheckCircleOutlined
+                    className={`w-5 h-5 mr-4 flex-shrink-0 transition-colors ${
+                      isActive('/status') ? 'text-white' : 'text-gray-500 group-hover:text-blue-600'
+                    }`}
+                  />
                   Status
                 </Link>
               </li>
@@ -173,33 +186,24 @@ const TeacherLayout: React.FC = () => {
             {/* Close button for mobile */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden mt-4 p-2 text-gray-500 hover:text-gray-900">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              className="md:hidden mt-6 p-3 text-gray-500 hover:text-red-500 transition-colors duration-200 rounded-lg hover:bg-red-50 w-full">
+              <CloseOutlined className="w-5 h-5 mx-auto" />
             </button>
           </nav>
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 p-6 overflow-y-auto w-full">
+        <main className="flex-1 p-8 overflow-y-auto w-full animate-fade-in">
           <Outlet />
         </main>
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white mt-auto">
-        <div className="container mx-auto px-6 py-4 text-center">
-          <p>&copy; 2025 Teacher App. All rights reserved.</p>
+      <footer className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white mt-auto py-6">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-sm opacity-90">
+            &copy; 2025 Teacher App. All rights reserved. | Built with ❤️ for educators
+          </p>
         </div>
       </footer>
     </div>

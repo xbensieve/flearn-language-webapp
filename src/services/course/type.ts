@@ -44,8 +44,6 @@ export interface CreateCourseRequest {
   courseSkill?: number;
 }
 
-// services/coursetemplates/type.ts
-
 export interface PaginationMeta {
   page: number;
   pageSize: number;
@@ -139,26 +137,27 @@ export interface ApplicationForm {
 }
 
 export interface CourseDetail {
-  courseID: string
-  title: string
-  description: string
-  imageUrl: string
-  templateInfo: TemplateInfo
-  price: number
-  discountPrice: number
-  courseType: string
-  teacherInfo: TeacherInfo
-  languageInfo: LanguageInfo
-  goalInfo: GoalInfo
-  courseLevel: string
-  publishedAt: string
-  status: string
-  createdAt: string
-  modifiedAt: string
-  numLessons: number
-  approvedBy: ApprovedBy
-  approvedAt: string
-  topics: Topic[]
+  courseID: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  templateInfo: TemplateInfo;
+  price: number;
+  discountPrice: number;
+  courseType: string;
+  teacherInfo: TeacherInfo;
+  languageInfo: LanguageInfo;
+  goalInfo: GoalInfo;
+  goals: GoalInfo[];
+  courseLevel: string;
+  publishedAt: string;
+  status: string;
+  createdAt: string;
+  modifiedAt: string;
+  numLessons: number;
+  approvedBy: ApprovedBy;
+  approvedAt: string;
+  topics: Topic[];
 }
 export interface Unit {
   courseUnitID: string;
@@ -174,69 +173,129 @@ export interface Unit {
 }
 
 export interface ICourseDataStaff {
-  courseSubmissionID: string
-  submissionStatus: string
-  feedback: string
-  submittedAt: string
-  reviewedAt: string
-  course: ICourseStaff
+  courseSubmissionID: string;
+  submissionStatus: string;
+  feedback: string;
+  submittedAt: string;
+  reviewedAt: string;
+  course: ICourseStaff;
 }
 
 export interface ICourseStaff {
-  courseID: string
-  title: string
-  description: string
-  imageUrl: string
-  templateInfo: TemplateInfo
-  price: number
-  discountPrice: number
-  courseType: string
-  teacherInfo: TeacherInfo
-  languageInfo: LanguageInfo
-  goalInfo: GoalInfo
-  courseLevel: string
-  publishedAt: string
-  status: string
-  createdAt: string
-  modifiedAt: string
-  numLessons: number
-  approvedBy: string
-  approvedAt: string
-  topics: Topic[]
+  courseID: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  templateInfo: TemplateInfo;
+  price: number;
+  discountPrice: number;
+  courseType: string;
+  teacherInfo: TeacherInfo;
+  languageInfo: LanguageInfo;
+  goalInfo: GoalInfo;
+  courseLevel: string;
+  publishedAt: string;
+  status: string;
+  createdAt: string;
+  modifiedAt: string;
+  numLessons: number;
+  approvedBy: string;
+  approvedAt: string;
+  topics: Topic[];
 }
 
 export interface TemplateInfo {
-  templateId: string
-  name: string
+  templateId: string;
+  name: string;
 }
 
 export interface TeacherInfo {
-  teacherId: string
-  fullName: string
-  avatar: string
-  email: string
-  phoneNumber: string
+  teacherId: string;
+  fullName: string;
+  avatar: string;
+  email: string;
+  phoneNumber: string;
 }
 
 export interface LanguageInfo {
-  name: string
-  code: string
+  name: string;
+  code: string;
 }
 
 export interface GoalInfo {
-  name: string
-  description: string
+  id?: number;
+  name: string;
+  description: string;
 }
 
 export interface Topic {
-  topicId: string
-  topicName: string
-  topicDescription: string
-  imageUrl: string
+  topicId: string;
+  topicName: string;
+  topicDescription: string;
+  imageUrl: string;
 }
 
 export interface ApprovedBy {
-  staffId: string
-  userName: string
-  email: string
+  staffId: string;
+  userName: string;
+  email: string;
+}
+
+// src/services/exercise/type.ts
+export interface ExercisePayload {
+  Title: string;
+  Prompt: string;
+  Hints?: string;
+  Content?: string;
+  ExpectedAnswer?: string;
+  MediaFile?: File;
+  MediaFileString?: string;
+  Type?: string;
+  Difficulty?: string;
+  MaxScore?: number;
+  PassScore?: number;
+  FeedbackCorrect?: string;
+  FeedbackIncorrect?: string;
+}
+
+export interface Exercise {
+  exerciseId: string;
+  lessonId: string;
+  title: string;
+  prompt: string;
+  content?: string;
+  type: string;
+  difficulty?: string;
+  maxScore?: number;
+  passScore?: number;
+  feedbackCorrect?: string;
+  feedbackIncorrect?: string;
+  mediaUrl?: string;
+}
+
+export interface ExerciseData {
+  exerciseID: string;
+  title: string;
+  prompt: string;
+  hints: string;
+  content: string;
+  expectedAnswer: string;
+  mediaUrl: string;
+  mediaPublicId: string;
+  position: number;
+  exerciseType: string;
+  difficulty: string;
+  maxScore: number;
+  passScore: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  prerequisiteExerciseID: string;
+  courseID: string;
+  courseTitle: string;
+  unitID: string;
+  unitTitle: string;
+  lessonID: string;
+  lessonTitle: string;
+  createdAt: string;
+  updatedAt: string;
 }
