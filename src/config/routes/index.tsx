@@ -28,6 +28,10 @@ import EditCoursePage from '../../pages/Teacher/EditCoursePage';
 import ReviewCourses from '../../pages/Staff/ReviewCourses';
 import CourseReviewDetail from '../../pages/Staff/CourseReviewDetail';
 import ConversationPromptPage from '../../pages/Admin/ConversationPromptPage';
+import MyClasses from '../../pages/Teacher/MyClasses';
+import ClassDetail from '../../pages/Teacher/ClassDetail';
+import ForgotPassword from '../../pages/ForgotPassword';
+import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -42,6 +46,14 @@ const routes: RouteObject[] = [
   {
     path: '/register',
     element: <Register />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     path: '/unauthorized',
@@ -147,6 +159,8 @@ const routes: RouteObject[] = [
       { path: 'course/:id/edit', element: <CourseDetail /> },
       { path: 'course/:id/edit-course', element: <EditCoursePage /> },
       { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
+      { path: 'classes', element: <MyClasses /> },
+      { path: 'classes/:id', element: <ClassDetail /> },
     ],
   },
   {

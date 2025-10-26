@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { AuthResponse, IRefreshToken, ProfileResponse } from './type';
+import type { AuthResponse, IRefreshToken, ProfileResponse, ResetPasswordPayload } from './type';
 
 export const login = async (payload: {
   usernameOrEmail: string;
@@ -52,5 +52,17 @@ export const resendOtp = async (payload: { email: string }) => {
 
 export const loginWithGoogle = async (idToken: string) => {
   const { data } = await api.post('/Auth/google', { idToken });
+  return data;
+};
+
+// === Forgot Password ===
+export const forgotPassword = async (payload: { emailOrUsername: string }) => {
+  const { data } = await api.post('auth/forgot-password', payload);
+  return data;
+};
+
+// === Reset Password ===
+export const resetPassword = async (payload: ResetPasswordPayload) => {
+  const { data } = await api.post('auth/reset-password', payload);
   return data;
 };

@@ -39,3 +39,10 @@ export interface User {
   createdAt: string;
   lastAccessAt: string;
 }
+
+export interface ResetPasswordPayload {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+  confirmPassword: string;
+}
