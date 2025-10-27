@@ -11,8 +11,15 @@ import {
   Drawer,
   Descriptions,
   Modal,
+  Tooltip,
 } from 'antd';
-import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  SoundOutlined,
+  FileOutlined,
+} from '@ant-design/icons';
 import type { ExerciseData } from '../../../services/course/type';
 import ExerciseForm from '../ExerciseForm'; // Assuming this is the same ExerciseForm used in LessonItem
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -115,118 +122,131 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
 
   return (
     <div className="p-4">
-      {readonly ? (
-        <div>
-          <Typography.Title level={3}>Exercises</Typography.Title>
-        </div>
-      ) : (
+      {!readonly && (
         <div className="mb-4 flex gap-4">
           <Input
             placeholder="Search exercises by title"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ width: 200 }}
+            style={{ width: 240 }}
           />
         </div>
       )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data?.map((exercise, index) => (
-          <div
-            key={exercise.exerciseID}
-            draggable
-            onDragStart={(e) => onDragStart?.(e, index)}
-            onDragOver={onDragOver}
-            onDrop={(e) => onDrop?.(e, index)}
-            className="cursor-move">
-            <Card
-              hoverable
-              className="shadow-md rounded-xl"
-              actions={
-                readonly
-                  ? [
-                      <Button
-                        type="link"
-                        icon={<EyeOutlined />}
-                        onClick={() => {
-                          handleOpenDrawer(exercise, 'preview');
-                          onPreview?.(exercise);
-                        }}>
-                        Preview
-                      </Button>,
-                    ]
-                  : [
-                      <Button
-                        type="link"
-                        icon={<EyeOutlined />}
-                        onClick={() => {
-                          handleOpenDrawer(exercise, 'preview');
-                          onPreview?.(exercise);
-                        }}>
-                        Preview
-                      </Button>,
-                      <Button
-                        type="link"
-                        icon={<EditOutlined />}
-                        onClick={() => {
-                          handleOpenDrawer(exercise, 'edit');
-                        }}>
-                        Edit
-                      </Button>,
-                      <Button
-                        type="link"
-                        icon={<DeleteOutlined />}
-                        danger
-                        onClick={() => handleDelete(exercise.exerciseID)}
-                        loading={isDeleting}>
-                        Delete
-                      </Button>,
-                    ]
-              }>
-              <Card.Meta
-                title={
-                  <Space
-                    size="small"
-                    wrap>
-                    <Text strong>{exercise.title}</Text>
-                    <Tag color="blue">{exercise.exerciseType}</Tag>
-                    <Tag color="orange">{exercise.difficulty}</Tag>
-                  </Space>
-                }
-                description={
-                  <div>
-                    <Paragraph
-                      ellipsis={{ rows: 2 }}
-                      className="mb-2">
-                      {exercise.prompt}
-                    </Paragraph>
+        {data
+          ?.filter((ex) => ex.title.toLowerCase().includes(search.toLowerCase()))
+          .map((exercise, index) => (
+            <div
+              key={exercise.exerciseID}
+              draggable
+              onDragStart={(e) => onDragStart?.(e, index)}
+              onDragOver={onDragOver}
+              onDrop={(e) => onDrop?.(e, index)}
+              className="cursor-move">
+              <Card
+                hoverable
+                className="relative overflow-hidden rounded-2xl transition-all duration-300 shadow-md hover:shadow-lg bg-gradient-to-br from-white via-slate-50 to-slate-100 border border-gray-100 min-h-[230px] flex flex-col justify-between"
+                bodyStyle={{ padding: '16px 18px 10px 18px' }}
+                actions={
+                  readonly
+                    ? [
+                        <Tooltip title="Preview">
+                          <Button
+                            type="link"
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                              handleOpenDrawer(exercise, 'preview');
+                              onPreview?.(exercise);
+                            }}
+                          />
+                        </Tooltip>,
+                      ]
+                    : [
+                        <Tooltip title="Preview">
+                          <EyeOutlined
+                            onClick={() => {
+                              handleOpenDrawer(exercise, 'preview');
+                              onPreview?.(exercise);
+                            }}
+                            className="text-blue-500 hover:text-blue-600 transition-colors"
+                          />
+                        </Tooltip>,
+                        <Tooltip title="Edit">
+                          <EditOutlined
+                            onClick={() => handleOpenDrawer(exercise, 'edit')}
+                            className="text-amber-500 hover:text-amber-600 transition-colors"
+                          />
+                        </Tooltip>,
+                        <Tooltip title="Delete">
+                          <DeleteOutlined
+                            onClick={() => handleDelete(exercise.exerciseID)}
+                            className="text-rose-500 hover:text-rose-600 transition-colors"
+                            spin={isDeleting}
+                          />
+                        </Tooltip>,
+                      ]
+                }>
+                {/* Header */}
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col gap-1">
+                    <Text
+                      strong
+                      className="text-base truncate max-w-[200px]">
+                      {exercise.title}
+                    </Text>
                     <Space
-                      direction="vertical"
-                      size="small">
-                      <Text type="secondary">Max Score: {exercise.maxScore}</Text>
-                      <Text type="secondary">Pass Score: {exercise.passScore}</Text>
-                      {exercise.mediaUrl && <Text type="secondary">Has Media</Text>}
+                      size="small"
+                      wrap>
+                      <Tag color="blue">{exercise.exerciseType}</Tag>
+                      <Tag color="orange">{exercise.difficulty}</Tag>
                     </Space>
                   </div>
-                }
-              />
-            </Card>
-          </div>
-        ))}
+                  {exercise.mediaUrl && (
+                    <Tooltip title="This exercise has media">
+                      {exercise.mediaUrl.includes('mp3') ? (
+                        <div className="bg-blue-100 p-1.5 rounded-full">
+                          <SoundOutlined className="text-blue-600 text-lg" />
+                        </div>
+                      ) : (
+                        <div className="bg-blue-100 p-1.5 rounded-full">
+                          <FileOutlined className="text-blue-600 text-lg" />
+                        </div>
+                      )}
+                    </Tooltip>
+                  )}
+                </div>
+
+                {/* Prompt */}
+                <Paragraph
+                  ellipsis={{ rows: 3 }}
+                  className="text-gray-600 text-sm leading-snug !mb-0">
+                  {exercise.prompt}
+                </Paragraph>
+
+                {/* Footer info */}
+                <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                  <span>Max: {exercise.maxScore}</span>
+                  <span>Pass: {exercise.passScore}</span>
+                </div>
+              </Card>
+            </div>
+          ))}
       </div>
 
-      {
-        <Modal
-          visible={confirmDeleteVisible}
-          onCancel={handleCancelDelete}
-          onOk={handleConfirmDelete}>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Delete Exercise</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this exercise? This action cannot be undone.
-            </p>
-          </div>
-        </Modal>
-      }
+      <Modal
+        open={confirmDeleteVisible}
+        onCancel={handleCancelDelete}
+        onOk={handleConfirmDelete}
+        okButtonProps={{ danger: true }}
+        okText="Delete">
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Delete Exercise</h3>
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete this exercise? This action cannot be undone.
+          </p>
+        </div>
+      </Modal>
 
       <Drawer
         title={
@@ -236,13 +256,14 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
         }
         width={600}
         open={drawerVisible}
-        onClose={handleCloseDrawer}>
+        onClose={handleCloseDrawer}
+        bodyStyle={{ overflowY: 'auto', height: 'calc(100vh - 64px)' }}>
         {selectedExercise && (
           <>
             {drawerMode === 'preview' ? (
               <div>
                 {selectedExercise.mediaUrl && (
-                  <div className="mt-4 !mb-4 p-4 bg-white rounded-xl shadow-sm">
+                  <div className="mt-4 mb-4 p-4 bg-white rounded-xl shadow-sm">
                     <Text
                       strong
                       className="block mb-2">
@@ -277,7 +298,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
             ) : (
               <ExerciseForm
                 lessonId={selectedExercise.lessonID}
-                exercise={selectedExercise} // Pass existing exercise for editing
+                exercise={selectedExercise}
               />
             )}
           </>

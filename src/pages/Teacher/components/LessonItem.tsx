@@ -18,13 +18,7 @@ import {
   Col,
   Row,
 } from 'antd';
-import {
-  EditOutlined,
-  DeleteOutlined,
-  FileOutlined,
-  EyeOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, FileOutlined, EyeOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useUpdateLesson } from '../helpers';
@@ -158,10 +152,9 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
             <Tooltip title="Add an interactive exercise to this lesson">
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
+                icon={<Sparkles size={16} />}
                 onClick={handleOpenExerciseDrawer}
                 className="rounded-xl shadow-md hover:shadow-lg transition-all bg-sky-600 hover:bg-sky-700 flex items-center gap-2 px-6 py-3 text-white font-semibold">
-                <Sparkles size={16} />
                 Add New Exercise
               </Button>
             </Tooltip>
