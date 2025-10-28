@@ -253,9 +253,9 @@ const CourseDetailView: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center bg-white rounded-t-2xl p-6 border-gray-100">
           <div className="flex items-center gap-3">
             <Tooltip title="Back to courses">
               <Button
@@ -325,7 +325,7 @@ const CourseDetailView: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="rounded-3xl overflow-hidden shadow-xl border-0 relative bg-gradient-to-r from-indigo-600 to-purple-700">
+        <div className="overflow-hidden shadow-xl border-0 relative bg-gradient-to-r from-indigo-600 to-purple-700">
           <img
             src={course?.imageUrl ?? '/default-course.jpg'}
             alt={course?.title ?? 'Course Image'}
@@ -379,7 +379,9 @@ const CourseDetailView: React.FC = () => {
         </div>
 
         {/* Course Info */}
-        <Card className="rounded-2xl shadow-sm border-0 bg-white">
+        <Card
+          style={{ borderRadius: 0 }}
+          className="shadow-sm border-0 bg-white">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
               <Lightbulb className="w-6 h-6 text-yellow-500" />
@@ -499,7 +501,9 @@ const CourseDetailView: React.FC = () => {
         </Card>
 
         {/* Units + Lessons */}
-        <Card className="rounded-2xl shadow-sm border-0 bg-white">
+        <Card
+          style={{ borderRadius: 0 }}
+          className="shadow-sm border-0 bg-white">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="w-6 h-6 text-blue-600" />

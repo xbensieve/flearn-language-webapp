@@ -177,13 +177,6 @@ const TeacherLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white mt-auto py-6">
-        <div className="text-center text-sm opacity-90">
-          &copy; 2025 Teacher App. All rights reserved. | Built with ❤️ for educators
-        </div>
-      </footer>
     </div>
   );
 };

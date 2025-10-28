@@ -17,14 +17,9 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { getMyCoursesService } from '../../services/course';
-import {
-  PlusOutlined,
-  BookOutlined,
-  EditOutlined,
-  EyeOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, EyeOutlined, LoadingOutlined } from '@ant-design/icons';
 import { formatStatusLabel } from '../../utils/mapping';
+import { Book } from 'lucide-react';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
@@ -83,10 +78,10 @@ const MyCourses: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-blue-100">
+        <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-md">
-              <BookOutlined className="text-white text-2xl" />
+              <Book className="text-white" />
             </div>
             <Title
               level={2}
@@ -105,7 +100,7 @@ const MyCourses: React.FC = () => {
               onChange={handleStatusChange}
               style={{ width: 200 }}
               placeholder="Filter by status"
-              suffixIcon={<BookOutlined />}>
+              suffixIcon={<Book className="text-white" />}>
               {statusOptions.map((s) => (
                 <Option
                   key={s.value}
@@ -141,18 +136,17 @@ const MyCourses: React.FC = () => {
                   <Card
                     hoverable
                     cover={
-                      <div className="relative overflow-hidden rounded-t-xl">
+                      <div className="relative overflow-hidden rounded-t-xl w-full">
                         <Image
                           alt={course.title}
                           src={course.imageUrl}
                           preview={false}
+                          width={'100%'}
                           style={{
                             height: 200,
                             objectFit: 'cover',
                             transition: 'transform 0.3s ease',
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                         />
                         <div className="absolute top-2 right-2">
                           <Tag
@@ -163,7 +157,7 @@ const MyCourses: React.FC = () => {
                         </div>
                       </div>
                     }
-                    className="shadow-lg rounded-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white"
+                    className="shadow-lg rounded-xl hover:shadow-2xl border-0 bg-white"
                     actions={[
                       <Button
                         type="link"
