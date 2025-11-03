@@ -37,12 +37,20 @@ import { BookOpen, Cake, GraduationCap, Info, Link, Phone, Users } from 'lucide-
 const { Option } = Select;
 const { Title, Paragraph } = Typography;
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const proficiencyByLanguage: Record<string, { label: string; value: string }[]> = {
+  en: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((x) => ({ label: x, value: x })),
+  ja: ['N5', 'N4', 'N3', 'N2', 'N1'].map((x) => ({ label: x, value: x })),
+  zh: ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'].map((x) => ({ label: x, value: x })),
+};
+
 const TeacherApplicationPage: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
+  const selectedLang = Form.useWatch('LangCode', form);
 
   // ✅ Get my application
   const { data: response, isLoading } = useQuery<{ data: ApplicationData[] }>({
@@ -132,6 +140,7 @@ const TeacherApplicationPage: React.FC = () => {
         MeetingUrl: allData.MeetingUrl || '',
         CertificateImages: certificateImagesList || [],
         CertificateTypeIds: Array.isArray(CertificateTypeId) ? CertificateTypeId : [],
+        ProficiencyCode: allData.proficiencyCode,
       };
 
       const now = new Date();
@@ -182,6 +191,16 @@ const TeacherApplicationPage: React.FC = () => {
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item
+            name="proficiencyCode"
+            label="Proficiency Code"
+            rules={[{ required: true, message: 'Proficiency code is required' }]}>
+            <Select
+              placeholder="Select proficiency level"
+              disabled={!selectedLang}
+              options={selectedLang ? proficiencyByLanguage[selectedLang] : []}
+            />
           </Form.Item>
         </Form>
       ),
@@ -311,9 +330,8 @@ const TeacherApplicationPage: React.FC = () => {
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateTypeId']}
-                        label=' Type'
-                        rules={[{ required: true }]}
-                      >
+                        label=" Type"
+                        rules={[{ required: true }]}>
                         <Select
                           placeholder="Select certificate type"
                           disabled={!selectedLanguage || loadingCertificates}>
@@ -330,8 +348,8 @@ const TeacherApplicationPage: React.FC = () => {
                       <Form.Item
                         {...restField}
                         name={[name, 'CertificateImage']}
-                        label=' Image'
-                        valuePropName='fileList'
+                        label=" Image"
+                        valuePropName="fileList"
                         getValueFromEvent={(e) => e.fileList}
                         rules={[{ required: true, message: 'Please upload image' }]}>
                         <Upload
@@ -490,7 +508,6 @@ const TeacherApplicationPage: React.FC = () => {
                 ))}
               </div>
             </div>
-
             {/* Certificates Card - Only if exists, otherwise hidden */}
             {formData.Certificates && formData.Certificates.length > 0 ? (
               <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">

@@ -18,6 +18,7 @@ export const submitTeacherApplication = async (
   formData.append('CertificateTypeIds', payload.CertificateTypeIds.join(','));
   formData.append('Bio', payload.Bio);
   formData.append('BirthDate', payload.BirthDate);
+  formData.append('ProficiencyCode', payload.ProficiencyCode);
   // // Multiple certificate images
   // if (payload.CertificateImages?.length) {
   //   payload.CertificateImages.forEach((file) => formData.append('CertificateImages', file.join));
@@ -59,6 +60,7 @@ export const updateSubmitTeacherApplication = async (
   formData.append('CertificateTypeIds', payload.CertificateTypeIds.join(','));
   formData.append('Bio', payload.Bio);
   formData.append('BirthDate', payload.BirthDate);
+  formData.append('ProficiencyCode', payload.ProficiencyCode);
   // // Multiple certificate images
   // if (payload.CertificateImages?.length) {
   //   payload.CertificateImages.forEach((file) => formData.append('CertificateImages', file.join));

@@ -19,6 +19,7 @@ export interface TeacherApplicationRequest {
   MeetingUrl: string;
   CertificateImages: File[];
   CertificateTypeIds: string[];
+  ProficiencyCode: string;
 }
 
 // src/services/teacherApplication/types.ts

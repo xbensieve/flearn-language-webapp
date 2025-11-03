@@ -14,7 +14,6 @@ import ApplicationsPending from '../../pages/Staff/ApplicationPending';
 import Register from '../../pages/Register';
 import CreateSurvey from '../../pages/Teacher/CreateSurvey';
 import MySurvey from '../../pages/Teacher/MySurvey';
-import LandingPage from '../../pages/LandingPage';
 import CreateCourse from '../../pages/Teacher/CreateCourse';
 import MyCourses from '../../pages/Teacher/MyCourse';
 import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
@@ -43,7 +42,7 @@ const routes: RouteObject[] = [
   },
   {
     path: '/',
-    element: <LandingPage />,
+    element: <LoginPage />,
   },
   {
     path: '/register',
