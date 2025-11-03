@@ -72,6 +72,7 @@ const DashboardLayout: React.FC = () => {
                   { key: '/admin/course-templates', label: 'Courses Templates' },
                   { key: '/admin/goals', label: 'Goals' },
                   { key: '/admin/conversation-prompts', label: 'Conversation Prompts' },
+                  { key: '/admin/programs', label: 'Programs' },
                 ],
               },
               { key: 'profile', icon: <UserOutlined />, label: 'Profile' },

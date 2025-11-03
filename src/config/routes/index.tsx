@@ -32,6 +32,8 @@ import MyClasses from '../../pages/Teacher/MyClasses';
 import ClassDetail from '../../pages/Teacher/ClassDetail';
 import ForgotPassword from '../../pages/ForgotPassword';
 import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
+import ProgramPage from '../../pages/Admin/Program';
+import LevelPage from '../../pages/Admin/Level';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -87,6 +89,14 @@ const routes: RouteObject[] = [
       {
         path: 'conversation-prompts',
         element: <ConversationPromptPage />,
+      },
+      {
+        path: 'programs',
+        element: <ProgramPage />,
+      },
+      {
+        path: 'levels/:programId',
+        element: <LevelPage />,
       },
     ],
   },
