@@ -67,6 +67,7 @@ const ApplicationsManagement: React.FC = () => {
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['applications', filterStatus],
     queryFn: () => getPendingApplications({ status: filterStatus }),
+    retry: 1,
   });
 
   // --- Approve mutation ---
@@ -156,7 +157,7 @@ const ApplicationsManagement: React.FC = () => {
       render: (_: any, record: ApplicationData) => (
         <Space>
           <GlobalOutlined style={{ color: '#1890ff' }} />
-          {record.language?.langName ?? 'N/A'}
+          {record.language ?? 'N/A'}
         </Space>
       ),
     },
@@ -387,9 +388,7 @@ const ApplicationsManagement: React.FC = () => {
                       <div className="flex items-center">
                         <GlobalOutlined className="mr-2 text-blue-500" />
                         <Typography.Text strong>Language:</Typography.Text>
-                        <span className="ml-2">
-                          {selectedApplication.language?.langName || 'N/A'}
-                        </span>
+                        <span className="ml-2">{selectedApplication.language || 'N/A'}</span>
                       </div>
                     </div>
                   </Card>

@@ -105,7 +105,6 @@ const TeacherApplicationPage: React.FC = () => {
         setSelectedLanguage(values.LangCode);
       }
       setCurrentStep((prev) => prev + 1);
-      form.resetFields();
     } catch (err) {
       // validation failed
       console.log(err);

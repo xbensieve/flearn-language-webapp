@@ -124,12 +124,12 @@ const MyCourses: React.FC = () => {
         {courses.length > 0 ? (
           <Row gutter={[24, 24]}>
             {courses.map((course) => {
-              const canEdit = ['Draft', 'Rejected'].includes(course.status);
-              const statusColor = statusColors[course.status] || 'default';
+              const canEdit = ['Draft', 'Rejected'].includes(course.courseStatus);
+              const statusColor = statusColors[course.courseStatus] || 'default';
 
               return (
                 <Col
-                  key={course.courseID}
+                  key={course.courseId}
                   xs={24}
                   sm={12}
                   lg={8}>
@@ -152,7 +152,7 @@ const MyCourses: React.FC = () => {
                           <Tag
                             color={statusColor}
                             className="shadow-md">
-                            {formatStatusLabel(course.status)}
+                            {formatStatusLabel(course.courseStatus)}
                           </Tag>
                         </div>
                       </div>
@@ -160,9 +160,10 @@ const MyCourses: React.FC = () => {
                     className="shadow-lg rounded-xl hover:shadow-2xl border-0 bg-white"
                     actions={[
                       <Button
+                        key="view"
                         type="link"
                         icon={<EyeOutlined />}
-                        onClick={() => navigate(`${course.courseID}`)}
+                        onClick={() => navigate(`${course.courseId}`)}
                         className="text-blue-600 hover:text-blue-800">
                         View Details
                       </Button>,
@@ -171,7 +172,7 @@ const MyCourses: React.FC = () => {
                           type="link"
                           key="edit"
                           icon={<EditOutlined />}
-                          onClick={() => navigate(`${course.courseID}/edit`)}
+                          onClick={() => navigate(`${course.courseId}/edit`)}
                           className="text-green-600 hover:text-green-800">
                           Edit
                         </Button>

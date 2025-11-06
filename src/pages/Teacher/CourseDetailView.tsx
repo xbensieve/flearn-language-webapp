@@ -44,6 +44,11 @@ import {
   Sparkles,
   Play,
   FileText,
+  Star,
+  MessageSquare,
+  Box,
+  Timer,
+  Clock,
 } from 'lucide-react';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { formatStatusLabel } from '../../utils/mapping';
@@ -297,7 +302,7 @@ const CourseDetailView: React.FC = () => {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                {course?.status?.toLowerCase() === 'draft' && (
+                {course?.courseStatus?.toLowerCase() === 'draft' && (
                   <Tooltip title="Submit for review">
                     <Button
                       type="primary"
@@ -308,8 +313,8 @@ const CourseDetailView: React.FC = () => {
                     </Button>
                   </Tooltip>
                 )}
-                {(course?.status?.toLowerCase() === 'draft' ||
-                  course?.status?.toLowerCase() === 'rejected') && (
+                {(course?.courseStatus?.toLowerCase() === 'draft' ||
+                  course?.courseStatus?.toLowerCase() === 'rejected') && (
                   <Tooltip title="Edit course details">
                     <Button
                       icon={<EditOutlined />}
@@ -337,7 +342,7 @@ const CourseDetailView: React.FC = () => {
               color="gold"
               className="px-3 py-2 text-sm font-medium shadow-lg">
               <Sparkles className="w-3 h-3 inline mr-1" />
-              {formatStatusLabel(course?.status ?? 'unknown')}
+              {formatStatusLabel(course?.courseStatus ?? 'unknown')}
             </Tag>
           </div>
           <div className="absolute bottom-6 left-6 text-white max-w-2xl">
@@ -353,10 +358,10 @@ const CourseDetailView: React.FC = () => {
                 </Title>
                 <Text className="!text-indigo-100 text-sm">
                   <Avatar
-                    src={course?.teacherInfo?.avatar}
+                    src={course?.teacher?.avatar}
                     className="!mr-2"
                   />
-                  By {course?.teacherInfo?.fullName ?? 'Unknown Teacher'}
+                  By {course?.teacher?.name ?? 'Unknown Teacher'}
                 </Text>
               </div>
             </div>
@@ -367,12 +372,12 @@ const CourseDetailView: React.FC = () => {
               <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
                 <Target className="w-4 h-4 text-white" />
                 <Text className="!text-white text-sm">
-                  {course?.languageInfo?.name ?? 'Unknown Language'}
+                  {course?.language ?? 'Unknown Language'}
                 </Text>
               </div>
               <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
                 <GraduationCap className="w-4 h-4 text-white" />
-                <Text className="!text-white text-sm">{course?.courseLevel ?? 'N/A'}</Text>
+                <Text className="!text-white text-sm">{course?.program.level.name ?? 'N/A'}</Text>
               </div>
             </div>
           </div>
@@ -407,9 +412,7 @@ const CourseDetailView: React.FC = () => {
                       Language
                     </Text>
                   </div>
-                  <Text className="text-gray-900 font-medium">
-                    {course?.languageInfo?.name ?? 'N/A'}
-                  </Text>
+                  <Text className="text-gray-900 font-medium">{course?.language ?? 'N/A'}</Text>
                 </div>
               </Col>
               <Col
@@ -425,7 +428,9 @@ const CourseDetailView: React.FC = () => {
                       Level
                     </Text>
                   </div>
-                  <Text className="text-gray-900 font-medium">{course?.courseLevel ?? 'N/A'}</Text>
+                  <Text className="text-gray-900 font-medium">
+                    {course?.program.level.name ?? 'N/A'}
+                  </Text>
                 </div>
               </Col>
               <Col
@@ -442,9 +447,9 @@ const CourseDetailView: React.FC = () => {
                     </Text>
                   </div>
                   <Tag
-                    color={course?.status === 'published' ? 'success' : 'default'}
+                    color={course?.courseStatus === 'published' ? 'success' : 'default'}
                     className="px-3 py-1">
-                    {formatStatusLabel(course?.status ?? 'unknown')}
+                    {formatStatusLabel(course?.courseStatus ?? 'unknown')}
                   </Tag>
                 </div>
               </Col>
@@ -457,11 +462,14 @@ const CourseDetailView: React.FC = () => {
                   <Text
                     strong
                     className="text-indigo-800">
-                    Learning Goal
+                    Program Description
                   </Text>
                 </div>
+                {/* <Paragraph className="text-gray-700 leading-relaxed">
+                  {course?.?.description ?? 'No goal description provided'}
+                </Paragraph> */}
                 <Paragraph className="text-gray-700 leading-relaxed">
-                  {course?.goalInfo?.description ?? 'No goal description provided'}
+                  {course?.program?.description ?? 'No goal description provided'}
                 </Paragraph>
               </div>
 
@@ -495,6 +503,87 @@ const CourseDetailView: React.FC = () => {
                     </Text>
                   )}
                 </div>
+              </div>
+
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <Row gutter={[16, 12]}>
+                  {/* ⭐ Rating */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <Star className="w-4 h-4 text-yellow-500" />
+                    {course.averageRating ?? '—'}
+                  </Col>
+
+                  {/* 👥 Learners */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-blue-600" />
+                    {course.learnerCount ?? 0} learners
+                  </Col>
+
+                  {/* 💬 Reviews */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-green-600" />
+                    {course.reviewCount ?? 0} reviews
+                  </Col>
+
+                  {/* 📦 Units */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <Box className="w-4 h-4 text-purple-600" />
+                    {course.numUnits ?? '—'} Units
+                  </Col>
+
+                  {/* 📚 Lessons */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-indigo-600" />
+                    {course.numLessons ?? '—'} Lessons
+                  </Col>
+
+                  {/* ⏳ Duration Days */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <Timer className="w-4 h-4 text-orange-600" />
+                    {course.durationDays ?? '—'} days
+                  </Col>
+
+                  {/* ⏱ Estimated Hours */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-red-600" />
+                    {course.estimatedHours ?? '—'} hours
+                  </Col>
+
+                  {/* Empty placeholders */}
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="text-gray-400">
+                    —
+                  </Col>
+                  <Col
+                    xs={24}
+                    sm={8}
+                    className="text-gray-400">
+                    —
+                  </Col>
+                </Row>
               </div>
             </div>
           </div>
@@ -557,7 +646,7 @@ const CourseDetailView: React.FC = () => {
           </div>
         </Card>
 
-        {course?.status?.toLowerCase() === 'rejected' && (
+        {course?.courseStatus?.toLowerCase() === 'rejected' && (
           <Alert
             message="Course Feedback"
             description="Your course was rejected. Review the notes and edit to resubmit."

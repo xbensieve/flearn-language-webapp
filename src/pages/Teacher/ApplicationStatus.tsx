@@ -241,7 +241,7 @@ const ApplicationStatus: React.FC = () => {
                         Language
                       </Text>
                     </div>
-                    <Text className="text-gray-900">{data.language?.langName ?? 'N/A'}</Text>
+                    <Text className="text-gray-900">{data.language ?? 'N/A'}</Text>
                   </Space>
                   <Space
                     direction="vertical"

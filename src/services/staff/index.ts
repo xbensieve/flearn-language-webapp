@@ -7,7 +7,7 @@ export const getPendingApplications = async (params: {
   pageSize?: number;
   status?: string;
 }): Promise<API.Response<ApplicationData[]>> => {
-  const res = await api.get('staff/applications', {params});
+  const res = await api.get('/applications', {params});
   return res.data;
 };
 
@@ -21,7 +21,7 @@ export const getApplicationDetail = async (id: string): Promise<API.Response<App
 export const reviewApproveApplication = async (payload: {
   applicationId: string;
 }): Promise<API.Response<null>> => {
-  const res = await api.put(`staff/applications/${payload.applicationId}/approve`);
+  const res = await api.post(`applications/${payload.applicationId}/approve`);
   return res.data;
 };
 
@@ -29,6 +29,6 @@ export const reviewRejectApplication = async (payload: {
   applicationId: string;
   reason?: string;
 }): Promise<API.Response<null>> => {
-  const res = await api.put(`staff/applications/${payload.applicationId}/reject`, payload);
+  const res = await api.patch(`applications/${payload.applicationId}/reject`, payload);
   return res.data;
 };

@@ -181,7 +181,7 @@ const MyClasses: React.FC = () => {
 
         {/* Classes Grid */}
         {classes.length > 0 ? (
-          <>
+          <div className="mt-4">
             <Row gutter={[24, 24]}>
               {classes.map((cls: Class) => {
                 const statusColor = statusColors[cls.status] || 'default';
@@ -330,7 +330,7 @@ const MyClasses: React.FC = () => {
                 className="bg-white px-6 py-3 rounded-2xl shadow-md"
               />
             </div>
-          </>
+          </div>
         ) : (
           <div className="flex flex-col justify-center items-center min-h-[50vh] bg-white rounded-b-3xl shadow-xl p-12">
             <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-8 rounded-full mb-6">

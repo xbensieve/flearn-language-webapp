@@ -6,7 +6,7 @@ import { Form, Input, Button, Typography, Checkbox, Card } from 'antd';
 import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import { login, loginWithGoogle } from '../../services/auth';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/AuthContext';
 import type { AxiosError } from 'axios';
 
@@ -14,13 +14,13 @@ const { Title, Text } = Typography;
 
 const ROLE_PATHS: Record<string, string> = {
   admin: '/admin',
-  staff: '/staff',
+  manager: '/manager',
   teacher: '/teacher',
   learner: '/learner/application',
 };
 
 const rolesCase = (roles: string[], navigate: any) => {
-  const priority = ['admin', 'staff', 'teacher', 'learner'];
+  const priority = ['admin', 'manager', 'teacher', 'learner'];
   const matchedRole = priority.find((r) => roles.some((ur) => ur.toLowerCase() === r));
   navigate(matchedRole ? ROLE_PATHS[matchedRole] : '/');
 };
@@ -141,36 +141,41 @@ const Login: React.FC = () => {
 
       {/* RIGHT SIDE - LOGIN BOX */}
       <div style={right}>
-        <Card bordered={false} style={cardBox}>
+        <Card
+          bordered={false}
+          style={cardBox}>
           <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Title level={3} style={{ margin: 0, color: '#06b6d4', fontWeight: 700 }}>
+            <Title
+              level={3}
+              style={{ margin: 0, color: '#06b6d4', fontWeight: 700 }}>
               Welcome Back
             </Title>
-            <Text type='secondary'>Login to your account</Text>
+            <Text type="secondary">Login to your account</Text>
           </div>
 
-          <Form form={form} layout='vertical' onFinish={handleSubmit}>
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}>
             <Form.Item
-              label='Username or Email'
-              name='usernameOrEmail'
-              rules={[{ required: true, message: 'Please enter your username or email!' }]}
-            >
+              label="Username or Email"
+              name="usernameOrEmail"
+              rules={[{ required: true, message: 'Please enter your username or email!' }]}>
               <Input
-                size='large'
+                size="large"
                 prefix={<UserOutlined style={{ opacity: 0.6 }} />}
-                placeholder='Enter your username or email'
+                placeholder="Enter your username or email"
               />
             </Form.Item>
 
             <Form.Item
-              label='Password'
-              name='password'
-              rules={[{ required: true, message: 'Please enter your password!' }]}
-            >
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: 'Please enter your password!' }]}>
               <Input.Password
-                size='large'
+                size="large"
                 prefix={<LockOutlined style={{ opacity: 0.6 }} />}
-                placeholder='Enter your password'
+                placeholder="Enter your password"
               />
             </Form.Item>
 
@@ -180,39 +185,42 @@ const Login: React.FC = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: 16,
-              }}
-            >
-              <Form.Item name='rememberMe' valuePropName='checked' noStyle>
+              }}>
+              <Form.Item
+                name="rememberMe"
+                valuePropName="checked"
+                noStyle>
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
               <Button
-                type='link'
+                type="link"
                 onClick={() => navigate('/forgot-password')}
-                style={{ padding: 0, color: '#06b6d4' }}
-              >
+                style={{ padding: 0, color: '#06b6d4' }}>
                 Forgot password?
               </Button>
             </div>
 
             <Button
-              type='primary'
-              htmlType='submit'
+              type="primary"
+              htmlType="submit"
               block
-              size='large'
+              size="large"
               loading={loading}
               style={{
                 height: 44,
                 borderRadius: 999,
                 backgroundColor: '#06b6d4',
                 fontWeight: 600,
-              }}
-            >
+              }}>
               {loading ? 'Logging in...' : 'Login'}
             </Button>
 
             <div style={{ textAlign: 'center', marginTop: 16 }}>
               <Text>Don't have an account? </Text>
-              <Button type='link' onClick={() => navigate('/register')} style={{ padding: 0 }}>
+              <Button
+                type="link"
+                onClick={() => navigate('/register')}
+                style={{ padding: 0 }}>
                 Register
               </Button>
             </div>
@@ -224,14 +232,13 @@ const Login: React.FC = () => {
             <Button
               icon={<GoogleOutlined />}
               block
-              size='large'
+              size="large"
               style={{
                 borderRadius: 999,
                 border: '1px solid #d1d5db',
                 height: 44,
               }}
-              onClick={() => notifyError('Google Sign-In not initialized yet')}
-            >
+              onClick={() => notifyError('Google Sign-In not initialized yet')}>
               Sign in with Google
             </Button>
           </Form>

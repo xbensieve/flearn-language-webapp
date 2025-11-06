@@ -49,7 +49,7 @@ export interface ApplicationData {
   reviewedByName: any;
   submittedAt: string;
   reviewedAt: string;
-  language: Language;
+  language: string;
   user: User;
   certificates: any[];
 }

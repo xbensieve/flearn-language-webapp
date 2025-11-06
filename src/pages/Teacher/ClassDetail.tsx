@@ -302,7 +302,9 @@ const ClassDetail: React.FC = () => {
         </Card>
 
         {/* Main Content Grid */}
-        <Row gutter={[24, 24]}>
+        <Row
+          style={{ marginTop: '1rem' }}
+          gutter={[24, 24]}>
           {/* Left Column - Class Information */}
           <Col
             xs={24}

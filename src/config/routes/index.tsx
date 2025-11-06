@@ -101,9 +101,9 @@ const routes: RouteObject[] = [
   },
 
   {
-    path: '/staff',
+    path: '/manager',
     element: (
-      <PrivateRoute allowedRoles={['staff']}>
+      <PrivateRoute allowedRoles={['manager']}>
         <StaffDashboardLayout />
       </PrivateRoute>
     ),

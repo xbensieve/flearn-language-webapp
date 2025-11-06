@@ -10,7 +10,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Checkbox,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -20,7 +19,7 @@ import {
   updateCourseTemplateService,
   deleteCourseTemplateService,
 } from '../../services/course';
-import type { CourseTemplate } from '../../services/course/type';
+import type { CourseTemplate, PayloadCourseTemplate } from '../../services/course/type';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { DeleteFilled, EditFilled, EyeOutlined } from '@ant-design/icons';
 
@@ -41,7 +40,7 @@ const CourseTemplatesPage: React.FC = () => {
 
   // Create mutation
   const { mutate: createMutate, isPending: isCreating } = useMutation({
-    mutationFn: (payload: Omit<CourseTemplate, 'id'>) => createCourseTemplateService(payload),
+    mutationFn: (payload: PayloadCourseTemplate) => createCourseTemplateService(payload),
     onSuccess: () => {
       notifySuccess('Course Template created successfully!');
       setOpenCreateDrawer(false);
@@ -55,7 +54,8 @@ const CourseTemplatesPage: React.FC = () => {
 
   // Update mutation
   const { mutate: updateMutate, isPending: isUpdating } = useMutation({
-    mutationFn: (payload: CourseTemplate) => updateCourseTemplateService(payload.id, payload),
+    mutationFn: (payload: PayloadCourseTemplate & { templateId: string }) =>
+      updateCourseTemplateService({ templateId: payload.templateId, data: payload }),
     onSuccess: () => {
       notifySuccess('Course Template updated successfully!');
       setOpenUpdateDrawer(false);
@@ -67,12 +67,11 @@ const CourseTemplatesPage: React.FC = () => {
     },
   });
 
-  // Update mutation
+  // Delete mutation
   const { mutate: deleteMutate } = useMutation({
-    mutationFn: (payload: CourseTemplate) => deleteCourseTemplateService(payload.id),
+    mutationFn: (templateId: string) => deleteCourseTemplateService(templateId),
     onSuccess: () => {
       notifySuccess('Deleted successfully!');
-      setOpenUpdateDrawer(false);
       refetch();
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,16 +91,24 @@ const CourseTemplatesPage: React.FC = () => {
   };
 
   const handleDelete = (record: CourseTemplate) => {
-    deleteMutate(record);
+    deleteMutate(record.templateId);
   };
 
-  const onFinishCreate = (values: Omit<CourseTemplate, 'id'>) => {
+  const onFinishCreate = (values: {
+    name: string;
+    description: string;
+    unitCount: number;
+    lessonsPerUnit: number;
+    exercisesPerLesson: number;
+    programId: string;
+    levelId: string;
+  }) => {
     createMutate(values);
   };
 
-  const onFinishUpdate = (values: Omit<CourseTemplate, 'id'>) => {
+  const onFinishUpdate = (values: PayloadCourseTemplate) => {
     if (!selectedTemplate) return;
-    updateMutate({ ...selectedTemplate, ...values });
+    updateMutate({ ...values, templateId: selectedTemplate.templateId });
   };
 
   const columns: ColumnsType<CourseTemplate> = [
@@ -118,19 +125,29 @@ const CourseTemplatesPage: React.FC = () => {
       ellipsis: true,
     },
     {
-      title: 'Min Units',
-      dataIndex: 'minUnits',
-      key: 'minUnits',
+      title: 'Program',
+      dataIndex: 'program',
+      key: 'program',
     },
     {
-      title: 'Min Lessons/Unit',
-      dataIndex: 'minLessonsPerUnit',
-      key: 'minLessonsPerUnit',
+      title: 'Level',
+      dataIndex: 'level',
+      key: 'level',
     },
     {
-      title: 'Min Exercises/Lesson',
-      dataIndex: 'minExercisesPerLesson',
-      key: 'minExercisesPerLesson',
+      title: 'Unit Count',
+      dataIndex: 'unitCount',
+      key: 'unitCount',
+    },
+    {
+      title: 'Lessons Per Unit',
+      dataIndex: 'lessonsPerUnit',
+      key: 'lessonsPerUnit',
+    },
+    {
+      title: 'Exercises Per Lesson',
+      dataIndex: 'exercisesPerLesson',
+      key: 'exercisesPerLesson',
     },
     {
       title: 'Action',
@@ -138,21 +155,20 @@ const CourseTemplatesPage: React.FC = () => {
       render: (_, record) => (
         <div className="flex justify-start items-center gap-2">
           <EyeOutlined
-            size={30}
+            style={{ fontSize: 20, cursor: 'pointer' }}
             onClick={() => handleViewDetail(record)}
           />
           <EditFilled
-            size={30}
+            style={{ fontSize: 20, cursor: 'pointer' }}
             onClick={() => handleEdit(record)}
           />
           <DeleteFilled
-            size={30}
-            onClick={() => handleDelete(record)}>
-            Delete
-          </DeleteFilled>
+            style={{ fontSize: 20, cursor: 'pointer' }}
+            onClick={() => handleDelete(record)}
+          />
         </div>
       ),
-      minWidth: 200,
+      width: 150,
     },
   ];
 
@@ -173,7 +189,7 @@ const CourseTemplatesPage: React.FC = () => {
         </div>
 
         <Table<CourseTemplate>
-          rowKey="id"
+          rowKey="templateId"
           columns={columns}
           dataSource={data?.data || []}
           loading={isLoading}
@@ -204,25 +220,18 @@ const CourseTemplatesPage: React.FC = () => {
             <Descriptions.Item label="Description">
               {selectedTemplate.description}
             </Descriptions.Item>
-            <Descriptions.Item label="Require Goal">
-              {selectedTemplate.requireGoal ? 'Yes' : 'No'}
+            <Descriptions.Item label="Program">{selectedTemplate.program}</Descriptions.Item>
+            <Descriptions.Item label="Level">{selectedTemplate.level}</Descriptions.Item>
+            <Descriptions.Item label="Unit Count">{selectedTemplate.unitCount}</Descriptions.Item>
+            <Descriptions.Item label="Lessons Per Unit">
+              {selectedTemplate.lessonsPerUnit}
             </Descriptions.Item>
-            <Descriptions.Item label="Require Level">
-              {selectedTemplate.requireLevel ? 'Yes' : 'No'}
+            <Descriptions.Item label="Exercises Per Lesson">
+              {selectedTemplate.exercisesPerLesson}
             </Descriptions.Item>
-            <Descriptions.Item label="Require Topic">
-              {selectedTemplate.requireTopic ? 'Yes' : 'No'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Require Language">
-              {selectedTemplate.requireLang ? 'Yes' : 'No'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Min Units">{selectedTemplate.minUnits}</Descriptions.Item>
-            <Descriptions.Item label="Min Lessons/Unit">
-              {selectedTemplate.minLessonsPerUnit}
-            </Descriptions.Item>
-            <Descriptions.Item label="Min Exercises/Lesson">
-              {selectedTemplate.minExercisesPerLesson}
-            </Descriptions.Item>
+            <Descriptions.Item label="Version">{selectedTemplate.version}</Descriptions.Item>
+            <Descriptions.Item label="Created At">{selectedTemplate.createdAt}</Descriptions.Item>
+            <Descriptions.Item label="Modified At">{selectedTemplate.modifiedAt}</Descriptions.Item>
           </Descriptions>
         )}
       </Drawer>
@@ -237,14 +246,9 @@ const CourseTemplatesPage: React.FC = () => {
           layout="vertical"
           onFinish={onFinishCreate}
           initialValues={{
-            requireGoal: false,
-            requireLevel: false,
-            requireSkillFocus: false,
-            requireTopic: false,
-            requireLang: false,
-            minUnits: 1,
-            minLessonsPerUnit: 1,
-            minExercisesPerLesson: 1,
+            unitCount: 1,
+            lessonsPerUnit: 1,
+            exercisesPerLesson: 1,
           }}>
           <Form.Item
             label="Name"
@@ -263,47 +267,24 @@ const CourseTemplatesPage: React.FC = () => {
             />
           </Form.Item>
 
-          <Form.Item label="Requirements">
-            <Form.Item
-              name="requireGoal"
-              valuePropName="checked"
-              noStyle>
-              <Checkbox>Require Goal</Checkbox>
-            </Form.Item>
-            <br />
-            <Form.Item
-              name="requireLevel"
-              valuePropName="checked"
-              noStyle>
-              <Checkbox>Require Level</Checkbox>
-            </Form.Item>
-            <br />
-            <Form.Item
-              name="requireSkillFocus"
-              valuePropName="checked"
-              noStyle>
-              <Checkbox>Require Skill Focus</Checkbox>
-            </Form.Item>
-            <br />
-            <Form.Item
-              name="requireTopic"
-              valuePropName="checked"
-              noStyle>
-              <Checkbox>Require Topic</Checkbox>
-            </Form.Item>
-            <br />
-            <Form.Item
-              name="requireLang"
-              valuePropName="checked"
-              noStyle>
-              <Checkbox>Require Language</Checkbox>
-            </Form.Item>
+          <Form.Item
+            label="Program ID"
+            name="programId"
+            rules={[{ required: true, message: 'Please enter program ID' }]}>
+            <Input placeholder="Enter program ID (e.g., 3fa85f64-5717-4562-b3fc-2c963f66afa6)" />
           </Form.Item>
 
           <Form.Item
-            label="Minimum Units"
-            name="minUnits"
-            rules={[{ required: true, message: 'Please enter minimum units' }]}>
+            label="Level ID"
+            name="levelId"
+            rules={[{ required: true, message: 'Please enter level ID' }]}>
+            <Input placeholder="Enter level ID (e.g., 3fa85f64-5717-4562-b3fc-2c963f66afa6)" />
+          </Form.Item>
+
+          <Form.Item
+            label="Unit Count"
+            name="unitCount"
+            rules={[{ required: true, message: 'Please enter unit count' }]}>
             <InputNumber
               min={1}
               className="w-full"
@@ -311,9 +292,9 @@ const CourseTemplatesPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Minimum Lessons per Unit"
-            name="minLessonsPerUnit"
-            rules={[{ required: true, message: 'Please enter minimum lessons per unit' }]}>
+            label="Lessons Per Unit"
+            name="lessonsPerUnit"
+            rules={[{ required: true, message: 'Please enter lessons per unit' }]}>
             <InputNumber
               min={1}
               className="w-full"
@@ -321,9 +302,9 @@ const CourseTemplatesPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Minimum Exercises per Lesson"
-            name="minExercisesPerLesson"
-            rules={[{ required: true, message: 'Please enter minimum exercises per lesson' }]}>
+            label="Exercises Per Lesson"
+            name="exercisesPerLesson"
+            rules={[{ required: true, message: 'Please enter exercises per lesson' }]}>
             <InputNumber
               min={1}
               className="w-full"
@@ -369,47 +350,24 @@ const CourseTemplatesPage: React.FC = () => {
               />
             </Form.Item>
 
-            <Form.Item label="Requirements">
-              <Form.Item
-                name="requireGoal"
-                valuePropName="checked"
-                noStyle>
-                <Checkbox>Require Goal</Checkbox>
-              </Form.Item>
-              <br />
-              <Form.Item
-                name="requireLevel"
-                valuePropName="checked"
-                noStyle>
-                <Checkbox>Require Level</Checkbox>
-              </Form.Item>
-              <br />
-              <Form.Item
-                name="requireSkillFocus"
-                valuePropName="checked"
-                noStyle>
-                <Checkbox>Require Skill Focus</Checkbox>
-              </Form.Item>
-              <br />
-              <Form.Item
-                name="requireTopic"
-                valuePropName="checked"
-                noStyle>
-                <Checkbox>Require Topic</Checkbox>
-              </Form.Item>
-              <br />
-              <Form.Item
-                name="requireLang"
-                valuePropName="checked"
-                noStyle>
-                <Checkbox>Require Language</Checkbox>
-              </Form.Item>
+            <Form.Item
+              label="Program"
+              name="program"
+              rules={[{ required: true, message: 'Please enter program' }]}>
+              <Input placeholder="Enter program ID" />
             </Form.Item>
 
             <Form.Item
-              label="Minimum Units"
-              name="minUnits"
-              rules={[{ required: true, message: 'Please enter minimum units' }]}>
+              label="Level"
+              name="level"
+              rules={[{ required: true, message: 'Please enter level' }]}>
+              <Input placeholder="Enter level ID" />
+            </Form.Item>
+
+            <Form.Item
+              label="Unit Count"
+              name="unitCount"
+              rules={[{ required: true, message: 'Please enter unit count' }]}>
               <InputNumber
                 min={1}
                 className="w-full"
@@ -417,9 +375,9 @@ const CourseTemplatesPage: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              label="Minimum Lessons per Unit"
-              name="minLessonsPerUnit"
-              rules={[{ required: true, message: 'Please enter minimum lessons per unit' }]}>
+              label="Lessons Per Unit"
+              name="lessonsPerUnit"
+              rules={[{ required: true, message: 'Please enter lessons per unit' }]}>
               <InputNumber
                 min={1}
                 className="w-full"
@@ -427,9 +385,9 @@ const CourseTemplatesPage: React.FC = () => {
             </Form.Item>
 
             <Form.Item
-              label="Minimum Exercises per Lesson"
-              name="minExercisesPerLesson"
-              rules={[{ required: true, message: 'Please enter minimum exercises per lesson' }]}>
+              label="Exercises Per Lesson"
+              name="exercisesPerLesson"
+              rules={[{ required: true, message: 'Please enter exercises per lesson' }]}>
               <InputNumber
                 min={1}
                 className="w-full"

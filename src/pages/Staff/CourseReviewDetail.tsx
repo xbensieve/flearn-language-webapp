@@ -115,7 +115,7 @@ const CourseReviewDetail: React.FC = () => {
             </Button>
           </Tooltip>
 
-          {course.status?.toLowerCase() !== 'published' && (
+          {course.courseStatus?.toLowerCase() !== 'published' && (
             <Space>
               <Tooltip title="Reject this course">
                 <Button
@@ -162,10 +162,10 @@ const CourseReviewDetail: React.FC = () => {
                 </Title>
                 <Text className="!text-indigo-100 text-sm flex items-center gap-2">
                   <Avatar
-                    src={course?.teacherInfo?.avatar}
+                    src={course?.teacher?.avatar}
                     icon={<User size={14} />}
                   />
-                  By {course?.teacherInfo?.fullName ?? 'Unknown Teacher'}
+                  By {course?.teacher?.name ?? 'Unknown Teacher'}
                 </Text>
               </div>
             </div>
@@ -187,7 +187,7 @@ const CourseReviewDetail: React.FC = () => {
               <Tag
                 color="blue"
                 className="px-3 py-1">
-                {course?.languageInfo?.name ?? 'Unknown Language'}
+                {course?.language ?? 'Unknown Language'}
               </Tag>
             </Col>
             <Col
@@ -197,7 +197,7 @@ const CourseReviewDetail: React.FC = () => {
               <Tag
                 color="green"
                 className="px-3 py-1">
-                {course?.courseLevel ?? 'N/A'}
+                {course?.program.level.name ?? 'N/A'}
               </Tag>
             </Col>
             <Col
@@ -205,9 +205,9 @@ const CourseReviewDetail: React.FC = () => {
               sm={12}
               md={8}>
               <Tag
-                color={course?.status === 'published' ? 'success' : 'default'}
+                color={course?.courseStatus === 'published' ? 'success' : 'default'}
                 className="px-3 py-1">
-                {formatStatusLabel(course?.status ?? 'unknown')}
+                {formatStatusLabel(course?.courseStatus ?? 'unknown')}
               </Tag>
             </Col>
           </Row>
@@ -219,10 +219,11 @@ const CourseReviewDetail: React.FC = () => {
               <Text
                 strong
                 className="text-gray-800 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-indigo-600" /> Goal
+                <BookOpen className="w-4 h-4 text-indigo-600" />{' '}
+                {course?.program?.name ?? 'Unknown Program'}
               </Text>
               <Paragraph className="text-gray-700 mt-1">
-                {course?.goalInfo?.description ?? 'No goal description provided'}
+                {course?.program?.description ?? 'No goal description provided'}
               </Paragraph>
             </div>
 

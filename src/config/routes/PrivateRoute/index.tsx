@@ -4,7 +4,7 @@ import { useAuth } from '../../../utils/AuthContext';
 
 const PrivateRoute: React.FC<{
   children: React.ReactNode;
-  allowedRoles: ('admin' | 'staff' | 'teacher' | 'learner')[];
+  allowedRoles: ('admin' | 'manager' | 'teacher' | 'learner')[];
 }> = ({ children, allowedRoles }) => {
   const { auth } = useAuth();
   const { isAuthenticated, roles, loading } = auth;
@@ -23,14 +23,24 @@ const PrivateRoute: React.FC<{
   }
 
   if (!isAuthenticated) {
-    return <Navigate to='/login' replace />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
   }
 
   if (roles && roles.some((role) => allowedRoles.includes(role))) {
     return <>{children}</>;
   }
 
-  return <Navigate to='/unauthorized' replace />;
+  return (
+    <Navigate
+      to="/unauthorized"
+      replace
+    />
+  );
 };
 
 export default PrivateRoute;

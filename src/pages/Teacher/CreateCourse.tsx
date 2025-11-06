@@ -12,7 +12,6 @@ import {
   Col,
   Steps,
   message,
-  Spin,
   Typography,
   Card,
   Tooltip,
@@ -22,8 +21,7 @@ import { UploadOutlined, BookOutlined, DollarOutlined, SettingOutlined } from '@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createCourseService, getCourseTemplatesService } from '../../services/course';
 import { getTopicsService } from '../../services/topics';
-import { getGoalsService } from '../../services/goals';
-import { getLevelTypeService } from '../../services/enums';
+// import { getLevelTypeService } from '../../services/enums';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import type { CreateCourseRequest } from '../../services/course/type';
 import type { AxiosError } from 'axios';
@@ -57,15 +55,23 @@ interface CourseFormValues {
   goalIds: number[];
   Level?: number;
   courseSkill?: number;
+  learningOutcome: string;
+  durationDays: number;
+  gradingType: string;
 }
 
 const courseTypes = [
-  { value: 0, label: 'Free Course' },
-  { value: 1, label: 'Paid Course' },
+  { value: 1, label: 'Free Course' },
+  { value: 2, label: 'Paid Course' },
+];
+
+const gradingType = [
+  { value: 1, label: 'AI' },
+  { value: 2, label: 'AI and Teacher' },
 ];
 
 const CreateCourse: React.FC = () => {
-  const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const navigate = useNavigate();
   const [form] = Form.useForm<CourseFormValues>();
   const [fileList, setFileList] = useState<any[]>([]);
@@ -78,21 +84,14 @@ const CreateCourse: React.FC = () => {
   const { data: templates, isLoading: templatesLoading } = useQuery({
     queryKey: ['courseTemplates'],
     queryFn: () => getCourseTemplatesService(),
+    select: (data) => data.data,
   });
+
+  console.log(templates);
 
   const { data: topics, isLoading: topicsLoading } = useQuery({
     queryKey: ['topics'],
     queryFn: getTopicsService,
-  });
-  const { data: goals, isLoading: goalsLoading } = useQuery({
-    queryKey: ['goals'],
-    queryFn: getGoalsService,
-  });
-
-  const { data: levels, isLoading: levelsLoading } = useQuery({
-    queryKey: ['levels'],
-    queryFn: getLevelTypeService,
-    select: (data) => data.map((level) => ({ value: level.id, label: level.name })),
   });
 
   const { mutate: createCourse, isPending } = useMutation({
@@ -150,7 +149,7 @@ const CreateCourse: React.FC = () => {
       setFormValues((prev) => ({ ...prev, ...values }));
       setCurrentStep((s) => {
         // Skip Pricing step for free courses (courseType === 0)
-        if (values.courseType === 0 && s === 0) return 2;
+        if (values.courseType === 1 && s === 0) return 2;
         return s + 1;
       });
     } catch {
@@ -163,16 +162,17 @@ const CreateCourse: React.FC = () => {
     setFormValues((prev) => ({ ...prev, ...values }));
     setCurrentStep((s) => {
       // Skip Pricing step for free courses when going back
-      if (formValues.courseType === 0 && s === 2) return 0;
+      if (formValues.courseType === 1 && s === 2) return 0;
       return s - 1;
     });
   };
 
-  const handleTemplateChange = (value: string) => {
-    const tpl = templates?.data?.find((t) => t.id === value);
-    setSelectedTemplate(tpl || null);
-    form.setFieldsValue({ templateId: value });
-  };
+  // const handleTemplateChange = (value: string) => {
+  //   const tpl = templates?.find((t) => t.id === value);
+  //   setSelectedTemplate(tpl || null);
+  //   console.log('templateId', value);
+  //   form.setFieldsValue({ templateId: value });
+  // };
 
   const onFinish = (values: CourseFormValues) => {
     console.log(form.getFieldsError());
@@ -181,13 +181,13 @@ const CreateCourse: React.FC = () => {
       title: formValues.title || values.title,
       description: formValues.description || values.description,
       topicIds: formValues.topicIds || values.topicIds,
-      courseType: formValues.courseType || 0,
-      goalIds: values.goalIds || [],
-      Level: Number(values.Level),
+      courseType: formValues?.courseType?.toString() || '',
       templateId: formValues.templateId || values.templateId,
-      price: Number(formValues.price || 0),
-      discountPrice: Number(formValues.discountPrice || 0),
+      price: formValues?.price?.toString() || '0',
       image: fileList[0] as unknown as File,
+      learningOutcome: formValues.learningOutcome || values.learningOutcome,
+      durationDays: formValues.durationDays || values.durationDays,
+      gradingType: formValues.gradingType || values.gradingType,
     };
     createCourse(payload);
   };
@@ -250,7 +250,7 @@ const CreateCourse: React.FC = () => {
                       name="title"
                       label={
                         <span className="flex items-center gap-1">
-                           Title <Sparkles className="w-4 h-4 text-yellow-500" />
+                          Title <Sparkles className="w-4 h-4 text-yellow-500" />
                         </span>
                       }
                       rules={[{ required: true, message: 'Please enter course title' }]}>
@@ -279,20 +279,19 @@ const CreateCourse: React.FC = () => {
                       name="templateId"
                       label={
                         <span className="flex items-center gap-1">
-                           Template <Settings className="w-4 h-4 text-purple-500" />
+                          Template <Settings className="w-4 h-4 text-purple-500" />
                         </span>
                       }
-                      rules={[{ required: true, message: 'Please select a template' }]}>
+                      rules={[{ required: true, message: 'Please select template' }]}>
                       <Select
                         size="large"
                         placeholder="Select template"
                         loading={templatesLoading}
-                        onChange={handleTemplateChange}
                         suffixIcon={<Settings className="w-4 h-4" />}>
-                        {templates?.data?.map((tpl) => (
+                        {templates?.map((tpl) => (
                           <Option
-                            key={tpl.id}
-                            value={tpl.id}>
+                            key={tpl.templateId}
+                            value={tpl.templateId}>
                             {tpl.name}
                           </Option>
                         ))}
@@ -303,7 +302,7 @@ const CreateCourse: React.FC = () => {
                       name="courseType"
                       label={
                         <span className="flex items-center gap-1">
-                           Type <Users className="w-4 h-4 text-green-500" />
+                          Type <Users className="w-4 h-4 text-green-500" />
                         </span>
                       }
                       rules={[{ required: true, message: 'Please select course type' }]}>
@@ -447,76 +446,66 @@ const CreateCourse: React.FC = () => {
 
                 {currentStep === 2 && (
                   <div className="p-4 bg-purple-50 rounded-2xl border border-purple-200">
-                    <div className="flex items-center gap-2 mb-4">
+                    <div>
                       {/* <Settings className="w-5 h-5 text-purple-600" />
                       <Text
                         strong
                         className="text-purple-800">
                         Advanced Settings
                       </Text> */}
-                    </div>
-                    <Form.Item
-                      name="goalIds"
-                      label={
-                        <span className="flex items-center gap-1">
-                          Learning Goals <Target className="w-4 h-4 text-indigo-500" />
-                        </span>
-                      }
-                      rules={
-                        selectedTemplate?.requireGoal
-                          ? [{ required: true, message: 'Please select at least one goal' }]
-                          : []
-                      }>
-                      {goalsLoading ? (
-                        <Spin />
-                      ) : (
-                        <Select
-                          mode="multiple"
-                          size="large"
-                          placeholder="Select one or more goals"
-                          maxTagCount="responsive"
-                          suffixIcon={<Target className="w-4 h-4" />}>
-                          {goals?.data.map((g) => (
-                            <Option
-                              key={g.id}
-                              value={g.id}>
-                              {g.name}
-                            </Option>
-                          ))}
-                        </Select>
-                      )}
-                    </Form.Item>
-
-                    <Row gutter={16}>
-                      <Col span={12}>
+                      <div className="p-4">
                         <Form.Item
-                          name="Level"
+                          name="learningOutcome"
                           label={
                             <span className="flex items-center gap-1">
-                              Level <GraduationCap className="w-4 h-4 text-green-500" />
+                              Learning Outcome <Lightbulb className="w-4 h-4 text-yellow-500" />
                             </span>
                           }
-                          rules={
-                            selectedTemplate?.requireLevel
-                              ? [{ required: true, message: 'Level is required for this template' }]
-                              : []
-                          }>
+                          rules={[{ required: true, message: 'Please enter learning outcomes' }]}>
+                          <TextArea
+                            rows={4}
+                            placeholder="What will learners achieve after this course?"
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          name="gradingType"
+                          label={
+                            <span className="flex items-center gap-1">
+                              Type <Users className="w-4 h-4 text-green-500" />
+                            </span>
+                          }
+                          rules={[{ required: true, message: 'Please select grading type' }]}>
                           <Select
-                            loading={levelsLoading}
                             size="large"
-                            placeholder="Select level"
-                            suffixIcon={<GraduationCap className="w-4 h-4" />}>
-                            {levels?.map((l) => (
+                            placeholder="Select type">
+                            {gradingType.map((ct) => (
                               <Option
-                                key={l.value}
-                                value={l.value}>
-                                {l.label}
+                                key={ct.value}
+                                value={ct.value}>
+                                {ct.label}
                               </Option>
                             ))}
                           </Select>
                         </Form.Item>
-                      </Col>
-                    </Row>
+
+                        <Form.Item
+                          name="durationDays"
+                          label={
+                            <span className="flex items-center gap-1">
+                              Duration (days) <Calendar1 className="w-4 h-4 text-indigo-500" />
+                            </span>
+                          }
+                          rules={[{ required: true, message: 'Please enter course duration' }]}>
+                          <InputNumber
+                            min={1}
+                            size="large"
+                            className="w-full"
+                            placeholder="e.g. 30"
+                          />
+                        </Form.Item>
+                      </div>
+                    </div>
                   </div>
                 )}
 

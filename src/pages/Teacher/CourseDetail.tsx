@@ -31,15 +31,20 @@ import { notifyError } from '../../utils/toastConfig';
 import {
   ArrowLeft,
   BookOpen,
+  Box,
+  Clock,
   DollarSign,
   Edit,
   FileText,
   GraduationCap,
   Info,
   Lightbulb,
+  MessageSquare,
   Play,
   Plus,
   Sparkles,
+  Star,
+  Timer,
   Users,
 } from 'lucide-react';
 
@@ -134,7 +139,7 @@ const CourseDetail: React.FC = () => {
           <Tooltip title="Edit course overview">
             <Button
               type="primary"
-              onClick={() => navigate(`/teacher/course/${course?.courseID}/edit-course`)}
+              onClick={() => navigate(`/teacher/course/${course?.courseId}/edit-course`)}
               className="rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
               <Edit size={16} />
               Edit Course
@@ -174,12 +179,12 @@ const CourseDetail: React.FC = () => {
                     </Paragraph>
                     <div className="flex items-center gap-3">
                       <Avatar
-                        src={course?.teacherInfo?.avatar}
+                        src={course?.teacher?.avatar}
                         size={32}
                         className="border-2 !border-white"
                       />
                       <Text className="!text-white font-medium">
-                        {course?.teacherInfo?.fullName || 'Unknown Teacher'}
+                        {course?.teacher?.name || 'Unknown Teacher'}
                       </Text>
                     </div>
                   </div>
@@ -192,14 +197,14 @@ const CourseDetail: React.FC = () => {
                       color="blue"
                       className="!px-3 !py-2 !flex items-center !gap-1">
                       <Users size={12} />
-                      {course?.languageInfo?.name || 'No Language'}
+                      {course?.language || 'No Language'}
                     </Tag>
                   </div>
                   <Tag
                     color="green"
                     className="!px-3 !py-2 !flex items-center !gap-1">
                     <GraduationCap size={12} />
-                    {course?.courseLevel || 'N/A'}
+                    {course?.program.level.name || 'N/A'}
                   </Tag>
                 </div>
 
@@ -229,12 +234,110 @@ const CourseDetail: React.FC = () => {
                     <Text
                       strong
                       className="text-indigo-800">
-                      Learning Goal
+                      Learning Outcome
                     </Text>
                   </div>
                   <Paragraph className="text-gray-700">
-                    {course?.goals?.map((goal) => goal.name).join(', ') || 'No goal description'}
+                    {course?.learningOutcome || 'No goal description'}
                   </Paragraph>
+                </div>
+
+                <div className="p-4 bg-indigo-50 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb
+                      size={16}
+                      className="text-indigo-600"
+                    />
+                    <Text
+                      strong
+                      className="text-indigo-800">
+                      {course?.program.name}
+                    </Text>
+                  </div>
+                  <Paragraph className="text-gray-700">
+                    {course?.program.description || 'No goal description'}
+                  </Paragraph>
+                </div>
+
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <Row gutter={[16, 12]}>
+                    {/* ⭐ Rating */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      {course.averageRating ?? '—'}
+                    </Col>
+
+                    {/* 👥 Learners */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-600" />
+                      {course.learnerCount ?? 0} learners
+                    </Col>
+
+                    {/* 💬 Reviews */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-green-600" />
+                      {course.reviewCount ?? 0} reviews
+                    </Col>
+
+                    {/* 📦 Units */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <Box className="w-4 h-4 text-purple-600" />
+                      {course.numUnits ?? '—'} Units
+                    </Col>
+
+                    {/* 📚 Lessons */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-indigo-600" />
+                      {course.numLessons ?? '—'} Lessons
+                    </Col>
+
+                    {/* ⏳ Duration Days */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <Timer className="w-4 h-4 text-orange-600" />
+                      {course.durationDays ?? '—'} days
+                    </Col>
+
+                    {/* ⏱ Estimated Hours */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-red-600" />
+                      {course.estimatedHours ?? '—'} hours
+                    </Col>
+
+                    {/* Empty placeholders */}
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="text-gray-400">
+                      —
+                    </Col>
+                    <Col
+                      xs={24}
+                      sm={8}
+                      className="text-gray-400">
+                      —
+                    </Col>
+                  </Row>
                 </div>
 
                 <div className="p-4 bg-green-50 rounded-2xl">

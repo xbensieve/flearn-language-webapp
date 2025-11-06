@@ -26,11 +26,9 @@ import {
 } from '../../services/course';
 import { getLanguages } from '../../services/teacherApplication';
 import type { Topic } from '../../services/topics/type';
-import type { CourseTemplate, GoalInfo } from '../../services/course/type';
+import type { CourseTemplate } from '../../services/course/type';
 import type { AxiosError } from 'axios';
 import { getTopicsService } from '../../services/topics';
-import { getGoalsService } from '../../services/goals';
-import { getLevelTypeService, getSkillTypeService } from '../../services/enums';
 import {
   ArrowLeft,
   BookOpen,
@@ -39,7 +37,6 @@ import {
   Edit,
   FileText,
   Globe,
-  GraduationCap,
   ImageIcon,
   Lightbulb,
   Settings,
@@ -59,7 +56,6 @@ const EditCoursePage: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  const [selectedTemplate, setSelectedTemplate] = useState<CourseTemplate | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
   const [currentImage, setCurrentImage] = useState<string | null>(null);
 
@@ -80,26 +76,9 @@ const EditCoursePage: React.FC = () => {
     queryFn: getTopicsService,
   });
 
-  const { data: goals, isLoading: goalsLoading } = useQuery({
-    queryKey: ['goals'],
-    queryFn: getGoalsService,
-  });
-
   const { data: languages, isLoading: languagesLoading } = useQuery({
     queryKey: ['languages'],
     queryFn: getLanguages,
-  });
-
-  const { data: levels, isLoading: levelsLoading } = useQuery({
-    queryKey: ['levels'],
-    queryFn: getLevelTypeService,
-    select: (data) => data.map((level) => ({ value: level.id, label: level.name })),
-  });
-
-  const { data: skills, isLoading: skillsLoading } = useQuery({
-    queryKey: ['skills'],
-    queryFn: getSkillTypeService,
-    select: (data) => data.map((s) => ({ value: s.id, label: s.name })),
   });
 
   const updateMutation = useMutation({
@@ -114,29 +93,7 @@ const EditCoursePage: React.FC = () => {
   });
 
   // --- Watchers ---
-  const watchedTemplateId = Form.useWatch('templateId', form);
   const watchedType = Form.useWatch('type', form);
-
-  // --- Handle dynamic template change ---
-  useEffect(() => {
-    if (watchedTemplateId && templates?.data) {
-      const template = templates.data.find((t: CourseTemplate) => t.id === watchedTemplateId);
-      setSelectedTemplate(template || null);
-    } else {
-      setSelectedTemplate(null);
-    }
-  }, [watchedTemplateId, templates]);
-
-  // Clear irrelevant fields when template changes
-  useEffect(() => {
-    if (selectedTemplate) {
-      if (!selectedTemplate.requireGoal) form.setFieldValue('goalId', undefined);
-      if (!selectedTemplate.requireLang) form.setFieldValue('language', undefined);
-      if (!selectedTemplate.requireTopic) form.setFieldValue('topics', []);
-      if (!selectedTemplate.requireLevel) form.setFieldValue('level', undefined);
-      if (!selectedTemplate.requireSkillFocus) form.setFieldValue('skills', []);
-    }
-  }, [selectedTemplate]);
 
   // Optional: reset dependent fields when type changes
   useEffect(() => {
@@ -153,47 +110,44 @@ const EditCoursePage: React.FC = () => {
         description: course.description,
         price: course.price,
         discountPrice: course.discountPrice,
-        templateId: course.templateInfo?.templateId,
-        language: course.languageInfo?.code,
-        goalIds: course.goals?.map((g: GoalInfo) => g.id),
-        level: course.courseLevel,
+        templateId: course.templateId,
+        language: course.language,
         type: course.courseType,
         topics: course.topics?.map((t: Topic) => t.topicId),
       });
-      console.log(course.goals);
       setCurrentImage(course.imageUrl);
     }
   }, [course, form]);
 
   // --- Submit ---
-  const handleFinish = (values: any) => {
+  const handleFinish = (formValues: any) => {
+    if (!course) return;
+
     const payload = new FormData();
 
-    try {
-      payload.append('Title', values.title);
-      payload.append('Description', values.description);
-      payload.append('TemplateId', values.templateId);
-      payload.append('Price', String(values.price));
-      payload.append('DiscountPrice', String(values.discountPrice || 0));
-      payload.append('Type', String(values.type));
-      console.log(values);
+    // ✅ Basic fields (same pattern as CreateCourseRequest)
+    payload.append('Title', formValues.title || course.title);
+    payload.append('Description', formValues.description || course.description);
+    payload.append('TemplateId', formValues.templateId || course.templateId);
+    payload.append('Price', formValues?.price?.toString() || course.price?.toString() || '0');
+    payload.append(
+      'DiscountPrice',
+      formValues?.discountPrice?.toString() || course.discountPrice?.toString() || '0'
+    );
+    payload.append(
+      'Type',
+      formValues?.courseType?.toString() || course.courseType?.toString() || ''
+    );
 
-      if (selectedTemplate?.requireGoal && values.goalIds?.length)
-        values.goalIds.map((g: number) => payload.append('GoalIds', String(g)));
-      if (selectedTemplate?.requireLevel && values.level)
-        payload.append('Level', String(values.level));
-      if (selectedTemplate?.requireLang && values.language)
-        payload.append('LanguageCode', values.language);
-      if (selectedTemplate?.requireTopic && values.topics?.length)
-        payload.append('TopicIds', values.topics);
-      if (removeImage) {
-        payload.append('RemoveImage', 'true');
-      } else if (values.image?.file) {
-        payload.append('Image', values.image.file);
-      }
-    } catch (error) {
-      console.error('Error creating course:', error);
-      return;
+    // ✅ Topics (same as CreateCourseRequest topicIds)
+    const topicIds = formValues.topics || course.topics?.map((t: any) => t.topicId) || [];
+    topicIds.forEach((id: number) => payload.append('TopicIds', id.toString()));
+
+    // ✅ Image rules (same as your create request logic)
+    if (removeImage) {
+      payload.append('RemoveImage', 'true');
+    } else if (formValues.image?.file) {
+      payload.append('Image', formValues.image.file as File);
     }
 
     updateMutation.mutate(payload);
@@ -312,15 +266,14 @@ const EditCoursePage: React.FC = () => {
                       }>
                       {templates?.data?.map((tpl: CourseTemplate) => (
                         <Option
-                          key={tpl.id}
-                          value={tpl.id}>
+                          key={tpl.templateId}
+                          value={tpl.templateId}>
                           {tpl.name}
                         </Option>
                       ))}
                     </Select>
                   </Form.Item>
                 </div>
-
                 {/* Basic Info */}
                 <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
                   <div className="flex items-center gap-2 mb-4">
@@ -375,7 +328,6 @@ const EditCoursePage: React.FC = () => {
                     />
                   </Form.Item>
                 </div>
-
                 {/* Pricing */}
                 <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
                   <div className="flex items-center gap-2 mb-4">
@@ -449,7 +401,6 @@ const EditCoursePage: React.FC = () => {
                     </Col>
                   </Row>
                 </div>
-
                 {/* Course Type */}
                 <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
                   <div className="flex items-center gap-2 mb-4">
@@ -488,9 +439,8 @@ const EditCoursePage: React.FC = () => {
                     </Select>
                   </Form.Item>
                 </div>
-
                 {/* Conditional Fields */}
-                {selectedTemplate?.requireLang && (
+                {
                   <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
                     <Form.Item
                       label={
@@ -520,142 +470,38 @@ const EditCoursePage: React.FC = () => {
                       />
                     </Form.Item>
                   </div>
-                )}
-
-                {selectedTemplate?.requireGoal && (
-                  <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
-                    <Form.Item
-                      label={
-                        <span className="flex items-center gap-2">
-                          <Target
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Goals
-                        </span>
+                }
+                <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
+                  <Form.Item
+                    label={
+                      <span className="flex items-center gap-2">
+                        <Target
+                          size={16}
+                          className="text-gray-600"
+                        />
+                        Topics
+                      </span>
+                    }
+                    name="topics"
+                    rules={[{ required: true, message: 'Select at least one topic' }]}>
+                    <Select
+                      mode="multiple"
+                      placeholder="Select topics"
+                      loading={topicsLoading}
+                      maxTagCount="responsive"
+                      suffixIcon={
+                        <Target
+                          size={16}
+                          className="text-gray-400"
+                        />
                       }
-                      name="goalIds"
-                      rules={[
-                        {
-                          required: true,
-                          type: 'array',
-                          min: 1,
-                          message: 'Please select at least one goal',
-                        },
-                      ]}>
-                      <Select
-                        mode="multiple"
-                        placeholder="Select one or more goals"
-                        loading={goalsLoading}
-                        maxTagCount="responsive"
-                        suffixIcon={
-                          <Target
-                            size={16}
-                            className="text-gray-400"
-                          />
-                        }
-                        options={goals?.data.map((goal: any) => ({
-                          value: goal.id,
-                          label: goal.name,
-                        }))}
-                      />
-                    </Form.Item>
-                  </div>
-                )}
-
-                {selectedTemplate?.requireLevel && (
-                  <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                    <Form.Item
-                      label={
-                        <span className="flex items-center gap-2">
-                          <GraduationCap
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Level
-                        </span>
-                      }
-                      name="level"
-                      rules={[{ required: true, message: 'Level is required' }]}>
-                      <Select
-                        placeholder="Select level"
-                        loading={levelsLoading}
-                        suffixIcon={
-                          <GraduationCap
-                            size={16}
-                            className="text-gray-400"
-                          />
-                        }
-                        options={levels}
-                      />
-                    </Form.Item>
-                  </div>
-                )}
-
-                {selectedTemplate?.requireSkillFocus && (
-                  <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
-                    <Form.Item
-                      label={
-                        <span className="flex items-center gap-2">
-                          <Sparkles
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Skill Focus
-                        </span>
-                      }
-                      name="skills"
-                      rules={[{ required: true, message: 'Please select skills' }]}>
-                      <Select
-                        mode="multiple"
-                        placeholder="Select skills"
-                        loading={skillsLoading}
-                        maxTagCount="responsive"
-                        suffixIcon={
-                          <Sparkles
-                            size={16}
-                            className="text-gray-400"
-                          />
-                        }
-                        options={skills}
-                      />
-                    </Form.Item>
-                  </div>
-                )}
-
-                {selectedTemplate?.requireTopic && (
-                  <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                    <Form.Item
-                      label={
-                        <span className="flex items-center gap-2">
-                          <Target
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Topics
-                        </span>
-                      }
-                      name="topics"
-                      rules={[{ required: true, message: 'Select at least one topic' }]}>
-                      <Select
-                        mode="multiple"
-                        placeholder="Select topics"
-                        loading={topicsLoading}
-                        maxTagCount="responsive"
-                        suffixIcon={
-                          <Target
-                            size={16}
-                            className="text-gray-400"
-                          />
-                        }
-                        options={topics?.data.map((topic: Topic) => ({
-                          value: topic.topicId,
-                          label: topic.topicName,
-                        }))}
-                      />
-                    </Form.Item>
-                  </div>
-                )}
+                      options={topics?.data.map((topic: Topic) => ({
+                        value: topic.topicId,
+                        label: topic.topicName,
+                      }))}
+                    />
+                  </Form.Item>
+                </div>
 
                 {/* Image */}
                 <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
@@ -710,7 +556,6 @@ const EditCoursePage: React.FC = () => {
                     </Form.Item>
                   )}
                 </div>
-
                 <div className="flex justify-end pt-6 border-t border-gray-200">
                   <Tooltip title="Save all changes">
                     <Button
