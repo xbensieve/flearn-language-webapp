@@ -33,6 +33,7 @@ import ForgotPassword from '../../pages/ForgotPassword';
 import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
 import ProgramPage from '../../pages/Admin/Program';
 import LevelPage from '../../pages/Admin/Level';
+import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -92,6 +93,10 @@ const routes: RouteObject[] = [
       {
         path: 'programs',
         element: <ProgramPage />,
+      },
+      {
+        path: 'refund',
+        element: <RefundAdminPage />,
       },
       {
         path: 'levels/:programId',

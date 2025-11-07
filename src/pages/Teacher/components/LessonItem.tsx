@@ -44,10 +44,11 @@ const { TabPane } = Tabs;
 
 interface Props {
   lesson: Lesson;
+  index: number;
   onUpdated: () => void;
 }
 
-const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
+const LessonItem: React.FC<Props> = ({ lesson, onUpdated, index }) => {
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [exerciseDrawerVisible, setExerciseDrawerVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
@@ -144,10 +145,10 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
+    <div className="bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Add Exercise Button */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
+        {index === 0 && <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
           <div className="flex justify-end items-center">
             <Tooltip title="Add an interactive exercise to this lesson">
               <Button
@@ -159,7 +160,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
               </Button>
             </Tooltip>
           </div>
-        </div>
+        </div>}
 
         {/* Lesson Card */}
         <Card
@@ -494,7 +495,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
           }
           className="rounded-2xl"
           placement="right">
-          <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
+          <div className="bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
             <div className="max-w-3xl mx-auto">
               <Card
                 className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden"

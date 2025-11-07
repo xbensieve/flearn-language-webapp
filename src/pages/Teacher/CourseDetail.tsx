@@ -260,85 +260,55 @@ const CourseDetail: React.FC = () => {
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <Row gutter={[16, 12]}>
+                  <div className="flex flex-wrap gap-3">
                     {/* ⭐ Rating */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      {course.averageRating ?? '—'}
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-yellow-50 transition-all duration-300 ease-in-out">
+                      <Star className="w-5 h-5 text-yellow-500" />
+                      <span className="text-base font-semibold text-gray-700">{course.averageRating ?? '—'}</span>
+                    </div>
 
                     {/* 👥 Learners */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-blue-600" />
-                      {course.learnerCount ?? 0} learners
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-blue-50 transition-all duration-300 ease-in-out">
+                      <Users className="w-5 h-5 text-blue-600" />
+                      <span className="text-base font-semibold text-gray-700">{course.learnerCount ?? 0} learners</span>
+                    </div>
 
                     {/* 💬 Reviews */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 text-green-600" />
-                      {course.reviewCount ?? 0} reviews
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-green-50 transition-all duration-300 ease-in-out">
+                      <MessageSquare className="w-5 h-5 text-green-600" />
+                      <span className="text-base font-semibold text-gray-700">{course.reviewCount ?? 0} reviews</span>
+                    </div>
 
                     {/* 📦 Units */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <Box className="w-4 h-4 text-purple-600" />
-                      {course.numUnits ?? '—'} Units
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-purple-50 transition-all duration-300 ease-in-out">
+                      <Box className="w-5 h-5 text-purple-600" />
+                      <span className="text-base font-semibold text-gray-700">{course.numUnits ?? '—'} Units</span>
+                    </div>
 
                     {/* 📚 Lessons */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-indigo-600" />
-                      {course.numLessons ?? '—'} Lessons
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-indigo-50 transition-all duration-300 ease-in-out">
+                      <BookOpen className="w-5 h-5 text-indigo-600" />
+                      <span className="text-base font-semibold text-gray-700">{course.numLessons ?? '—'} Lessons</span>
+                    </div>
 
                     {/* ⏳ Duration Days */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <Timer className="w-4 h-4 text-orange-600" />
-                      {course.durationDays ?? '—'} days
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-orange-50 transition-all duration-300 ease-in-out">
+                      <Timer className="w-5 h-5 text-orange-600" />
+                      <span className="text-base font-semibold text-gray-700">{course.durationDays ?? '—'} days</span>
+                    </div>
 
                     {/* ⏱ Estimated Hours */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-red-600" />
-                      {course.estimatedHours ?? '—'} hours
-                    </Col>
+                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-red-50 transition-all duration-300 ease-in-out">
+                      <Clock className="w-5 h-5 text-red-600" />
+                      <span className="text-base font-semibold text-gray-700">{course.estimatedHours ?? '—'} hours</span>
+                    </div>
 
                     {/* Empty placeholders */}
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="text-gray-400">
-                      —
-                    </Col>
-                    <Col
-                      xs={24}
-                      sm={8}
-                      className="text-gray-400">
-                      —
-                    </Col>
-                  </Row>
+                    <div className="py-3 px-4 text-center text-gray-400 bg-white rounded-lg shadow-sm">—</div>
+                    <div className="py-3 px-4 text-center text-gray-400 bg-white rounded-lg shadow-sm">—</div>
+                  </div>
                 </div>
+
 
                 <div className="p-4 bg-green-50 rounded-2xl">
                   <div className="flex items-center gap-2 mb-2">
@@ -610,7 +580,7 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
           />
         </div>
       ) : (
-        <div className="space-y-3 p-2">
+        <div className="flex gap-2.5 flex-col space-y-3 p-2">
           {lessons.map((lesson) => (
             <Card
               key={lesson?.lessonID || Math.random()}
