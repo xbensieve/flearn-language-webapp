@@ -10,8 +10,9 @@ import {
   PlusOutlined,
   CheckCircleOutlined,
   UserOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
-import { BookOpenText, School } from 'lucide-react';
+import { BookOpenText, School, ChevronDown } from 'lucide-react';
 
 const TeacherLayout: React.FC = () => {
   const location = useLocation();
@@ -26,143 +27,127 @@ const TeacherLayout: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950">
-        <Typography.Text className="text-white text-xl">Failed to load profile</Typography.Text>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Typography.Text className="text-red-600">Failed to load profile</Typography.Text>
       </div>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950">
-        <Spin size="large" tip={<span className="text-white">Entering Flearn...</span>} />
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <Spin size="large" tip="Loading Flearn..." />
       </div>
     );
   }
 
-  return (
-    <div className="flex h-screen bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 overflow-hidden relative">
-      {/* Animated Blue Orbs - Subtle & Elegant */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-10 left-10 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-32 right-20 w-80 h-80 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-15 animate-pulse delay-700"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-sky-600 rounded-full mix-blend-screen filter blur-3xl opacity-10 animate-ping"></div>
-      </div>
+  const navItems = [
+    { to: '', icon: DashboardOutlined, label: 'Dashboard' },
+    { to: '/course', icon: BookOutlined, label: 'Courses' },
+    { to: '/classes', icon: School, label: 'Classes' },
+    { to: '/course/create', icon: PlusOutlined, label: 'Create Course' },
+    { to: '/status', icon: CheckCircleOutlined, label: 'Status' },
+  ];
 
+  return (
+    <div className="flex h-screen bg-gray-50">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Unified Glass Sidebar + Header Connection */}
-      <div className="fixed inset-y-0 left-0 z-50 w-84 flex flex-col">
-        {/* Floating Glass Sidebar */}
-        <aside
-          className={`w-full h-full bg-white/12 backdrop-blur-3xl shadow-2xl border-white/20 transform transition-all duration-500 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-            } flex flex-col overflow-hidden`}
-        >
-          {/* Logo */}
-          <div className="p-8 bg-gradient-to-b from-white/25 to-transparent">
-            <div className="flex items-center space-x-5">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-tr from-cyan-400 to-blue-600 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative p-4 bg-white/20 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/40">
-                  <BookOpenText className="w-10 h-10 text-white drop-shadow-lg" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-4xl !mb-0 font-black text-white tracking-tighter drop-shadow-md">Flearn</h1>
-                <p className="text-sm !mb-0 text-cyan-200 font-light">Teacher Portal</p>
+      {/* White Sidebar - Exactly like Teach 2.0 */}
+      <aside
+        className={`fixed lg:relative inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          } flex flex-col`}
+      >
+        {/* Logo */}
+        <div className="p-8 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <BookOpenText className="w-8 h-8 text-white" />
               </div>
             </div>
-          </div>
-
-          {/* Navigation - Takes available space */}
-          <nav className="flex-1 px-6 py-10">
-            <ul className="space-y-4">
-              {[
-                { to: '', icon: DashboardOutlined, label: 'Dashboard' },
-                { to: '/course', icon: BookOutlined, label: 'My Courses' },
-                { to: '/classes', icon: School, label: 'My Classes' },
-                { to: '/course/create', icon: PlusOutlined, label: 'Create Course', accent: true },
-                { to: '/status', icon: CheckCircleOutlined, label: 'Status' },
-              ].map((item) => {
-                const Icon = item.icon;
-                const active = isActive(item.to);
-                return (
-                  <li key={item.to}>
-                    <Link
-                      to={`/teacher${item.to}`}
-                      onClick={() => setSidebarOpen(false)}
-                      className="group relative flex items-center px-6 py-5 rounded-2xl font-medium text-lg transition-all duration-300 overflow-hidden"
-                    >
-                      {/* Active Background */}
-                      {active && (
-                        <div className={`absolute inset-0 ${item.accent ? 'bg-gradient-to-r from-orange-500 to-pink-600' : 'bg-gradient-to-r from-cyan-500 to-blue-600'} rounded-2xl shadow-2xl blur-xl`}></div>
-                      )}
-                      {/* Hover Glow */}
-                      <div className="absolute inset-0 bg-white/10 scale-0 group-hover:scale-100 transition-transform duration-500 rounded-2xl"></div>
-
-                      <div className={`relative z-10 flex items-center space-x-4 ${active ? 'text-white drop-shadow-lg' : 'text-blue-200'} group-hover:text-white`}>
-                        <Icon className="w-7 h-7" />
-                        <span className="tracking-wide">{item.label}</span>
-                      </div>
-
-                      {/* Active Indicator */}
-                      {active && (
-                        <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-2xl animate-ping"></div>
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
-
-          {/* Teacher Motivation Card */}
-          <div className="px-6 pb-4">
-            <Link
-              to="/teacher/profile"
-              className="group relative flex items-center space-x-5 px-6 py-5 bg-white/20 backdrop-blur-3xl rounded-3xl border border-white/30 hover:bg-white/30 transition-all duration-300 shadow-2xl hover:shadow-cyan-500/50"
-            >
-              <div className="relative">
-                <Avatar
-                  size={56}
-                  icon={<UserOutlined />}
-                  className="bg-gradient-to-br from-cyan-400 to-blue-600 ring-4 ring-white/50 shadow-2xl"
-                />
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-black/50"></div>
-              </div>
-              <div className="flex-1">
-                <Typography.Text strong className="block text-white text-lg drop-shadow-md">
-                  {data?.data.username}
-                </Typography.Text>
-                <Typography.Text strong className="block text-white text-lg drop-shadow-md">
-                  {data?.data.email}
-                </Typography.Text>
-              </div>
-            </Link>
-          </div>
-        </aside>
-      </div>
-
-      {/* Main Content + Unified Header */}
-      <div className="flex-1 flex flex-col ml-0 md:ml-84 relative">
-        {/* CLEAN BACKGROUND — NO ORBS */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/30" />
-        <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl" />
-
-        {/* Content */}
-        <div className="relative overflow-y-auto  z-10 flex-1 flex flex-col">
-          <main className="flex-1 overflow-y-auto p-8">
-            <div className="max-w-7xl mx-auto">
-              <Outlet />
+            <div>
+              <h1 className="text-2xl !mb-0 font-bold text-gray-900">Teach 2.0</h1>
+              <p className="text-sm !mb-0 text-gray-500">Teacher Portal</p>
             </div>
-          </main>
+          </div>
         </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-6 py-6">
+          <ul className="space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.to);
+              return (
+                <li key={item.to}>
+                  <Link
+                    to={`/teacher${item.to}`}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-4 px-5 py-4 rounded-2xl text-base font-medium transition-all duration-200 group ${active
+                      ? 'bg-blue-50 text-blue-700 shadow-md'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                  >
+                    <Icon className={`w-5 h-5 ${active ? 'text-blue-700' : 'text-gray-500'}`} />
+                    <span>{item.label}</span>
+                    {item.to === '/course' && (
+                      <span className="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Profile Card - Bottom */}
+        <div className="p-6 border-t border-gray-100">
+          <Link
+            to="/teacher/profile"
+            className="flex items-center gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all duration-200 group"
+          >
+            <div className="relative">
+              <Avatar
+                size={48}
+                icon={<UserOutlined />}
+                className="bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg"
+              />
+              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {data?.data.username}
+              </p>
+              <p className="text-xs text-gray-500 truncate">{data?.data.email}</p>
+            </div>
+            <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-xl shadow-xl border border-gray-200"
+        >
+          <MenuOutlined className="text-xl text-gray-700" />
+        </button>
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-y-auto pt-20 lg:pt-8 pb-8 px-8">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
       </div>
     </div>
   );
