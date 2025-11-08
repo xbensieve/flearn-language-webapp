@@ -76,7 +76,7 @@ const MyCourses: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
+    <div className="min-h-screen bg-transparent py-10 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
@@ -85,7 +85,7 @@ const MyCourses: React.FC = () => {
             </div>
             <Title
               level={2}
-              className="!mb-0 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              className="!mb-0 !text-white bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text">
               My Courses
             </Title>
             <Badge
