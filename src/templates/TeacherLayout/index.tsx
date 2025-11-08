@@ -59,7 +59,6 @@ const TeacherLayout: React.FC = () => {
         />
       )}
 
-      {/* White Sidebar - Exactly like Teach 2.0 */}
       <aside
         className={`fixed lg:relative inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           } flex flex-col`}
@@ -73,7 +72,7 @@ const TeacherLayout: React.FC = () => {
               </div>
             </div>
             <div>
-              <h1 className="text-2xl !mb-0 font-bold text-gray-900">Teach 2.0</h1>
+              <h1 className="text-2xl !mb-0 font-bold text-gray-900">Flearn</h1>max-w-7xl mx-auto p-8
               <p className="text-sm !mb-0 text-gray-500">Teacher Portal</p>
             </div>
           </div>

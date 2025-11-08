@@ -194,7 +194,7 @@ const CreateCourse: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-8">
+      <div className="max-w-7xl mx-auto py-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Form */}
           <div className="xl:col-span-2">
