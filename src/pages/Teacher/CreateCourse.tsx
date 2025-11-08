@@ -15,11 +15,10 @@ import {
   Typography,
   Card,
   Progress,
-  Tabs,
   Space,
   Tag,
 } from 'antd';
-import { UploadOutlined, EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { createCourseService, getCourseTemplatesService } from '../../services/course';
 import { getTopicsService } from '../../services/topics';
@@ -32,7 +31,6 @@ import { UploadCloud, Sparkles, DollarSign, Calendar, ChevronRight } from 'lucid
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
-const { TabPane } = Tabs;
 
 interface CourseFormValues {
   title: string;
@@ -174,23 +172,6 @@ const CreateCourse: React.FC = () => {
           <Button type="primary" icon={<EyeOutlined />} size="large" className="bg-blue-600 hover:bg-blue-700">
             Preview
           </Button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto">
-          <Tabs defaultActiveKey="landing" className="!px-8">
-            <TabPane
-              tab={
-                <span className="flex items-center gap-2">
-                  <UploadOutlined />
-                  Course Landing
-                </span>
-              }
-              key="landing"
-            />
-          </Tabs>
         </div>
       </div>
 
