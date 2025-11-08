@@ -22,7 +22,6 @@ import {
     Drawer,
 } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import {
     EyeOutlined,
     LoadingOutlined,
@@ -59,7 +58,7 @@ const statusColors: Record<string, string> = {
 };
 
 const RefundAdminPage: React.FC = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [status, setStatus] = useState<string>('');
     const [selectedRefund, setSelectedRefund] = useState<RefundRequest | null>(null);
@@ -167,10 +166,6 @@ const RefundAdminPage: React.FC = () => {
             .catch(() => {
                 message.warning('Vui lòng điền đầy đủ thông tin!');
             });
-    };
-
-    const formattedDate = (dateString: string) => {
-        return (new Date(dateString));
     };
 
     if (isLoading) {
