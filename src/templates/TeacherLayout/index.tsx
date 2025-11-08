@@ -72,7 +72,7 @@ const TeacherLayout: React.FC = () => {
               </div>
             </div>
             <div>
-              <h1 className="text-2xl !mb-0 font-bold text-gray-900">Flearn</h1>max-w-7xl mx-auto p-8
+              <h1 className="text-2xl !mb-0 font-bold text-gray-900">Flearn</h1>
               <p className="text-sm !mb-0 text-gray-500">Teacher Portal</p>
             </div>
           </div>
