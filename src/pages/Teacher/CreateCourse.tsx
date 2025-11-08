@@ -185,11 +185,11 @@ const CreateCourse: React.FC = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl rounded-full px-6 py-3 border border-white/20">
             <Sparkles className="w-8 h-8 text-cyan-400" />
-            <Title level={2} className="!text-white !m-0 font-black tracking-tight">
+            <Title level={2} className="!m-0 font-black tracking-tight">
               Launch Your Masterpiece
             </Title>
           </div>
-          <Text className="!text-white text-lg block mt-3">
+          <Text className="text-lg block mt-3">
             Craft a course that inspires thousands
           </Text>
         </div>
@@ -352,12 +352,12 @@ const CreateCourse: React.FC = () => {
           {/* Live Preview */}
           <div className="xl:col-span-1">
             <div className="sticky top-8">
-              <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-6 border border-white/20 mb-6">
+              <div className="bg-white backdrop-blur-3xl rounded-3xl p-6 borde mb-6">
                 <div className="flex items-center gap-3">
                   <Eye className="w-8 h-8 text-cyan-400" />
                   <div>
-                    <Title level={4} className="!text-white !m-0">Live Preview</Title>
-                    <Text className="!text-blue-200">See it come to life</Text>
+                    <Title level={4} className="!m-0">Live Preview</Title>
+                    <Text className="!text-blue-500">See it come to life</Text>
                   </div>
                 </div>
               </div>

@@ -116,7 +116,7 @@ const CourseDetail: React.FC = () => {
 
   // --- Render ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 py-10 px-4">
+    <div className="min-h-screen bg-transparent py-10 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between bg-white rounded-t-2xl p-6 shadow-sm border border-gray-100">
@@ -133,7 +133,7 @@ const CourseDetail: React.FC = () => {
             <Title
               level={2}
               className="!mb-0 !text-gray-800 flex items-center gap-2">
-              Course Builder
+              Course
             </Title>
           </div>
           <Tooltip title="Edit course overview">

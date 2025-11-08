@@ -145,7 +145,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, index }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
+    <div className="bg-transparent py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Add Exercise Button */}
         {index === 0 && <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">

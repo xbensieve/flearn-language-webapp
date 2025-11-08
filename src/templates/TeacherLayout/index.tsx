@@ -61,11 +61,11 @@ const TeacherLayout: React.FC = () => {
       <div className="fixed inset-y-0 left-0 z-50 w-84 flex flex-col">
         {/* Floating Glass Sidebar */}
         <aside
-          className={`w-full h-full bg-white/12 backdrop-blur-3xl shadow-2xl border-r border-white/20 transform transition-all duration-500 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-            } flex flex-col rounded-r-3xl overflow-hidden`}
+          className={`w-full h-full bg-white/12 backdrop-blur-3xl shadow-2xl border-white/20 transform transition-all duration-500 ease-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+            } flex flex-col overflow-hidden`}
         >
           {/* Logo */}
-          <div className="p-8 bg-gradient-to-b from-white/25 to-transparent border-b border-white/10">
+          <div className="p-8 bg-gradient-to-b from-white/25 to-transparent">
             <div className="flex items-center space-x-5">
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-tr from-cyan-400 to-blue-600 blur-2xl opacity-70 group-hover:opacity-100 transition-opacity"></div>
@@ -74,8 +74,8 @@ const TeacherLayout: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-black text-white tracking-tighter drop-shadow-md">Flearn</h1>
-                <p className="text-sm text-cyan-200 font-light">Teacher Portal</p>
+                <h1 className="text-4xl !mb-0 font-black text-white tracking-tighter drop-shadow-md">Flearn</h1>
+                <p className="text-sm !mb-0 text-cyan-200 font-light">Teacher Portal</p>
               </div>
             </div>
           </div>
@@ -150,14 +150,19 @@ const TeacherLayout: React.FC = () => {
       </div>
 
       {/* Main Content + Unified Header */}
-      <div className="flex-1 flex flex-col ml-0 md:ml-84">
+      <div className="flex-1 flex flex-col ml-0 md:ml-84 relative">
+        {/* CLEAN BACKGROUND — NO ORBS */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-cyan-50/30" />
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl" />
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
-          </div>
-        </main>
+        {/* Content */}
+        <div className="relative overflow-y-auto  z-10 flex-1 flex flex-col">
+          <main className="flex-1 overflow-y-auto p-8">
+            <div className="max-w-7xl mx-auto">
+              <Outlet />
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );

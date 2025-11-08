@@ -85,7 +85,7 @@ const MyCourses: React.FC = () => {
             </div>
             <Title
               level={2}
-              className="!mb-0 !text-white bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text">
+              className="!mb-0 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text">
               My Courses
             </Title>
             <Badge

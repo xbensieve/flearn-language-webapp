@@ -257,7 +257,7 @@ const CourseDetailView: React.FC = () => {
   const course = courseData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
+    <div className="min-h-screen bg-transparent py-10 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center bg-white rounded-t-2xl p-6 border-gray-100">
@@ -315,15 +315,15 @@ const CourseDetailView: React.FC = () => {
                 )}
                 {(course?.courseStatus?.toLowerCase() === 'draft' ||
                   course?.courseStatus?.toLowerCase() === 'rejected') && (
-                  <Tooltip title="Edit course details">
-                    <Button
-                      icon={<EditOutlined />}
-                      onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
-                      className="rounded-xl border-gray-300 hover:border-indigo-400 transition-colors">
-                      Edit
-                    </Button>
-                  </Tooltip>
-                )}
+                    <Tooltip title="Edit course details">
+                      <Button
+                        icon={<EditOutlined />}
+                        onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
+                        className="rounded-xl border-gray-300 hover:border-indigo-400 transition-colors">
+                        Edit
+                      </Button>
+                    </Tooltip>
+                  )}
               </div>
             )}
           </div>
