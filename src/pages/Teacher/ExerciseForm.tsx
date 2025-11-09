@@ -40,7 +40,7 @@ interface Props {
 
 const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
   const [form] = Form.useForm();
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string[] | null>(null);
   const createExercise = useCreateExercise(lessonId);
 
   // Pre-fill form for editing
@@ -58,9 +58,20 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         passScore: exercise.passScore,
         feedbackCorrect: exercise.feedbackCorrect,
         feedbackIncorrect: exercise.feedbackIncorrect,
-        media: exercise.mediaUrl ? [{ url: exercise.mediaUrl, status: 'done' }] : undefined,
+        media: exercise.mediaUrls
+          ? exercise.mediaUrls.map((url: string) => ({
+            url,
+            name: url.split('/').pop() || 'audio.mp3',
+            status: 'done',
+            uid: '-1',
+          }))
+          : undefined,
       });
-      setMediaPreview(exercise.mediaUrl);
+
+      // Set preview as array
+      if (exercise.mediaUrls && exercise.mediaUrls.length > 0) {
+        setMediaPreview(exercise.mediaUrls);
+      }
     } else {
       form.resetFields();
       setMediaPreview(null);
@@ -93,10 +104,13 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     });
   };
 
-  const handleMediaChange = ({ file }: any) => {
-    if (file) {
-      const url = URL.createObjectURL(file.originFileObj);
-      setMediaPreview(url);
+  const handleMediaChange = ({ fileList }: any) => {
+    if (fileList.length > 0) {
+      const file = fileList[0].originFileObj;
+      if (file) {
+        const url = URL.createObjectURL(file);
+        setMediaPreview([url]); // Always an array
+      }
     } else {
       setMediaPreview(null);
     }
@@ -449,20 +463,22 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                     </Button>
                   </Upload>
                 </Form.Item>
-                {mediaPreview && (
-                  <div className="mt-4 p-4 bg-white rounded-xl shadow-sm">
-                    <Text
-                      strong
-                      className="block mb-2">
-                      Audio Preview:
-                    </Text>
-                    <audio
-                      src={mediaPreview}
-                      controls
-                      className="w-full rounded-lg"
-                    />
-                  </div>
-                )}
+                {mediaPreview &&
+                  mediaPreview.map((mediaPreview) => (
+                    <div className="mt-4 p-4 bg-white rounded-xl shadow-sm">
+                      <Text
+                        strong
+                        className="block mb-2">
+                        Audio Preview:
+                      </Text>
+                      <audio
+                        src={mediaPreview}
+                        controls
+                        className="w-full rounded-lg"
+                      />
+                    </div>
+                  ))
+                }
               </Panel>
             </Collapse>
 

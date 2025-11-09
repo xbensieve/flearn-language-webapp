@@ -331,7 +331,7 @@ export interface ExerciseData {
   hints: string;
   content: string;
   expectedAnswer: string;
-  mediaUrl: string;
+  mediaUrls: string[];
   mediaPublicId: string;
   position: number;
   exerciseType: string;

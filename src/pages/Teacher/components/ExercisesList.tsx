@@ -151,41 +151,41 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                 actions={
                   readonly
                     ? [
-                        <Tooltip title="Preview">
-                          <Button
-                            type="link"
-                            icon={<EyeOutlined />}
-                            onClick={() => {
-                              handleOpenDrawer(exercise, 'preview');
-                              onPreview?.(exercise);
-                            }}
-                          />
-                        </Tooltip>,
-                      ]
+                      <Tooltip title="Preview">
+                        <Button
+                          type="link"
+                          icon={<EyeOutlined />}
+                          onClick={() => {
+                            handleOpenDrawer(exercise, 'preview');
+                            onPreview?.(exercise);
+                          }}
+                        />
+                      </Tooltip>,
+                    ]
                     : [
-                        <Tooltip title="Preview">
-                          <EyeOutlined
-                            onClick={() => {
-                              handleOpenDrawer(exercise, 'preview');
-                              onPreview?.(exercise);
-                            }}
-                            className="text-blue-500 hover:text-blue-600 transition-colors"
-                          />
-                        </Tooltip>,
-                        <Tooltip title="Edit">
-                          <EditOutlined
-                            onClick={() => handleOpenDrawer(exercise, 'edit')}
-                            className="text-amber-500 hover:text-amber-600 transition-colors"
-                          />
-                        </Tooltip>,
-                        <Tooltip title="Delete">
-                          <DeleteOutlined
-                            onClick={() => handleDelete(exercise.exerciseID)}
-                            className="text-rose-500 hover:text-rose-600 transition-colors"
-                            spin={isDeleting}
-                          />
-                        </Tooltip>,
-                      ]
+                      <Tooltip title="Preview">
+                        <EyeOutlined
+                          onClick={() => {
+                            handleOpenDrawer(exercise, 'preview');
+                            onPreview?.(exercise);
+                          }}
+                          className="text-blue-500 hover:text-blue-600 transition-colors"
+                        />
+                      </Tooltip>,
+                      <Tooltip title="Edit">
+                        <EditOutlined
+                          onClick={() => handleOpenDrawer(exercise, 'edit')}
+                          className="text-amber-500 hover:text-amber-600 transition-colors"
+                        />
+                      </Tooltip>,
+                      <Tooltip title="Delete">
+                        <DeleteOutlined
+                          onClick={() => handleDelete(exercise.exerciseID)}
+                          className="text-rose-500 hover:text-rose-600 transition-colors"
+                          spin={isDeleting}
+                        />
+                      </Tooltip>,
+                    ]
                 }>
                 {/* Header */}
                 <div className="flex justify-between items-start mb-2">
@@ -202,9 +202,9 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                       <Tag color="orange">{exercise.difficulty}</Tag>
                     </Space>
                   </div>
-                  {exercise.mediaUrl && (
+                  {exercise.mediaUrls && (
                     <Tooltip title="This exercise has media">
-                      {exercise.mediaUrl.includes('mp3') ? (
+                      {exercise.mediaUrls.includes('mp3') ? (
                         <div className="bg-blue-100 p-1.5 rounded-full">
                           <SoundOutlined className="text-blue-600 text-lg" />
                         </div>
@@ -262,20 +262,15 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
           <>
             {drawerMode === 'preview' ? (
               <div>
-                {selectedExercise.mediaUrl && (
-                  <div className="mt-4 mb-4 p-4 bg-white rounded-xl shadow-sm">
-                    <Text
-                      strong
-                      className="block mb-2">
-                      Audio Preview:
-                    </Text>
-                    <audio
-                      src={selectedExercise.mediaUrl}
-                      controls
-                      className="w-full rounded-lg"
-                    />
-                  </div>
-                )}
+                {selectedExercise.mediaUrls && selectedExercise.mediaUrls.length > 0 &&
+                  selectedExercise.mediaUrls.map((mediaUrl, index) => (
+                    <div key={index} className="mb-4">
+                      <audio controls>
+                        <source src={mediaUrl} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    </div>
+                  ))}
                 <Descriptions
                   bordered
                   column={1}>
