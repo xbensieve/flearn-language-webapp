@@ -76,12 +76,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       Content: values.content,
       ExpectedAnswer: values.expectedAnswer,
       Difficulty: values.difficulty,
-      Type: undefined,
+      Type: 1,
       MaxScore: Number(values.maxScore) || 0,
       PassScore: Number(values.passScore) || 0,
       FeedbackCorrect: values.feedbackCorrect,
       FeedbackIncorrect: values.feedbackIncorrect,
-      MediaFile: values.media?.file,
+      MediaFiles: values.media?.file,
     };
 
     createExercise.mutate(payload, {
@@ -161,7 +161,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                             size={16}
                             className="text-gray-600"
                           />
-                         Title
+                          Title
                         </span>
                       }
                       rules={[{ required: true, message: 'Please enter a title' }]}>
@@ -312,9 +312,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                         }
                         options={[
-                          { label: 'Easy', value: 'easy' },
-                          { label: 'Medium', value: 'medium' },
-                          { label: 'Hard', value: 'hard' },
+                          { label: 'Easy', value: 1 },
+                          { label: 'Medium', value: 2 },
+                          { label: 'Hard', value: 3 },
                         ]}
                       />
                     </Form.Item>
@@ -423,13 +423,15 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
                 <Form.Item
                   name="media"
+                  required
+                  rules={[{ required: true, message: 'media file is required' }]}
                   label={
                     <span className="flex items-center gap-2">
                       <ImageIcon
                         size={16}
                         className="text-gray-600"
                       />
-                      Media File (Optional)
+                      Media File
                     </span>
                   }
                   valuePropName="file">

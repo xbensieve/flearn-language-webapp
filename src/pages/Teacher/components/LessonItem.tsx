@@ -44,11 +44,10 @@ const { TabPane } = Tabs;
 
 interface Props {
   lesson: Lesson;
-  index: number;
   onUpdated: () => void;
 }
 
-const LessonItem: React.FC<Props> = ({ lesson, onUpdated, index }) => {
+const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [exerciseDrawerVisible, setExerciseDrawerVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
@@ -148,7 +147,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, index }) => {
     <div className="bg-transparent py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Add Exercise Button */}
-        {index === 0 && <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
+        {<div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
           <div className="flex justify-end items-center">
             <Tooltip title="Add an interactive exercise to this lesson">
               <Button

@@ -21,8 +21,8 @@ const LessonsList: React.FC<{ unit: Unit }> = ({ unit }) => {
 
   return (
     <div className='flex flex-col gap-3'>
-      {lessons.map((lesson, index) => (
-        <LessonItem key={lesson.lessonID} index={index} lesson={lesson} onUpdated={refetch} />
+      {lessons.map((lesson) => (
+        <LessonItem key={lesson.lessonID} lesson={lesson} onUpdated={refetch} />
       ))}
     </div>
   );

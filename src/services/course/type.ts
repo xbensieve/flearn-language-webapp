@@ -79,7 +79,7 @@ export interface CreateCourseRequest {
   title: string;
   description: string;
   learningOutcome: string;
-  image: File;            // string($binary) → File trong FE
+  image?: File;            // string($binary) → File trong FE
   topicIds: string[];     // string → sẽ gửi dạng array
   price: string;
   courseType: string;
@@ -299,9 +299,9 @@ export interface ExercisePayload {
   Hints?: string;
   Content?: string;
   ExpectedAnswer?: string;
-  MediaFile?: File;
+  MediaFiles?: File;
   MediaFileString?: string;
-  Type?: string;
+  Type?: number;
   Difficulty?: string;
   MaxScore?: number;
   PassScore?: number;
@@ -316,7 +316,7 @@ export interface Exercise {
   prompt: string;
   content?: string;
   type: string;
-  difficulty?: string;
+  difficulty?: number;
   maxScore?: number;
   passScore?: number;
   feedbackCorrect?: string;

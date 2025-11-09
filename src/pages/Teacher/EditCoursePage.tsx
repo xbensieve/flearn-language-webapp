@@ -3,20 +3,21 @@ import React, { useEffect, useState } from 'react';
 import {
   Form,
   Input,
+  InputNumber,
   Select,
   Upload,
   Button,
-  Card,
   Row,
   Col,
+  Card,
+  Space,
+  Tag,
   Switch,
   Spin,
-  InputNumber,
-  Tooltip,
   Typography,
-  List,
+  message,
 } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
@@ -24,42 +25,56 @@ import {
   getCourseTemplatesService,
   updateCourseService,
 } from '../../services/course';
-import { getLanguages } from '../../services/teacherApplication';
-import type { Topic } from '../../services/topics/type';
-import type { CourseTemplate } from '../../services/course/type';
-import type { AxiosError } from 'axios';
 import { getTopicsService } from '../../services/topics';
-import {
-  ArrowLeft,
-  BookOpen,
-  Check,
-  DollarSign,
-  Edit,
-  FileText,
-  Globe,
-  ImageIcon,
-  Lightbulb,
-  Settings,
-  Sparkles,
-  Target,
-  Users,
-  Info,
-  Sparkles as SparklesIcon,
-} from 'lucide-react';
+import type { Topic } from '../../services/topics/type';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
+import { UploadCloud, Sparkles, DollarSign, Calendar, ArrowLeft } from 'lucide-react';
+import type { UploadFile } from 'antd';
+import type { CreateCourseRequest } from '../../services/course/type';
 
-const { Option } = Select;
 const { Title, Text } = Typography;
+const { TextArea } = Input;
+
+interface CourseFormValues {
+  title: string;
+  description: string;
+  templateId: string;
+  topicIds: string[];
+  courseType: number;
+  price?: number;
+  learningOutcome?: string;
+  durationDays?: number;
+  gradingType?: string;
+}
+
+const courseTypes = [
+  { value: 1, label: 'Free Course' },
+  { value: 2, label: 'Paid Course' },
+];
+
+const gradingType = [
+  { value: '1', label: 'AI' },
+  { value: '2', label: 'AI and Teacher' },
+];
 
 const EditCoursePage: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [form] = Form.useForm();
-
+  const [form] = Form.useForm<CourseFormValues>();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [formValues, setFormValues] = useState<Partial<CourseFormValues>>({});
   const [removeImage, setRemoveImage] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
 
-  // --- Queries ---
+  // Watch individual fields for live preview
+  const watchedTitle = Form.useWatch('title', form);
+  const watchedDescription = Form.useWatch('description', form);
+  const watchedPrice = Form.useWatch('price', form);
+  const watchedTopicIds = Form.useWatch('topicIds', form);
+  const watchedCourseType = Form.useWatch('courseType', form);
+
+  const courseType = watchedCourseType ?? formValues.courseType ?? 1;
+
+  // Queries
   const { data: course, isLoading: loadingCourse } = useQuery({
     queryKey: ['course', courseId],
     queryFn: () => getCourseDetailService(courseId!),
@@ -69,6 +84,7 @@ const EditCoursePage: React.FC = () => {
   const { data: templates, isLoading: templatesLoading } = useQuery({
     queryKey: ['courseTemplates'],
     queryFn: () => getCourseTemplatesService(),
+    select: (data) => data.data,
   });
 
   const { data: topics, isLoading: topicsLoading } = useQuery({
@@ -76,551 +92,334 @@ const EditCoursePage: React.FC = () => {
     queryFn: getTopicsService,
   });
 
-  const { data: languages, isLoading: languagesLoading } = useQuery({
-    queryKey: ['languages'],
-    queryFn: getLanguages,
-  });
-
   const updateMutation = useMutation({
-    mutationFn: (payload: FormData) => updateCourseService({ id: courseId!, payload }),
+    mutationFn: (payload: CreateCourseRequest) =>
+      updateCourseService({ id: courseId!, payload }),
     onSuccess: () => {
-      notifySuccess('Course updated successfully');
+      notifySuccess('Course updated successfully!');
       navigate(`/teacher/course/${courseId}`);
     },
-    onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || 'Failed to update course');
+    onError: (err: any) => {
+      notifyError(err.response?.data?.message || 'Failed to update course');
     },
   });
 
-  // --- Watchers ---
-  const watchedType = Form.useWatch('type', form);
-
-  // Optional: reset dependent fields when type changes
-  useEffect(() => {
-    if (watchedType) {
-      form.setFieldsValue({ level: undefined, goalId: undefined });
-    }
-  }, [watchedType]);
-
-  // --- Prefill form from backend ---
+  // Prefill form + initial formValues
   useEffect(() => {
     if (course) {
-      form.setFieldsValue({
+      const values: CourseFormValues = {
         title: course.title,
         description: course.description,
-        price: course.price,
-        discountPrice: course.discountPrice,
         templateId: course.templateId,
-        language: course.language,
-        type: course.courseType,
-        topics: course.topics?.map((t: Topic) => t.topicId),
-      });
-      setCurrentImage(course.imageUrl);
+        topicIds: course.topics?.map((t: Topic) => t.topicId.toString()) || [],
+        courseType: Number(course.courseType) || 1,
+        price: course.price,
+        learningOutcome: course.learningOutcome || '',
+        durationDays: course.durationDays || 30,
+        gradingType: course.gradingType?.toString() || '1',
+      };
+
+      form.setFieldsValue(values);
+      setFormValues(values);
+
+      if (course.imageUrl) {
+        setFileList([
+          {
+            uid: '-1',
+            name: 'current-image.jpg',
+            status: 'done',
+            url: course.imageUrl,
+          },
+        ]);
+      }
     }
   }, [course, form]);
 
-  // --- Submit ---
-  const handleFinish = (formValues: any) => {
-    if (!course) return;
+  // Sync watched fields → formValues for live preview
+  useEffect(() => {
+    setFormValues((prev) => ({
+      ...prev,
+      title: watchedTitle ?? prev.title,
+      description: watchedDescription ?? prev.description,
+      price: watchedPrice ?? prev.price,
+      topicIds: watchedTopicIds ?? prev.topicIds,
+      courseType: watchedCourseType ?? prev.courseType,
+    }));
+  }, [watchedTitle, watchedDescription, watchedPrice, watchedTopicIds, watchedCourseType]);
 
-    const payload = new FormData();
+  const uploadProps = {
+    onRemove: () => {
+      setFileList([]);
+      setRemoveImage(true);
+      return true;
+    },
+    beforeUpload: (file: any) => {
+      const isImage = file.type.startsWith('image/');
+      if (!isImage) {
+        message.error('Only image files allowed!');
+        return false;
+      }
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        message.error('Image must be smaller than 10MB!');
+        return false;
+      }
+      setFileList([file]);
+      setRemoveImage(false);
+      return false;
+    },
+    fileList,
+  };
 
-    // ✅ Basic fields (same pattern as CreateCourseRequest)
-    payload.append('Title', formValues.title || course.title);
-    payload.append('Description', formValues.description || course.description);
-    payload.append('TemplateId', formValues.templateId || course.templateId);
-    payload.append('Price', formValues?.price?.toString() || course.price?.toString() || '0');
-    payload.append(
-      'DiscountPrice',
-      formValues?.discountPrice?.toString() || course.discountPrice?.toString() || '0'
-    );
-    payload.append(
-      'Type',
-      formValues?.courseType?.toString() || course.courseType?.toString() || ''
-    );
+  const onFinish = (values: CourseFormValues) => {
+    const newFile = fileList[0] as unknown as File;
+    console.log(newFile);
 
-    // ✅ Topics (same as CreateCourseRequest topicIds)
-    const topicIds = formValues.topics || course.topics?.map((t: any) => t.topicId) || [];
-    topicIds.forEach((id: number) => payload.append('TopicIds', id.toString()));
-
-    // ✅ Image rules (same as your create request logic)
-    if (removeImage) {
-      payload.append('RemoveImage', 'true');
-    } else if (formValues.image?.file) {
-      payload.append('Image', formValues.image.file as File);
-    }
+    const payload: CreateCourseRequest = {
+      title: values.title || course?.title || '',
+      description: values.description || course?.description || '',
+      templateId: values.templateId || course?.templateId || '',
+      topicIds: values.topicIds.length > 0
+        ? values.topicIds
+        : course?.topics?.map((t: Topic) => t.topicId.toString()) || [],
+      courseType: (values.courseType ?? course?.courseType ?? 1).toString(),
+      price: (values.price ?? course?.price ?? 0).toString(),
+      image: newFile,
+      learningOutcome: values.learningOutcome || course?.learningOutcome || '',
+      durationDays: values.durationDays ?? course?.durationDays ?? 30,
+      gradingType: values.gradingType ?? course?.gradingType?.toString() ?? '1',
+    };
 
     updateMutation.mutate(payload);
   };
 
-  if (loadingCourse) {
-    return (
-      <div className="flex justify-center py-20">
-        <Spin size="large" />
-      </div>
-    );
-  }
-
+  if (loadingCourse) return <div className="flex justify-center py-20"><Spin size="large" /></div>;
   if (!course) return <div>No course found.</div>;
 
-  // Tips content
-  const tips = [
-    {
-      icon: Lightbulb,
-      title: 'Craft a Killer Title',
-      description:
-        'Keep it under 60 characters—focus on benefits like "Master Python in 30 Days" to boost clicks!',
-    },
-    {
-      icon: SparklesIcon,
-      title: 'Engage with Descriptions',
-      description:
-        'Start with a hook: "Transform your skills..." Use bullet points for outcomes. Aim for 150-200 words.',
-    },
-    {
-      icon: DollarSign,
-      title: 'Smart Pricing Strategy',
-      description:
-        'Value-based? $49 for beginners, $99 for pros. Test discounts—20% off can increase conversions by 25%.',
-    },
-    {
-      icon: Target,
-      title: 'Template Magic',
-      description:
-        'Pick one that matches your style—pre-built lessons save hours. Customize freely later!',
-    },
-  ];
-
-  // --- JSX ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        <Row gutter={24}>
-          {/* Left: Form */}
-          <Col span={16}>
-            <Card
-              className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden h-fit"
-              title={
-                <div className="flex items-center gap-3">
-                  <Tooltip title="Back to course overview">
-                    <Button
-                      onClick={() => navigate(-1)}
-                      type="default"
-                      className="rounded-xl shadow-sm border-gray-200 hover:border-sky-300 transition-all flex items-center gap-1">
-                      <ArrowLeft size={16} />
-                      Back
-                    </Button>
-                  </Tooltip>
-                  <div className="flex items-center gap-2">
-                    <Edit
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Title
-                      level={2}
-                      className="!mb-0 text-gray-800">
-                      Edit Course
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-8 py-6 shadow-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button onClick={() => navigate(-1)} type="text">
+              <ArrowLeft size={20} />
+            </Button>
+            <Title level={3} className="!mb-0 text-gray-900">Edit Course</Title>
+          </div>
+          <Button type="primary" icon={<EyeOutlined />} size="large">
+            Preview
+          </Button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Form */}
+          <div className="xl:col-span-2">
+            <Card className="bg-white rounded-2xl shadow-lg border-0">
+              <Form form={form} onFinish={onFinish} layout="vertical" className="p-8">
+                <div className="space-y-8">
+                  {/* Title */}
+                  <div>
+                    <Title level={2} className="flex items-center gap-4 !mb-6">
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                        {formValues.title?.[0] || 'C'}
+                      </div>
+                      <Form.Item name="title" noStyle rules={[{ required: true }]}>
+                        <Input
+                          bordered={false}
+                          placeholder="Enter your course title..."
+                          className="text-4xl font-bold !p-0 hover:bg-gray-50 rounded-xl"
+                          style={{ fontSize: '2.5rem', fontWeight: 700 }}
+                        />
+                      </Form.Item>
                     </Title>
                   </div>
-                </div>
-              }>
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleFinish}
-                className="space-y-6">
-                {/* Template */}
-                <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Settings
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Text
-                      strong
-                      className="text-sky-800">
-                      Course Template
-                    </Text>
-                  </div>
-                  <Form.Item
-                    label={
-                      <span className="flex items-center gap-2">
-                        <BookOpen
-                          size={16}
-                          className="text-gray-600"
-                        />
-                        Select Template
-                      </span>
-                    }
-                    name="templateId"
-                    rules={[{ required: true, message: 'Template is required' }]}>
-                    <Select
-                      placeholder="Choose a pre-built structure"
-                      loading={templatesLoading}
-                      allowClear
-                      suffixIcon={
-                        <Settings
-                          size={16}
-                          className="text-gray-400"
-                        />
-                      }>
-                      {templates?.data?.map((tpl: CourseTemplate) => (
-                        <Option
-                          key={tpl.templateId}
-                          value={tpl.templateId}>
-                          {tpl.name}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </div>
-                {/* Basic Info */}
-                <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Lightbulb
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Text
-                      strong
-                      className="text-sky-800">
-                      Basic Information
-                    </Text>
-                  </div>
-                  <Form.Item
-                    label={
-                      <span className="flex items-center gap-2">
-                        <BookOpen
-                          size={16}
-                          className="text-gray-600"
-                        />
-                        Course Title
-                      </span>
-                    }
-                    name="title"
-                    rules={[{ required: true, message: 'Please enter course title' }]}>
-                    <Input
-                      placeholder="e.g., Mastering Business English"
-                      prefix={
-                        <BookOpen
-                          size={16}
-                          className="text-gray-400"
-                        />
-                      }
-                    />
-                  </Form.Item>
 
-                  <Form.Item
-                    label={
-                      <span className="flex items-center gap-2">
-                        <FileText
-                          size={16}
-                          className="text-gray-600"
-                        />
-                        Description
-                      </span>
-                    }
-                    name="description"
-                    rules={[{ required: true, message: 'Please enter course description' }]}>
-                    <Input.TextArea
-                      rows={3}
-                      placeholder="What will learners gain? Highlight key benefits..."
-                    />
-                  </Form.Item>
-                </div>
-                {/* Pricing */}
-                <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <DollarSign
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Text
-                      strong
-                      className="text-sky-800">
-                      Pricing
-                    </Text>
-                  </div>
                   <Row gutter={16}>
                     <Col span={12}>
-                      <Form.Item
-                        label={
-                          <span className="flex items-center gap-2">
-                            <DollarSign
-                              size={16}
-                              className="text-gray-600"
-                            />
-                            Price (VNĐ)
-                          </span>
-                        }
-                        name="price"
-                        rules={[{ required: true, message: 'Please enter price' }]}>
-                        <InputNumber
-                          min={0}
-                          placeholder="e.g., 1,000,000"
-                          formatter={(value) =>
-                            value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
-                          }
-                          prefix={
-                            <DollarSign
-                              size={16}
-                              className="text-gray-400"
-                            />
-                          }
-                          style={{ width: '100%' }}
-                        />
+                      <Form.Item name="topicIds" label="Topics" rules={[{ required: true }]}>
+                        <Select mode="multiple" placeholder="Select topics" loading={topicsLoading}>
+                          {topics?.data?.map((t: Topic) => (
+                            <Select.Option key={t.topicId} value={t.topicId.toString()}>
+                              {t.topicName}
+                            </Select.Option>
+                          ))}
+                        </Select>
                       </Form.Item>
                     </Col>
                     <Col span={12}>
-                      <Form.Item
-                        label={
-                          <span className="flex items-center gap-2">
-                            <Sparkles
-                              size={16}
-                              className="text-sky-500"
-                            />
-                            Discount Price (VNĐ, optional)
-                          </span>
-                        }
-                        name="discountPrice">
-                        <InputNumber
-                          min={0}
-                          placeholder="e.g., 800,000"
-                          formatter={(value) =>
-                            value ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ₫' : ''
-                          }
-                          prefix={
-                            <DollarSign
-                              size={16}
-                              className="text-gray-400"
-                            />
-                          }
-                          style={{ width: '100%' }}
-                        />
+                      <Form.Item name="templateId" label="Template" rules={[{ required: true }]}>
+                        <Select placeholder="Select template" loading={templatesLoading}>
+                          {templates?.map((t: any) => (
+                            <Select.Option key={t.templateId} value={t.templateId}>
+                              {t.name}
+                            </Select.Option>
+                          ))}
+                        </Select>
                       </Form.Item>
                     </Col>
                   </Row>
-                </div>
-                {/* Course Type */}
-                <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Users
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Text
-                      strong
-                      className="text-sky-800">
-                      Course Type
-                    </Text>
-                  </div>
-                  <Form.Item
-                    label={
-                      <span className="flex items-center gap-2">
-                        <Users
-                          size={16}
-                          className="text-gray-600"
-                        />
-                        Type
-                      </span>
-                    }
-                    name="type"
-                    rules={[{ required: true, message: 'Please select course type' }]}>
-                    <Select
-                      placeholder="Select type"
-                      suffixIcon={
-                        <Users
-                          size={16}
-                          className="text-gray-400"
-                        />
-                      }>
-                      <Option value="1">Basic</Option>
-                      <Option value="2">Advanced</Option>
+
+                  <Form.Item name="courseType" label="Type" rules={[{ required: true }]}>
+                    <Select>
+                      {courseTypes.map((ct) => (
+                        <Select.Option key={ct.value} value={ct.value}>
+                          <Space>
+                            {ct.value === 1 ? <Sparkles className="w-4 h-4 text-green-500" /> : <DollarSign className="w-4 h-4 text-blue-500" />}
+                            {ct.label}
+                          </Space>
+                        </Select.Option>
+                      ))}
                     </Select>
                   </Form.Item>
-                </div>
-                {/* Conditional Fields */}
-                {
-                  <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                    <Form.Item
-                      label={
-                        <span className="flex items-center gap-2">
-                          <Globe
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Language
-                        </span>
-                      }
-                      name="language"
-                      rules={[{ required: true, message: 'Language is required' }]}>
-                      <Select
-                        placeholder="Select language"
-                        loading={languagesLoading}
-                        suffixIcon={
-                          <Globe
-                            size={16}
-                            className="text-gray-400"
-                          />
-                        }
-                        options={languages?.data.map((lang) => ({
-                          value: lang.langCode,
-                          label: lang.langName,
-                        }))}
+
+                  <Form.Item name="description" label="Description" rules={[{ required: true }]}>
+                    <TextArea rows={6} placeholder="Write a compelling description..." className="rounded-xl" />
+                  </Form.Item>
+
+                  {courseType === 2 && (
+                    <Form.Item name="price" label="Price" rules={[{ required: true }]}>
+                      <InputNumber
+                        min={0}
+                        formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        className="w-full"
+                        placeholder="1,500,000"
+                        prefix="₫"
+                        style={{ fontSize: '1.5rem' }}
                       />
                     </Form.Item>
-                  </div>
-                }
-                <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                  <Form.Item
-                    label={
-                      <span className="flex items-center gap-2">
-                        <Target
-                          size={16}
-                          className="text-gray-600"
-                        />
-                        Topics
-                      </span>
-                    }
-                    name="topics"
-                    rules={[{ required: true, message: 'Select at least one topic' }]}>
-                    <Select
-                      mode="multiple"
-                      placeholder="Select topics"
-                      loading={topicsLoading}
-                      maxTagCount="responsive"
-                      suffixIcon={
-                        <Target
-                          size={16}
-                          className="text-gray-400"
-                        />
-                      }
-                      options={topics?.data.map((topic: Topic) => ({
-                        value: topic.topicId,
-                        label: topic.topicName,
-                      }))}
-                    />
-                  </Form.Item>
-                </div>
+                  )}
 
-                {/* Image */}
-                <div className="p-4 bg-sky-100 rounded-2xl border border-sky-200">
-                  <div className="flex items-center gap-2 mb-4">
-                    <ImageIcon
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Text
-                      strong
-                      className="text-sky-800">
-                      Course Image
-                    </Text>
-                  </div>
-                  {currentImage && !removeImage && (
-                    <div className="mb-4 p-4 bg-white rounded-xl shadow-sm">
-                      <img
-                        src={currentImage}
-                        alt="course"
-                        className="w-48 h-32 object-cover rounded-lg"
-                      />
-                      <div className="mt-3 flex items-center gap-3">
+                  <Form.Item name="learningOutcome" label="What Students Will Learn">
+                    <TextArea rows={5} placeholder="Students will be able to..." className="rounded-xl" />
+                  </Form.Item>
+
+                  <Row gutter={16}>
+                    <Col span={12}>
+                      <Form.Item name="durationDays" label="Duration (days)">
+                        <InputNumber min={1} className="w-full" prefix={<Calendar className="text-blue-500" />} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                      <Form.Item name="gradingType" label="Grading Type">
+                        <Select>
+                          {gradingType.map((g) => (
+                            <Select.Option key={g.value} value={g.value}>{g.label}</Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  </Row>
+
+                  <Form.Item label="Image" rules={[{ required: !fileList.length && !course.imageUrl, message: 'Image required' }]}>
+                    <Upload.Dragger {...uploadProps} className="bg-gray-50 border-2 border-dashed rounded-2xl">
+                      {fileList.length > 0 ? (
+                        <img
+                          src={fileList[0].url || URL.createObjectURL(fileList[0] as any)}
+                          alt="thumb"
+                          className="w-full h-64 object-cover rounded-xl"
+                        />
+                      ) : (
+                        <div className="py-16 text-center">
+                          <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                          <Text className="text-lg">Drop image or click to upload</Text>
+                          <Text type="secondary">JPG/PNG • Max 10MB</Text>
+                        </div>
+                      )}
+                    </Upload.Dragger>
+                    {fileList[0]?.url && !fileList[0]?.originFileObj && (
+                      <div className="mt-2 flex items-center gap-2">
                         <Switch
                           checked={removeImage}
-                          onChange={setRemoveImage}
-                          checkedChildren="Remove"
-                          unCheckedChildren="Keep"
+                          onChange={(c) => {
+                            setRemoveImage(c);
+                            if (c) setFileList([]);
+                          }}
+                          size="small"
                         />
-                        <Text type="secondary">Current image</Text>
+                        <Text type="secondary">Remove current image</Text>
                       </div>
-                    </div>
-                  )}
-                  {!removeImage && (
-                    <Form.Item
-                      name="image"
-                      valuePropName="file"
-                      label={
-                        <span className="flex items-center gap-2">
-                          <ImageIcon
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Upload New Image
-                        </span>
-                      }>
-                      <Upload
-                        beforeUpload={() => false}
-                        maxCount={1}
-                        className="border-dashed border-2 border-gray-300 hover:border-sky-400 transition-colors">
-                        <Button icon={<UploadOutlined />}>Select Image (JPG/PNG, max 10MB)</Button>
-                      </Upload>
-                    </Form.Item>
-                  )}
-                </div>
-                <div className="flex justify-end pt-6 border-t border-gray-200">
-                  <Tooltip title="Save all changes">
+                    )}
+                  </Form.Item>
+
+                  <div className="flex justify-end pt-6 border-t border-gray-200">
                     <Button
                       type="primary"
                       htmlType="submit"
+                      size="large"
                       loading={updateMutation.isPending}
-                      className="rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 px-6 py-3 bg-sky-600 hover:bg-sky-700"
-                      icon={<Check size={16} />}>
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                      icon={<Sparkles className="mr-2" />}
+                    >
                       Save Changes
                     </Button>
-                  </Tooltip>
+                  </div>
                 </div>
               </Form>
             </Card>
-          </Col>
+          </div>
 
-          {/* Right: Tips Sidebar */}
-          <Col span={8}>
-            <Card
-              className="h-fit rounded-2xl shadow-md border-0 bg-white/80 backdrop-blur-sm sticky top-8"
-              title={
-                <div className="flex items-center gap-2">
-                  <Info
-                    size={20}
-                    className="text-sky-600"
-                  />
-                  <Text
-                    strong
-                    className="text-sky-800">
-                    Quick Tips
-                  </Text>
+          {/* Live Preview */}
+          <div className="xl:col-span-1">
+            <div className="sticky top-8">
+              <Card className="bg-white rounded-2xl shadow-lg border-0 overflow-hidden">
+                <div className="bg-gradient-to-br from-blue-400 to-indigo-500 p-6 text-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <EyeOutlined className="text-2xl" />
+                    <Title level={4} className="!text-white !m-0">Live Preview</Title>
+                  </div>
                 </div>
-              }>
-              <List
-                dataSource={tips}
-                renderItem={(tip) => (
-                  <List.Item className="p-3 border-0 hover:bg-sky-50 rounded-lg transition-colors">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <tip.icon
-                          size={16}
-                          className="text-sky-600"
-                        />
+
+                <div className="p-6">
+                  <div className="relative h-48 bg-gray-200 rounded-xl overflow-hidden mb-6">
+                    {fileList.length > 0 ? (
+                      <img
+                        src={fileList[0].url || URL.createObjectURL(fileList[0] as any)}
+                        alt="preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full bg-gray-100">
+                        <UploadCloud className="w-16 h-16 text-gray-400" />
                       </div>
-                      <div className="flex-1">
-                        <Text
-                          strong
-                          className="text-gray-800 block mb-1">
-                          {tip.title}
-                        </Text>
-                        <Text
-                          type="secondary"
-                          className="text-sm leading-relaxed">
-                          {tip.description}
-                        </Text>
-                      </div>
+                    )}
+                  </div>
+
+                  <Title level={4} className="line-clamp-2">
+                    {formValues.title || 'Your Course Title'}
+                  </Title>
+                  <Text type="secondary" className="line-clamp-2 block mt-2">
+                    {formValues.description || 'No description yet...'}
+                  </Text>
+
+                  <div className="mt-6 flex items-center justify-between">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {courseType === 2
+                        ? `${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`
+                        : 'FREE'}
                     </div>
-                  </List.Item>
-                )}
-                className="p-0"
-                style={{ background: 'transparent' }}
-              />
-            </Card>
-          </Col>
-        </Row>
+                    <Tag color={courseType === 1 ? 'green' : 'blue'}>
+                      {courseType === 1 ? 'FREE' : 'PAID'}
+                    </Tag>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {(formValues.topicIds || []).slice(0, 3).map((id) => {
+                      const topic = topics?.data?.find((t: any) => t.topicId.toString() === id);
+                      return topic ? (
+                        <Tag key={id} color="blue" className="rounded-full">
+                          {topic.topicName}
+                        </Tag>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

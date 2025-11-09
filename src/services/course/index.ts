@@ -92,7 +92,7 @@ export const createCourseService = async (data: CreateCourseRequest) => {
   formData.append("Title", data.title);
   formData.append("Description", data.description);
   formData.append("LearningOutcome", data.learningOutcome);
-  formData.append("Image", data.image);
+  formData.append("Image", data.image as File);
   formData.append("Price", data.price.toString());
   formData.append("CourseType", data.courseType);
   formData.append("GradingType", data.gradingType);
@@ -107,7 +107,24 @@ export const createCourseService = async (data: CreateCourseRequest) => {
   });
 };
 
-export const updateCourseService = async ({ id, payload }: { id: string; payload: FormData }) => {
+export const updateCourseService = async ({ id, payload }: { id: string; payload: CreateCourseRequest }) => {
+  const formData = new FormData();
+  console.log(payload);
+  try {
+    formData.append('Title', payload.title);
+  formData.append('Description', payload.description);
+  formData.append('TemplateId', payload.templateId);
+  formData.append('Type', payload.courseType);
+  formData.append("TopicIds", payload.topicIds.join(","));
+  formData.append('Price', payload.price);
+  if (payload.image) formData.append('Image', payload.image);
+  if (payload.learningOutcome) formData.append('LearningOutcome', payload.learningOutcome);
+  if (payload.durationDays) formData.append('DurationDays', payload.durationDays.toString());
+  if (payload.gradingType) formData.append('GradingType', payload.gradingType);
+  } catch (error) {
+    console.log(error);
+  }
+
   const res = await api.put<Course>(`/courses/${id}`, payload, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
