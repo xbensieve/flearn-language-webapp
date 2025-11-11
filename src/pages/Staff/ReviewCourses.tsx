@@ -96,11 +96,11 @@ const ReviewCourses: React.FC = () => {
           <Row gutter={[24, 24]}>
             {courses.map((item) => {
               const course = item.course;
-              const teacher = course.teacherInfo;
+              const teacher = course.teacher;
 
               return (
                 <Col
-                  key={item.courseSubmissionID}
+                  key={item.submissionId}
                   xs={24}
                   sm={12}
                   lg={8}>
@@ -124,7 +124,7 @@ const ReviewCourses: React.FC = () => {
                         type="link"
                         icon={<EyeOutlined />}
                         onClick={() =>
-                          navigate(`${item.course.courseID}/${item.courseSubmissionID}`)
+                          navigate(`${item.course.courseId}/${item.submissionId}`)
                         }>
                         View Details
                       </Button>,
@@ -150,7 +150,7 @@ const ReviewCourses: React.FC = () => {
                         <Text
                           type="secondary"
                           ellipsis>
-                          {teacher.fullName}
+                          {teacher.name}
                         </Text>
                       </div>
 

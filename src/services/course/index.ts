@@ -59,7 +59,7 @@ export const getCoursesSubmitedService = async (params: {
   pageSize?: number;
   status?: string;
 }) => {
-  const res = await api.get<API.Response<ICourseDataStaff[]>>('/courses/submissions/by-staff', {
+  const res = await api.get<API.Response<ICourseDataStaff[]>>('/courses/submissions/by-manager', {
     params,
   });
   return res.data;

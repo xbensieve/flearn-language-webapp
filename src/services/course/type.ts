@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface CourseTemplate {
   templateId: string
   program: string
@@ -224,35 +225,14 @@ export interface Unit {
 }
 
 export interface ICourseDataStaff {
-  courseSubmissionID: string;
-  submissionStatus: string;
-  feedback: string;
-  submittedAt: string;
-  reviewedAt: string;
-  course: ICourseStaff;
-}
-
-export interface ICourseStaff {
-  courseID: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  templateInfo: TemplateInfo;
-  price: number;
-  discountPrice: number;
-  courseType: string;
-  teacherInfo: TeacherInfo;
-  languageInfo: LanguageInfo;
-  goalInfo: GoalInfo;
-  courseLevel: string;
-  publishedAt: string;
-  status: string;
-  createdAt: string;
-  modifiedAt: string;
-  numLessons: number;
-  approvedBy: string;
-  approvedAt: string;
-  topics: Topic[];
+  submissionId: string
+  course: Course
+  submitter: Submitter
+  reviewer?: Reviewer
+  submissionStatus: string
+  feedback: any
+  submittedAt: string
+  reviewedAt?: string
 }
 
 export interface TemplateInfo {
@@ -349,4 +329,69 @@ export interface ExerciseData {
   lessonTitle: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ICourseDataStaff {
+  courseId: string
+  templateId: string
+  language: string
+  program: Program
+  teacher: Teacher
+  title: string
+  description: string
+  learningOutcome: string
+  imageUrl: string
+  price: number
+  discountPrice: number
+  courseType: string
+  gradingType: string
+  learnerCount: number
+  averageRating: number
+  reviewCount: number
+  numLessons: number
+  numUnits: number
+  durationDays: number
+  estimatedHours: number
+  courseStatus: string
+  publishedAt?: string
+  createdAt: string
+  modifiedAt: string
+  approvedBy: any
+  approvedAt: any
+  topics: any[]
+  units: any[]
+}
+
+export interface Program {
+  programId: string
+  name: string
+  description: string
+  level: Level
+}
+
+export interface Level {
+  levelId: string
+  name: string
+  description: string
+}
+
+export interface Teacher {
+  teacherId: string
+  name: string
+  avatar: string
+  email: string
+}
+
+export interface Submitter {
+  teacherId: string
+  name: string
+  avatar: string
+  email: string
+  phoneNumber: string
+}
+
+export interface Reviewer {
+  managerId: string
+  name: any
+  email: string
 }
