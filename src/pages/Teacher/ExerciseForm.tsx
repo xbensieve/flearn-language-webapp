@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Form,
   Input,
@@ -13,10 +13,10 @@ import {
   Card,
   Tooltip,
   Typography,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import type { ExerciseData, ExercisePayload } from "../../services/course/type";
-import { useCreateExercise } from "./helpers";
+} from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import type { ExerciseData, ExercisePayload } from '../../services/course/type';
+import { useCreateExercise } from './helpers';
 import {
   Lightbulb,
   BookOpen,
@@ -27,7 +27,7 @@ import {
   Sparkles,
   AlertCircle,
   ImageIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
 const { Text, Title } = Typography;
 const { Panel } = Collapse;
@@ -61,9 +61,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         media: exercise.mediaUrls
           ? exercise.mediaUrls.map((url: string) => ({
               url,
-              name: url.split("/").pop() || "audio.mp3",
-              status: "done",
-              uid: "-1",
+              name: url.split('/').pop() || 'audio.mp3',
+              status: 'done',
+              uid: '-1',
             }))
           : undefined,
       });
@@ -123,54 +123,62 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
           className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
           title={
             <div className="flex items-center gap-3">
-              <Lightbulb size={20} className="text-sky-600" />
-              <Title level={3} className="!mb-0 text-gray-800">
+              <Lightbulb
+                size={20}
+                className="text-sky-600"
+              />
+              <Title
+                level={3}
+                className="!mb-0 text-gray-800">
                 Create Exercise
               </Title>
-              <Text type="secondary" className="text-sm ml-auto">
+              <Text
+                type="secondary"
+                className="text-sm ml-auto">
                 Make it engaging!
               </Text>
             </div>
-          }
-        >
+          }>
           <Form
             layout="vertical"
             form={form}
             onFinish={handleSubmit}
-            initialValues={{ type: "multiple-choice", difficulty: "medium" }}
-            className="space-y-6 pt-4"
-          >
+            initialValues={{ type: 'multiple-choice', difficulty: 'medium' }}
+            className="space-y-6 pt-4">
             <Collapse
-              defaultActiveKey={["basic", "scores", "feedback"]}
-              accordion
-            >
+              defaultActiveKey={['basic', 'scores', 'feedback']}
+              accordion>
               {/* Basic Information */}
               <Panel
                 header={
                   <div className="flex items-center gap-2 p-2 bg-sky-50 rounded-xl">
-                    <BookOpen size={18} className="text-sky-600" />
-                    <Text strong className="text-sky-800">
+                    <BookOpen
+                      size={18}
+                      className="text-sky-600"
+                    />
+                    <Text
+                      strong
+                      className="text-sky-800">
                       Basic Information
                     </Text>
                   </div>
                 }
                 key="basic"
-                className="rounded-2xl border border-sky-200 bg-sky-50"
-              >
+                className="rounded-2xl border border-sky-200 bg-sky-50">
                 <Row gutter={16}>
                   <Col span={24}>
                     <Form.Item
                       name="title"
                       label={
                         <span className="flex items-center gap-2">
-                          <BookOpen size={16} className="text-gray-600" />
+                          <BookOpen
+                            size={16}
+                            className="text-gray-600"
+                          />
                           Title
                         </span>
                       }
-                      rules={[
-                        { required: true, message: "Please enter a title" },
-                      ]}
-                    >
+                      rules={[{ required: true, message: 'Please enter a title' }]}>
                       <Input placeholder="e.g., Verb Conjugation Quiz" />
                     </Form.Item>
                   </Col>
@@ -179,11 +187,14 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="prompt"
                       label={
                         <span className="flex items-center gap-2">
-                          <FileText size={16} className="text-gray-600" />
+                          <FileText
+                            size={16}
+                            className="text-gray-600"
+                          />
                           Prompt
                         </span>
                       }
-                    >
+                      rules={[{ required: true, message: 'Please input prompt' }]}>
                       <Input.TextArea
                         rows={3}
                         placeholder="Clear instructions: 'Choose the correct translation...'"
@@ -195,11 +206,15 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="hints"
                       label={
                         <span className="flex items-center gap-2">
-                          <Lightbulb size={16} className="text-gray-600" />
-                          Hints (Optional)
+                          <Lightbulb
+                            size={16}
+                            className="text-gray-600"
+                          />
+                          Hints
                         </span>
                       }
-                    >
+                      required
+                      rules={[{ required: true, message: 'Please input hints' }]}>
                       <Input.TextArea
                         rows={2}
                         placeholder="e.g., Remember subject-verb agreement!"
@@ -211,11 +226,15 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="content"
                       label={
                         <span className="flex items-center gap-2">
-                          <FileText size={16} className="text-gray-600" />
+                          <FileText
+                            size={16}
+                            className="text-gray-600"
+                          />
                           Content
                         </span>
                       }
-                    >
+                      required
+                      rules={[{ required: true, message: 'Please input content' }]}>
                       <Input.TextArea
                         rows={4}
                         placeholder="Detailed exercise body..."
@@ -227,11 +246,15 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="expectedAnswer"
                       label={
                         <span className="flex items-center gap-2">
-                          <Check size={16} className="text-green-600" />
+                          <Check
+                            size={16}
+                            className="text-green-600"
+                          />
                           Expected Answer
                         </span>
                       }
-                    >
+                      required
+                      rules={[{ required: true, message: 'Expected Answer is required' }]}>
                       <Input.TextArea
                         rows={2}
                         placeholder="e.g., 'Hola, ¿cómo estás?'"
@@ -245,39 +268,48 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
               <Panel
                 header={
                   <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-xl">
-                    <Target size={18} className="text-blue-600" />
-                    <Text strong className="text-blue-800">
+                    <Target
+                      size={18}
+                      className="text-blue-600"
+                    />
+                    <Text
+                      strong
+                      className="text-blue-800">
                       Scores & Type
                     </Text>
                   </div>
                 }
                 key="scores"
-                className="border border-blue-200 bg-blue-50"
-              >
+                className="border border-blue-200 bg-blue-50">
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
                       name="type"
                       label={
                         <span className="flex items-center gap-2">
-                          <Target size={16} className="text-gray-600" />
+                          <Target
+                            size={16}
+                            className="text-gray-600"
+                          />
                           Type
                         </span>
                       }
-                      rules={[
-                        { required: true, message: "Please select a type" },
-                      ]}
-                    >
+                      required
+                      rules={[{ required: true, message: 'Please select a type' }]}>
                       <Select
                         placeholder="Choose exercise type"
                         suffixIcon={
-                          <Target size={16} className="text-gray-400" />
+                          <Target
+                            size={16}
+                            className="text-gray-400"
+                          />
                         }
+                        defaultValue={{ label: 'RepeatAfterMe', value: 1 }}
                         options={[
-                          { label: "RepeatAfterMe", value: 1 },
-                          { label: "PictureDescription", value: 2 },
-                          { label: "StoryTelling", value: 3 },
-                          { label: "Debate", value: 4 },
+                          { label: 'RepeatAfterMe', value: 1 },
+                          { label: 'PictureDescription', value: 2 },
+                          { label: 'StoryTelling', value: 3 },
+                          { label: 'Debate', value: 4 },
                         ]}
                       />
                     </Form.Item>
@@ -287,27 +319,32 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="difficulty"
                       label={
                         <span className="flex items-center gap-2">
-                          <TrendingUp size={16} className="text-gray-600" />
+                          <TrendingUp
+                            size={16}
+                            className="text-gray-600"
+                          />
                           Difficulty
                         </span>
                       }
                       rules={[
                         {
                           required: true,
-                          message: "Please select a difficulty",
+                          message: 'Please select a difficulty',
                         },
-                      ]}
-                    >
+                      ]}>
                       <Select
                         placeholder="Select difficulty level"
                         suffixIcon={
-                          <TrendingUp size={16} className="text-gray-400" />
+                          <TrendingUp
+                            size={16}
+                            className="text-gray-400"
+                          />
                         }
                         options={[
-                          { label: "Easy", value: 1 },
-                          { label: "Medium", value: 2 },
-                          { label: "Hard", value: 3 },
-                          { label: "Advanced", value: 4 },
+                          { label: 'Easy', value: 1 },
+                          { label: 'Medium', value: 2 },
+                          { label: 'Hard', value: 3 },
+                          { label: 'Advanced', value: 4 },
                         ]}
                       />
                     </Form.Item>
@@ -320,17 +357,17 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="maxScore"
                       label={
                         <span className="flex items-center gap-2">
-                          <TrendingUp size={16} className="text-gray-600" />
+                          <TrendingUp
+                            size={16}
+                            className="text-gray-600"
+                          />
                           Max Score
                         </span>
                       }
-                      rules={[
-                        { required: true, message: "Please enter max score" },
-                      ]}
-                    >
+                      rules={[{ required: true, message: 'Please enter max score' }]}>
                       <InputNumber
                         min={0}
-                        style={{ width: "100%" }}
+                        style={{ width: '100%' }}
                         placeholder="e.g. 10"
                       />
                     </Form.Item>
@@ -340,17 +377,17 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="passScore"
                       label={
                         <span className="flex items-center gap-2">
-                          <Check size={16} className="text-green-600" />
+                          <Check
+                            size={16}
+                            className="text-green-600"
+                          />
                           Pass Score
                         </span>
                       }
-                      rules={[
-                        { required: true, message: "Please enter pass score" },
-                      ]}
-                    >
+                      rules={[{ required: true, message: 'Please enter pass score' }]}>
                       <InputNumber
                         min={0}
-                        style={{ width: "100%" }}
+                        style={{ width: '100%' }}
                         placeholder="e.g. 7"
                       />
                     </Form.Item>
@@ -362,26 +399,33 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
               <Panel
                 header={
                   <div className="flex items-center gap-2 p-2 bg-indigo-50 rounded-xl">
-                    <Sparkles size={18} className="text-indigo-600" />
-                    <Text strong className="text-indigo-800">
+                    <Sparkles
+                      size={18}
+                      className="text-indigo-600"
+                    />
+                    <Text
+                      strong
+                      className="text-indigo-800">
                       Feedback & Media
                     </Text>
                   </div>
                 }
                 key="feedback"
-                className="rounded-2xl border border-indigo-200 bg-indigo-50"
-              >
+                className="rounded-2xl border border-indigo-200 bg-indigo-50">
                 <Row gutter={16}>
                   <Col span={12}>
                     <Form.Item
                       name="feedbackCorrect"
                       label={
                         <span className="flex items-center gap-2">
-                          <Check size={16} className="text-green-600" />
+                          <Check
+                            size={16}
+                            className="text-green-600"
+                          />
                           Feedback (Correct)
                         </span>
                       }
-                    >
+                      rules={[{ required: true, message: 'Feedback Correct is required' }]}>
                       <Input.TextArea
                         rows={4}
                         placeholder="Great job! You've nailed the concept."
@@ -393,13 +437,16 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       name="feedbackIncorrect"
                       label={
                         <span className="flex items-center gap-2">
-                          <AlertCircle size={16} className="text-red-600" />
+                          <AlertCircle
+                            size={16}
+                            className="text-red-600"
+                          />
                           Feedback (Incorrect)
                         </span>
                       }
-                    >
+                      rules={[{ required: true, message: 'Feedback Incorrect is required' }]}>
                       <Input.TextArea
-                        rows={2}
+                        rows={4}
                         placeholder="Keep trying! Review the hint above."
                       />
                     </Form.Item>
@@ -409,29 +456,27 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                 <Form.Item
                   name="media"
                   required
-                  rules={[
-                    { required: true, message: "media file is required" },
-                  ]}
+                  rules={[{ required: true, message: 'media file is required' }]}
                   label={
                     <span className="flex items-center gap-2">
-                      <ImageIcon size={16} className="text-gray-600" />
+                      <ImageIcon
+                        size={16}
+                        className="text-gray-600"
+                      />
                       Media File
                     </span>
                   }
-                  valuePropName="file"
-                >
+                  valuePropName="file">
                   <Upload
                     beforeUpload={() => false}
                     maxCount={1}
                     accept="audio/mp3,audio/mpeg"
                     onChange={handleMediaChange}
-                    className="hover:border-sky-400 transition-colors"
-                  >
+                    className="hover:border-sky-400 transition-colors">
                     <Button
                       block
                       icon={<UploadOutlined />}
-                      className="rounded-xl flex items-center gap-2 justify-center"
-                    >
+                      className="rounded-xl flex items-center gap-2 justify-center">
                       Add MP3 Audio
                     </Button>
                   </Upload>
@@ -439,7 +484,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                 {mediaPreview &&
                   mediaPreview.map((mediaPreview) => (
                     <div className="mt-4 p-4 bg-white rounded-xl shadow-sm">
-                      <Text strong className="block mb-2">
+                      <Text
+                        strong
+                        className="block mb-2">
                         Audio Preview:
                       </Text>
                       <audio
@@ -459,9 +506,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                   htmlType="submit"
                   loading={createExercise.isPending}
                   className="rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 px-8 py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold"
-                  icon={<Check size={16} />}
-                >
-                  Create Exercise
+                  icon={<Check size={16} />}>
+                  Create
                 </Button>
               </Tooltip>
             </div>

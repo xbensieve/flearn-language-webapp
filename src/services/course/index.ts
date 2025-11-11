@@ -59,6 +59,17 @@ export const getMyCoursesService = async (params: {
   return res.data;
 };
 
+export const getTeacherCoursesService = async (params: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+}) => {
+  const res = await api.get<API.Response<Course[]>>("courses/by-teacher", {
+    params,
+  });
+  return res.data;
+};
+
 export const getCoursesSubmitedService = async (params: {
   page?: number;
   pageSize?: number;

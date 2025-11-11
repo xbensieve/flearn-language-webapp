@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
 import {
-  Card,
   Typography,
   Row,
   Col,
-  Tag,
   Button,
   Empty,
   Spin,
   Select,
   Space,
   Badge,
-  Image,
   Pagination,
   ConfigProvider,
 } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getMyCoursesService } from '../../services/course';
+import { getTeacherCoursesService } from '../../services/course';
 import { PlusOutlined, EditOutlined, EyeOutlined, LoadingOutlined } from '@ant-design/icons';
 import { formatStatusLabel } from '../../utils/mapping';
 import { Book } from 'lucide-react';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const statusOptions = [
@@ -53,7 +50,7 @@ const MyCourses: React.FC = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['courses', status, page, pageSize],
     queryFn: () =>
-      getMyCoursesService({
+      getTeacherCoursesService({
         status,
         page,
         pageSize,
@@ -61,8 +58,8 @@ const MyCourses: React.FC = () => {
     retry: 1,
   });
 
-  const courses = data?.data ?? [];
-  const total = data?.pagination?.pageSize ?? 0;
+  const courses = React.useMemo(() => data?.data || [], [data]);
+  const total = React.useMemo(() => data?.meta?.totalItems ?? 0, [data]);
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
@@ -82,7 +79,12 @@ const MyCourses: React.FC = () => {
       <div className="flex justify-center items-center min-h-[60vh] bg-gradient-to-br from-blue-50 to-indigo-100">
         <Spin
           size="large"
-          indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
+          indicator={
+            <LoadingOutlined
+              style={{ fontSize: 48 }}
+              spin
+            />
+          }
         />
       </div>
     );
@@ -98,14 +100,22 @@ const MyCourses: React.FC = () => {
               <Book className="w-8 h-8 text-white" />
             </div>
             <div>
-              <Title level={2} className="!mb-0 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              <Title
+                level={2}
+                className="!mb-0 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
                 My Courses
               </Title>
-              <Text type="secondary" className="text-lg">
+              <Text
+                type="secondary"
+                className="text-lg">
                 Manage and track your teaching journey
               </Text>
             </div>
-            <Badge count={total} overflowCount={999} style={{ backgroundColor: '#52c41a' }} />
+            <Badge
+              count={total}
+              overflowCount={999}
+              style={{ backgroundColor: '#52c41a' }}
+            />
           </div>
 
           <Space wrap>
@@ -113,10 +123,11 @@ const MyCourses: React.FC = () => {
               value={status}
               onChange={handleStatusChange}
               style={{ width: 200 }}
-              placeholder="Filter by status"
-            >
+              placeholder="Filter by status">
               {statusOptions.map((s) => (
-                <Option key={s.value} value={s.value}>
+                <Option
+                  key={s.value}
+                  value={s.value}>
                   {s.label}
                 </Option>
               ))}
@@ -127,8 +138,7 @@ const MyCourses: React.FC = () => {
               icon={<PlusOutlined />}
               onClick={() => navigate('create')}
               size="large"
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
-            >
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg">
               Create Course
             </Button>
           </Space>
@@ -141,97 +151,103 @@ const MyCourses: React.FC = () => {
               {courses.map((course) => {
                 const canEdit = ['Draft', 'Rejected'].includes(course.courseStatus);
                 const statusColor = statusColors[course.courseStatus] || 'default';
+                const isFree = Number(course.price) === 0;
 
                 return (
-                  <Col key={course.courseId} xs={24} sm={12} lg={8} xl={6}>
-                    <Card
-                      hoverable
-                      cover={
-                        <div className="relative overflow-hidden rounded-t-xl">
-                          <div className="aspect-w-16 aspect-h-9 bg-gray-200">
-                            <Image
-                              alt={course.title}
-                              src={course.imageUrl || '/placeholder-course.jpg'}
-                              preview={false}
-                              className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
-                              fallback="/placeholder-course.jpg"
-                            />
-                          </div>
-                          <div className="absolute top-3 right-3">
-                            <Tag color={statusColor} className="shadow-lg font-medium text-xs">
-                              {formatStatusLabel(course.courseStatus)}
-                            </Tag>
-                          </div>
-                        </div>
-                      }
-                      className="h-full shadow-lg rounded-2xl hover:shadow-2xl transition-all duration-300 border-0 bg-white flex flex-col"
-                      bodyStyle={{ padding: 0, flex: 1, display: 'flex', flexDirection: 'column' }}
-                      actions={[
-                        <Button
-                          key="view"
-                          type="link"
-                          icon={<EyeOutlined />}
-                          onClick={() => navigate(`${course.courseId}`)}
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          View
-                        </Button>,
-                        canEdit && (
-                          <Button
-                            type="link"
-                            key="edit"
-                            icon={<EditOutlined />}
-                            onClick={() => navigate(`${course.courseId}/edit`)}
-                            className="text-green-600 hover:text-green-800"
-                          >
-                            Edit
-                          </Button>
-                        ),
-                      ].filter(Boolean)}
-                    >
-                      <div className="p-5 flex flex-col flex-1">
-                        <Title level={5} className="mb-3 line-clamp-2 text-gray-800 font-semibold leading-tight">
-                          {course.title}
-                        </Title>
-                        <Paragraph
-                          ellipsis={{ rows: 3 }}
-                          className="text-gray-600 text-sm mb-4 flex-1 leading-relaxed"
-                        >
-                          {course.description || 'No description available'}
-                        </Paragraph>
+                  <Col
+                    key={course.courseId}
+                    xs={24}
+                    sm={12}
+                    lg={8}
+                    xl={6}>
+                    <div className="group flex flex-col h-full rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                      {/* Cover image */}
+                      <div className="relative w-full h-[200px] overflow-hidden bg-gray-100">
+                        <img
+                          src={course.imageUrl || '/placeholder-course.jpg'}
+                          alt={course.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span
+                          className={`absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md bg-opacity-90 shadow bg-${statusColor}-500 text-white`}>
+                          {formatStatusLabel(course.courseStatus)}
+                        </span>
+                      </div>
 
-                        <div className="mt-auto pt-3 border-t border-gray-100">
-                          <div className="flex justify-between items-end">
-                            <div>
-                              {course.discountPrice ? (
-                                <Space direction="vertical" size={0}>
-                                  <Text delete className="text-gray-400 text-xs">
-                                    {Number(course.price).toLocaleString('vi-VN')}₫
-                                  </Text>
-                                  <div className="text-lg font-bold text-green-600">
-                                    {Number(course.discountPrice).toLocaleString('vi-VN')}₫
-                                  </div>
-                                </Space>
-                              ) : (
-                                <div className="text-lg font-bold text-blue-600">
-                                  {Number(course.price).toLocaleString('vi-VN') === '0' ? 'FREE' : `${Number(course.price).toLocaleString('vi-VN')}₫`}
-                                </div>
-                              )}
-                            </div>
+                      {/* Content */}
+                      <div className="flex flex-col flex-1 p-4">
+                        <h5 className="text-gray-900 font-semibold text-base leading-snug mb-2 line-clamp-2">
+                          {course.title}
+                        </h5>
+
+                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-3">
+                          {course.description || 'No description available'}
+                        </p>
+
+                        {/* Price Section */}
+                        <div className="mt-auto pt-3 border-t border-gray-100 flex justify-between items-end">
+                          <div>
+                            {course.discountPrice ? (
+                              <div className="flex flex-col">
+                                <span className="text-gray-400 text-xs line-through">
+                                  {Number(course.price).toLocaleString('vi-VN')}₫
+                                </span>
+                                <span className="text-lg font-bold text-green-600">
+                                  {Number(course.discountPrice).toLocaleString('vi-VN')}₫
+                                </span>
+                              </div>
+                            ) : (
+                              <span
+                                className={`text-lg font-bold ${
+                                  isFree ? 'text-emerald-600' : 'text-blue-600'
+                                }`}>
+                                {isFree
+                                  ? 'FREE'
+                                  : `${Number(course.price).toLocaleString('vi-VN')}₫`}
+                              </span>
+                            )}
                           </div>
+
+                          {course.learnerCount !== undefined && (
+                            <span className="text-xs text-gray-500">
+                              👥 {course.learnerCount} learners
+                            </span>
+                          )}
                         </div>
                       </div>
-                    </Card>
+
+                      {/* Actions */}
+                      <div className="flex justify-between items-center border-t px-4 py-3 bg-gray-50">
+                        <Button
+                          type="text"
+                          icon={<EyeOutlined />}
+                          onClick={() => navigate(`${course.courseId}`)}
+                          className="text-blue-600 hover:text-blue-800 font-medium px-0">
+                          View
+                        </Button>
+
+                        {canEdit && (
+                          <Button
+                            type="text"
+                            icon={<EditOutlined />}
+                            onClick={() => navigate(`${course.courseId}/edit`)}
+                            className="text-green-600 hover:text-green-800 font-medium px-0">
+                            Edit
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </Col>
                 );
               })}
             </Row>
 
-            {/* Pagination + Page Size */}
+            {/* Pagination */}
             <div className="mt-12 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white p-6 rounded-2xl shadow-lg">
               <Text className="text-gray-600">
                 Showing <strong>{(page - 1) * pageSize + 1}</strong> to{' '}
-                <strong>{Math.min(page * pageSize, total)}</strong> of <strong>{total}</strong> courses
+                <strong>{Math.min(page * pageSize, total)}</strong> of <strong>{total}</strong>{' '}
+                courses
               </Text>
 
               <ConfigProvider
@@ -239,8 +255,7 @@ const MyCourses: React.FC = () => {
                   token: {
                     colorPrimary: '#2563eb',
                   },
-                }}
-              >
+                }}>
                 <Pagination
                   current={page}
                   pageSize={pageSize}
@@ -248,22 +263,8 @@ const MyCourses: React.FC = () => {
                   onChange={handlePageChange}
                   showSizeChanger
                   pageSizeOptions={pageSizeOptions}
-                  locale={{ items_per_page: '/ page' }}
-                  className="ant-pagination-custom"
                 />
               </ConfigProvider>
-
-              <Select
-                value={pageSize.toString()}
-                onChange={(value) => handlePageChange(1, Number(value))}
-                style={{ width: 120 }}
-              >
-                {pageSizeOptions.map((size) => (
-                  <Option key={size} value={size}>
-                    {size} / page
-                  </Option>
-                ))}
-              </Select>
             </div>
           </>
         ) : (
@@ -273,15 +274,18 @@ const MyCourses: React.FC = () => {
               description={
                 <div className="text-center max-w-md">
                   <Text className="text-xl text-gray-600 mb-4 block">
-                    {status ? `No ${statusOptions.find(s => s.value === status)?.label?.toLowerCase()} courses` : 'You haven\'t created any courses yet'}
+                    {status
+                      ? `No ${statusOptions
+                          .find((s) => s.value === status)
+                          ?.label?.toLowerCase()} courses`
+                      : "You haven't created any courses yet"}
                   </Text>
                   <Button
                     type="primary"
                     size="large"
                     icon={<PlusOutlined />}
                     onClick={() => navigate('create')}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                  >
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
                     Create Your First Course
                   </Button>
                 </div>

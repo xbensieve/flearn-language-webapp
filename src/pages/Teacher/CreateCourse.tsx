@@ -156,9 +156,8 @@ const CreateCourse: React.FC = () => {
     createCourse(payload);
   };
 
-  const steps = courseTypeWatch === 1
-    ? ['Basic Info', 'Settings']
-    : ['Basic Info', 'Pricing', 'Settings'];
+  const steps =
+    courseTypeWatch === 1 ? ['Basic Info', 'Settings'] : ['Basic Info', 'Pricing', 'Settings'];
 
   console.log('steps', currentStep);
   console.log('formValues', formValues);
@@ -168,8 +167,16 @@ const CreateCourse: React.FC = () => {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-6 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Title level={3} className="!mb-0 text-gray-900">Create New Course</Title>
-          <Button type="primary" icon={<EyeOutlined />} size="large" className="bg-blue-600 hover:bg-blue-700">
+          <Title
+            level={3}
+            className="!mb-0 text-gray-900">
+            Create New Course
+          </Title>
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            size="large"
+            className="bg-blue-600 hover:bg-blue-700">
             Preview
           </Button>
         </div>
@@ -196,20 +203,27 @@ const CreateCourse: React.FC = () => {
                 />
               </div>
 
-              <Form form={form} initialValues={formValues} onFinish={onFinish} layout="vertical" className="p-8">
+              <Form
+                form={form}
+                initialValues={formValues}
+                onFinish={onFinish}
+                layout="vertical"
+                className="p-8">
                 {/* Step 1: Basic Info */}
                 {currentStep === 0 && (
                   <div className="space-y-8">
                     {/* Title */}
                     <div>
-                      <Title level={2} className="flex items-center gap-4 !mb-6">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-600 rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                          {formValues.title?.[0] || 'F'}
-                        </div>
-                        <Form.Item name="title" noStyle rules={[{ required: true }]}>
+                      <Title
+                        level={2}
+                        className="flex items-center gap-4 !mb-6">
+                        <Form.Item
+                          name="title"
+                          noStyle
+                          rules={[{ required: true, message: 'Title is required' }]}>
                           <Input
                             bordered={false}
-                            placeholder="Enter your course title..."
+                            placeholder="Enter your title..."
                             className="text-4xl font-bold !p-0 hover:bg-gray-50 rounded-xl"
                             style={{ fontSize: '2.5rem', fontWeight: 700 }}
                           />
@@ -219,19 +233,38 @@ const CreateCourse: React.FC = () => {
 
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name="topicIds" label="Topics" rules={[{ required: true }]}>
-                          <Select mode="multiple" placeholder="Select topics" loading={topicsLoading}>
+                        <Form.Item
+                          name="topicIds"
+                          label="Topics"
+                          rules={[{ required: true }]}>
+                          <Select
+                            mode="multiple"
+                            placeholder="Select topics"
+                            loading={topicsLoading}>
                             {topics?.data?.map((t: any) => (
-                              <Option key={t.topicId} value={t.topicId}>{t.topicName}</Option>
+                              <Option
+                                key={t.topicId}
+                                value={t.topicId}>
+                                {t.topicName}
+                              </Option>
                             ))}
                           </Select>
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="templateId" label="Template" rules={[{ required: true }]}>
-                          <Select placeholder="Select template" loading={templatesLoading}>
+                        <Form.Item
+                          name="templateId"
+                          label="Template"
+                          rules={[{ required: true }]}>
+                          <Select
+                            placeholder="Select template"
+                            loading={templatesLoading}>
                             {templates?.map((t: any) => (
-                              <Option key={t.templateId} value={t.templateId}>{t.name}</Option>
+                              <Option
+                                key={t.templateId}
+                                value={t.templateId}>
+                                {t.name}
+                              </Option>
                             ))}
                           </Select>
                         </Form.Item>
@@ -240,12 +273,21 @@ const CreateCourse: React.FC = () => {
 
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name="courseType" label="Type" rules={[{ required: true }]}>
+                        <Form.Item
+                          name="courseType"
+                          label="Type"
+                          rules={[{ required: true }]}>
                           <Select placeholder="type">
                             {courseTypes.map((ct) => (
-                              <Option key={ct.value} value={ct.value}>
+                              <Option
+                                key={ct.value}
+                                value={ct.value}>
                                 <Space>
-                                  {ct.value === 1 ? <Sparkles className="w-4 h-4 text-green-500" /> : <DollarSign className="w-4 h-4 text-blue-500" />}
+                                  {ct.value === 1 ? (
+                                    <Sparkles className="w-4 h-4 text-green-500" />
+                                  ) : (
+                                    <DollarSign className="w-4 h-4 text-blue-500" />
+                                  )}
                                   {ct.label}
                                 </Space>
                               </Option>
@@ -255,14 +297,30 @@ const CreateCourse: React.FC = () => {
                       </Col>
                     </Row>
 
-                    <Form.Item name="description" label="Course Description" rules={[{ required: true }]}>
-                      <TextArea rows={6} placeholder="Write a compelling description..." className="rounded-xl" />
+                    <Form.Item
+                      name="description"
+                      label="Course Description"
+                      rules={[{ required: true }]}>
+                      <TextArea
+                        rows={6}
+                        placeholder="Write a compelling description..."
+                        className="rounded-xl"
+                      />
                     </Form.Item>
 
-                    <Form.Item required label="Image" rules={[{ required: true, message: 'Image required' }]}>
-                      <Upload.Dragger {...uploadProps} className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl">
+                    <Form.Item
+                      required
+                      label="Image"
+                      rules={[{ required: true, message: 'Image required' }]}>
+                      <Upload.Dragger
+                        {...uploadProps}
+                        className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl">
                         {fileList.length > 0 ? (
-                          <img src={URL.createObjectURL(fileList[0])} alt="thumb" className="w-full h-64 object-cover rounded-xl" />
+                          <img
+                            src={URL.createObjectURL(fileList[0])}
+                            alt="thumb"
+                            className="w-full h-64 object-cover rounded-xl"
+                          />
                         ) : (
                           <div className="py-16 text-center">
                             <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-4" />
@@ -279,10 +337,17 @@ const CreateCourse: React.FC = () => {
                 {currentStep === 1 && formValues.courseType === 2 && (
                   <div className="bg-blue-50 rounded-2xl p-10 text-center">
                     <DollarSign className="w-20 h-20 text-blue-600 mx-auto mb-6" />
-                    <Title level={3} className="text-gray-800">Set Your Course Price</Title>
-                    <Form.Item name="price" rules={[{ required: true }]}>
+                    <Title
+                      level={3}
+                      className="text-gray-800">
+                      Set Your Course Price
+                    </Title>
+                    <Form.Item
+                      name="price"
+                      rules={[{ required: true }]}>
                       <InputNumber
                         size="large"
+                        defaultValue={0}
                         min={0}
                         formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                         className="!w-full max-w-xs mx-auto"
@@ -297,21 +362,42 @@ const CreateCourse: React.FC = () => {
                 {/* Step 3: Settings */}
                 {currentStep === (courseTypeWatch === 1 ? 1 : 2) && (
                   <div className="space-y-8">
-                    <Form.Item name="learningOutcome" label="What Students Will Learn" rules={[{ required: true }]}>
-                      <TextArea rows={5} placeholder="Students will be able to..." className="rounded-xl" />
+                    <Form.Item
+                      name="learningOutcome"
+                      label="What Students Will Learn"
+                      rules={[{ required: true }]}>
+                      <TextArea
+                        rows={5}
+                        placeholder="Students will be able to..."
+                        className="rounded-xl"
+                      />
                     </Form.Item>
 
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name="durationDays" label="Duration (days)" rules={[{ required: true }]}>
-                          <InputNumber min={1} className="w-full" prefix={<Calendar className="text-blue-500" />} />
+                        <Form.Item
+                          name="durationDays"
+                          label="Duration (days)"
+                          rules={[{ required: true }]}>
+                          <InputNumber
+                            min={1}
+                            className="w-full"
+                            prefix={<Calendar className="text-blue-500" />}
+                          />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="gradingType" label="Grading Type" rules={[{ required: true }]}>
+                        <Form.Item
+                          name="gradingType"
+                          label="Grading Type"
+                          rules={[{ required: true }]}>
                           <Select>
                             {gradingType.map((g) => (
-                              <Option key={g.value} value={g.value}>{g.label}</Option>
+                              <Option
+                                key={g.value}
+                                value={g.value}>
+                                {g.label}
+                              </Option>
                             ))}
                           </Select>
                         </Form.Item>
@@ -322,12 +408,18 @@ const CreateCourse: React.FC = () => {
 
                 {/* Navigation */}
                 <div className="flex justify-between pt-8 border-t border-gray-200">
-                  <Button size="large" onClick={prev} disabled={currentStep === 0}>
+                  <Button
+                    size="large"
+                    onClick={prev}
+                    disabled={currentStep === 0}>
                     Previous
                   </Button>
                   <Space>
                     {currentStep < steps.length - 1 && (
-                      <Button type="primary" size="large" onClick={next}>
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={next}>
                         Next <ChevronRight className="ml-2" />
                       </Button>
                     )}
@@ -338,8 +430,7 @@ const CreateCourse: React.FC = () => {
                         htmlType="submit"
                         loading={isPending}
                         icon={<Sparkles className="mr-2" />}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600"
-                      >
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600">
                         Launch Course
                       </Button>
                     )}
@@ -356,7 +447,11 @@ const CreateCourse: React.FC = () => {
                 <div className="bg-gradient-to-br !rounded-2xl from-blue-400 to-indigo-500 p-6 text-white">
                   <div className="flex items-center gap-3 mb-2">
                     <EyeOutlined className="text-2xl" />
-                    <Title level={4} className="!text-white !m-0">Live Preview</Title>
+                    <Title
+                      level={4}
+                      className="!text-white !m-0">
+                      Live Preview
+                    </Title>
                   </div>
                   <Text className="text-blue-100">See how your course looks</Text>
                 </div>
@@ -364,7 +459,11 @@ const CreateCourse: React.FC = () => {
                 <div className="p-6">
                   <div className="relative h-48 bg-gray-200 rounded-xl overflow-hidden mb-6">
                     {fileList.length > 0 ? (
-                      <img src={URL.createObjectURL(fileList[0])} alt="preview" className="w-full h-full object-cover" />
+                      <img
+                        src={URL.createObjectURL(fileList[0])}
+                        alt="preview"
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="flex items-center justify-center h-full bg-gray-100">
                         <UploadCloud className="w-16 h-16 text-gray-400" />
@@ -372,19 +471,18 @@ const CreateCourse: React.FC = () => {
                     )}
                   </div>
 
-                  <Title level={4} className="line-clamp-2">
+                  <Title
+                    level={4}
+                    className="line-clamp-2">
                     {formValues.title || 'Your Course Title'}
                   </Title>
-                  <Text type="secondary" className="line-clamp-2 block mt-2">
+                  <Text
+                    type="secondary"
+                    className="line-clamp-2 block mt-2">
                     {formValues.description || 'No description yet...'}
                   </Text>
 
                   <div className="mt-6 flex items-center justify-between">
-                    <div className="text-2xl font-bold text-blue-600">
-                      {formValues.courseType === 2
-                        ? `${Number(formValues.price || 0).toLocaleString('vi-VN')} ₫`
-                        : 'FREE'}
-                    </div>
                     <Tag color={courseTypeWatch === 1 ? 'green' : 'blue'}>
                       {courseTypeWatch === 1 ? 'FREE' : 'PAID'}
                     </Tag>
@@ -394,7 +492,10 @@ const CreateCourse: React.FC = () => {
                     {formValues.topicIds?.slice(0, 3).map((id) => {
                       const topic = topics?.data?.find((t: any) => t.topicId === id);
                       return topic ? (
-                        <Tag key={id} color="blue" className="rounded-full">
+                        <Tag
+                          key={id}
+                          color="blue"
+                          className="rounded-full">
                           {topic.topicName}
                         </Tag>
                       ) : null;

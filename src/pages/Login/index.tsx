@@ -110,8 +110,7 @@ const Login: React.FC = () => {
 
   const left: React.CSSProperties = {
     flex: 2,
-    backgroundImage:
-      "url('https://media.istockphoto.com/id/490922474/vi/vec-to/h%C3%ACnh-%C4%91%E1%BA%A1i-di%E1%BB%87n-con-ng%C6%B0%E1%BB%9Di-tr%C3%AAn-b%E1%BA%A3n-%C4%91%E1%BB%93-th%E1%BA%BF-gi%E1%BB%9Bi-bong-b%C3%B3ng-gi%E1%BB%8Dng-n%C3%B3i-b%E1%BA%B1ng-c%C3%A1c-ng%C3%B4n-ng%E1%BB%AF-kh%C3%A1c-nhau.jpg?s=612x612&w=0&k=20&c=NxwxBu1lMnYxkKqlg1jNLNGu2yNiuHJehyZw3z5ys54=')",
+    backgroundImage: "url('/src/assets/10290108.jpg')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',

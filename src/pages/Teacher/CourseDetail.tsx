@@ -190,7 +190,7 @@ const CourseDetail: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="space-y-4 my-2">
+              <div className="!space-y-4 my-2">
                 <div className="flex flex-wrap gap-2">
                   <div>
                     <Tag
@@ -206,6 +206,119 @@ const CourseDetail: React.FC = () => {
                     <GraduationCap size={12} />
                     {course?.program.level.name || 'N/A'}
                   </Tag>
+                </div>
+
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* ⭐ Rating */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 group-hover:bg-yellow-200 transition-all duration-300">
+                        <Star className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.averageRating ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">rating</span>
+                      </span>
+                    </div>
+
+                    {/* 👥 Learners */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-all duration-300">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.learnerCount ?? 0}{' '}
+                        <span className="text-gray-500 font-normal">learners</span>
+                      </span>
+                    </div>
+
+                    {/* 💬 Reviews */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-green-100 text-green-600 group-hover:bg-green-200 transition-all duration-300">
+                        <MessageSquare className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.reviewCount ?? 0}{' '}
+                        <span className="text-gray-500 font-normal">reviews</span>
+                      </span>
+                    </div>
+
+                    {/* 📦 Units */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-all duration-300">
+                        <Box className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.numUnits ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">units</span>
+                      </span>
+                    </div>
+
+                    {/* 📚 Lessons */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-all duration-300">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.numLessons ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">lessons</span>
+                      </span>
+                    </div>
+
+                    {/* ⏳ Duration Days */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-all duration-300">
+                        <Timer className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.durationDays ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">days</span>
+                      </span>
+                    </div>
+
+                    {/* ⏱ Estimated Hours */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-rose-100 text-rose-600 group-hover:bg-rose-200 transition-all duration-300">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.estimatedHours ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">hours</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-green-50 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign
+                      size={16}
+                      className="text-green-600"
+                    />
+                    <Text
+                      strong
+                      className="text-green-800">
+                      Pricing
+                    </Text>
+                  </div>
+                  {course.price ? (
+                    <div>
+                      <Text className="text-2xl font-bold text-green-700">
+                        {course?.discountPrice
+                          ? `${course?.discountPrice} VNĐ`
+                          : `${course?.price || 'N/A'} VNĐ`}
+                      </Text>
+                      {course?.discountPrice && (
+                        <Text
+                          delete
+                          className="text-gray-500 ml-2">
+                          {course?.price} VNĐ
+                        </Text>
+                      )}
+                    </div>
+                  ) : (
+                    <Text className="text-2xl font-bold text-green-700">Free</Text>
+                  )}
                 </div>
 
                 <div className="p-4 bg-blue-50 rounded-2xl">
@@ -257,89 +370,6 @@ const CourseDetail: React.FC = () => {
                   <Paragraph className="text-gray-700">
                     {course?.program.description || 'No goal description'}
                   </Paragraph>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <div className="flex flex-wrap gap-3">
-                    {/* ⭐ Rating */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-yellow-50 transition-all duration-300 ease-in-out">
-                      <Star className="w-5 h-5 text-yellow-500" />
-                      <span className="text-base font-semibold text-gray-700">{course.averageRating ?? '—'}</span>
-                    </div>
-
-                    {/* 👥 Learners */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-blue-50 transition-all duration-300 ease-in-out">
-                      <Users className="w-5 h-5 text-blue-600" />
-                      <span className="text-base font-semibold text-gray-700">{course.learnerCount ?? 0} learners</span>
-                    </div>
-
-                    {/* 💬 Reviews */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-green-50 transition-all duration-300 ease-in-out">
-                      <MessageSquare className="w-5 h-5 text-green-600" />
-                      <span className="text-base font-semibold text-gray-700">{course.reviewCount ?? 0} reviews</span>
-                    </div>
-
-                    {/* 📦 Units */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-purple-50 transition-all duration-300 ease-in-out">
-                      <Box className="w-5 h-5 text-purple-600" />
-                      <span className="text-base font-semibold text-gray-700">{course.numUnits ?? '—'} Units</span>
-                    </div>
-
-                    {/* 📚 Lessons */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-indigo-50 transition-all duration-300 ease-in-out">
-                      <BookOpen className="w-5 h-5 text-indigo-600" />
-                      <span className="text-base font-semibold text-gray-700">{course.numLessons ?? '—'} Lessons</span>
-                    </div>
-
-                    {/* ⏳ Duration Days */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-orange-50 transition-all duration-300 ease-in-out">
-                      <Timer className="w-5 h-5 text-orange-600" />
-                      <span className="text-base font-semibold text-gray-700">{course.durationDays ?? '—'} days</span>
-                    </div>
-
-                    {/* ⏱ Estimated Hours */}
-                    <div className="flex items-center gap-2 py-3 px-4 rounded-lg bg-white shadow-sm hover:shadow-md hover:bg-red-50 transition-all duration-300 ease-in-out">
-                      <Clock className="w-5 h-5 text-red-600" />
-                      <span className="text-base font-semibold text-gray-700">{course.estimatedHours ?? '—'} hours</span>
-                    </div>
-
-                    {/* Empty placeholders */}
-                    <div className="py-3 px-4 text-center text-gray-400 bg-white rounded-lg shadow-sm">—</div>
-                    <div className="py-3 px-4 text-center text-gray-400 bg-white rounded-lg shadow-sm">—</div>
-                  </div>
-                </div>
-
-
-                <div className="p-4 bg-green-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <DollarSign
-                      size={16}
-                      className="text-green-600"
-                    />
-                    <Text
-                      strong
-                      className="text-green-800">
-                      Pricing
-                    </Text>
-                  </div>
-                  {course.price ? (
-                    <div>
-                      <Text className="text-2xl font-bold text-green-700">
-                        {course?.discountPrice
-                          ? `${course?.discountPrice} VNĐ`
-                          : `${course?.price || 'N/A'} VNĐ`}
-                      </Text>
-                      {course?.discountPrice && (
-                        <Text
-                          delete
-                          className="text-gray-500 ml-2">
-                          {course?.price} VNĐ
-                        </Text>
-                      )}
-                    </div>
-                  ) : (
-                    <Text className="text-2xl font-bold text-green-700">Free</Text>
-                  )}
                 </div>
               </div>
             </Card>
@@ -518,7 +548,7 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
   const lessons: Lesson[] = lessonsResponse?.data || [];
 
   return (
-    <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-indigo-50 to-blue-50 mb-4">
+    <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-indigo-50 to-blue-50 !mb-4">
       <div className="flex items-start justify-between mb-4 p-2 rounded-xl bg-white -mx-4 -mt-4">
         <div className="flex items-center gap-3 flex-1">
           <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -536,17 +566,18 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
             <Paragraph className="text-gray-500 text-sm mb-1 truncate">
               {unit?.description || 'No description provided'}
             </Paragraph>
-            <Tag
-              color="blue"
-              className="px-2 py-1 text-xs">
-              <Users
-                size={12}
-                className="inline mr-1"
-              />
-              Lessons: {unit?.totalLessons ?? 0}
-            </Tag>
           </div>
         </div>
+
+        <Tag
+          color="blue"
+          className="px-2 py-1 text-xs">
+          <Users
+            size={12}
+            className="inline mr-1"
+          />
+          Lessons: {unit?.totalLessons ?? 0}
+        </Tag>
         <Tooltip title="Manage lessons">
           <Link to={`unit/${unit?.courseUnitID}`}>
             <Button
