@@ -187,9 +187,9 @@ const ApplicationStatus: React.FC = () => {
                       {statusMap[data.status]?.icon}
                     </div>
                     <div>
-                      <Text className="block text-sm text-gray-500 mb-1">
+                      {/* <Text className="block text-sm text-gray-500 mb-1">
                         Application #{data.applicationID}
-                      </Text>
+                      </Text> */}
                       <Title
                         level={4}
                         className="m-0 font-semibold text-gray-900"

@@ -36,7 +36,7 @@ export interface ApplicationData {
   userID: string;
   languageID: string;
   fullName: string;
-  birthDate: string;
+  dateOfBirth: string;
   bio: string;
   avatar: string;
   email: string;

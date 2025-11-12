@@ -419,12 +419,10 @@ const ApplicationsManagement: React.FC = () => {
                       </div>
                       <div className="flex items-center">
                         <CalendarOutlined className="mr-2 text-blue-500" />
-                        <Typography.Text strong>Birth Date:</Typography.Text>
+                        <Typography.Text strong>Birth of Date:</Typography.Text>
                         <span className="ml-2">
-                          {selectedApplication?.birthDate
-                            ? new Date(
-                                selectedApplication.birthDate
-                              ).toLocaleDateString()
+                          {selectedApplication?.dateOfBirth
+                            ? selectedApplication.dateOfBirth
                             : "N/A"}
                         </span>
                       </div>

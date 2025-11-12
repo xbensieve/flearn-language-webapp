@@ -37,6 +37,7 @@ import {
   Cake,
   GraduationCap,
   Info,
+  Languages,
   Link,
   Phone,
   Users,
@@ -65,6 +66,7 @@ const TeacherApplicationPage: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
   const selectedLang = Form.useWatch("LangCode", form);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // ✅ Get my application
   const { data: response, isLoading } = useQuery<{ data: ApplicationData[] }>({
@@ -92,6 +94,7 @@ const TeacherApplicationPage: React.FC = () => {
   const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: submitTeacherApplication,
     onSuccess: () => {
+      setIsSubmitted(true);
       notifySuccess("Application submitted successfully!");
       navigate("/learner/application?status=success");
     },
@@ -103,6 +106,7 @@ const TeacherApplicationPage: React.FC = () => {
   const { mutate: updateMutate, isPending: isUpdating } = useMutation({
     mutationFn: updateSubmitTeacherApplication,
     onSuccess: () => {
+      setIsSubmitted(true);
       notifySuccess("Application updated successfully!");
       navigate("/teacher");
     },
@@ -249,7 +253,36 @@ const TeacherApplicationPage: React.FC = () => {
               <Form.Item
                 name="BirthDate"
                 label="Date of Birth"
-                rules={[{ required: true }]}
+                rules={[
+                  { required: true },
+                  {
+                    validator: (_, value) => {
+                      if (!value) {
+                        return Promise.reject(
+                          new Error("Date of birth is required")
+                        );
+                      }
+
+                      const today = new Date();
+                      const age = today.getFullYear() - value.year();
+                      const month = today.getMonth() + 1 - value.month();
+                      const day = today.getDate() - value.date();
+
+                      if (
+                        age < 18 ||
+                        (age === 18 && (month < 0 || (month === 0 && day < 0)))
+                      ) {
+                        return Promise.reject(
+                          new Error(
+                            "You must be at least 18 years old to apply"
+                          )
+                        );
+                      }
+
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
                 <DatePicker className="w-full" />
               </Form.Item>
@@ -502,6 +535,7 @@ const TeacherApplicationPage: React.FC = () => {
                       value: formData.MeetingUrl ? (
                         <a
                           href={formData.MeetingUrl}
+                          target="_blank"
                           className="text-blue-600 hover:underline font-medium"
                         >
                           View Link
@@ -510,6 +544,15 @@ const TeacherApplicationPage: React.FC = () => {
                         "-"
                       ),
                       icon: <Link />,
+                    },
+                    {
+                      label: "Proficiency Code",
+                      value: formData.proficiencyCode ? (
+                        <p>{formData.proficiencyCode}</p>
+                      ) : (
+                        "-"
+                      ),
+                      icon: <Languages />,
                     },
                   ].map((field, idx) => (
                     <div
@@ -631,7 +674,7 @@ const TeacherApplicationPage: React.FC = () => {
           </div>
 
           {/* Submit Button - Enhanced with animation */}
-          <div className="text-center pt-4">
+          {!isSubmitted && (
             <Button
               type="primary"
               onClick={() => handleSubmit()}
@@ -650,10 +693,11 @@ const TeacherApplicationPage: React.FC = () => {
                 )}
               </span>
             </Button>
-            <Paragraph className="text-xs text-gray-500 mt-2">
-              By submitting, you agree to our terms and privacy policy.
-            </Paragraph>
-          </div>
+          )}
+
+          <Paragraph className="text-xs text-gray-500 mt-2">
+            By submitting, you agree to our terms and privacy policy.
+          </Paragraph>
         </div>
       ),
     },
@@ -741,10 +785,6 @@ const TeacherApplicationPage: React.FC = () => {
           )}
         </div>
       </motion.div>
-
-      {/* <div className="text-center mt-10 text-gray-500 text-sm mb-6">
-        © {new Date().getFullYear()} Flearn — Empowering Global Education 🌍
-      </div> */}
     </div>
   );
 };
