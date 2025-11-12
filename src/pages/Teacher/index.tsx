@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Form,
   Input,
@@ -13,35 +13,49 @@ import {
   Spin,
   Steps,
   Avatar,
-} from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import {
   getLanguages,
   getMyApplication,
   updateSubmitTeacherApplication,
   submitTeacherApplication,
-} from '../../services/teacherApplication';
-import { getCertificatesByLanguageService } from '../../services/certificates';
+} from "../../services/teacherApplication";
+import { getCertificatesByLanguageService } from "../../services/certificates";
 import type {
   ApplicationData,
   Language,
   TeacherApplicationRequest,
-} from '../../services/teacherApplication/types';
-import type { AxiosError } from 'axios';
-import type { Certificate } from '../../services/certificates/type';
-import { toast } from 'react-toastify';
-import { notifySuccess } from '../../utils/toastConfig';
-import { useNavigate } from 'react-router-dom';
-import { BookOpen, Cake, GraduationCap, Info, Link, Phone, Users } from 'lucide-react';
+} from "../../services/teacherApplication/types";
+import type { AxiosError } from "axios";
+import type { Certificate } from "../../services/certificates/type";
+import { toast } from "react-toastify";
+import { notifySuccess } from "../../utils/toastConfig";
+import { useNavigate } from "react-router-dom";
+import {
+  BookOpen,
+  Cake,
+  GraduationCap,
+  Info,
+  Link,
+  Phone,
+  Users,
+} from "lucide-react";
 
 const { Option } = Select;
 const { Title, Paragraph } = Typography;
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const proficiencyByLanguage: Record<string, { label: string; value: string }[]> = {
-  en: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((x) => ({ label: x, value: x })),
-  ja: ['N5', 'N4', 'N3', 'N2', 'N1'].map((x) => ({ label: x, value: x })),
-  zh: ['HSK1', 'HSK2', 'HSK3', 'HSK4', 'HSK5', 'HSK6'].map((x) => ({ label: x, value: x })),
+export const proficiencyByLanguage: Record<
+  string,
+  { label: string; value: string }[]
+> = {
+  en: ["A1", "A2", "B1", "B2", "C1", "C2"].map((x) => ({ label: x, value: x })),
+  ja: ["N5", "N4", "N3", "N2", "N1"].map((x) => ({ label: x, value: x })),
+  zh: ["HSK1", "HSK2", "HSK3", "HSK4", "HSK5", "HSK6"].map((x) => ({
+    label: x,
+    value: x,
+  })),
 };
 
 const TeacherApplicationPage: React.FC = () => {
@@ -50,11 +64,11 @@ const TeacherApplicationPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
-  const selectedLang = Form.useWatch('LangCode', form);
+  const selectedLang = Form.useWatch("LangCode", form);
 
   // ✅ Get my application
   const { data: response, isLoading } = useQuery<{ data: ApplicationData[] }>({
-    queryKey: ['myApplication'],
+    queryKey: ["myApplication"],
     queryFn: getMyApplication,
     retry: 1,
     retryDelay: 500,
@@ -62,14 +76,15 @@ const TeacherApplicationPage: React.FC = () => {
 
   // ✅ Languages
   const { data: languagesData, isLoading: loadingLanguages } = useQuery({
-    queryKey: ['languages'],
+    queryKey: ["languages"],
     queryFn: getLanguages,
   });
 
   // ✅ Certificates (after language is selected)
   const { data: certificatesData, isLoading: loadingCertificates } = useQuery({
-    queryKey: ['certificates', selectedLanguage],
-    queryFn: () => getCertificatesByLanguageService({ langCode: selectedLanguage! }),
+    queryKey: ["certificates", selectedLanguage],
+    queryFn: () =>
+      getCertificatesByLanguageService({ langCode: selectedLanguage! }),
     enabled: !!selectedLanguage,
   });
 
@@ -77,22 +92,22 @@ const TeacherApplicationPage: React.FC = () => {
   const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: submitTeacherApplication,
     onSuccess: () => {
-      notifySuccess('Application submitted successfully!');
-      navigate('/learner/status');
+      notifySuccess("Application submitted successfully!");
+      navigate("/learner/application?status=success");
     },
     onError: (err: AxiosError<any>) => {
-      toast.error(err.response?.data.errors || 'Failed to submit application.');
+      toast.error(err.response?.data.errors || "Failed to submit application.");
     },
   });
 
   const { mutate: updateMutate, isPending: isUpdating } = useMutation({
     mutationFn: updateSubmitTeacherApplication,
     onSuccess: () => {
-      notifySuccess('Application updated successfully!');
-      navigate('/teacher');
+      notifySuccess("Application updated successfully!");
+      navigate("/teacher");
     },
     onError: (err: AxiosError<any>) => {
-      toast.error(err.response?.data.errors || 'Failed to update application.');
+      toast.error(err.response?.data.errors || "Failed to update application.");
     },
   });
 
@@ -125,37 +140,47 @@ const TeacherApplicationPage: React.FC = () => {
         (c: any) => c.CertificateImage?.[0]?.originFileObj
       ).filter(Boolean);
 
-      const CertificateTypeId = allData.Certificates?.map((c: any) => c.CertificateTypeId);
+      const CertificateTypeId = allData.Certificates?.map(
+        (c: any) => c.CertificateTypeId
+      );
 
       const payload: TeacherApplicationRequest = {
         LangCode: allData.LangCode,
         FullName: allData.FullName,
-        BirthDate: allData.BirthDate?.format('YYYY-MM-DD') || '',
-        Bio: allData.Bio || '',
+        BirthDate: allData.BirthDate?.format("YYYY-MM-DD") || "",
+        Bio: allData.Bio || "",
         Avatar: allData.Avatar?.[0]?.originFileObj || null,
-        Email: allData.Email || '',
-        PhoneNumber: allData.PhoneNumber || '',
-        TeachingExperience: allData.TeachingExperience || '',
-        MeetingUrl: allData.MeetingUrl || '',
+        Email: allData.Email || "",
+        PhoneNumber: allData.PhoneNumber || "",
+        TeachingExperience: allData.TeachingExperience || "",
+        MeetingUrl: allData.MeetingUrl || "",
         CertificateImages: certificateImagesList || [],
-        CertificateTypeIds: Array.isArray(CertificateTypeId) ? CertificateTypeId : [],
+        CertificateTypeIds: Array.isArray(CertificateTypeId)
+          ? CertificateTypeId
+          : [],
         ProficiencyCode: allData.proficiencyCode,
       };
 
       const now = new Date();
-      const closestApplication = response?.data.reduce((closest: any, current: any) => {
-        const currentDate = new Date(current.submittedAt);
-        const closestDate = closest ? new Date(closest.submittedAt) : null;
-        const currentDiff = Math.abs(now.getTime() - currentDate.getTime());
-        const closestDiff = closestDate
-          ? Math.abs(now.getTime() - closestDate.getTime())
-          : Infinity;
-        return currentDiff < closestDiff ? current : closest;
-      }, null);
+      const closestApplication = response?.data.reduce(
+        (closest: any, current: any) => {
+          const currentDate = new Date(current.submittedAt);
+          const closestDate = closest ? new Date(closest.submittedAt) : null;
+          const currentDiff = Math.abs(now.getTime() - currentDate.getTime());
+          const closestDiff = closestDate
+            ? Math.abs(now.getTime() - closestDate.getTime())
+            : Infinity;
+          return currentDiff < closestDiff ? current : closest;
+        },
+        null
+      );
 
-      console.log('closestApplication', closestApplication);
+      console.log("closestApplication", closestApplication);
 
-      if (closestApplication && closestApplication.status.toLowerCase() === 'pending') {
+      if (
+        closestApplication &&
+        closestApplication.status.toLowerCase() === "pending"
+      ) {
         updateMutate(payload);
       } else {
         mutate(payload);
@@ -169,23 +194,22 @@ const TeacherApplicationPage: React.FC = () => {
   // ✅ Step content
   const steps = [
     {
-      title: 'Language',
+      title: "Language",
       content: (
-        <Form
-          form={form}
-          layout="vertical"
-          size="large">
+        <Form form={form} layout="vertical" size="large">
           <Form.Item
             name="LangCode"
             label="Language"
-            rules={[{ required: true, message: 'Please select a language' }]}>
+            rules={[{ required: true, message: "Please select a language" }]}
+          >
             <Select
-              placeholder={loadingLanguages ? 'Loading...' : 'Select a language'}
-              loading={loadingLanguages}>
+              placeholder={
+                loadingLanguages ? "Loading..." : "Select a language"
+              }
+              loading={loadingLanguages}
+            >
               {languagesData?.data?.map((lang: Language) => (
-                <Option
-                  key={lang.langCode}
-                  value={lang.langCode}>
+                <Option key={lang.langCode} value={lang.langCode}>
                   {lang.langName} ({lang.langCode})
                 </Option>
               ))}
@@ -193,8 +217,11 @@ const TeacherApplicationPage: React.FC = () => {
           </Form.Item>
           <Form.Item
             name="proficiencyCode"
-            label="Proficiency Code"
-            rules={[{ required: true, message: 'Proficiency code is required' }]}>
+            label="Proficiency Level"
+            rules={[
+              { required: true, message: "Proficiency level is required" },
+            ]}
+          >
             <Select
               placeholder="Select proficiency level"
               disabled={!selectedLang}
@@ -205,39 +232,32 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: ' Information',
+      title: " Information",
       content: (
-        <Form
-          form={form}
-          layout="vertical"
-          size="large">
+        <Form form={form} layout="vertical" size="large">
           <div className="flex gap-3.5">
             <div className="flex-1">
               <Form.Item
                 name="FullName"
                 label="Full Name"
-                rules={[{ required: true }]}>
+                rules={[{ required: true }]}
+              >
                 <Input placeholder="Your full name" />
               </Form.Item>
             </div>
             <div className="flex-1">
               <Form.Item
                 name="BirthDate"
-                label="Birth Date"
-                rules={[{ required: true }]}>
+                label="Date of Birth"
+                rules={[{ required: true }]}
+              >
                 <DatePicker className="w-full" />
               </Form.Item>
             </div>
           </div>
 
-          <Form.Item
-            name="Bio"
-            label="Bio"
-            rules={[{ required: true }]}>
-            <Input.TextArea
-              rows={3}
-              placeholder="Write a short bio"
-            />
+          <Form.Item name="Bio" label="Bio" rules={[{ required: true }]}>
+            <Input.TextArea rows={3} placeholder="Write a short bio" />
           </Form.Item>
 
           <div className="flex gap-2.5">
@@ -245,7 +265,10 @@ const TeacherApplicationPage: React.FC = () => {
               <Form.Item
                 name="Email"
                 label="Email"
-                rules={[{ required: true, type: 'email', message: 'Invalid email' }]}>
+                rules={[
+                  { required: true, type: "email", message: "Invalid email" },
+                ]}
+              >
                 <Input placeholder="you@example.com" />
               </Form.Item>
             </div>
@@ -253,7 +276,8 @@ const TeacherApplicationPage: React.FC = () => {
               <Form.Item
                 name="PhoneNumber"
                 label="Phone Number"
-                rules={[{ required: true }]}>
+                rules={[{ required: true }]}
+              >
                 <Input placeholder="+84..." />
               </Form.Item>
             </div>
@@ -262,27 +286,27 @@ const TeacherApplicationPage: React.FC = () => {
           <Form.Item
             name="TeachingExperience"
             label="Teaching Experience"
-            rules={[{ required: true }]}>
-            <Input.TextArea
-              rows={3}
-              placeholder="Describe your experience"
-            />
+            rules={[{ required: true }]}
+          >
+            <Input.TextArea rows={3} placeholder="Describe your experience" />
           </Form.Item>
 
           <Form.Item
             name="MeetingUrl"
-            label="Meeting URL">
+            label="Meeting URL"
+            rules={[{ required: true }]}
+          >
             <Input placeholder="https://zoom.us/..." />
           </Form.Item>
 
           <Form.Item
             name="Avatar"
             label="Profile Picture"
+            rules={[{ required: true }]}
             valuePropName="fileList"
-            getValueFromEvent={(e) => e.fileList}>
-            <Upload
-              beforeUpload={() => false}
-              listType="picture">
+            getValueFromEvent={(e) => e.fileList}
+          >
+            <Upload beforeUpload={() => false} listType="picture">
               <Button icon={<UploadOutlined />}>Upload Avatar</Button>
             </Upload>
           </Form.Item>
@@ -290,12 +314,9 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: 'Certificates',
+      title: "Certificates",
       content: (
-        <Form
-          form={form}
-          layout="vertical"
-          size="large">
+        <Form form={form} layout="vertical" size="large">
           <Form.List name="Certificates">
             {(fields, { add, remove }) => (
               <>
@@ -307,7 +328,8 @@ const TeacherApplicationPage: React.FC = () => {
                     type="dashed"
                     onClick={() => add()}
                     disabled={!selectedLanguage}
-                    icon={<UploadOutlined />}>
+                    icon={<UploadOutlined />}
+                  >
                     Add Certificate
                   </Button>
                 </div>
@@ -324,20 +346,24 @@ const TeacherApplicationPage: React.FC = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="border rounded-xl p-4 mb-4 bg-gray-50 relative">
+                    className="border rounded-xl p-4 mb-4 bg-gray-50 relative"
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Form.Item
                         {...restField}
-                        name={[name, 'CertificateTypeId']}
+                        name={[name, "CertificateTypeId"]}
                         label=" Type"
-                        rules={[{ required: true }]}>
+                        rules={[{ required: true }]}
+                      >
                         <Select
                           placeholder="Select certificate type"
-                          disabled={!selectedLanguage || loadingCertificates}>
+                          disabled={!selectedLanguage || loadingCertificates}
+                        >
                           {certificatesData?.data?.map((cert: Certificate) => (
                             <Option
                               key={cert.certificateId}
-                              value={cert.certificateId}>
+                              value={cert.certificateId}
+                            >
                               {cert.name}
                             </Option>
                           ))}
@@ -346,15 +372,19 @@ const TeacherApplicationPage: React.FC = () => {
 
                       <Form.Item
                         {...restField}
-                        name={[name, 'CertificateImage']}
+                        name={[name, "CertificateImage"]}
                         label=" Image"
                         valuePropName="fileList"
                         getValueFromEvent={(e) => e.fileList}
-                        rules={[{ required: true, message: 'Please upload image' }]}>
+                        rules={[
+                          { required: true, message: "Please upload image" },
+                        ]}
+                      >
                         <Upload
                           beforeUpload={() => false}
                           listType="picture-card"
-                          maxCount={1}>
+                          maxCount={1}
+                        >
                           <div>
                             <UploadOutlined />
                             <div style={{ marginTop: 8 }}>Upload</div>
@@ -367,7 +397,8 @@ const TeacherApplicationPage: React.FC = () => {
                       type="text"
                       danger
                       className="absolute top-2 right-2"
-                      onClick={() => remove(name)}>
+                      onClick={() => remove(name)}
+                    >
                       Remove
                     </Button>
                   </motion.div>
@@ -379,16 +410,18 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: 'Review & Submit',
+      title: "Review & Submit",
       content: (
         <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 bg-gradient-to-b from-gray-50 to-white rounded-2xl shadow-xl">
           <Title
             level={3} // Bumped to level 3 for more prominence
-            className="text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 mb-2 tracking-wide">
+            className="text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 mb-2 tracking-wide"
+          >
             Review Your Application
           </Title>
           <Paragraph className="text-center text-gray-600 mb-8">
-            Double-check your details before submitting. Everything looks good? Hit submit!
+            Double-check your details before submitting. Everything looks good?
+            Hit submit!
           </Paragraph>
 
           {/* Language Card */}
@@ -400,8 +433,9 @@ const TeacherApplicationPage: React.FC = () => {
               </Paragraph>
             </div>
             <p className="text-gray-800 text-lg font-medium">
-              {languagesData?.data?.find((l: any) => l.langCode === formData.LangCode)?.langName ||
-                'Not selected'}{' '}
+              {languagesData?.data?.find(
+                (l: any) => l.langCode === formData.LangCode
+              )?.langName || "Not selected"}{" "}
               <span className="text-blue-600">({formData.LangCode})</span>
             </p>
           </div>
@@ -421,7 +455,9 @@ const TeacherApplicationPage: React.FC = () => {
                 <div className="flex items-center gap-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
                   {formData.Avatar?.[0] ? (
                     <Avatar
-                      src={URL.createObjectURL(formData.Avatar[0].originFileObj)}
+                      src={URL.createObjectURL(
+                        formData.Avatar[0].originFileObj
+                      )}
                       alt="Applicant Avatar Preview"
                       className="!w-16 !h-16 border-2 border-indigo-300 object-cover rounded-full shadow-md ring-2 ring-indigo-100"
                       icon={
@@ -433,16 +469,16 @@ const TeacherApplicationPage: React.FC = () => {
                   ) : (
                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center shadow-md ring-2 ring-indigo-100">
                       <span className="text-white font-bold text-sm">
-                        {formData.FullName?.charAt(0) || 'A'}
+                        {formData.FullName?.charAt(0) || "A"}
                       </span>
                     </div>
                   )}
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">
-                      {formData.FullName || 'Unnamed Applicant'}
+                      {formData.FullName || "Unnamed Applicant"}
                     </h3>
                     <p className="text-indigo-600 font-medium">
-                      {formData.Email || 'No email provided'}
+                      {formData.Email || "No email provided"}
                     </p>
                   </div>
                 </div>
@@ -451,28 +487,35 @@ const TeacherApplicationPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
-                      label: 'Birth Date',
-                      value: formData.BirthDate?.format?.('MMM DD, YYYY') || '-',
+                      label: "Birth Date",
+                      value:
+                        formData.BirthDate?.format?.("MMM DD, YYYY") || "-",
                       icon: <Cake />,
                     },
-                    { label: 'Phone', value: formData.PhoneNumber || '-', icon: <Phone /> },
                     {
-                      label: 'Meeting URL',
+                      label: "Phone",
+                      value: formData.PhoneNumber || "-",
+                      icon: <Phone />,
+                    },
+                    {
+                      label: "Meeting URL",
                       value: formData.MeetingUrl ? (
                         <a
                           href={formData.MeetingUrl}
-                          className="text-blue-600 hover:underline font-medium">
+                          className="text-blue-600 hover:underline font-medium"
+                        >
                           View Link
                         </a>
                       ) : (
-                        '-'
+                        "-"
                       ),
                       icon: <Link />,
                     },
                   ].map((field, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                    >
                       <span className="text-2xl">{field.icon}</span>
                       <div>
                         <strong className="block text-sm font-medium text-gray-700">
@@ -486,19 +529,27 @@ const TeacherApplicationPage: React.FC = () => {
 
                 {/* Full-width fields */}
                 {[
-                  { label: 'Bio', value: formData.Bio || 'No bio provided', icon: <Info /> },
                   {
-                    label: 'Teaching Experience',
-                    value: formData.TeachingExperience || 'No experience listed',
+                    label: "Bio",
+                    value: formData.Bio || "No bio provided",
+                    icon: <Info />,
+                  },
+                  {
+                    label: "Teaching Experience",
+                    value:
+                      formData.TeachingExperience || "No experience listed",
                     icon: <GraduationCap />,
                   },
                 ].map((field, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    className="p-4 bg-blue-50 rounded-lg border border-blue-200"
+                  >
                     <div className="flex items-start gap-3 mb-2">
                       <span className="text-2xl mt-0.5">{field.icon}</span>
-                      <strong className="text-gray-700 font-semibold">{field.label}:</strong>
+                      <strong className="text-gray-700 font-semibold">
+                        {field.label}:
+                      </strong>
                     </div>
                     <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
                       {field.value}
@@ -519,27 +570,31 @@ const TeacherApplicationPage: React.FC = () => {
                 <div className="space-y-4 max-h-120 overflow-y-auto">
                   {formData.Certificates.map((cert: any, idx: number) => {
                     const certInfo = certificatesData?.data?.find(
-                      (c: Certificate) => c.certificateId === cert.CertificateTypeId
+                      (c: Certificate) =>
+                        c.certificateId === cert.CertificateTypeId
                     );
                     return (
                       <div
                         key={idx}
-                        className="group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden">
+                        className="group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden"
+                      >
                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                             Verified
                           </span>
                         </div>
                         <h4 className="font-bold text-gray-900 mb-2 text-center">
-                          {certInfo?.name || 'Certificate'}
+                          {certInfo?.name || "Certificate"}
                         </h4>
                         {cert.CertificateImage?.[0] ? (
                           <img
-                            src={URL.createObjectURL(cert.CertificateImage[0].originFileObj)}
-                            alt={`${certInfo?.name || 'Certificate'} Preview`}
+                            src={URL.createObjectURL(
+                              cert.CertificateImage[0].originFileObj
+                            )}
+                            alt={`${certInfo?.name || "Certificate"} Preview`}
                             className="w-full max-w-sm mx-auto h-32 object-cover rounded-lg border border-gray-200 shadow-inner"
                             onError={(e) => {
-                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.style.display = "none";
                             }} // Hide on error
                           />
                         ) : (
@@ -554,9 +609,7 @@ const TeacherApplicationPage: React.FC = () => {
                 {formData.Certificates.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     <p className="text-lg">No certificates added yet.</p>
-                    <Button
-                      type="dashed"
-                      className="mt-2">
+                    <Button type="dashed" className="mt-2">
                       Add More
                     </Button>
                   </div>
@@ -584,7 +637,8 @@ const TeacherApplicationPage: React.FC = () => {
               onClick={() => handleSubmit()}
               loading={isSubmitting || isUpdating}
               className="w-full max-w-md h-14 text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-xl border-none"
-              size="large">
+              size="large"
+            >
               <span className="flex items-center gap-2">
                 {isSubmitting || isUpdating ? (
                   <>
@@ -592,7 +646,7 @@ const TeacherApplicationPage: React.FC = () => {
                     Submitting...
                   </>
                 ) : (
-                  'Submit Application'
+                  "Submit Application"
                 )}
               </span>
             </Button>
@@ -618,10 +672,12 @@ const TeacherApplicationPage: React.FC = () => {
               <GraduationCap className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl text-white md:text-5xl font-bold">Become a Teacher</h1>
+          <h1 className="text-4xl text-white md:text-5xl font-bold">
+            Become a Teacher
+          </h1>
           <p className="text-lg text-white md:text-xl text-primary-foreground/90 max-w-2xl mx-auto">
-            Share your knowledge and inspire the next generation of learners. Join our community of
-            passionate educators.
+            Share your knowledge and inspire the next generation of learners.
+            Join our community of passionate educators.
           </p>
         </div>
       </div>
@@ -659,7 +715,8 @@ const TeacherApplicationPage: React.FC = () => {
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white rounded-2xl shadow-xl p-10 m-12">
+        className="bg-white rounded-2xl shadow-xl p-10 m-12"
+      >
         <Steps
           current={currentStep}
           items={steps.map((s) => ({ title: s.title }))}
@@ -669,9 +726,7 @@ const TeacherApplicationPage: React.FC = () => {
 
         <div className="mt-8 flex justify-between">
           {currentStep > 0 && (
-            <Button
-              onClick={prev}
-              className="px-6">
+            <Button onClick={prev} className="px-6">
               Previous
             </Button>
           )}
@@ -679,7 +734,8 @@ const TeacherApplicationPage: React.FC = () => {
             <Button
               type="primary"
               onClick={next}
-              className="px-6 bg-gradient-to-r from-indigo-600 to-blue-500">
+              className="px-6 bg-gradient-to-r from-indigo-600 to-blue-500"
+            >
               Next
             </Button>
           )}
