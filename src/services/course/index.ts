@@ -13,6 +13,7 @@ import type {
   ICourseDataStaff,
   Lesson,
   PayloadCourseTemplate,
+  Program,
 } from "./type";
 
 export const getCourseTemplateByIdService = async (id: string) => {
@@ -172,12 +173,34 @@ export const deleteCourseService = async (id: string) => {
   return res.data;
 };
 
+export const getTeachingProgramService = async ({
+  pageNumber = 1,
+  pageSize = 100,
+}: { pageNumber?: number, pageSize?: number }) => {
+  const res = await api.get<API.Response<Program[]>>("teaching-programs", {
+    params: { pageNumber, pageSize },
+  });
+  return res.data;
+};
+
 export const getCourseTemplatesService = async ({
   page = 1,
   pageSize = 100,
 }: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
   const res = await api.get<CourseTemplateResponse>("templates", {
     params: { page, pageSize },
+  });
+  return res.data;
+};
+
+export const getCourseTemplatesByProgramService = async ({
+  page = 1,
+  pageSize = 100,
+  programId = "",
+  levelId = "",
+}: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
+  const res = await api.get<CourseTemplateResponse>("templates", {
+    params: { page, pageSize, programId, levelId },
   });
   return res.data;
 };

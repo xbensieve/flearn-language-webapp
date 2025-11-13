@@ -122,6 +122,15 @@ export interface CourseTemplateResponse {
 export interface CourseTemplateQuery {
   page?: number;
   pageSize?: number;
+  programId?: string;
+  levelId?: string;
+}
+
+export interface Program {
+  programId: string
+  programName: string
+  levelId: string
+  levelName: string
 }
 
 export interface CourseUnitsRequest {
