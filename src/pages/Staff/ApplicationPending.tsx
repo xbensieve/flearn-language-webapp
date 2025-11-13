@@ -133,10 +133,10 @@ const ApplicationsManagement: React.FC = () => {
     refetch();
   };
 
-  const getStatusCount = (status: string) => {
-    // For demo, using current data; in real, fetch total counts
-    return status === filterStatus ? data?.data?.length || 0 : 0;
-  };
+  // const getStatusCount = (status: string) => {
+  //   // For demo, using current data; in real, fetch total counts
+  //   return status === filterStatus ? data?.data?.length || 0 : 0;
+  // };
 
   const columns = [
     {
@@ -235,7 +235,7 @@ const ApplicationsManagement: React.FC = () => {
             Teacher Applications
           </h1>
           <Badge
-            count={getStatusCount("Pending")}
+            count={0}
             style={{ backgroundColor: "#52c41a" }}
             offset={[-10, 10]}
           />
@@ -419,7 +419,7 @@ const ApplicationsManagement: React.FC = () => {
                       </div>
                       <div className="flex items-center">
                         <CalendarOutlined className="mr-2 text-blue-500" />
-                        <Typography.Text strong>Birth of Date:</Typography.Text>
+                        <Typography.Text strong>Date of Birth:</Typography.Text>
                         <span className="ml-2">
                           {selectedApplication?.dateOfBirth
                             ? selectedApplication.dateOfBirth

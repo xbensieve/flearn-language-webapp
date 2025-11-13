@@ -520,7 +520,7 @@ const TeacherApplicationPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
-                      label: "Birth Date",
+                      label: "Date of Birth",
                       value:
                         formData.BirthDate?.format?.("MMM DD, YYYY") || "-",
                       icon: <Cake />,
