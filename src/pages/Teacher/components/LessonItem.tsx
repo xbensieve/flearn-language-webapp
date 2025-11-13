@@ -45,9 +45,10 @@ const { TabPane } = Tabs;
 interface Props {
   lesson: Lesson;
   onUpdated: () => void;
+  onDeleted: (id: string) => void;
 }
 
-const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
+const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [exerciseDrawerVisible, setExerciseDrawerVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
@@ -100,9 +101,9 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
     setConfirmDeleteVisible(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = (id: string) => {
     // Implement delete API call (assumed useDeleteLesson hook)
-    message.success('Lesson deleted successfully');
+    onDeleted(id);
     onUpdated();
     setConfirmDeleteVisible(false);
   };
@@ -349,7 +350,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
         {confirmDeleteVisible && (
           <Modal
             open={confirmDeleteVisible}
-            onOk={handleConfirmDelete}
+            onOk={() => handleConfirmDelete(lesson.lessonID)}
             onCancel={handleCancelDelete}
             okText="Delete"
             cancelText="Cancel"

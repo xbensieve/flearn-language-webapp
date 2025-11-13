@@ -30,6 +30,7 @@ import {
   getCourseUnitsService,
   getLessonsByUnits,
   submitCourseService,
+  updateCourseVisibilityService,
 } from '../../services/course';
 import type { Unit } from '../../services/course/type';
 import {
@@ -50,6 +51,8 @@ import {
   Box,
   Timer,
   Clock,
+  Eye,
+  Archive,
 } from 'lucide-react';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { formatStatusLabel } from '../../utils/mapping';
@@ -218,10 +221,31 @@ const CourseDetailView: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const navigate = useNavigate();
 
-  const { data: courseData, isLoading: courseLoading } = useQuery({
+  const {
+    data: course,
+    isLoading: courseLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['course', courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
+  });
+
+  const { mutate: updateVisibility } = useMutation({
+    mutationFn: (isHidden: boolean) =>
+      updateCourseVisibilityService({
+        id: courseId!,
+        isPublic: isHidden,
+      }),
+    onSuccess: (data) => {
+      notifySuccess(
+        data.isHidden ? 'Course archived successfully' : 'Course restored successfully'
+      );
+      refetch();
+    },
+    onError: (error: AxiosError<any>) => {
+      notifyError(error.response?.data?.message || 'Failed to update course visibility');
+    },
   });
 
   const { data: unitsData, isLoading: unitsLoading } = useQuery({
@@ -254,6 +278,13 @@ const CourseDetailView: React.FC = () => {
     if (courseId) submitCourse(courseId);
   };
 
+  const handleArchiveCourse = (status: boolean) => {
+    console.log(status);
+    if (courseId) {
+      updateVisibility(!status);
+    }
+  };
+
   if (courseLoading || unitsLoading) {
     return (
       <div className="flex justify-center items-center min-h-[70vh] bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -272,7 +303,7 @@ const CourseDetailView: React.FC = () => {
     );
   }
 
-  if (!courseData) {
+  if (!course) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
         <Empty description="Course not found" />
@@ -280,29 +311,42 @@ const CourseDetailView: React.FC = () => {
     );
   }
 
-  const course = courseData;
-
   return (
     <div className="min-h-screen bg-transparent py-10 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center bg-white rounded-t-2xl p-6 border-gray-100">
-          <div className="flex items-center gap-3">
-            <Tooltip title="Back to courses">
-              <Button
-                onClick={() => navigate(-1)}
-                type="default"
-                className="rounded-xl shadow-sm border-gray-200 hover:border-indigo-300 transition-colors">
-                <ArrowLeft size={16} />
-              </Button>
-            </Tooltip>
-            <div className="flex items-center gap-2">
-              <Title
-                level={2}
-                className="!mb-0 text-gray-800">
-                Course Overview
-              </Title>
+          <div className="flex justify-between items-center flex-1">
+            <div className="flex items-center gap-3">
+              <Tooltip title="Back to courses">
+                <Button
+                  onClick={() => navigate(-1)}
+                  type="default"
+                  className="rounded-xl shadow-sm border-gray-200 hover:border-indigo-300 transition-colors">
+                  <ArrowLeft size={16} />
+                </Button>
+              </Tooltip>
+              <div className="flex items-center gap-2">
+                <Title
+                  level={2}
+                  className="!mb-0 text-gray-800">
+                  Course Overview
+                </Title>
+              </div>
             </div>
+            <Button
+              style={{ marginRight: '6px' }}
+              onClick={() => handleArchiveCourse(course.courseStatus.toLowerCase() === 'archived')}>
+              {course?.courseStatus?.toLowerCase() === 'archived' ? (
+                <Tooltip title="Restore course">
+                  <Eye size={16} />
+                </Tooltip>
+              ) : (
+                <Tooltip title="Archive course">
+                  <Archive size={16} />
+                </Tooltip>
+              )}
+            </Button>
           </div>
           <div className="space-x-2 flex items-center">
             {isEditMode ? (

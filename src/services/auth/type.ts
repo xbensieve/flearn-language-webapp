@@ -22,6 +22,21 @@ export interface ProfileResponse {
   roles: string[];
 }
 
+export interface TeacherProfile {
+  teacherId: string
+  language: string
+  fullName: string
+  dateOfBirth: string
+  bio: string
+  avatar: string
+  email: string
+  phoneNumber: string
+  proficiencyCode: string
+  averageRating: number
+  reviewCount: number
+  meetingUrl: string
+}
+
 export interface IRefreshToken {
   accessToken: string;
   refreshToken: string;

@@ -20,6 +20,7 @@ import {
 } from 'antd';
 import {
   createCourseUnitsService,
+  deleteUnitsService,
   getCourseDetailService,
   getCourseUnitsService,
   getLessonsByUnits,
@@ -27,7 +28,7 @@ import {
 import type { Unit, Lesson } from '../../services/course/type';
 import { CloseOutlined, FileOutlined, PlusOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import type { AxiosError } from 'axios';
-import { notifyError } from '../../utils/toastConfig';
+import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import {
   ArrowLeft,
   BookOpen,
@@ -45,6 +46,7 @@ import {
   Sparkles,
   Star,
   Timer,
+  Trash,
   Users,
 } from 'lucide-react';
 
@@ -62,6 +64,18 @@ const CourseDetail: React.FC = () => {
     queryKey: ['course', courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
+  });
+
+  // --- Delete Unit Mutation ---
+  const deleteUnitMutation = useMutation({
+    mutationFn: (unitId: string) => deleteUnitsService({ id: unitId }),
+    onSuccess: () => {
+      notifySuccess('Unit deleted successfully');
+      refetchUnits();
+    },
+    onError: (error: AxiosError<any>) => {
+      notifyError(error.response?.data?.message || 'Failed to delete unit');
+    },
   });
 
   // --- Fetch Units ---
@@ -102,6 +116,10 @@ const CourseDetail: React.FC = () => {
       description: values.description,
       isPreview: false,
     });
+  };
+
+  const handleDeleteUnit = (unitId: string) => {
+    deleteUnitMutation.mutate(unitId);
   };
 
   // --- Loading + Empty State ---
@@ -505,6 +523,7 @@ const CourseDetail: React.FC = () => {
                 units.map((unit) => (
                   <UnitWithLessons
                     key={unit?.courseUnitID || Math.random()}
+                    deleteUnit={handleDeleteUnit}
                     unit={unit}
                   />
                 ))
@@ -537,7 +556,10 @@ const CourseDetail: React.FC = () => {
 };
 
 // ---- Subcomponent: Unit + Lessons preview ----
-const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
+const UnitWithLessons: React.FC<{ unit: Unit; deleteUnit: (id: string) => void }> = ({
+  unit,
+  deleteUnit,
+}) => {
   const { data: lessonsResponse, isLoading } = useQuery({
     queryKey: ['lessons', unit?.courseUnitID],
     queryFn: () => getLessonsByUnits({ unitId: unit?.courseUnitID }),
@@ -589,6 +611,9 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
             </Button>
           </Link>
         </Tooltip>
+        <Button onClick={() => deleteUnit(unit?.courseUnitID)}>
+          <Trash size={16} />
+        </Button>
       </div>
 
       {isLoading ? (
