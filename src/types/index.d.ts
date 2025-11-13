@@ -16,6 +16,11 @@ declare namespace API {
       totalPages: number
     }
     errors: any
-    meta: any
+    meta: {
+      page?: number;
+      pageSize?: number;
+      totalItems?: number;
+      totalPages?: number;
+    }
   }
 }

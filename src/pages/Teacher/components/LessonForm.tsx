@@ -67,7 +67,7 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
                 <Text
                   strong
                   className="text-sky-800">
-                  Lesson Basics
+                  Basics
                 </Text>
               </div>
               <Row gutter={16}>
@@ -79,11 +79,11 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
                           size={16}
                           className="text-gray-600"
                         />
-                        Lesson Title
+                        Title
                       </span>
                     }
                     name="title"
-                    rules={[{ required: true, message: 'Lesson title is required' }]}>
+                    rules={[{ required: true, message: 'Title is required' }]}>
                     <Input
                       placeholder="e.g., Basic Greetings in Spanish"
                       prefix={
@@ -106,6 +106,8 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
                         Short Description
                       </span>
                     }
+                    required
+                    rules={[{ required: true, message: 'Description is required' }]}
                     name="description">
                     <Input.TextArea
                       rows={6}

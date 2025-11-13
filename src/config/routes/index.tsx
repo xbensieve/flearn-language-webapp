@@ -14,7 +14,6 @@ import ApplicationsPending from '../../pages/Staff/ApplicationPending';
 import Register from '../../pages/Register';
 import CreateSurvey from '../../pages/Teacher/CreateSurvey';
 import MySurvey from '../../pages/Teacher/MySurvey';
-import LandingPage from '../../pages/LandingPage';
 import CreateCourse from '../../pages/Teacher/CreateCourse';
 import MyCourses from '../../pages/Teacher/MyCourse';
 import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
@@ -27,6 +26,14 @@ import UnitsManager from '../../pages/Teacher/UnitsManager';
 import EditCoursePage from '../../pages/Teacher/EditCoursePage';
 import ReviewCourses from '../../pages/Staff/ReviewCourses';
 import CourseReviewDetail from '../../pages/Staff/CourseReviewDetail';
+import ConversationPromptPage from '../../pages/Admin/ConversationPromptPage';
+import MyClasses from '../../pages/Teacher/MyClasses';
+import ClassDetail from '../../pages/Teacher/ClassDetail';
+import ForgotPassword from '../../pages/ForgotPassword';
+import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
+import ProgramPage from '../../pages/Admin/Program';
+import LevelPage from '../../pages/Admin/Level';
+import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -36,11 +43,19 @@ const routes: RouteObject[] = [
   },
   {
     path: '/',
-    element: <LandingPage />,
+    element: <LoginPage />,
   },
   {
     path: '/register',
     element: <Register />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     path: '/unauthorized',
@@ -71,13 +86,29 @@ const routes: RouteObject[] = [
         path: 'goals',
         element: <Goals />,
       },
+      {
+        path: 'conversation-prompts',
+        element: <ConversationPromptPage />,
+      },
+      {
+        path: 'programs',
+        element: <ProgramPage />,
+      },
+      {
+        path: 'refund',
+        element: <RefundAdminPage />,
+      },
+      {
+        path: 'levels/:programId',
+        element: <LevelPage />,
+      },
     ],
   },
 
   {
-    path: '/staff',
+    path: '/manager',
     element: (
-      <PrivateRoute allowedRoles={['staff']}>
+      <PrivateRoute allowedRoles={['manager']}>
         <StaffDashboardLayout />
       </PrivateRoute>
     ),
@@ -142,6 +173,8 @@ const routes: RouteObject[] = [
       { path: 'course/:id/edit', element: <CourseDetail /> },
       { path: 'course/:id/edit-course', element: <EditCoursePage /> },
       { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
+      { path: 'classes', element: <MyClasses /> },
+      { path: 'classes/:id', element: <ClassDetail /> },
     ],
   },
   {

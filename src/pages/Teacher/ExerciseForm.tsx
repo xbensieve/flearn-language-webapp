@@ -40,7 +40,7 @@ interface Props {
 
 const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
   const [form] = Form.useForm();
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string[] | null>(null);
   const createExercise = useCreateExercise(lessonId);
 
   // Pre-fill form for editing
@@ -58,9 +58,20 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         passScore: exercise.passScore,
         feedbackCorrect: exercise.feedbackCorrect,
         feedbackIncorrect: exercise.feedbackIncorrect,
-        media: exercise.mediaUrl ? [{ url: exercise.mediaUrl, status: 'done' }] : undefined,
+        media: exercise.mediaUrls
+          ? exercise.mediaUrls.map((url: string) => ({
+              url,
+              name: url.split('/').pop() || 'audio.mp3',
+              status: 'done',
+              uid: '-1',
+            }))
+          : undefined,
       });
-      setMediaPreview(exercise.mediaUrl);
+
+      // Set preview as array
+      if (exercise.mediaUrls && exercise.mediaUrls.length > 0) {
+        setMediaPreview(exercise.mediaUrls);
+      }
     } else {
       form.resetFields();
       setMediaPreview(null);
@@ -76,12 +87,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       Content: values.content,
       ExpectedAnswer: values.expectedAnswer,
       Difficulty: values.difficulty,
-      Type: undefined,
+      Type: 1,
       MaxScore: Number(values.maxScore) || 0,
       PassScore: Number(values.passScore) || 0,
       FeedbackCorrect: values.feedbackCorrect,
       FeedbackIncorrect: values.feedbackIncorrect,
-      MediaFile: values.media?.file,
+      MediaFiles: values.media?.file,
     };
 
     createExercise.mutate(payload, {
@@ -93,10 +104,13 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     });
   };
 
-  const handleMediaChange = ({ file }: any) => {
-    if (file) {
-      const url = URL.createObjectURL(file.originFileObj);
-      setMediaPreview(url);
+  const handleMediaChange = ({ fileList }: any) => {
+    if (fileList.length > 0) {
+      const file = fileList[0].originFileObj;
+      if (file) {
+        const url = URL.createObjectURL(file);
+        setMediaPreview([url]); // Always an array
+      }
     } else {
       setMediaPreview(null);
     }
@@ -161,7 +175,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                             size={16}
                             className="text-gray-600"
                           />
-                         Title
+                          Title
                         </span>
                       }
                       rules={[{ required: true, message: 'Please enter a title' }]}>
@@ -179,7 +193,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                           Prompt
                         </span>
-                      }>
+                      }
+                      rules={[{ required: true, message: 'Please input prompt' }]}>
                       <Input.TextArea
                         rows={3}
                         placeholder="Clear instructions: 'Choose the correct translation...'"
@@ -195,9 +210,11 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                             size={16}
                             className="text-gray-600"
                           />
-                          Hints (Optional)
+                          Hints
                         </span>
-                      }>
+                      }
+                      required
+                      rules={[{ required: true, message: 'Please input hints' }]}>
                       <Input.TextArea
                         rows={2}
                         placeholder="e.g., Remember subject-verb agreement!"
@@ -215,7 +232,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                           Content
                         </span>
-                      }>
+                      }
+                      required
+                      rules={[{ required: true, message: 'Please input content' }]}>
                       <Input.TextArea
                         rows={4}
                         placeholder="Detailed exercise body..."
@@ -233,7 +252,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                           Expected Answer
                         </span>
-                      }>
+                      }
+                      required
+                      rules={[{ required: true, message: 'Expected Answer is required' }]}>
                       <Input.TextArea
                         rows={2}
                         placeholder="e.g., 'Hola, ¿cómo estás?'"
@@ -273,6 +294,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           Type
                         </span>
                       }
+                      required
                       rules={[{ required: true, message: 'Please select a type' }]}>
                       <Select
                         placeholder="Choose exercise type"
@@ -282,10 +304,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                             className="text-gray-400"
                           />
                         }
+                        defaultValue={{ label: 'RepeatAfterMe', value: 1 }}
                         options={[
-                          { label: 'Multiple Choice', value: 'multiple-choice' },
-                          { label: 'Essay', value: 'essay' },
-                          { label: 'Fill in the Blank', value: 'fill-blank' },
+                          { label: 'RepeatAfterMe', value: 1 },
+                          { label: 'PictureDescription', value: 2 },
+                          { label: 'StoryTelling', value: 3 },
+                          { label: 'Debate', value: 4 },
                         ]}
                       />
                     </Form.Item>
@@ -302,7 +326,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           Difficulty
                         </span>
                       }
-                      rules={[{ required: true, message: 'Please select a difficulty' }]}>
+                      rules={[
+                        {
+                          required: true,
+                          message: 'Please select a difficulty',
+                        },
+                      ]}>
                       <Select
                         placeholder="Select difficulty level"
                         suffixIcon={
@@ -312,9 +341,10 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                         }
                         options={[
-                          { label: 'Easy', value: 'easy' },
-                          { label: 'Medium', value: 'medium' },
-                          { label: 'Hard', value: 'hard' },
+                          { label: 'Easy', value: 1 },
+                          { label: 'Medium', value: 2 },
+                          { label: 'Hard', value: 3 },
+                          { label: 'Advanced', value: 4 },
                         ]}
                       />
                     </Form.Item>
@@ -394,7 +424,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                           Feedback (Correct)
                         </span>
-                      }>
+                      }
+                      rules={[{ required: true, message: 'Feedback Correct is required' }]}>
                       <Input.TextArea
                         rows={4}
                         placeholder="Great job! You've nailed the concept."
@@ -412,9 +443,10 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                           />
                           Feedback (Incorrect)
                         </span>
-                      }>
+                      }
+                      rules={[{ required: true, message: 'Feedback Incorrect is required' }]}>
                       <Input.TextArea
-                        rows={2}
+                        rows={4}
                         placeholder="Keep trying! Review the hint above."
                       />
                     </Form.Item>
@@ -423,13 +455,15 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
                 <Form.Item
                   name="media"
+                  required
+                  rules={[{ required: true, message: 'media file is required' }]}
                   label={
                     <span className="flex items-center gap-2">
                       <ImageIcon
                         size={16}
                         className="text-gray-600"
                       />
-                      Media File (Optional)
+                      Media File
                     </span>
                   }
                   valuePropName="file">
@@ -447,20 +481,21 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                     </Button>
                   </Upload>
                 </Form.Item>
-                {mediaPreview && (
-                  <div className="mt-4 p-4 bg-white rounded-xl shadow-sm">
-                    <Text
-                      strong
-                      className="block mb-2">
-                      Audio Preview:
-                    </Text>
-                    <audio
-                      src={mediaPreview}
-                      controls
-                      className="w-full rounded-lg"
-                    />
-                  </div>
-                )}
+                {mediaPreview &&
+                  mediaPreview.map((mediaPreview) => (
+                    <div className="mt-4 p-4 bg-white rounded-xl shadow-sm">
+                      <Text
+                        strong
+                        className="block mb-2">
+                        Audio Preview:
+                      </Text>
+                      <audio
+                        src={mediaPreview}
+                        controls
+                        className="w-full rounded-lg"
+                      />
+                    </div>
+                  ))}
               </Panel>
             </Collapse>
 
@@ -472,7 +507,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                   loading={createExercise.isPending}
                   className="rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 px-8 py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold"
                   icon={<Check size={16} />}>
-                  Create Exercise
+                  Create
                 </Button>
               </Tooltip>
             </div>

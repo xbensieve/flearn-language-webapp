@@ -1,32 +1,25 @@
 import React, { useState } from 'react';
 import {
-  Card,
   Typography,
   Row,
   Col,
-  Tag,
   Button,
   Empty,
   Spin,
   Select,
   Space,
   Badge,
-  Statistic,
-  Image,
+  Pagination,
+  ConfigProvider,
 } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getMyCoursesService } from '../../services/course';
-import {
-  PlusOutlined,
-  BookOutlined,
-  EditOutlined,
-  EyeOutlined,
-  LoadingOutlined,
-} from '@ant-design/icons';
+import { getTeacherCoursesService } from '../../services/course';
+import { PlusOutlined, EditOutlined, EyeOutlined, LoadingOutlined } from '@ant-design/icons';
 import { formatStatusLabel } from '../../utils/mapping';
+import { Book } from 'lucide-react';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const statusOptions = [
@@ -46,25 +39,42 @@ const statusColors: Record<string, string> = {
   Archived: 'gray',
 };
 
+const pageSizeOptions = ['6', '12', '24', '48'];
+
 const MyCourses: React.FC = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<string>('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['courses', status],
-    queryFn: () => getMyCoursesService({ status }),
+  const { data, isLoading } = useQuery({
+    queryKey: ['courses', status, page, pageSize],
+    queryFn: () =>
+      getTeacherCoursesService({
+        status,
+        page,
+        pageSize,
+      }),
     retry: 1,
-    retryDelay: 500,
   });
 
-  const courses = data?.data ?? [];
+  const courses = React.useMemo(() => data?.data || [], [data]);
+  const total = React.useMemo(() => data?.meta?.totalItems ?? 0, [data]);
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
-    refetch();
+    setPage(1); // Reset to first page
   };
 
-  if (isLoading) {
+  const handlePageChange = (newPage: number, newPageSize?: number) => {
+    setPage(newPage);
+    if (newPageSize && newPageSize !== pageSize) {
+      setPageSize(newPageSize);
+      setPage(1);
+    }
+  };
+
+  if (isLoading && page === 1) {
     return (
       <div className="flex justify-center items-center min-h-[60vh] bg-gradient-to-br from-blue-50 to-indigo-100">
         <Spin
@@ -81,31 +91,39 @@ const MyCourses: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8 bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-blue-100">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-md">
-              <BookOutlined className="text-white text-2xl" />
+              <Book className="w-8 h-8 text-white" />
             </div>
-            <Title
-              level={2}
-              className="!mb-0 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-              My Courses
-            </Title>
+            <div>
+              <Title
+                level={2}
+                className="!mb-0 bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                My Courses
+              </Title>
+              <Text
+                type="secondary"
+                className="text-lg">
+                Manage and track your teaching journey
+              </Text>
+            </div>
             <Badge
-              count={courses.length}
+              count={total}
+              overflowCount={999}
               style={{ backgroundColor: '#52c41a' }}
             />
           </div>
 
-          <Space>
+          <Space wrap>
             <Select
               value={status}
               onChange={handleStatusChange}
               style={{ width: 200 }}
-              placeholder="Filter by status"
-              suffixIcon={<BookOutlined />}>
+              placeholder="Filter by status">
               {statusOptions.map((s) => (
                 <Option
                   key={s.value}
@@ -120,135 +138,160 @@ const MyCourses: React.FC = () => {
               icon={<PlusOutlined />}
               onClick={() => navigate('create')}
               size="large"
-              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200">
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg">
               Create Course
             </Button>
           </Space>
         </div>
 
+        {/* Courses Grid */}
         {courses.length > 0 ? (
-          <Row gutter={[24, 24]}>
-            {courses.map((course) => {
-              const canEdit = ['Draft', 'Rejected'].includes(course.status);
-              const statusColor = statusColors[course.status] || 'default';
+          <>
+            <Row gutter={[24, 24]}>
+              {courses.map((course) => {
+                const canEdit = ['Draft', 'Rejected'].includes(course.courseStatus);
+                const statusColor = statusColors[course.courseStatus] || 'default';
+                const isFree = Number(course.price) === 0;
 
-              return (
-                <Col
-                  key={course.courseID}
-                  xs={24}
-                  sm={12}
-                  lg={8}>
-                  <Card
-                    hoverable
-                    cover={
-                      <div className="relative overflow-hidden rounded-t-xl">
-                        <Image
+                return (
+                  <Col
+                    key={course.courseId}
+                    xs={24}
+                    sm={12}
+                    lg={8}
+                    xl={6}>
+                    <div className="group flex flex-col h-full rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+                      {/* Cover image */}
+                      <div className="relative w-full h-[200px] overflow-hidden bg-gray-100">
+                        <img
+                          src={course.imageUrl || '/placeholder-course.jpg'}
                           alt={course.title}
-                          src={course.imageUrl}
-                          preview={false}
-                          style={{
-                            height: 200,
-                            objectFit: 'cover',
-                            transition: 'transform 0.3s ease',
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <div className="absolute top-2 right-2">
-                          <Tag
-                            color={statusColor}
-                            className="shadow-md">
-                            {formatStatusLabel(course.status)}
-                          </Tag>
-                        </div>
+                        <span
+                          className={`absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md bg-opacity-90 shadow bg-${statusColor}-500 text-white`}>
+                          {formatStatusLabel(course.courseStatus)}
+                        </span>
                       </div>
-                    }
-                    className="shadow-lg rounded-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white"
-                    actions={[
-                      <Button
-                        type="link"
-                        icon={<EyeOutlined />}
-                        onClick={() => navigate(`${course.courseID}`)}
-                        className="text-blue-600 hover:text-blue-800">
-                        View Details
-                      </Button>,
-                      canEdit && (
-                        <Button
-                          type="link"
-                          key="edit"
-                          icon={<EditOutlined />}
-                          onClick={() => navigate(`${course.courseID}/edit`)}
-                          className="text-green-600 hover:text-green-800">
-                          Edit
-                        </Button>
-                      ),
-                    ].filter(Boolean)}>
-                    <div className="p-4">
-                      <Title
-                        level={4}
-                        className="text-gray-800 mb-2 line-clamp-1">
-                        {course.title}
-                      </Title>
-                      <Paragraph
-                        ellipsis={{ rows: 2 }}
-                        className="text-gray-600 mb-4 line-clamp-2">
-                        {course.description}
-                      </Paragraph>
-                      <div className="flex justify-between items-center">
-                        <div className="space-x-2">
-                          {course.discountPrice ? (
-                            <>
-                              <Text
-                                delete
-                                className="text-gray-400 text-sm">
-                                {Number(course.price).toLocaleString('vi-VN')} VNĐ
-                              </Text>
-                              <Statistic
-                                value={Number(course.discountPrice).toLocaleString('vi-VN')}
-                                prefix="VNĐ"
-                                valueStyle={{
-                                  color: '#52c41a',
-                                  fontSize: '16px',
-                                  fontWeight: 'bold',
-                                }}
-                              />
-                            </>
-                          ) : (
-                            <Statistic
-                              value={Number(course.price).toLocaleString('vi-VN')}
-                              prefix="VNĐ"
-                              valueStyle={{
-                                color: '#1890ff',
-                                fontSize: '16px',
-                                fontWeight: 'bold',
-                              }}
-                            />
+
+                      {/* Content */}
+                      <div className="flex flex-col flex-1 p-4">
+                        <h5 className="text-gray-900 font-semibold text-base leading-snug mb-2 line-clamp-2">
+                          {course.title}
+                        </h5>
+
+                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 mb-3">
+                          {course.description || 'No description available'}
+                        </p>
+
+                        {/* Price Section */}
+                        <div className="mt-auto pt-3 border-t border-gray-100 flex justify-between items-end">
+                          <div>
+                            {course.discountPrice ? (
+                              <div className="flex flex-col">
+                                <span className="text-gray-400 text-xs line-through">
+                                  {Number(course.price).toLocaleString('vi-VN')}₫
+                                </span>
+                                <span className="text-lg font-bold text-green-600">
+                                  {Number(course.discountPrice).toLocaleString('vi-VN')}₫
+                                </span>
+                              </div>
+                            ) : (
+                              <span
+                                className={`text-lg font-bold ${
+                                  isFree ? 'text-emerald-600' : 'text-blue-600'
+                                }`}>
+                                {isFree
+                                  ? 'FREE'
+                                  : `${Number(course.price).toLocaleString('vi-VN')}₫`}
+                              </span>
+                            )}
+                          </div>
+
+                          {course.learnerCount !== undefined && (
+                            <span className="text-xs text-gray-500">
+                              👥 {course.learnerCount} learners
+                            </span>
                           )}
                         </div>
                       </div>
+
+                      {/* Actions */}
+                      <div className="flex justify-between items-center border-t px-4 py-3 bg-gray-50">
+                        <Button
+                          type="text"
+                          icon={<EyeOutlined />}
+                          onClick={() => navigate(`${course.courseId}`)}
+                          className="text-blue-600 hover:text-blue-800 font-medium px-0">
+                          View
+                        </Button>
+
+                        {canEdit && (
+                          <Button
+                            type="text"
+                            icon={<EditOutlined />}
+                            onClick={() => navigate(`${course.courseId}/edit`)}
+                            className="text-green-600 hover:text-green-800 font-medium px-0">
+                            Edit
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </Card>
-                </Col>
-              );
-            })}
-          </Row>
+                  </Col>
+                );
+              })}
+            </Row>
+
+            {/* Pagination */}
+            <div className="mt-12 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white p-6 rounded-2xl shadow-lg">
+              <Text className="text-gray-600">
+                Showing <strong>{(page - 1) * pageSize + 1}</strong> to{' '}
+                <strong>{Math.min(page * pageSize, total)}</strong> of <strong>{total}</strong>{' '}
+                courses
+              </Text>
+
+              <ConfigProvider
+                theme={{
+                  token: {
+                    colorPrimary: '#2563eb',
+                  },
+                }}>
+                <Pagination
+                  current={page}
+                  pageSize={pageSize}
+                  total={total}
+                  onChange={handlePageChange}
+                  showSizeChanger
+                  pageSizeOptions={pageSizeOptions}
+                />
+              </ConfigProvider>
+            </div>
+          </>
         ) : (
-          <div className="flex flex-col justify-center items-center min-h-[60vh] bg-white rounded-xl shadow-lg p-8">
+          // Your Empty state remains unchanged
+          <div className="flex flex-col justify-center items-center min-h-[60vh] bg-white rounded-2xl shadow-lg p-12">
             <Empty
               description={
-                <div className="text-center">
-                  <Text className="text-gray-600 mb-2 block">No courses found</Text>
+                <div className="text-center max-w-md">
+                  <Text className="text-xl text-gray-600 mb-4 block">
+                    {status
+                      ? `No ${statusOptions
+                          .find((s) => s.value === status)
+                          ?.label?.toLowerCase()} courses`
+                      : "You haven't created any courses yet"}
+                  </Text>
                   <Button
                     type="primary"
+                    size="large"
                     icon={<PlusOutlined />}
                     onClick={() => navigate('create')}
-                    className="mt-4 bg-gradient-to-r from-blue-500 to-indigo-600">
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
                     Create Your First Course
                   </Button>
                 </div>
               }
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              imageStyle={{ height: 120 }}
+              imageStyle={{ height: 140 }}
             />
           </div>
         )}

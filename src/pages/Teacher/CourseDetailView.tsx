@@ -23,6 +23,7 @@ import {
   CloseOutlined,
   FileOutlined,
   PlayCircleOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
 import {
   getCourseDetailService,
@@ -30,7 +31,7 @@ import {
   getLessonsByUnits,
   submitCourseService,
 } from '../../services/course';
-import type { Lesson, Unit } from '../../services/course/type';
+import type { Unit } from '../../services/course/type';
 import {
   ArrowLeft,
   Check,
@@ -44,6 +45,11 @@ import {
   Sparkles,
   Play,
   FileText,
+  Star,
+  MessageSquare,
+  Box,
+  Timer,
+  Clock,
 } from 'lucide-react';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { formatStatusLabel } from '../../utils/mapping';
@@ -86,96 +92,121 @@ export const UnitLessons: React.FC<{ unit: Unit; isEditMode?: boolean }> = ({
   const lessons = [...lessonsResponse.data].sort((a, b) => a.position - b.position);
 
   return (
-    <div className="space-y-4">
-      {lessons.map((lesson: Lesson) => (
-        <Card
-          key={lesson?.lessonID}
-          className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br from-white to-blue-50"
-          hoverable={!isEditMode}>
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-3 flex-1">
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <Play className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div>
-                <Text
-                  strong
-                  className="text-gray-800 block">
-                  {lesson?.title ?? 'Untitled Lesson'}
-                </Text>
-                <Tag
-                  color="blue"
-                  className="mt-1 px-2 py-1 text-xs">
-                  Lesson {lesson?.position ?? '-'}
-                </Tag>
-              </div>
-            </div>
-            {isEditMode && (
-              <Button
-                size="small"
-                icon={<EditOutlined />}
-                className="text-gray-600 border-gray-300 hover:border-gray-400 rounded-lg flex-shrink-0"
-                onClick={() => navigate(`/teacher/lesson/${lesson?.lessonID}/edit`)}>
-                Edit
-              </Button>
-            )}
-          </div>
-
-          <Paragraph className="text-gray-600 text-sm mb-3 line-clamp-2">
-            {lesson?.description ?? 'No description provided'}
-          </Paragraph>
-
-          {lesson?.content && (
-            <div
-              className="prose prose-sm max-w-none text-gray-800 bg-gray-50 p-3 rounded-lg"
-              dangerouslySetInnerHTML={{ __html: lesson.content }}
-            />
-          )}
-
-          {/* Video Preview */}
-          {lesson?.videoUrl && (
-            <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-black mb-4">
-              <video
-                controls
-                src={lesson.videoUrl}
-                className="w-full h-full object-cover"
+    <div className="!space-y-4">
+      {lessons.map((lesson) => (
+        <div
+          key={lesson.lessonID}
+          className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
+          <Collapse
+            bordered={false}
+            expandIconPosition="end"
+            expandIcon={({ isActive }) => (
+              <DownOutlined
+                rotate={isActive ? 180 : 0}
+                className="text-gray-500 transition-transform duration-300"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none rounded-xl">
-                <PlayCircleOutlined className="text-white text-4xl opacity-80" />
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2">
-            {lesson?.documentUrl && (
-              <Tooltip title="Open in new tab">
-                <Button
-                  type="default"
-                  size="small"
-                  icon={<FileOutlined />}
-                  href={lesson.documentUrl}
-                  target="_blank"
-                  className="text-green-600 border-green-200 hover:border-green-400 rounded-lg flex items-center gap-1">
-                  <FileText className="w-3 h-3" />
-                  Document
-                </Button>
-              </Tooltip>
             )}
-            <Button
-              size="small"
-              icon={<PlayCircleOutlined />}
-              onClick={() => navigate(`/teacher/lesson/${lesson?.lessonID}`)}
-              className="rounded-lg flex items-center gap-1">
-              <Play className="w-3 h-3" />
-              Preview
-            </Button>
-          </div>
-          <ExercisesList
-            lessonId={lesson?.lessonID ?? ''}
-            readonly={!isEditMode}
-          />
-        </Card>
+            className="custom-collapse">
+            <Collapse.Panel
+              key="1"
+              header={
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                      <Play className="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <div>
+                      <Text
+                        strong
+                        className="text-gray-800 block">
+                        {lesson.title ?? 'Untitled Lesson'}
+                      </Text>
+                      <Tag
+                        color="blue"
+                        className="mt-1 px-2 py-1 text-xs">
+                        Lesson {lesson.position ?? '-'}
+                      </Tag>
+                    </div>
+                  </div>
+
+                  {isEditMode && (
+                    <Button
+                      size="small"
+                      icon={<EditOutlined />}
+                      className="text-gray-600 border-gray-300 hover:border-gray-400 rounded-lg flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/teacher/lesson/${lesson.lessonID}/edit`);
+                      }}>
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              }>
+              {/* Expanded Content */}
+              <div className="px-2 pb-3">
+                {/* Description */}
+                <Paragraph className="text-gray-600 text-sm mb-3 leading-relaxed">
+                  {lesson.description ?? 'No description provided'}
+                </Paragraph>
+
+                {/* Lesson Content */}
+                {lesson.content && (
+                  <div
+                    className="prose prose-sm max-w-none text-gray-800 bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4"
+                    dangerouslySetInnerHTML={{ __html: lesson.content }}
+                  />
+                )}
+
+                {/* Video */}
+                {lesson.videoUrl && (
+                  <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-black mb-4">
+                    <video
+                      controls
+                      src={lesson.videoUrl}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none rounded-xl">
+                      <PlayCircleOutlined className="text-white text-4xl opacity-80" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {lesson.documentUrl && (
+                    <Tooltip title="Open in new tab">
+                      <Button
+                        type="default"
+                        size="small"
+                        icon={<FileOutlined />}
+                        href={lesson.documentUrl}
+                        target="_blank"
+                        className="text-green-600 border-green-200 hover:border-green-400 rounded-lg flex items-center gap-1">
+                        <FileText className="w-3 h-3" />
+                        Document
+                      </Button>
+                    </Tooltip>
+                  )}
+                  {/* <Button
+                    size="small"
+                    icon={<PlayCircleOutlined />}
+                    onClick={() => navigate(`/teacher/lesson/${lesson.lessonID}`)}
+                    className="rounded-lg flex items-center gap-1">
+                    <Play className="w-3 h-3" />
+                    Preview
+                  </Button> */}
+                </div>
+
+                {/* Exercises */}
+                <ExercisesList
+                  lessonId={lesson.lessonID ?? ''}
+                  readonly={!isEditMode}
+                />
+              </div>
+            </Collapse.Panel>
+          </Collapse>
+        </div>
       ))}
     </div>
   );
@@ -252,10 +283,10 @@ const CourseDetailView: React.FC = () => {
   const course = courseData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-10 px-4">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-transparent py-10 px-4">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center bg-white rounded-t-2xl p-6 border-gray-100">
           <div className="flex items-center gap-3">
             <Tooltip title="Back to courses">
               <Button
@@ -297,7 +328,7 @@ const CourseDetailView: React.FC = () => {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                {course?.status?.toLowerCase() === 'draft' && (
+                {course?.courseStatus?.toLowerCase() === 'draft' && (
                   <Tooltip title="Submit for review">
                     <Button
                       type="primary"
@@ -308,8 +339,8 @@ const CourseDetailView: React.FC = () => {
                     </Button>
                   </Tooltip>
                 )}
-                {(course?.status?.toLowerCase() === 'draft' ||
-                  course?.status?.toLowerCase() === 'rejected') && (
+                {(course?.courseStatus?.toLowerCase() === 'draft' ||
+                  course?.courseStatus?.toLowerCase() === 'rejected') && (
                   <Tooltip title="Edit course details">
                     <Button
                       icon={<EditOutlined />}
@@ -325,7 +356,7 @@ const CourseDetailView: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="rounded-3xl overflow-hidden shadow-xl border-0 relative bg-gradient-to-r from-indigo-600 to-purple-700">
+        <div className="overflow-hidden shadow-xl border-0 relative bg-gradient-to-r from-indigo-600 to-purple-700">
           <img
             src={course?.imageUrl ?? '/default-course.jpg'}
             alt={course?.title ?? 'Course Image'}
@@ -337,7 +368,7 @@ const CourseDetailView: React.FC = () => {
               color="gold"
               className="px-3 py-2 text-sm font-medium shadow-lg">
               <Sparkles className="w-3 h-3 inline mr-1" />
-              {formatStatusLabel(course?.status ?? 'unknown')}
+              {formatStatusLabel(course?.courseStatus ?? 'unknown')}
             </Tag>
           </div>
           <div className="absolute bottom-6 left-6 text-white max-w-2xl">
@@ -353,10 +384,10 @@ const CourseDetailView: React.FC = () => {
                 </Title>
                 <Text className="!text-indigo-100 text-sm">
                   <Avatar
-                    src={course?.teacherInfo?.avatar}
+                    src={course?.teacher?.avatar}
                     className="!mr-2"
                   />
-                  By {course?.teacherInfo?.fullName ?? 'Unknown Teacher'}
+                  By {course?.teacher?.name ?? 'Unknown Teacher'}
                 </Text>
               </div>
             </div>
@@ -367,19 +398,21 @@ const CourseDetailView: React.FC = () => {
               <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
                 <Target className="w-4 h-4 text-white" />
                 <Text className="!text-white text-sm">
-                  {course?.languageInfo?.name ?? 'Unknown Language'}
+                  {course?.language ?? 'Unknown Language'}
                 </Text>
               </div>
               <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
                 <GraduationCap className="w-4 h-4 text-white" />
-                <Text className="!text-white text-sm">{course?.courseLevel ?? 'N/A'}</Text>
+                <Text className="!text-white text-sm">{course?.program.level.name ?? 'N/A'}</Text>
               </div>
             </div>
           </div>
         </div>
 
         {/* Course Info */}
-        <Card className="rounded-2xl shadow-sm border-0 bg-white">
+        <Card
+          style={{ borderRadius: 0 }}
+          className="shadow-sm border-0 bg-white">
           <div className="p-6">
             <div className="flex items-center gap-4 mb-6">
               <Lightbulb className="w-6 h-6 text-yellow-500" />
@@ -405,9 +438,7 @@ const CourseDetailView: React.FC = () => {
                       Language
                     </Text>
                   </div>
-                  <Text className="text-gray-900 font-medium">
-                    {course?.languageInfo?.name ?? 'N/A'}
-                  </Text>
+                  <Text className="text-gray-900 font-medium">{course?.language ?? 'N/A'}</Text>
                 </div>
               </Col>
               <Col
@@ -423,7 +454,9 @@ const CourseDetailView: React.FC = () => {
                       Level
                     </Text>
                   </div>
-                  <Text className="text-gray-900 font-medium">{course?.courseLevel ?? 'N/A'}</Text>
+                  <Text className="text-gray-900 font-medium">
+                    {course?.program.level.name ?? 'N/A'}
+                  </Text>
                 </div>
               </Col>
               <Col
@@ -440,9 +473,9 @@ const CourseDetailView: React.FC = () => {
                     </Text>
                   </div>
                   <Tag
-                    color={course?.status === 'published' ? 'success' : 'default'}
+                    color={course?.courseStatus === 'published' ? 'success' : 'default'}
                     className="px-3 py-1">
-                    {formatStatusLabel(course?.status ?? 'unknown')}
+                    {formatStatusLabel(course?.courseStatus ?? 'unknown')}
                   </Tag>
                 </div>
               </Col>
@@ -455,11 +488,14 @@ const CourseDetailView: React.FC = () => {
                   <Text
                     strong
                     className="text-indigo-800">
-                    Learning Goal
+                    Program Description
                   </Text>
                 </div>
+                {/* <Paragraph className="text-gray-700 leading-relaxed">
+                  {course?.?.description ?? 'No goal description provided'}
+                </Paragraph> */}
                 <Paragraph className="text-gray-700 leading-relaxed">
-                  {course?.goalInfo?.description ?? 'No goal description provided'}
+                  {course?.program?.description ?? 'No goal description provided'}
                 </Paragraph>
               </div>
 
@@ -494,12 +530,95 @@ const CourseDetailView: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* ⭐ Rating */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 group-hover:bg-yellow-200 transition-all duration-300">
+                      <Star className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.averageRating ?? '—'}{' '}
+                      <span className="text-gray-500 font-normal">rating</span>
+                    </span>
+                  </div>
+
+                  {/* 👥 Learners */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-all duration-300">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.learnerCount ?? 0}{' '}
+                      <span className="text-gray-500 font-normal">learners</span>
+                    </span>
+                  </div>
+
+                  {/* 💬 Reviews */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-green-100 text-green-600 group-hover:bg-green-200 transition-all duration-300">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.reviewCount ?? 0}{' '}
+                      <span className="text-gray-500 font-normal">reviews</span>
+                    </span>
+                  </div>
+
+                  {/* 📦 Units */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-all duration-300">
+                      <Box className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.numUnits ?? '—'}{' '}
+                      <span className="text-gray-500 font-normal">units</span>
+                    </span>
+                  </div>
+
+                  {/* 📚 Lessons */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-all duration-300">
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.numLessons ?? '—'}{' '}
+                      <span className="text-gray-500 font-normal">lessons</span>
+                    </span>
+                  </div>
+
+                  {/* ⏳ Duration Days */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-all duration-300">
+                      <Timer className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.durationDays ?? '—'}{' '}
+                      <span className="text-gray-500 font-normal">days</span>
+                    </span>
+                  </div>
+
+                  {/* ⏱ Estimated Hours */}
+                  <div className="flex items-center gap-3 group">
+                    <div className="p-2 rounded-full bg-rose-100 text-rose-600 group-hover:bg-rose-200 transition-all duration-300">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <span className="text-gray-800 font-medium">
+                      {course.estimatedHours ?? '—'}{' '}
+                      <span className="text-gray-500 font-normal">hours</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </Card>
 
         {/* Units + Lessons */}
-        <Card className="rounded-2xl shadow-sm border-0 bg-white">
+        <Card
+          style={{ borderRadius: 0 }}
+          className="shadow-sm border-0 bg-white">
           <div className="p-6">
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="w-6 h-6 text-blue-600" />
@@ -517,12 +636,12 @@ const CourseDetailView: React.FC = () => {
                 bordered={false}
                 expandIconPosition="end"
                 defaultActiveKey={unitsData.map((_, idx) => idx.toString())}
-                className="space-y-3">
+                className="!space-y-3">
                 {unitsData.map((unit: Unit, index: number) => (
                   <Panel
                     key={unit?.courseUnitID ?? index}
                     header={
-                      <div className="flex items-center gap-3 p-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50">
+                      <div className="flex items-center !mb-4 !gap-3 p-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50">
                         <div className="w-8 h-8 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0">
                           <BookOpen className="w-4 h-4 text-indigo-600" />
                         </div>
@@ -553,7 +672,7 @@ const CourseDetailView: React.FC = () => {
           </div>
         </Card>
 
-        {course?.status?.toLowerCase() === 'rejected' && (
+        {course?.courseStatus?.toLowerCase() === 'rejected' && (
           <Alert
             message="Course Feedback"
             description="Your course was rejected. Review the notes and edit to resubmit."

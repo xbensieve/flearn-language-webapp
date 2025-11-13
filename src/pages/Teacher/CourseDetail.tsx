@@ -31,15 +31,20 @@ import { notifyError } from '../../utils/toastConfig';
 import {
   ArrowLeft,
   BookOpen,
+  Box,
+  Clock,
   DollarSign,
   Edit,
   FileText,
   GraduationCap,
   Info,
   Lightbulb,
+  MessageSquare,
   Play,
   Plus,
   Sparkles,
+  Star,
+  Timer,
   Users,
 } from 'lucide-react';
 
@@ -111,10 +116,10 @@ const CourseDetail: React.FC = () => {
 
   // --- Render ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 py-10 px-4">
+    <div className="min-h-screen bg-transparent py-10 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between bg-white rounded-t-2xl p-6 shadow-sm border border-gray-100">
           <Tooltip title="Back to courses">
             <Button
               onClick={() => navigate(-1)}
@@ -128,17 +133,13 @@ const CourseDetail: React.FC = () => {
             <Title
               level={2}
               className="!mb-0 !text-gray-800 flex items-center gap-2">
-              <BookOpen
-                size={24}
-                className="text-blue-600"
-              />
-              Course Builder
+              Course
             </Title>
           </div>
           <Tooltip title="Edit course overview">
             <Button
               type="primary"
-              onClick={() => navigate(`/teacher/course/${course?.courseID}/edit-course`)}
+              onClick={() => navigate(`/teacher/course/${course?.courseId}/edit-course`)}
               className="rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
               <Edit size={16} />
               Edit Course
@@ -178,67 +179,114 @@ const CourseDetail: React.FC = () => {
                     </Paragraph>
                     <div className="flex items-center gap-3">
                       <Avatar
-                        src={course?.teacherInfo?.avatar}
+                        src={course?.teacher?.avatar}
                         size={32}
                         className="border-2 !border-white"
                       />
                       <Text className="!text-white font-medium">
-                        {course?.teacherInfo?.fullName || 'Unknown Teacher'}
+                        {course?.teacher?.name || 'Unknown Teacher'}
                       </Text>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-4 my-2">
+              <div className="!space-y-4 my-2">
                 <div className="flex flex-wrap gap-2">
                   <div>
                     <Tag
                       color="blue"
                       className="!px-3 !py-2 !flex items-center !gap-1">
                       <Users size={12} />
-                      {course?.languageInfo?.name || 'No Language'}
+                      {course?.language || 'No Language'}
                     </Tag>
                   </div>
                   <Tag
                     color="green"
                     className="!px-3 !py-2 !flex items-center !gap-1">
                     <GraduationCap size={12} />
-                    {course?.courseLevel || 'N/A'}
+                    {course?.program.level.name || 'N/A'}
                   </Tag>
                 </div>
 
-                <div className="p-4 bg-blue-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb
-                      size={16}
-                      className="text-blue-600"
-                    />
-                    <Text
-                      strong
-                      className="text-blue-800">
-                      Topics
-                    </Text>
-                  </div>
-                  <Paragraph className="text-gray-700">
-                    {course?.topics.map((topic) => topic.topicName).join(', ')}
-                  </Paragraph>
-                </div>
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {/* ⭐ Rating */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 group-hover:bg-yellow-200 transition-all duration-300">
+                        <Star className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.averageRating ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">rating</span>
+                      </span>
+                    </div>
 
-                <div className="p-4 bg-indigo-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb
-                      size={16}
-                      className="text-indigo-600"
-                    />
-                    <Text
-                      strong
-                      className="text-indigo-800">
-                      Learning Goal
-                    </Text>
+                    {/* 👥 Learners */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-all duration-300">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.learnerCount ?? 0}{' '}
+                        <span className="text-gray-500 font-normal">learners</span>
+                      </span>
+                    </div>
+
+                    {/* 💬 Reviews */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-green-100 text-green-600 group-hover:bg-green-200 transition-all duration-300">
+                        <MessageSquare className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.reviewCount ?? 0}{' '}
+                        <span className="text-gray-500 font-normal">reviews</span>
+                      </span>
+                    </div>
+
+                    {/* 📦 Units */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-all duration-300">
+                        <Box className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.numUnits ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">units</span>
+                      </span>
+                    </div>
+
+                    {/* 📚 Lessons */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-all duration-300">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.numLessons ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">lessons</span>
+                      </span>
+                    </div>
+
+                    {/* ⏳ Duration Days */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-all duration-300">
+                        <Timer className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.durationDays ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">days</span>
+                      </span>
+                    </div>
+
+                    {/* ⏱ Estimated Hours */}
+                    <div className="flex items-center gap-3 group">
+                      <div className="p-2 rounded-full bg-rose-100 text-rose-600 group-hover:bg-rose-200 transition-all duration-300">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <span className="text-gray-800 font-medium">
+                        {course.estimatedHours ?? '—'}{' '}
+                        <span className="text-gray-500 font-normal">hours</span>
+                      </span>
+                    </div>
                   </div>
-                  <Paragraph className="text-gray-700">
-                    {course?.goals?.map((goal) => goal.name).join(', ') || 'No goal description'}
-                  </Paragraph>
                 </div>
 
                 <div className="p-4 bg-green-50 rounded-2xl">
@@ -271,6 +319,57 @@ const CourseDetail: React.FC = () => {
                   ) : (
                     <Text className="text-2xl font-bold text-green-700">Free</Text>
                   )}
+                </div>
+
+                <div className="p-4 bg-blue-50 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb
+                      size={16}
+                      className="text-blue-600"
+                    />
+                    <Text
+                      strong
+                      className="text-blue-800">
+                      Topics
+                    </Text>
+                  </div>
+                  <Paragraph className="text-gray-700">
+                    {course?.topics.map((topic) => topic.topicName).join(', ')}
+                  </Paragraph>
+                </div>
+
+                <div className="p-4 bg-indigo-50 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb
+                      size={16}
+                      className="text-indigo-600"
+                    />
+                    <Text
+                      strong
+                      className="text-indigo-800">
+                      Learning Outcome
+                    </Text>
+                  </div>
+                  <Paragraph className="text-gray-700">
+                    {course?.learningOutcome || 'No goal description'}
+                  </Paragraph>
+                </div>
+
+                <div className="p-4 bg-indigo-50 rounded-2xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb
+                      size={16}
+                      className="text-indigo-600"
+                    />
+                    <Text
+                      strong
+                      className="text-indigo-800">
+                      {course?.program.name}
+                    </Text>
+                  </div>
+                  <Paragraph className="text-gray-700">
+                    {course?.program.description || 'No goal description'}
+                  </Paragraph>
                 </div>
               </div>
             </Card>
@@ -449,7 +548,7 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
   const lessons: Lesson[] = lessonsResponse?.data || [];
 
   return (
-    <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-indigo-50 to-blue-50 mb-4">
+    <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-indigo-50 to-blue-50 !mb-4">
       <div className="flex items-start justify-between mb-4 p-2 rounded-xl bg-white -mx-4 -mt-4">
         <div className="flex items-center gap-3 flex-1">
           <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -467,17 +566,18 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
             <Paragraph className="text-gray-500 text-sm mb-1 truncate">
               {unit?.description || 'No description provided'}
             </Paragraph>
-            <Tag
-              color="blue"
-              className="px-2 py-1 text-xs">
-              <Users
-                size={12}
-                className="inline mr-1"
-              />
-              Lessons: {unit?.totalLessons ?? 0}
-            </Tag>
           </div>
         </div>
+
+        <Tag
+          color="blue"
+          className="px-2 py-1 text-xs">
+          <Users
+            size={12}
+            className="inline mr-1"
+          />
+          Lessons: {unit?.totalLessons ?? 0}
+        </Tag>
         <Tooltip title="Manage lessons">
           <Link to={`unit/${unit?.courseUnitID}`}>
             <Button
@@ -511,7 +611,7 @@ const UnitWithLessons: React.FC<{ unit: Unit }> = ({ unit }) => {
           />
         </div>
       ) : (
-        <div className="space-y-3 p-2">
+        <div className="flex gap-2.5 flex-col space-y-3 p-2">
           {lessons.map((lesson) => (
             <Card
               key={lesson?.lessonID || Math.random()}

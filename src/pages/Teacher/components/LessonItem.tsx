@@ -18,13 +18,7 @@ import {
   Col,
   Row,
 } from 'antd';
-import {
-  EditOutlined,
-  DeleteOutlined,
-  FileOutlined,
-  EyeOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, FileOutlined, EyeOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { useUpdateLesson } from '../helpers';
@@ -150,23 +144,24 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
+    <div className="bg-transparent py-8 px-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Add Exercise Button */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
-          <div className="flex justify-end items-center">
-            <Tooltip title="Add an interactive exercise to this lesson">
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleOpenExerciseDrawer}
-                className="rounded-xl shadow-md hover:shadow-lg transition-all bg-sky-600 hover:bg-sky-700 flex items-center gap-2 px-6 py-3 text-white font-semibold">
-                <Sparkles size={16} />
-                Add New Exercise
-              </Button>
-            </Tooltip>
+        {
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
+            <div className="flex justify-end items-center">
+              <Tooltip title="Add an interactive exercise to this lesson">
+                <Button
+                  type="primary"
+                  icon={<Sparkles size={16} />}
+                  onClick={handleOpenExerciseDrawer}
+                  className="rounded-xl shadow-md hover:shadow-lg transition-all bg-sky-600 hover:bg-sky-700 flex items-center gap-2 px-6 py-3 text-white font-semibold">
+                  Add New Exercise
+                </Button>
+              </Tooltip>
+            </div>
           </div>
-        </div>
+        }
 
         {/* Lesson Card */}
         <Card
@@ -501,7 +496,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
           }
           className="rounded-2xl"
           placement="right">
-          <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
+          <div className="bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
             <div className="max-w-3xl mx-auto">
               <Card
                 className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
@@ -514,7 +509,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
                     <Title
                       level={3}
                       className="!mb-0 text-gray-800">
-                      Create New Lesson
+                      Edit New Lesson
                     </Title>
                   </div>
                 }>
@@ -545,7 +540,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
                                 size={16}
                                 className="text-gray-600"
                               />
-                              Lesson Title
+                              Title
                             </span>
                           }
                           name="title"

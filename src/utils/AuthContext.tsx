@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type UserRole = 'admin' | 'staff' | 'teacher' | 'learner';
+export type UserRole = 'admin' | 'manager' | 'teacher' | 'learner';
 export type UserRoles = UserRole[] | null;
 
-const validRoles: UserRole[] = ['admin', 'staff', 'teacher', 'learner'];
+const validRoles: UserRole[] = ['admin', 'manager', 'teacher', 'learner'];
 
 interface AuthUser {
   isAuthenticated: boolean;

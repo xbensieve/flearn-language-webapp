@@ -19,6 +19,7 @@ export interface TeacherApplicationRequest {
   MeetingUrl: string;
   CertificateImages: File[];
   CertificateTypeIds: string[];
+  ProficiencyCode: string;
 }
 
 // src/services/teacherApplication/types.ts
@@ -35,7 +36,7 @@ export interface ApplicationData {
   userID: string;
   languageID: string;
   fullName: string;
-  birthDate: string;
+  dateOfBirth: string;
   bio: string;
   avatar: string;
   email: string;
@@ -48,7 +49,7 @@ export interface ApplicationData {
   reviewedByName: any;
   submittedAt: string;
   reviewedAt: string;
-  language: Language;
+  language: string;
   user: User;
   certificates: any[];
 }
