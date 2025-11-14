@@ -59,3 +59,34 @@ export interface User {
   userName: string;
   email: string;
 }
+
+export interface BankAccountRequest {
+  bankName: string;
+  bankBranch: string;
+  accountNumber: string;
+  accountHolderName: string;
+}
+
+export interface BankAccountResponse {
+  bankAccountId: string;
+  teacherId: string;
+  bankBranch: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+  isDefault: boolean;
+}
+
+export interface ApiResponse<T> {
+  status: string;
+  code: number;
+  message: string;
+  data: T;
+  errors?: string;
+  meta?: string;
+}
+
+export interface PayoutRequest {
+  amount: number;
+  bankAccountId: string;
+}

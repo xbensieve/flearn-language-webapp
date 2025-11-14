@@ -1,5 +1,12 @@
 import api from '../../config/axios';
-import type { ApplicationData, Language, TeacherApplicationRequest } from './types';
+import type {
+  ApplicationData,
+  BankAccountRequest,
+  BankAccountResponse,
+  Language,
+  PayoutRequest,
+  TeacherApplicationRequest,
+} from './types';
 
 // Get list of languages
 export const getLanguages = async (): Promise<API.Response<Language[]>> => {
@@ -97,3 +104,10 @@ export const getMyApplication = async () => {
   const res = await api.get<API.Response<ApplicationData[]>>('applications/me');
   return res.data;
 };
+
+export const createBankAccount = (data: BankAccountRequest) => api.post('/bank-account', data);
+
+export const getBankAccounts = (): Promise<API.Response<BankAccountResponse[]>> =>
+  api.get('/bank-account').then((res) => res.data);
+
+export const createPayoutRequest = (data: PayoutRequest) => api.post('/payout-request', data);

@@ -34,6 +34,7 @@ import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
 import ProgramPage from '../../pages/Admin/Program';
 import LevelPage from '../../pages/Admin/Level';
 import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
+import PayoutPage from '../../pages/Teacher/PayoutPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -175,6 +176,7 @@ const routes: RouteObject[] = [
       { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
       { path: 'classes', element: <MyClasses /> },
       { path: 'classes/:id', element: <ClassDetail /> },
+      { path: 'payout-request', element: <PayoutPage /> },
     ],
   },
   {
