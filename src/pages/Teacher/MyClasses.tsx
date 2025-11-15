@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Card,
   Typography,
   Row,
   Col,
   Button,
-  Empty,
+  // Empty,
   Spin,
   Select,
   Space,
@@ -13,10 +13,10 @@ import {
   Pagination,
   Progress,
   Badge,
-} from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { getClassesService } from '../../services/class';
+} from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { getClassesService } from "../../services/class";
 import {
   PlusOutlined,
   EyeOutlined,
@@ -27,40 +27,35 @@ import {
   TeamOutlined,
   FilterOutlined,
   RocketOutlined,
-} from '@ant-design/icons';
-import { formatStatusLabel } from '../../utils/mapping';
-import type { Class } from '../../services/class/type';
-import CreateClassForm from './components/CreateClassForm';
-import { Book } from 'lucide-react';
+} from "@ant-design/icons";
+import { formatStatusLabel } from "../../utils/mapping";
+import type { Class } from "../../services/class/type";
+import CreateClassForm from "./components/CreateClassForm";
+import { Book } from "lucide-react";
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
 const statusOptions = [
-  { value: '', label: 'All Classes' },
-  { value: 'Draft', label: 'Draft' },
-  { value: 'Published', label: 'Published' },
+  { value: "", label: "All Classes" },
+  { value: "Draft", label: "Draft" },
+  { value: "Published", label: "Published" },
 ];
 
 const statusColors: Record<string, string> = {
-  Draft: 'cyan',
-  Published: 'blue',
-};
-
-const statusGradients: Record<string, string> = {
-  Draft: 'from-cyan-500 to-blue-600',
-  Published: 'from-blue-600 to-indigo-700',
+  Draft: "#bfbfbf",
+  Published: "#bfbfbf",
 };
 
 const MyClasses: React.FC = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState<string>("");
   const [page, setPage] = useState(1);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const pageSize = 9;
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['classes', status, page],
+    queryKey: ["classes", status, page],
     queryFn: () => getClassesService({ status, page, pageSize }),
     retry: 1,
     retryDelay: 500,
@@ -79,237 +74,376 @@ const MyClasses: React.FC = () => {
   };
 
   const calculateEnrollmentPercentage = (current: number, capacity: number) => {
+    if (!capacity) return 0;
     return Math.round((current / capacity) * 100);
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[60vh] bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100">
-        <div className="relative">
-          <div className="absolute inset-0 animate-ping bg-blue-500 rounded-full opacity-20"></div>
-          <Spin
-            size="large"
-            indicator={
-              <LoadingOutlined
-                style={{ fontSize: 56 }}
-                spin
-              />
-            }
-          />
-        </div>
-        <Text className="mt-6 text-gray-600 text-lg font-medium">Loading your classes...</Text>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gray-50">
+        <Spin
+          size="large"
+          indicator={
+            <LoadingOutlined className="text-5xl text-gray-500" spin />
+          }
+        />
+        <Text className="mt-6 text-gray-600 text-lg font-medium">
+          Loading your classes...
+        </Text>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-transparent py-8 px-4">
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="bg-white rounded-t-2xl border-blue-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-32 -mt-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-10 rounded-full -ml-24 -mb-24"></div>
-
-            <div className="relative z-10">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
-                  <Book className="text-white text-3xl" />
-                </div>
-                <div>
-                  <Title
-                    level={1}
-                    className="!mb-0 !text-white">
-                    My Classes
-                  </Title>
-                </div>
-              </div>
+        {/* Header Card */}
+        <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+          {/* Title Bar */}
+          <div className="flex items-center gap-3 p-6 border-b border-gray-200">
+            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+              <Book size={24} className="text-gray-700" />
             </div>
+            <Title
+              level={3}
+              className="m-0 text-gray-900 font-semibold text-xl"
+            >
+              My Classes
+            </Title>
+          </div>
 
-            <div className="p-6 bg-gradient-to-b from-white to-gray-50">
-              <div className="flex justify-between items-center flex-wrap gap-4">
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <Text className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                      {classes.length}
-                    </Text>
-                    <div className="text-gray-500 text-sm">
-                      {status ? `${formatStatusLabel(status)} Classes` : 'Total Classes'}
-                    </div>
-                  </div>
+          {/* Stats + Controls */}
+          <div className="p-5 bg-white">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-5">
+              <div className="text-center sm:text-left">
+                <div className="text-3xl font-bold text-gray-900">
+                  {classes.length}
                 </div>
-
-                <Space size="middle">
-                  <Select
-                    value={status}
-                    onChange={handleStatusChange}
-                    style={{ width: 200 }}
-                    size="large"
-                    placeholder="Filter by status"
-                    suffixIcon={<FilterOutlined />}
-                    className="rounded-xl">
-                    {statusOptions.map((s) => (
-                      <Option
-                        key={s.value}
-                        value={s.value}>
-                        <Space>
-                          {s.value && (
-                            <Badge
-                              color={statusColors[s.value]}
-                              className="mr-1"
-                            />
-                          )}
-                          {s.label}
-                        </Space>
-                      </Option>
-                    ))}
-                  </Select>
-
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => setIsCreateModalVisible(true)}
-                    size="large"
-                    className="bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl h-12 px-6 font-semibold">
-                    Create New Class
-                  </Button>
-                </Space>
+                <div className="text-gray-500 text-sm mt-1">
+                  {status
+                    ? `${formatStatusLabel(status)} Classes`
+                    : "Total Classes"}
+                </div>
               </div>
+
+              <Space
+                size="middle"
+                className="flex flex-wrap justify-center sm:justify-end gap-3"
+              >
+                <Select
+                  value={status}
+                  onChange={handleStatusChange}
+                  style={{ width: 200 }}
+                  size="large"
+                  placeholder="Filter by status"
+                  suffixIcon={<FilterOutlined className="text-gray-500" />}
+                  className="rounded-xl"
+                >
+                  {statusOptions.map((s) => (
+                    <Option key={s.value} value={s.value}>
+                      <Space size={6}>
+                        {s.value && (
+                          <Badge
+                            color={statusColors[s.value]}
+                            style={{ width: 8, height: 8 }}
+                          />
+                        )}
+                        <span className="font-medium text-gray-700">
+                          {s.label}
+                        </span>
+                      </Space>
+                    </Option>
+                  ))}
+                </Select>
+
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsCreateModalVisible(true)}
+                  size="large"
+                  className="h-12 px-6 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 border-0 shadow-sm"
+                >
+                  Create New Class
+                </Button>
+              </Space>
             </div>
           </div>
         </div>
 
         {/* Classes Grid */}
         {classes.length > 0 ? (
-          <div className="mt-4">
+          <div className="mt-6">
             <Row gutter={[24, 24]}>
               {classes.map((cls: Class) => {
-                const statusColor = statusColors[cls.status] || 'default';
-                const statusGradient = statusGradients[cls.status] || 'from-gray-400 to-gray-600';
                 const enrollmentPercentage = calculateEnrollmentPercentage(
                   cls.currentEnrollments,
                   cls.capacity
                 );
 
                 return (
-                  <Col
-                    key={cls.classID}
-                    xs={24}
-                    sm={12}
-                    lg={8}>
+                  <Col key={cls.classID} xs={24} sm={12} lg={8}>
                     <Card
                       hoverable
-                      className="group h-full shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 rounded-2xl border-0 overflow-hidden bg-white"
-                      bodyStyle={{ padding: 0 }}>
-                      {/* Card Header with Gradient */}
+                      bodyStyle={{ padding: 0 }}
+                      style={{
+                        height: "100%",
+                        borderRadius: 18,
+                        border: "1px solid #e5e7eb",
+                        boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+                        overflow: "hidden",
+                        backgroundColor: "#ffffff",
+                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      }}
+                    >
+                      {/* Header */}
                       <div
-                        className={`bg-gradient-to-r ${statusGradient} p-6 relative overflow-hidden`}>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-                        <div className="relative z-10">
-                          <div className="flex justify-between items-start mb-3">
-                            <Tag
-                              color={statusColor}
-                              className="px-3 py-1 rounded-full text-xs font-semibold border-0 shadow-md">
-                              {formatStatusLabel(cls.status)}
-                            </Tag>
-                            <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                              <BookOutlined className="text-white text-lg" />
-                            </div>
+                        style={{
+                          padding: 20,
+                          backgroundColor: "#ffffff",
+                          borderBottom: "1px solid #e5e7eb",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            marginBottom: 12,
+                          }}
+                        >
+                          <Tag
+                            color="default"
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: 999,
+                              fontSize: 11,
+                              fontWeight: 500,
+                              border: "1px solid #d4d4d4",
+                            }}
+                          >
+                            {formatStatusLabel(cls.status)}
+                          </Tag>
+
+                          <div
+                            style={{
+                              padding: 8,
+                              backgroundColor: "#ffffff",
+                              borderRadius: 10,
+                              border: "1px solid #e5e7eb",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <BookOutlined
+                              style={{ color: "#4b5563", fontSize: 16 }}
+                            />
                           </div>
-                          <Title
-                            level={4}
-                            className="!text-white !mb-1 line-clamp-2 group-hover:scale-105 transition-transform duration-300">
-                            {cls.title}
-                          </Title>
-                          <Text className="text-white/90 text-sm font-medium">
-                            {cls.languageName}
-                          </Text>
                         </div>
+
+                        <Title
+                          level={4}
+                          style={{
+                            margin: 0,
+                            fontSize: 16,
+                            fontWeight: 600,
+                            color: "#111827",
+                            lineHeight: 1.4,
+                            overflow: "hidden",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                          }}
+                        >
+                          {cls.title}
+                        </Title>
+
+                        <Text
+                          style={{
+                            display: "block",
+                            marginTop: 4,
+                            fontSize: 13,
+                            color: "#6b7280",
+                          }}
+                        >
+                          {cls.languageName}
+                        </Text>
                       </div>
 
-                      {/* Card Body */}
-                      <div className="p-6">
+                      {/* Body */}
+                      <div
+                        style={{
+                          padding: 20,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 14,
+                        }}
+                      >
                         <Paragraph
                           ellipsis={{ rows: 2 }}
-                          className="text-gray-600 mb-5 min-h-[3em] leading-relaxed">
+                          style={{
+                            margin: 0,
+                            fontSize: 13,
+                            lineHeight: 1.6,
+                            color: "#4b5563",
+                            minHeight: "3rem",
+                          }}
+                        >
                           {cls.description}
                         </Paragraph>
 
-                        {/* Info Grid */}
-                        <div className="space-y-3 mb-5">
-                          <div className="flex items-center text-gray-700 bg-blue-50 p-3 rounded-xl">
-                            <CalendarOutlined className="text-blue-700 mr-3 text-lg" />
-                            <div className="flex-1">
-                              <Text className="text-xs text-gray-500 block">Duration</Text>
-                              <Text className="text-sm font-medium">
-                                {new Date(cls.startDateTime).toLocaleDateString('en-GB')} -{' '}
-                                {new Date(cls.endDateTime).toLocaleDateString('en-GB')}
+                        {/* Info Blocks */}
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 12,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              padding: 12,
+                              borderRadius: 12,
+                              backgroundColor: "#f9fafb",
+                              border: "1px solid #e5e7eb",
+                            }}
+                          >
+                            <CalendarOutlined
+                              style={{
+                                color: "#6b7280",
+                                marginRight: 12,
+                                fontSize: 16,
+                              }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <Text
+                                style={{
+                                  fontSize: 11,
+                                  color: "#9ca3af",
+                                  display: "block",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                Duration
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 500,
+                                  color: "#1f2933",
+                                }}
+                              >
+                                {new Date(cls.startDateTime).toLocaleDateString(
+                                  "en-GB"
+                                )}{" "}
+                                -{" "}
+                                {new Date(cls.endDateTime).toLocaleDateString(
+                                  "en-GB"
+                                )}
                               </Text>
                             </div>
                           </div>
 
-                          <div className="flex items-center text-gray-700 bg-indigo-50 p-3 rounded-xl">
-                            <ClockCircleOutlined className="text-indigo-700 mr-3 text-lg" />
-                            <div className="flex-1">
-                              <Text className="text-xs text-gray-500 block">Time</Text>
-                              <Text className="text-sm font-medium">
-                                {new Date(cls.startDateTime).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}{' '}
-                                -{' '}
-                                {new Date(cls.endDateTime).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              padding: 12,
+                              borderRadius: 12,
+                              backgroundColor: "#f9fafb",
+                              border: "1px solid #e5e7eb",
+                            }}
+                          >
+                            <ClockCircleOutlined
+                              style={{
+                                color: "#6b7280",
+                                marginRight: 12,
+                                fontSize: 16,
+                              }}
+                            />
+                            <div style={{ flex: 1 }}>
+                              <Text
+                                style={{
+                                  fontSize: 11,
+                                  color: "#9ca3af",
+                                  display: "block",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                Time
+                              </Text>
+                              <Text
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 500,
+                                  color: "#1f2933",
+                                }}
+                              >
+                                {new Date(cls.startDateTime).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}{" "}
+                                -{" "}
+                                {new Date(cls.endDateTime).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </Text>
                             </div>
                           </div>
 
-                          {/* Enrollment Progress */}
-                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100">
+                          {/* Enrollment */}
+                          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                             <div className="flex justify-between items-center mb-2">
-                              <Space>
-                                <TeamOutlined className="text-blue-700 text-lg" />
-                                <Text className="font-semibold text-gray-700">Enrollments</Text>
+                              <Space size={6}>
+                                <TeamOutlined className="text-gray-600 text-base" />
+                                <Text className="font-medium text-gray-800">
+                                  Enrollments
+                                </Text>
                               </Space>
-                              <Text className="font-bold text-blue-700">
+                              <Text className="font-medium text-gray-700 text-sm">
                                 {cls.currentEnrollments} / {cls.capacity}
                               </Text>
                             </div>
                             <Progress
                               percent={enrollmentPercentage}
-                              strokeColor={{
-                                '0%': '#1d4ed8',
-                                '100%': '#4338ca',
-                              }}
-                              trailColor="#dbeafe"
+                              strokeColor="#8c8c8c"
+                              trailColor="#e5e5e5"
                               showInfo={false}
                               strokeWidth={8}
                               className="mb-1"
                             />
                             <Text className="text-xs text-gray-500">
-                              {enrollmentPercentage}% capacity filled
+                              {enrollmentPercentage}% filled
                             </Text>
                           </div>
                         </div>
 
-                        {/* Price and Action */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        {/* Price + Action */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                           <div>
                             <Text className="text-xs text-gray-500 block mb-1">
                               Price per student
                             </Text>
-                            <Text className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                              {cls.pricePerStudent.toLocaleString('vi-VN')} đ
-                            </Text>
+                            <div className="text-xl font-bold text-gray-900">
+                              {cls.pricePerStudent.toLocaleString("vi-VN")} đ
+                            </div>
                           </div>
                           <Button
-                            type="primary"
+                            type="default"
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`${cls.classID}`)}
                             size="large"
-                            className="bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl font-semibold">
+                            className="rounded-xl font-medium border-gray-300 hover:border-gray-400"
+                          >
                             View
                           </Button>
                         </div>
@@ -325,44 +459,40 @@ const MyClasses: React.FC = () => {
               <Pagination
                 current={page}
                 pageSize={pageSize}
+                // total={data?.total}
                 onChange={handlePageChange}
                 showSizeChanger={false}
-                className="bg-white px-6 py-3 rounded-2xl shadow-md"
+                className="bg-white px-6 py-3 rounded-2xl shadow-md border border-gray-200"
               />
             </div>
           </div>
         ) : (
-          <div className="flex flex-col justify-center items-center min-h-[50vh] bg-white rounded-b-3xl shadow-xl p-12">
-            <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-8 rounded-full mb-6">
-              <RocketOutlined className="text-6xl text-blue-700" />
+          /* Empty State */
+          <div className="mt-6 bg-white rounded-3xl shadow-lg p-12 text-center border border-gray-200">
+            <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
+              <RocketOutlined className="text-5xl text-gray-600" />
             </div>
-            <Empty
-              description={
-                <div className="text-center max-w-md">
-                  <Title
-                    level={3}
-                    className="text-gray-800 mb-2">
-                    No Classes Yet
-                  </Title>
-                  <Text className="text-gray-600 mb-6 block text-base">
-                    Start your teaching journey by creating your first class. Share your knowledge
-                    and inspire students!
-                  </Text>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => setIsCreateModalVisible(true)}
-                    size="large"
-                    className="bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl h-12 px-8 font-semibold">
-                    Create Your First Class
-                  </Button>
-                </div>
-              }
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <Title level={3} className="text-gray-900 mb-3 font-semibold">
+              No Classes Yet
+            </Title>
+            <Text className="text-gray-600 max-w-md mx-auto block mb-8 text-base leading-relaxed">
+              Start your teaching journey by creating your first class. Share
+              your knowledge and inspire students!
+            </Text>
+            {/* <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsCreateModalVisible(true)}
+              size="large"
+              className="h-14 px-10 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 border-0 shadow-md"
+            >
+              Create Your First Class
+            </Button> */}
           </div>
         )}
       </div>
+
+      {/* Modal */}
       <CreateClassForm
         visible={isCreateModalVisible}
         onClose={() => setIsCreateModalVisible(false)}
