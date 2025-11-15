@@ -334,7 +334,7 @@ const TeacherApplicationPage: React.FC = () => {
 
           <Form.Item
             name="Avatar"
-            label="Profile Picture"
+            label="Profile "
             rules={[{ required: true }]}
             valuePropName="fileList"
             getValueFromEvent={(e) => e.fileList}
