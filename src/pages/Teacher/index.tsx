@@ -755,9 +755,47 @@ const TeacherApplicationPage: React.FC = () => {
               <Col xs={24} md={12}>
                 <Form.Item
                   name='PhoneNumber'
-                  rules={[{ required: true, message: 'Phone number is required' }]}
+                  rules={[
+                    { required: true, message: 'Phone number is required' },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.reject();
+
+                        // Remove all non-digits
+                        const digits = value.replace(/\D/g, '');
+
+                        // Must start with 0 (local) or 84 (intl)
+                        const isVN = /^0\d{9}$/.test(digits) || /^84\d{9}$/.test(digits);
+                        if (!isVN) {
+                          return Promise.reject('Please enter a valid Vietnamese phone number');
+                        }
+
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
                 >
-                  <Input placeholder='+84 901 234 567' className='h-11' />
+                  <Input
+                    placeholder='+84 901 234 567'
+                    className='h-11'
+                    maxLength={14}
+                    onChange={(e) => {
+                      let val = e.target.value.replace(/\D/g, ''); // keep digits only
+
+                      // Auto-convert 0... → +84...
+                      if (val.startsWith('0') && val.length > 1) {
+                        val = '84' + val.slice(1);
+                      }
+
+                      // Format: +84 XXX XXX XXX
+                      if (val.startsWith('84') && val.length > 2) {
+                        val = '+84 ' + val.slice(2).replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                      }
+
+                      // Update form field
+                      form.setFieldsValue({ PhoneNumber: val });
+                    }}
+                  />
                 </Form.Item>
               </Col>
             </Row>

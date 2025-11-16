@@ -75,7 +75,7 @@ const LearnerLayout = () => {
           {/* Brand */}
           <div className='flex items-center gap-4'>
             <div
-              onClick={() => navigate('/learner')}
+              onClick={() => navigate('/')}
               className='text-xl font-bold bg-gradient-to-r
                from-indigo-500 to-blue-500 bg-clip-text text-transparent cursor-pointer'
             >
