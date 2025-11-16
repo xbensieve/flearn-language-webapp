@@ -190,7 +190,7 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
         </Text>
 
         {/* Badge */}
-        <div className='flex justify-center mb-4'>
+        {/* <div className='flex justify-center mb-4'>
           <Badge
             count={info.badge}
             style={{
@@ -205,10 +205,10 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
               alignItems: 'center',
             }}
           />
-        </div>
+        </div> */}
 
         {/* Stats */}
-        <Space direction='vertical' size={8} className='w-full'>
+        {/* <Space direction='vertical' size={8} className='w-full'>
           <div className='flex items-center justify-between text-sm'>
             <span className='text-gray-600 flex items-center gap-1'>
               <Globe className='w-3.5 h-3.5' /> Native
@@ -221,7 +221,7 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
             </span>
             <span className='font-bold text-gray-900'>{info.learners}</span>
           </div>
-        </Space>
+        </Space> */}
 
         {/* Pulse Animation */}
         {selected && (
@@ -289,13 +289,13 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
         </Text>
 
         {/* Description */}
-        <Text
+        {/* <Text
           type='secondary'
           className='block text-center text-xs mb-3'
           style={{ color: selected ? '#555' : '#6b7280' }}
         >
           {levelInfo.description}
-        </Text>
+        </Text> */}
 
         {/* Pulse when selected */}
         {selected && (
@@ -326,7 +326,7 @@ const TeacherApplicationPage: React.FC = () => {
   // ✅ Get my application
   const { data: response, isLoading } = useQuery<{ data: ApplicationData[] }>({
     queryKey: ['myApplication'],
-    queryFn: getMyApplication,
+    queryFn: () => getMyApplication(),
     retry: 1,
     retryDelay: 500,
   });
@@ -535,6 +535,8 @@ const TeacherApplicationPage: React.FC = () => {
               <Col xs={24} md={12}>
                 <Form.Item
                   name='FullName'
+                  label='Full Name'
+                  required
                   rules={[{ required: true, message: 'Full name is required' }]}
                 >
                   <Input placeholder='Nguyễn Văn A' className='h-11' />
@@ -543,6 +545,7 @@ const TeacherApplicationPage: React.FC = () => {
               <Col xs={24} md={12}>
                 <Form.Item
                   name='BirthDate'
+                  label='Date of Birth'
                   rules={[
                     { required: true, message: 'Date of birth is required' },
                     {
@@ -728,6 +731,7 @@ const TeacherApplicationPage: React.FC = () => {
           <InfoSection title='About You' icon={<Calendar className='w-5 h-5' />}>
             <Form.Item
               name='Bio'
+              label='Tell us about yourself'
               rules={[{ required: true, message: 'Please tell us about yourself' }]}
             >
               <Input.TextArea
@@ -743,6 +747,7 @@ const TeacherApplicationPage: React.FC = () => {
             <Row gutter={16}>
               <Col xs={24} md={12}>
                 <Form.Item
+                  label='Email'
                   name='Email'
                   rules={[
                     { required: true, message: 'Email is required' },
@@ -755,6 +760,7 @@ const TeacherApplicationPage: React.FC = () => {
               <Col xs={24} md={12}>
                 <Form.Item
                   name='PhoneNumber'
+                  label='Phone number'
                   rules={[
                     { required: true, message: 'Phone number is required' },
                     {
@@ -804,6 +810,7 @@ const TeacherApplicationPage: React.FC = () => {
           {/* === 4. Teaching Experience === */}
           <InfoSection title='Teaching Experience' icon={<BookOpen className='w-5 h-5' />}>
             <Form.Item
+              label='Teaching experience'
               name='TeachingExperience'
               rules={[{ required: true, message: 'Please describe your teaching background' }]}
             >
@@ -819,6 +826,7 @@ const TeacherApplicationPage: React.FC = () => {
           <InfoSection title='Meeting Link' icon={<Link className='w-5 h-5' />}>
             <Form.Item
               name='MeetingUrl'
+              label='Meeting link'
               rules={[
                 { required: true, message: 'Meeting link is required' },
                 { type: 'url', message: 'Please enter a valid URL' },

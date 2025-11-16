@@ -1,120 +1,113 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+import React, { useState } from 'react';
 import {
   Button,
   Card,
   Spin,
   Tag,
   Typography,
-  List,
-  Collapse,
+  Table,
+  Modal,
   Image,
   Empty,
   Alert,
   Space,
   Divider,
-} from "antd";
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+  Collapse,
+  Input,
+  Select,
+} from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import {
   ClockCircleOutlined,
   UserOutlined,
-  MailOutlined,
-  GlobalOutlined,
   FileTextOutlined,
   TrophyOutlined,
   ExclamationCircleOutlined,
-  CalendarOutlined,
-} from "@ant-design/icons";
-import type { ApplicationData } from "../../services/teacherApplication/types";
-import { getMyApplication } from "../../services/teacherApplication";
+  EyeOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import type {
+  ApplicationData,
+  GetMyApplicationsParams,
+} from '../../services/teacherApplication/types';
+import { getMyApplication } from '../../services/teacherApplication';
+import { useDebounce } from '../../utils/useDebound';
 
 const { Title, Paragraph, Text } = Typography;
 
-const statusMap: Record<
-  string,
-  { text: string; color: string; icon: React.ReactNode; progress: number }
-> = {
-  Pending: {
-    text: "Pending Review",
-    color: "processing",
-    icon: <ClockCircleOutlined />,
-    progress: 25,
-  },
-  Submitted: {
-    text: "Submitted",
-    color: "warning",
-    icon: <ClockCircleOutlined />,
-    progress: 50,
-  },
-  Reviewed: {
-    text: "Under Review",
-    color: "success",
-    icon: <TrophyOutlined />,
-    progress: 75,
-  },
-  Rejected: {
-    text: "Rejected",
-    color: "error",
-    icon: <ExclamationCircleOutlined />,
-    progress: 0,
-  },
+const statusMap: Record<string, { text: string; color: string; icon: React.ReactNode }> = {
+  Pending: { text: 'Pending', color: 'processing', icon: <ClockCircleOutlined /> },
+  Submitted: { text: 'Submitted', color: 'warning', icon: <ClockCircleOutlined /> },
+  Reviewed: { text: 'Reviewed', color: 'success', icon: <TrophyOutlined /> },
+  Rejected: { text: 'Rejected', color: 'error', icon: <ExclamationCircleOutlined /> },
+  Approved: { text: 'Approved', color: 'success', icon: <TrophyOutlined /> },
 };
-
-// Truncate function
-function truncate(str: string, n: number) {
-  return str.length > n ? str.substr(0, n - 1) + "..." : str;
-}
 
 const ApplicationStatus: React.FC = () => {
   const navigate = useNavigate();
+  const [selectedApp, setSelectedApp] = useState<ApplicationData | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Filters
+  const [searchInput, setSearchInput] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Debounced search
+  const searchTerm = useDebounce(searchInput, 500);
+
+  const queryParams: GetMyApplicationsParams = {
+    page,
+    pageSize,
+    searchTerm: searchTerm || undefined,
+    sortBy,
+    status: statusFilter as any,
+  };
 
   const {
     data: response,
     isLoading,
     isError,
     error,
-  } = useQuery<{ data: ApplicationData[] }>({
-    queryKey: ["myApplications"],
-    queryFn: getMyApplication,
+  } = useQuery({
+    queryKey: ['myApplications', queryParams],
+    queryFn: () => getMyApplication(queryParams),
     retry: 1,
-    retryDelay: 500,
   });
 
+  // Loading
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Space direction="vertical" size="large" className="text-center">
-          <Spin size="large" />
-          <Title level={4} type="secondary">
-            Loading your applications...
+      <div className='min-h-screen flex items-center justify-center bg-white'>
+        <Space direction='vertical' size='large' className='text-center'>
+          <Spin size='large' />
+          <Title level={4} type='secondary'>
+            Loading applications...
           </Title>
         </Space>
       </div>
     );
   }
 
+  // Error
   if (isError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4">
-        <Space
-          direction="vertical"
-          size="middle"
-          className="text-center max-w-md"
-        >
+      <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4'>
+        <Space direction='vertical' size='middle' className='text-center max-w-md'>
           <Alert
-            message="Something went wrong"
-            description={
-              (error as any)?.response?.data?.message ??
-              "An unknown error occurred while fetching your applications."
-            }
-            type="error"
+            message='Error'
+            description={(error as any)?.response?.data?.message || 'Failed to load applications.'}
+            type='error'
             showIcon
           />
           <Button
-            type="primary"
-            size="large"
-            onClick={() => navigate("/learner/application")}
+            type='primary'
+            size='large'
+            onClick={() => navigate('/learner/application')}
             icon={<UserOutlined />}
           >
             Apply to Teach
@@ -124,29 +117,27 @@ const ApplicationStatus: React.FC = () => {
     );
   }
 
-  const applications = response?.data;
-  if (!applications || applications.length === 0) {
+  if (response?.data.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 text-center">
+      <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4 text-center'>
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          imageStyle={{ height: 120 }}
           description={
-            <Space direction="vertical" size="small">
-              <Title level={3} type="secondary">
-                No applications yet
+            <Space direction='vertical' size='small'>
+              <Title level={3} type='secondary'>
+                No applications found
               </Title>
-              <Paragraph type="secondary">
-                Get started by submitting your first teacher application!
+              <Paragraph type='secondary'>
+                Try adjusting filters or submit a new application.
               </Paragraph>
             </Space>
           }
         />
         <Button
-          type="primary"
-          size="large"
-          onClick={() => navigate("/learner/application")}
-          className="mt-6"
+          type='primary'
+          size='large'
+          onClick={() => navigate('/learner/application')}
+          className='mt-6'
           icon={<UserOutlined />}
         >
           Apply Now
@@ -155,203 +146,282 @@ const ApplicationStatus: React.FC = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <Space direction="vertical" className="text-center mb-12 w-full">
-          <Title level={1} className="text-4xl font-bold text-gray-900 mb-2">
-            Application Status
-          </Title>
-          <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Monitor your teacher applications with ease. View details, track
-            progress, and take next steps.
-          </Paragraph>
+  const columns = [
+    {
+      title: 'Applicant',
+      key: 'name',
+      render: (_: any, record: ApplicationData) => (
+        <Space>
+          <Image
+            src={record.avatar}
+            alt={record.fullName}
+            width={40}
+            height={40}
+            className='rounded-full object-cover'
+            fallback='https://via.placeholder.com/40'
+          />
+          <div>
+            <Text strong>{record.fullName}</Text>
+            <br />
+            <Text type='secondary' className='text-xs'>
+              ID: {record.applicationID.slice(0, 8)}...
+            </Text>
+          </div>
         </Space>
+      ),
+    },
+    {
+      title: 'Language',
+      render: (_: any, record: ApplicationData) => (
+        <Text strong>
+          {record.language} <span className='text-sky-600'>({record.proficiencyCode})</span>
+        </Text>
+      ),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      render: (status: string) => {
+        const s = statusMap[status] || statusMap.Pending;
+        return (
+          <Tag color={s.color} className='font-medium'>
+            {s.icon} {s.text}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: 'Submitted',
+      dataIndex: 'submittedAt',
+      render: (date: string) => (
+        <Text>
+          {new Date(date).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          })}
+        </Text>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_: any, record: ApplicationData) => (
+        <Button
+          type='link'
+          icon={<EyeOutlined />}
+          onClick={() => {
+            setSelectedApp(record);
+            setModalOpen(true);
+          }}
+          className='text-sky-600 hover:text-sky-700'
+        >
+          View Details
+        </Button>
+      ),
+    },
+  ];
 
-        {/* Applications List */}
-        <List
-          dataSource={applications}
-          renderItem={(data: ApplicationData) => (
-            <List.Item style={{ padding: 0, marginBottom: "2rem" }}>
-              <Card
-                className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-2xl overflow-hidden"
-                styles={{
-                  body: { padding: "2rem" },
-                }}
-              >
-                {/* Status Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      {statusMap[data.status]?.icon}
-                    </div>
-                    <div>
-                      {/* <Text className="block text-sm text-gray-500 mb-1">
-                        Application #{data.applicationID}
-                      </Text> */}
-                      <Title
-                        level={4}
-                        className="m-0 font-semibold text-gray-900"
-                      >
-                        {data.fullName}
-                      </Title>
-                    </div>
-                  </div>
-                  <Space size="middle">
-                    <Tag
-                      color={statusMap[data.status]?.color}
-                      className="px-4 py-2 text-sm font-medium"
-                    >
-                      {statusMap[data.status]?.text}
-                    </Tag>
-                  </Space>
-                </div>
+  return (
+    <div className='min-h-screen py-8 px-4'>
+      <div className='max-w-7xl mx-auto'>
+        {/* Header */}
+        <div className='text-center mb-10'>
+          <Title level={1} className='text-4xl font-bold text-gray-900 mb-3'>
+            Your Teacher Applications
+          </Title>
+          <Paragraph className='text-lg text-gray-600 max-w-3xl mx-auto'>
+            Search, filter, and view all your applications in one place.
+          </Paragraph>
+        </div>
 
-                {/* Key Details Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Space direction="vertical" className="w-full">
-                    <div className="flex items-center gap-3">
-                      <MailOutlined className="text-gray-400" />
-                      <Text strong className="text-gray-700 text-sm">
-                        Email
-                      </Text>
-                    </div>
-                    <Text className="text-gray-900">{data.email}</Text>
-                  </Space>
-                  <Space direction="vertical" className="w-full">
-                    <div className="flex items-center gap-3">
-                      <GlobalOutlined className="text-gray-400" />
-                      <Text strong className="text-gray-700 text-sm">
-                        Language
-                      </Text>
-                    </div>
-                    <Text className="text-gray-900">
-                      {data.language ?? "N/A"}
-                    </Text>
-                  </Space>
-                  <Space direction="vertical" className="w-full">
-                    <div className="flex items-center gap-3">
-                      <CalendarOutlined className="text-gray-400" />
-                      <Text strong className="text-gray-700 text-sm">
-                        Submitted
-                      </Text>
-                    </div>
-                    <Text className="text-gray-900">
-                      {new Date(data.submittedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </Text>
-                  </Space>
-                </div>
+        {/* Filters */}
+        <Card className='mb-6 shadow-md rounded-xl'>
+          <Space wrap className='w-full' size='middle'>
+            <Input
+              placeholder='Search by name or language...'
+              prefix={<SearchOutlined />}
+              allowClear
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{ width: 280 }}
+            />
+            <Select
+              placeholder='Sort by'
+              style={{ width: 160 }}
+              onChange={(v) => setSortBy(v as any)}
+              defaultValue='newest'
+              options={[
+                { label: 'Newest First', value: 'newest' },
+                { label: 'Oldest First', value: 'oldest' },
+              ]}
+            />
+            <Select
+              placeholder='Filter by status'
+              style={{ width: 180 }}
+              allowClear
+              onChange={(v) => setStatusFilter(v)}
+              options={[
+                { label: 'Pending', value: 'Pending' },
+                { label: 'Approved', value: 'Approved' },
+                { label: 'Rejected', value: 'Rejected' },
+              ]}
+            />
+          </Space>
+        </Card>
 
-                <Divider className="my-8" />
+        {/* Table */}
+        <Card className='shadow-lg rounded-2xl overflow-hidden'>
+          <Table
+            dataSource={response?.data || []}
+            columns={columns}
+            rowKey='applicationID'
+            pagination={{
+              current: page,
+              pageSize,
+              total: response?.meta.totalItems,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} applications`,
+              onChange: (p, ps) => {
+                setPage(p);
+                setPageSize(ps || 10);
+              },
+            }}
+            scroll={{ x: 800 }}
+          />
+        </Card>
 
-                {/* Bio Section */}
-                <Collapse
-                  defaultActiveKey={["1"]}
-                  bordered={false}
-                  ghost
-                  expandIconPosition="end"
-                  items={[
-                    {
-                      key: "1",
-                      label: (
-                        <Space>
-                          <FileTextOutlined />
-                          <span className="font-medium">Bio</span>
-                        </Space>
-                      ),
-                      children: (
-                        <Paragraph className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {data.bio || "No bio provided."}
-                        </Paragraph>
-                      ),
-                    },
-                    ...(data.rejectionReason
-                      ? [
-                          {
-                            key: "2",
-                            label: (
-                              <Space className="text-red-600">
-                                <ExclamationCircleOutlined />
-                                <span className="font-medium">
-                                  Rejection Reason
-                                </span>
-                              </Space>
-                            ),
-                            children: (
-                              <Alert
-                                message="Feedback"
-                                description={data.rejectionReason}
-                                type="error"
-                                showIcon
-                                className="mt-3"
-                              />
-                            ),
-                          },
-                        ]
-                      : []),
-                  ]}
-                />
-
-                {/* Certificates */}
-                {data.certificates?.length > 0 ? (
-                  <div className="mt-8">
-                    <Space align="start" className="mb-4 w-full">
-                      <TrophyOutlined className="text-2xl text-yellow-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <Title level={4} className="m-0 text-gray-900">
-                          Certificates
-                        </Title>
-                        <Text type="secondary" className="block text-sm">
-                          Your uploaded qualifications
-                        </Text>
-                      </div>
-                    </Space>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {data.certificates.map((cert) => (
-                        <Card
-                          key={cert.applicationCertTypeId}
-                          hoverable
-                          className="rounded-xl border-gray-200"
-                          cover={
-                            <Image
-                              src={cert.certificateImageUrl}
-                              alt={cert.certificateType?.name}
-                              preview={false}
-                              fallback="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=="
-                              className="rounded-t-xl h-48 object-cover"
-                            />
-                          }
-                        >
-                          <Card.Meta
-                            title={cert.certificateType?.name || "Certificate"}
-                            description={truncate(
-                              cert.certificateType?.description ||
-                                "No description",
-                              100
-                            )}
-                          />
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <Alert
-                    message="No Certificates Uploaded"
-                    description="Consider adding relevant certificates to boost your application."
-                    type="info"
-                    showIcon
-                    className="mt-8 rounded-xl"
+        {/* Detail Modal */}
+        <Modal
+          open={modalOpen}
+          onCancel={() => setModalOpen(false)}
+          footer={null}
+          width={900}
+          centered
+          title={
+            <Space>
+              <UserOutlined className='text-sky-600' />
+              <span className='font-bold'>Application Details</span>
+            </Space>
+          }
+        >
+          {selectedApp && (
+            <div className='space-y-6'>
+              <div className='flex items-center justify-between border-b pb-4'>
+                <Space size='large'>
+                  <Image
+                    src={selectedApp.avatar}
+                    width={80}
+                    height={80}
+                    className='rounded-full border-4 border-white shadow-md'
                   />
+                  <div>
+                    <Title level={4} className='m-0'>
+                      {selectedApp.fullName}
+                    </Title>
+                    <Text type='secondary'>
+                      Submitted: {new Date(selectedApp.submittedAt).toLocaleString('en-GB')}
+                    </Text>
+                  </div>
+                </Space>
+                <Tag color={statusMap[selectedApp.status]?.color} className='text-lg px-4 py-1'>
+                  {statusMap[selectedApp.status]?.icon} {statusMap[selectedApp.status]?.text}
+                </Tag>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                <div>
+                  <strong>Email:</strong> {selectedApp.email}
+                </div>
+                <div>
+                  <strong>Phone:</strong> {selectedApp.phoneNumber}
+                </div>
+                <div>
+                  <strong>Language:</strong> {selectedApp.language} ({selectedApp.proficiencyCode})
+                </div>
+                <div>
+                  <strong>DOB:</strong> {selectedApp.dateOfBirth}
+                </div>
+                <div>
+                  <strong>Experience:</strong> {selectedApp.teachingExperience || '—'}
+                </div>
+                {selectedApp.meetingUrl && (
+                  <div>
+                    <strong>Demo:</strong>{' '}
+                    <a
+                      href={selectedApp.meetingUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='text-sky-600 hover:underline'
+                    >
+                      Open Link
+                    </a>
+                  </div>
                 )}
-              </Card>
-            </List.Item>
+              </div>
+
+              <Divider />
+
+              <Collapse
+                items={[
+                  {
+                    key: 'bio',
+                    label: (
+                      <span className='font-medium'>
+                        <FileTextOutlined /> Bio
+                      </span>
+                    ),
+                    children: (
+                      <Paragraph className='whitespace-pre-wrap'>
+                        {selectedApp.bio || 'No bio.'}
+                      </Paragraph>
+                    ),
+                  },
+                ]}
+              />
+
+              {selectedApp.certificates?.length ? (
+                <div>
+                  <Title level={5} className='flex items-center gap-2'>
+                    <TrophyOutlined className='text-yellow-500' />
+                    Certificates ({selectedApp.certificates.length})
+                  </Title>
+                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4'>
+                    {selectedApp.certificates.map((cert) => (
+                      <Card
+                        key={cert.id}
+                        hoverable
+                        className='rounded-lg'
+                        cover={
+                          <Image
+                            src={cert.certificateImageUrl}
+                            className='h-40 object-contain'
+                            preview={{ src: cert.certificateImageUrl }}
+                          />
+                        }
+                      >
+                        <Card.Meta title={cert.certificateName} />
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Alert message='No certificates' type='info' showIcon />
+              )}
+
+              {selectedApp.rejectionReason && (
+                <Alert
+                  message='Rejected'
+                  description={selectedApp.rejectionReason}
+                  type='error'
+                  showIcon
+                  className='mt-6'
+                />
+              )}
+            </div>
           )}
-        />
+        </Modal>
       </div>
     </div>
   );

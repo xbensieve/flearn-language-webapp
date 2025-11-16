@@ -3,6 +3,7 @@ import type {
   ApplicationData,
   BankAccountRequest,
   BankAccountResponse,
+  GetMyApplicationsParams,
   Language,
   PayoutRequest,
   TeacherApplicationRequest,
@@ -99,9 +100,8 @@ export const updateSubmitTeacherApplication = async (
   return res.data;
 };
 
-// Fetch logged-in user's teacher application
-export const getMyApplication = async () => {
-  const res = await api.get<API.Response<ApplicationData[]>>('applications/me');
+export const getMyApplication = async (params: GetMyApplicationsParams = {}) => {
+  const res = await api.get<API.Response<ApplicationData[]>>('applications/me', { params });
   return res.data;
 };
 
