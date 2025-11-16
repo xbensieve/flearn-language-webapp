@@ -903,7 +903,7 @@ const TeacherApplicationPage: React.FC = () => {
                             type='text'
                             danger
                             size='small'
-                            className='absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity'
+                            className='!absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity'
                             icon={<Trash2 className='w-4 h-4' />}
                             onClick={() => remove(name)}
                           />
@@ -950,7 +950,6 @@ const TeacherApplicationPage: React.FC = () => {
             <p className='text-gray-800 text-lg font-medium'>
               {languagesData?.data?.find((l: any) => l.langCode === formData.LangCode)?.langName ||
                 'Not selected'}{' '}
-              <span className='text-blue-600'>({formData.LangCode})</span>
             </p>
           </div>
 
@@ -1178,7 +1177,7 @@ const TeacherApplicationPage: React.FC = () => {
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className='bg-white rounded-2xl shadow-xl p-10 m-12'
+        className='bg-white rounded-2xl shadow-xl p-10 my-12 max-w-5xl w-full mx-auto'
       >
         <Steps current={currentStep} items={steps.map((s) => ({ title: s.title }))} />
 
