@@ -71,12 +71,15 @@ const CreateCourse: React.FC = () => {
   const [selectedLevelId, setSelectedLevelId] = useState<string>('');
 
   const courseTypeWatch = Form.useWatch('courseType', form);
+  const titleWatch = Form.useWatch('title', form);
+  const descriptionWatch = Form.useWatch('description', form);
+  const topicIdsWatch = Form.useWatch('topicIds', form);
 
   const steps = useMemo(() => {
-    return courseTypeWatch === 1
+    return courseTypeWatch === 1 || formValues.courseType === 1
       ? ['Basic Info', 'Settings']
       : ['Basic Info', 'Pricing', 'Settings'];
-  }, [courseTypeWatch]);
+  }, [courseTypeWatch, formValues.courseType]);
 
   const { data: programLevels = [], isLoading: programLevelsLoading } = useQuery({
     queryKey: ['programLevels'],
@@ -553,20 +556,20 @@ const CreateCourse: React.FC = () => {
                   </div>
 
                   <Title level={4} className='line-clamp-2'>
-                    {formValues.title || 'Your Course Title'}
+                    {titleWatch || formValues.title || 'Your Course Title'}
                   </Title>
                   <Text type='secondary' className='line-clamp-2 block mt-2'>
-                    {formValues.description || 'No description yet...'}
+                    {descriptionWatch || formValues.description || 'No description yet...'}
                   </Text>
 
                   <div className='mt-6 flex items-center justify-between'>
-                    <Tag color={courseTypeWatch === 1 ? 'green' : 'blue'}>
-                      {courseTypeWatch === 1 ? 'FREE' : 'PAID'}
+                    <Tag color={courseTypeWatch || formValues.courseType === 1 ? 'green' : 'blue'}>
+                      {courseTypeWatch || formValues.courseType === 1 ? 'FREE' : 'PAID'}
                     </Tag>
                   </div>
 
                   <div className='mt-4 flex flex-wrap gap-2'>
-                    {formValues.topicIds?.slice(0, 3).map((id) => {
+                    {(topicIdsWatch || formValues.topicIds)?.slice(0, 3).map((id) => {
                       const topic = topics?.data?.find((t: any) => t.topicId === id);
                       return topic ? (
                         <Tag key={id} color='blue' className='rounded-full'>

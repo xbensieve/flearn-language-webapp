@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   Table,
@@ -17,23 +17,26 @@ import {
   Form,
   message,
   Tabs,
-} from "antd";
+  Descriptions,
+} from 'antd';
 import {
   DollarOutlined,
   MailOutlined,
   BankOutlined,
   IdcardOutlined,
-} from "@ant-design/icons";
-import { Wallet, RefreshCw } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+  EyeOutlined,
+} from '@ant-design/icons';
+import { Wallet, RefreshCw } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
   getAdminPayoutsService,
   getAdminPendingPayoutsService,
   processPayoutService,
+  getAdminPayoutDetailService,
   type ProcessPayoutPayload,
-} from "../../services/payout";
-import type { AdminPayout } from "../../services/payout/type";
+} from '../../services/payout';
+import type { AdminPayout } from '../../services/payout/type';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -41,65 +44,67 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const statusColors: Record<string, string> = {
-  Completed: "green",
-  Pending: "gold",
-  Rejected: "red",
+  Completed: 'green',
+  Pending: 'gold',
+  Rejected: 'red',
 };
 
 const AdminPayoutsPage: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [searchText, setSearchText] = useState("");
-  const [activeTab, setActiveTab] = useState<"pending" | "all">("pending");
+  const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [searchText, setSearchText] = useState('');
+  const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
 
+  // Modals
   const [processModalOpen, setProcessModalOpen] = useState(false);
-  const [selectedPayout, setSelectedPayout] = useState<AdminPayout | null>(
-    null
-  );
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedPayout, setSelectedPayout] = useState<AdminPayout | null>(null);
   const [form] = Form.useForm<ProcessPayoutPayload>();
 
-  // --- Query all payouts ---
+  // --- Queries ---
   const {
     data: allData,
     isLoading: isLoadingAll,
     isFetching: isFetchingAll,
-    refetch: refetchAll,
   } = useQuery<AdminPayout[]>({
-    queryKey: ["admin-payouts-all"],
+    queryKey: ['admin-payouts-all'],
     queryFn: getAdminPayoutsService,
   });
 
-  // --- Query pending payouts ---
   const {
     data: pendingData,
     isLoading: isLoadingPending,
     isFetching: isFetchingPending,
-    refetch: refetchPending,
   } = useQuery<AdminPayout[]>({
-    queryKey: ["admin-payouts-pending"],
+    queryKey: ['admin-payouts-pending'],
     queryFn: getAdminPendingPayoutsService,
+  });
+
+  // Detail query
+  const { data: detailData, isFetching: isFetchingDetail } = useQuery({
+    queryKey: ['admin-payout-detail', selectedPayout?.payoutRequestId],
+    queryFn: () => getAdminPayoutDetailService(selectedPayout!.payoutRequestId),
+    enabled: !!selectedPayout && detailModalOpen,
   });
 
   const payoutsAll = allData ?? [];
   const payoutsPending = pendingData ?? [];
 
-  // Filter for ALL tab
+  // --- Filters ---
   const filteredAll = useMemo(() => {
     return payoutsAll.filter((p) => {
       const matchesStatus = !statusFilter || p.payoutStatus === statusFilter;
       const kw = searchText.toLowerCase();
-
       const matchesSearch =
         !kw ||
         p.teacherName.toLowerCase().includes(kw) ||
         p.teacherEmail.toLowerCase().includes(kw) ||
         p.transactionRef?.toLowerCase().includes(kw) ||
         p.accountNumber.toLowerCase().includes(kw);
-
       return matchesStatus && matchesSearch;
     });
   }, [payoutsAll, statusFilter, searchText]);
 
-  // Filter for PENDING tab (chỉ search, status đã là Pending sẵn từ API)
   const filteredPending = useMemo(() => {
     const kw = searchText.toLowerCase();
     return payoutsPending.filter((p) => {
@@ -119,7 +124,7 @@ const AdminPayoutsPage: React.FC = () => {
 
   const totalPendingCount = payoutsPending.length;
 
-  // --- Mutation xử lý payout ---
+  // --- Mutation ---
   const processMutation = useMutation({
     mutationFn: ({
       payoutRequestId,
@@ -129,67 +134,63 @@ const AdminPayoutsPage: React.FC = () => {
       payload: ProcessPayoutPayload;
     }) => processPayoutService(payoutRequestId, payload),
     onSuccess: () => {
-      message.success("Payout processed successfully");
+      message.success('Payout processed successfully');
       setProcessModalOpen(false);
       form.resetFields();
-      // refetch cả 2 list
-      refetchAll();
-      refetchPending();
+      queryClient.invalidateQueries({ queryKey: ['admin-payouts'] });
     },
     onError: (error: any) => {
-      message.error(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to process payout"
-      );
+      message.error(error?.response?.data?.message || error?.message || 'Failed to process payout');
     },
   });
 
+  // --- Handlers ---
   const openProcessModal = (record: AdminPayout) => {
     setSelectedPayout(record);
     setProcessModalOpen(true);
     form.resetFields();
   };
 
+  const openDetailModal = (record: AdminPayout) => {
+    setSelectedPayout(record);
+    setDetailModalOpen(true);
+  };
+
   const handleProcessSubmit = (values: ProcessPayoutPayload) => {
     if (!selectedPayout) return;
-
-    // Chỉ cho xử lý khi còn Pending
-    if (selectedPayout.payoutStatus !== "Pending") {
-      message.warning(
-        `This payout has already been processed with status: ${selectedPayout.payoutStatus}`
-      );
+    if (selectedPayout.payoutStatus !== 'Pending') {
+      message.warning(`This payout is already ${selectedPayout.payoutStatus}`);
       setProcessModalOpen(false);
       return;
     }
-
     processMutation.mutate({
       payoutRequestId: selectedPayout.payoutRequestId,
       payload: values,
     });
   };
 
-  // --- Columns dùng chung ---
+  // --- Columns ---
   const baseColumns = [
     {
-      title: "Teacher",
-      dataIndex: "teacherName",
-      key: "teacherName",
+      title: 'Teacher',
+      dataIndex: 'teacherName',
+      key: 'teacherName',
       render: (_: any, record: AdminPayout) => (
-        <div>
-          <Text strong>{record.teacherName}</Text>
-          <div style={{ fontSize: 12, color: "#6b7280" }}>
-            <MailOutlined style={{ marginRight: 6 }} />
-            {record.teacherEmail}
+        <Space>
+          <div>
+            <Text strong>{record.teacherName}</Text>
+            <div style={{ fontSize: 12, color: '#6b7280' }}>
+              <MailOutlined style={{ marginRight: 6 }} />
+              {record.teacherEmail}
+            </div>
           </div>
-        </div>
+        </Space>
       ),
-      sorter: (a: AdminPayout, b: AdminPayout) =>
-        a.teacherName.localeCompare(b.teacherName),
+      sorter: (a: AdminPayout, b: AdminPayout) => a.teacherName.localeCompare(b.teacherName),
     },
     {
-      title: "Bank Info",
-      key: "bank",
+      title: 'Bank Info',
+      key: 'bank',
       render: (_: any, record: AdminPayout) => (
         <div style={{ fontSize: 12 }}>
           <div>
@@ -198,7 +199,7 @@ const AdminPayoutsPage: React.FC = () => {
               {record.bankName} – {record.bankBranch}
             </Text>
           </div>
-          <div style={{ marginTop: 2, color: "#6b7280" }}>
+          <div style={{ marginTop: 2, color: '#6b7280' }}>
             <IdcardOutlined style={{ marginRight: 6 }} />
             <Text>
               {record.accountNumber} · {record.accountHolder}
@@ -208,332 +209,240 @@ const AdminPayoutsPage: React.FC = () => {
       ),
     },
     {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
       render: (amount: number) => (
-        <Text strong style={{ color: "#16a34a" }}>
-          {amount.toLocaleString("vi-VN")} ₫
+        <Text strong style={{ color: '#16a34a' }}>
+          {amount.toLocaleString('vi-VN')} ₫
         </Text>
       ),
       sorter: (a: AdminPayout, b: AdminPayout) => a.amount - b.amount,
     },
     {
-      title: "Requested / Approved",
-      key: "time",
+      title: 'Dates',
+      key: 'time',
       render: (_: any, record: AdminPayout) => (
         <div style={{ fontSize: 12 }}>
           <div>
-            <Text type="secondary">Requested:</Text>{" "}
-            {new Date(record.requestedAt).toLocaleString()}
+            <Text type='secondary'>Req:</Text>{' '}
+            {new Date(record.requestedAt).toLocaleDateString('vi-VN')}
           </div>
-          <div>
-            <Text type="secondary">Approved:</Text>{" "}
-            {record.approvedAt
-              ? new Date(record.approvedAt).toLocaleString()
-              : "—"}
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Transaction",
-      key: "transactionRef",
-      render: (_: any, record: AdminPayout) => (
-        <div style={{ fontSize: 12 }}>
-          <div>
-            <Text type="secondary">Ref:</Text> {record.transactionRef || "—"}
-          </div>
-          {record.note && (
-            <Tooltip title={record.note}>
-              <div
-                style={{
-                  marginTop: 2,
-                  maxWidth: 220,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  color: "#4b5563",
-                }}
-              >
-                <Text type="secondary">Note: </Text>
-                {record.note}
-              </div>
-            </Tooltip>
+          {record.approvedAt && (
+            <div>
+              <Text type='secondary'>App:</Text>{' '}
+              {new Date(record.approvedAt).toLocaleDateString('vi-VN')}
+            </div>
           )}
         </div>
       ),
     },
   ];
 
-  // Columns tab PENDING (status luôn Pending)
   const columnsPending = [
     ...baseColumns,
     {
-      title: "Status",
-      dataIndex: "payoutStatus",
-      key: "status",
-      render: () => <Tag color="gold">Pending</Tag>,
+      title: 'Status',
+      render: () => <Tag color='gold'>Pending</Tag>,
     },
     {
-      title: "Actions",
-      key: "actions",
+      title: 'Actions',
+      key: 'actions',
       render: (_: any, record: AdminPayout) => (
-        <Button
-          size="small"
-          type="primary"
-          onClick={() => openProcessModal(record)}
-        >
-          Process
-        </Button>
+        <Space>
+          <Button size='small' icon={<EyeOutlined />} onClick={() => openDetailModal(record)}>
+            View
+          </Button>
+          <Button size='small' type='primary' onClick={() => openProcessModal(record)}>
+            Process
+          </Button>
+        </Space>
       ),
     },
   ];
 
-  // Columns tab ALL (có Status + logic chỉ Process khi Pending)
   const columnsAll = [
     ...baseColumns,
     {
-      title: "Status",
-      dataIndex: "payoutStatus",
-      key: "status",
-      render: (status: string) => (
-        <Tag color={statusColors[status] || "default"}>{status}</Tag>
-      ),
+      title: 'Status',
+      dataIndex: 'payoutStatus',
+      render: (status: string) => <Tag color={statusColors[status] || 'default'}>{status}</Tag>,
       filters: [
-        { text: "Completed", value: "Completed" },
-        { text: "Pending", value: "Pending" },
-        { text: "Rejected", value: "Rejected" },
+        { text: 'Completed', value: 'Completed' },
+        { text: 'Pending', value: 'Pending' },
+        { text: 'Rejected', value: 'Rejected' },
       ],
-      onFilter: (value: any, record: AdminPayout) =>
-        record.payoutStatus === value,
+      onFilter: (value: any, record: AdminPayout) => record.payoutStatus === value,
     },
     {
-      title: "Actions",
-      key: "actions",
+      title: 'Actions',
+      key: 'actions',
       render: (_: any, record: AdminPayout) => {
-        const isPending = record.payoutStatus === "Pending";
-
-        if (!isPending) {
-          return (
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {record.payoutStatus === "Completed"
-                ? "Already completed"
-                : record.payoutStatus}
-            </Text>
-          );
-        }
-
+        const isPending = record.payoutStatus === 'Pending';
         return (
-          <Button
-            size="small"
-            type="primary"
-            onClick={() => openProcessModal(record)}
-          >
-            Process
-          </Button>
+          <Space>
+            <Button size='small' icon={<EyeOutlined />} onClick={() => openDetailModal(record)}>
+              View
+            </Button>
+            {isPending && (
+              <Button size='small' type='primary' onClick={() => openProcessModal(record)}>
+                Process
+              </Button>
+            )}
+          </Space>
         );
       },
     },
   ];
 
-  //   const isLoadingCurrent = activeTab === "pending" ? isLoadingPending : isLoadingAll;
-  const isFetchingCurrent =
-    activeTab === "pending" ? isFetchingPending : isFetchingAll;
-
-  const handleRefresh = () => {
-    if (activeTab === "pending") {
-      refetchPending();
-    } else {
-      refetchAll();
-    }
-  };
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#F5FAF8",
-        padding: "24px 16px",
-      }}
-    >
-      <div style={{ maxWidth: 1150, margin: "0 auto" }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#F5FAF8', padding: '24px 16px' }}>
+      <div style={{ maxWidth: 1300, margin: '0 auto' }}>
         {/* Header */}
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             gap: 16,
             marginBottom: 24,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div
               style={{
                 padding: 12,
                 borderRadius: 16,
-                background: "linear-gradient(135deg, #4f46e5, #2563eb)",
-                boxShadow: "0 10px 25px rgba(37,99,235,0.25)",
+                background: 'linear-gradient(135deg, #4f46e5, #2563eb)',
+                boxShadow: '0 10px 25px rgba(37,99,235,0.25)',
               }}
             >
-              <Wallet size={26} color="#fff" />
+              <Wallet size={26} color='#fff' />
             </div>
             <div>
-              <Title
-                level={3}
-                style={{
-                  margin: 0,
-                  color: "#020617",
-                  fontWeight: 700,
-                }}
-              >
+              <Title level={3} style={{ margin: 0, color: '#020617', fontWeight: 700 }}>
                 Payout Requests
               </Title>
-              <Text type="secondary">
-                View and manage withdrawal requests from teachers
-              </Text>
+              <Text type='secondary'>Manage teacher withdrawal requests</Text>
             </div>
           </div>
 
-          <Space size="middle">
+          <Space size='middle'>
             <Search
               allowClear
-              placeholder="Search teacher, email, transaction ref..."
+              placeholder='Search teacher, email, ref...'
               onChange={(e) => setSearchText(e.target.value)}
               style={{ width: 280 }}
             />
-
-            {activeTab === "all" && (
+            {activeTab === 'all' && (
               <Select
                 value={statusFilter}
                 onChange={(v) => setStatusFilter(v)}
                 style={{ width: 180 }}
-                placeholder="Filter by status"
+                placeholder='Status'
                 allowClear
               >
-                <Option value="">All statuses</Option>
-                <Option value="Completed">Completed</Option>
-                <Option value="Pending">Pending</Option>
-                <Option value="Rejected">Rejected</Option>
+                <Option value=''>All</Option>
+                <Option value='Completed'>Completed</Option>
+                <Option value='Pending'>Pending</Option>
+                <Option value='Rejected'>Rejected</Option>
               </Select>
             )}
-
-            <Tooltip title="Refresh">
+            <Tooltip title='Refresh'>
               <button
-                type="button"
-                onClick={handleRefresh}
+                type='button'
                 style={{
                   borderRadius: 999,
-                  border: "1px solid #d4d4d8",
-                  padding: "6px 10px",
-                  backgroundColor: "#ffffff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  border: '1px solid #d4d4d8',
+                  padding: '6px 10px',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <RefreshCw
                   size={16}
-                  className={isFetchingCurrent ? "animate-spin" : ""}
+                  className={isFetchingAll || isFetchingPending ? 'animate-spin' : ''}
                 />
               </button>
             </Tooltip>
           </Space>
         </div>
 
-        {/* Summary cards */}
+        {/* Summary */}
         <Row gutter={16} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={12} md={8}>
             <Card
               bordered={false}
-              style={{
-                borderRadius: 18,
-                boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
-              }}
+              style={{ borderRadius: 18, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}
             >
               <Space>
-                <div
-                  style={{
-                    backgroundColor: "#ecfdf3",
-                    borderRadius: "999px",
-                    padding: 8,
-                  }}
-                >
-                  <DollarOutlined style={{ color: "#16a34a" }} />
+                <div style={{ backgroundColor: '#ecfdf3', borderRadius: '999px', padding: 8 }}>
+                  <DollarOutlined style={{ color: '#16a34a' }} />
                 </div>
                 <div>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Total Amount (All)
+                  <Text type='secondary' style={{ fontSize: 12 }}>
+                    Total Amount
                   </Text>
                   <Statistic
                     value={totalAmountAll}
-                    valueStyle={{ fontSize: 18, color: "#16a34a" }}
-                    formatter={(v) => `${Number(v).toLocaleString("vi-VN")} ₫`}
+                    valueStyle={{ fontSize: 18, color: '#16a34a' }}
+                    formatter={(v) => `${Number(v).toLocaleString('vi-VN')} ₫`}
                   />
                 </div>
               </Space>
             </Card>
           </Col>
-
           <Col xs={24} sm={12} md={8}>
             <Card
               bordered={false}
-              style={{
-                borderRadius: 18,
-                boxShadow: "0 8px 20px rgba(15,23,42,0.06)",
-              }}
+              style={{ borderRadius: 18, boxShadow: '0 8px 20px rgba(15,23,42,0.06)' }}
             >
-              <Text type="secondary" style={{ fontSize: 12 }}>
+              <Text type='secondary' style={{ fontSize: 12 }}>
                 Pending Requests
               </Text>
-              <Title
-                level={4}
-                style={{ margin: 0, marginTop: 4, color: "#0f172a" }}
-              >
+              <Title level={4} style={{ margin: 0, marginTop: 4, color: '#0f172a' }}>
                 {totalPendingCount}
               </Title>
             </Card>
           </Col>
         </Row>
 
-        {/* Tabs: Pending / All */}
+        {/* Tabs */}
         <Card
           bordered={false}
-          style={{
-            borderRadius: 18,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
-          }}
+          style={{ borderRadius: 18, boxShadow: '0 10px 30px rgba(15,23,42,0.06)' }}
         >
           <Tabs
             activeKey={activeTab}
-            onChange={(k) => setActiveTab(k as "pending" | "all")}
+            onChange={(k) => setActiveTab(k as any)}
             items={[
               {
-                key: "pending",
-                label: "Pending",
+                key: 'pending',
+                label: `Pending (${totalPendingCount})`,
                 children: (
                   <Table
-                    rowKey="payoutRequestId"
+                    rowKey='payoutRequestId'
                     loading={isLoadingPending}
                     columns={columnsPending}
                     dataSource={filteredPending}
-                    pagination={{ pageSize: 10, showSizeChanger: false }}
+                    pagination={{ pageSize: 10 }}
                   />
                 ),
               },
               {
-                key: "all",
-                label: "All Payouts",
+                key: 'all',
+                label: 'All Payouts',
                 children: (
                   <Table
-                    rowKey="payoutRequestId"
+                    rowKey='payoutRequestId'
                     loading={isLoadingAll}
                     columns={columnsAll}
                     dataSource={filteredAll}
-                    pagination={{ pageSize: 10, showSizeChanger: false }}
+                    pagination={{ pageSize: 10 }}
                   />
                 ),
               },
@@ -542,41 +451,107 @@ const AdminPayoutsPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Modal Process Payout */}
+      {/* Process Modal */}
       <Modal
         open={processModalOpen}
-        title={
-          <span>
-            Process payout{" "}
-            {selectedPayout ? `- ${selectedPayout.teacherName}` : ""}
-          </span>
-        }
+        title={`Process Payout – ${selectedPayout?.teacherName}`}
         onCancel={() => setProcessModalOpen(false)}
-        okText="Submit"
-        cancelText="Cancel"
+        okText='Submit'
+        cancelText='Cancel'
         onOk={() => form.submit()}
         confirmLoading={processMutation.isPending}
       >
-        <Form form={form} layout="vertical" onFinish={handleProcessSubmit}>
-          <Form.Item
-            label="Action"
-            name="action"
-            rules={[{ required: true, message: "Action is required" }]}
-          >
-            <Select placeholder="Select action">
-              <Option value="Approve">Approve</Option>
-              <Option value="Reject">Reject</Option>
+        <Form form={form} layout='vertical' onFinish={handleProcessSubmit}>
+          <Form.Item label='Action' name='action' rules={[{ required: true }]}>
+            <Select placeholder='Select action'>
+              <Option value='Approve'>Approve</Option>
+              <Option value='Reject'>Reject</Option>
             </Select>
           </Form.Item>
-
-          <Form.Item label="Transaction Reference" name="transactionReference">
-            <Input placeholder="e.g. BANK-TRX-20251110-123456" />
+          <Form.Item label='Transaction Reference' name='transactionReference'>
+            <Input placeholder='e.g. BANK-TRX-20251116-001' />
           </Form.Item>
-
-          <Form.Item label="Admin Note" name="adminNote">
-            <TextArea rows={3} placeholder="Optional note..." />
+          <Form.Item label='Admin Note' name='adminNote'>
+            <TextArea rows={3} placeholder='Optional...' />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* Detail Modal */}
+      <Modal
+        open={detailModalOpen}
+        onCancel={() => setDetailModalOpen(false)}
+        footer={null}
+        width={800}
+        title={
+          <Space>
+            <EyeOutlined className='text-sky-600' />
+            <span>Payout Details</span>
+          </Space>
+        }
+      >
+        {isFetchingDetail ? (
+          <div className='py-8 text-center'>Loading details...</div>
+        ) : detailData ? (
+          <div className='space-y-6'>
+            <div className='flex items-center gap-4 border-b pb-4'>
+              <div>
+                <Title level={4} className='m-0'>
+                  {detailData.teacherName}
+                </Title>
+                <Text type='secondary'>{detailData.teacherEmail}</Text>
+              </div>
+              <Tag color={statusColors[detailData.payoutStatus]} className='ml-auto'>
+                {detailData.payoutStatus}
+              </Tag>
+            </div>
+
+            <Descriptions column={2} bordered>
+              <Descriptions.Item label='Amount'>
+                <Text strong style={{ color: '#16a34a' }}>
+                  {detailData.amount.toLocaleString('vi-VN')} ₫
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label='Status'>
+                <Tag color={statusColors[detailData.payoutStatus]}>{detailData.payoutStatus}</Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label='Requested At'>
+                {new Date(detailData.requestedAt).toLocaleString('vi-VN')}
+              </Descriptions.Item>
+              <Descriptions.Item label='Approved At'>
+                {detailData.approvedAt
+                  ? new Date(detailData.approvedAt).toLocaleString('vi-VN')
+                  : '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label='Bank'>
+                {detailData.bankName} – {detailData.bankBranch}
+              </Descriptions.Item>
+              <Descriptions.Item label='Account'>
+                {detailData.accountNumber} · {detailData.accountHolder}
+              </Descriptions.Item>
+              <Descriptions.Item label='Transaction Ref'>
+                {detailData.transactionRef || '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label='Admin Note'>{detailData.note || '—'}</Descriptions.Item>
+            </Descriptions>
+
+            {detailData.payoutStatus === 'Pending' && (
+              <div className='text-right'>
+                <Button
+                  type='primary'
+                  onClick={() => {
+                    setDetailModalOpen(false);
+                    openProcessModal(detailData);
+                  }}
+                >
+                  Process Now
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className='py-8 text-center text-gray-500'>No data</div>
+        )}
       </Modal>
     </div>
   );

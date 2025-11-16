@@ -6,6 +6,7 @@ import { PlusOutlined, WalletOutlined } from '@ant-design/icons';
 import { createPayoutRequest, getBankAccounts } from '../../services/teacherApplication';
 import type { BankAccountResponse } from '../../services/teacherApplication/types';
 import BankAccountDrawer from './components/BankAccountDrawer';
+import { notifyError, notifySuccess } from '../../utils/toastConfig';
 
 const PayoutPage: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -37,11 +38,11 @@ const PayoutPage: React.FC = () => {
         amount: values.amount,
         bankAccountId: values.bankAccountId,
       });
-      message.success('Yêu cầu rút tiền đã được gửi!');
+      notifySuccess('Yêu cầu rút tiền đã được gửi!');
       form.resetFields();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Rút tiền thất bại');
+      notifyError(error.response?.data?.message || 'Rút tiền thất bại');
     }
   };
 
