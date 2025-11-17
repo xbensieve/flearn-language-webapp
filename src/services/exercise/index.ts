@@ -1,5 +1,5 @@
 import api from "../../config/axios";
-import type { GradeRequestBody } from "./type";
+import type { GradeRequestBody, GradingStatus } from "./type";
 
 export const getTeacherAssignments = async (params: {
   page?: number;
@@ -23,3 +23,7 @@ export const getGradeSubmission = async (exerciseSubmissionId: string, data: Gra
   );
   return response.data;
 };
+
+// services/exercise.ts
+export const getGradingStatus = (id: string): Promise<GradingStatus> =>
+  api.get(`/exercise-grading/status/${id}`).then(res => res.data);
