@@ -37,6 +37,7 @@ import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
 import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
+import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -175,6 +176,7 @@ const routes: RouteObject[] = [
       { path: 'status', element: <ApplicationStatus /> },
       { path: 'survey/create', element: <CreateSurvey /> },
       { path: 'course', element: <MyCourses /> },
+      { path: 'course/exercise-grading/assignments', element: <TeacherGradingPage /> },
       { path: 'course/create', element: <CreateCourse /> },
       { path: 'course/:id', element: <CourseDetailView /> },
       { path: 'course/:id/edit', element: <CourseDetail /> },

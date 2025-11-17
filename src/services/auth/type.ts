@@ -23,6 +23,11 @@ export interface ProfileResponse {
 }
 
 export interface TeacherProfile {
+  profile: Profile
+  wallet: Wallet
+}
+
+export interface Profile {
   teacherId: string
   language: string
   fullName: string
@@ -36,6 +41,15 @@ export interface TeacherProfile {
   reviewCount: number
   meetingUrl: string
 }
+
+export interface Wallet {
+  walletId: string
+  totalBalance: number
+  availableBalance: number
+  holdBalance: number
+  currency: string
+}
+
 
 export interface IRefreshToken {
   accessToken: string;
