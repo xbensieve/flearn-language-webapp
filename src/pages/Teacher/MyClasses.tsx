@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Card,
   Typography,
@@ -13,10 +13,10 @@ import {
   Pagination,
   Progress,
   Badge,
-} from "antd";
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { getClassesService } from "../../services/class";
+} from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { getClassesService } from '../../services/class';
 import {
   PlusOutlined,
   EyeOutlined,
@@ -27,35 +27,35 @@ import {
   TeamOutlined,
   FilterOutlined,
   RocketOutlined,
-} from "@ant-design/icons";
-import { formatStatusLabel } from "../../utils/mapping";
-import type { Class } from "../../services/class/type";
-import CreateClassForm from "./components/CreateClassForm";
-import { Book } from "lucide-react";
+} from '@ant-design/icons';
+import { formatStatusLabel } from '../../utils/mapping';
+import type { Class } from '../../services/class/type';
+import CreateClassForm from './components/CreateClassForm';
+import { Book } from 'lucide-react';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
 const statusOptions = [
-  { value: "", label: "All Classes" },
-  { value: "Draft", label: "Draft" },
-  { value: "Published", label: "Published" },
+  { value: '', label: 'All Classes' },
+  { value: 'Draft', label: 'Draft' },
+  { value: 'Published', label: 'Published' },
 ];
 
 const statusColors: Record<string, string> = {
-  Draft: "#bfbfbf",
-  Published: "#bfbfbf",
+  Draft: '#bfbfbf',
+  Published: '#bfbfbf',
 };
 
 const MyClasses: React.FC = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>('');
   const [page, setPage] = useState(1);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const pageSize = 9;
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["classes", status, page],
+    queryKey: ['classes', status, page],
     queryFn: () => getClassesService({ status, page, pageSize }),
     retry: 1,
     retryDelay: 500,
@@ -84,30 +84,33 @@ const MyClasses: React.FC = () => {
         <Spin
           size="large"
           indicator={
-            <LoadingOutlined className="text-5xl text-gray-500" spin />
+            <LoadingOutlined
+              className="text-5xl text-gray-500"
+              spin
+            />
           }
         />
-        <Text className="mt-6 text-gray-600 text-lg font-medium">
-          Loading your classes...
-        </Text>
+        <Text className="mt-6 text-gray-600 text-lg font-medium">Loading your classes...</Text>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header Card */}
         <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
           {/* Title Bar */}
           <div className="flex items-center gap-3 p-6 border-b border-gray-200">
             <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Book size={24} className="text-gray-700" />
+              <Book
+                size={24}
+                className="text-gray-700"
+              />
             </div>
             <Title
               level={3}
-              className="m-0 text-gray-900 font-semibold text-xl"
-            >
+              className="m-0 text-gray-900 font-semibold text-xl">
               My Classes
             </Title>
           </div>
@@ -116,20 +119,15 @@ const MyClasses: React.FC = () => {
           <div className="p-5 bg-white">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-5">
               <div className="text-center sm:text-left">
-                <div className="text-3xl font-bold text-gray-900">
-                  {classes.length}
-                </div>
+                <div className="text-3xl font-bold text-gray-900">{classes.length}</div>
                 <div className="text-gray-500 text-sm mt-1">
-                  {status
-                    ? `${formatStatusLabel(status)} Classes`
-                    : "Total Classes"}
+                  {status ? `${formatStatusLabel(status)} Classes` : 'Total Classes'}
                 </div>
               </div>
 
               <Space
                 size="middle"
-                className="flex flex-wrap justify-center sm:justify-end gap-3"
-              >
+                className="flex flex-wrap justify-center sm:justify-end gap-3">
                 <Select
                   value={status}
                   onChange={handleStatusChange}
@@ -137,10 +135,11 @@ const MyClasses: React.FC = () => {
                   size="large"
                   placeholder="Filter by status"
                   suffixIcon={<FilterOutlined className="text-gray-500" />}
-                  className="rounded-xl"
-                >
+                  className="rounded-xl">
                   {statusOptions.map((s) => (
-                    <Option key={s.value} value={s.value}>
+                    <Option
+                      key={s.value}
+                      value={s.value}>
                       <Space size={6}>
                         {s.value && (
                           <Badge
@@ -148,9 +147,7 @@ const MyClasses: React.FC = () => {
                             style={{ width: 8, height: 8 }}
                           />
                         )}
-                        <span className="font-medium text-gray-700">
-                          {s.label}
-                        </span>
+                        <span className="font-medium text-gray-700">{s.label}</span>
                       </Space>
                     </Option>
                   ))}
@@ -161,8 +158,7 @@ const MyClasses: React.FC = () => {
                   icon={<PlusOutlined />}
                   onClick={() => setIsCreateModalVisible(true)}
                   size="large"
-                  className="h-12 px-6 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 border-0 shadow-sm"
-                >
+                  className="h-12 px-6 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 border-0 shadow-sm">
                   Create New Class
                 </Button>
               </Space>
@@ -181,63 +177,60 @@ const MyClasses: React.FC = () => {
                 );
 
                 return (
-                  <Col key={cls.classID} xs={24} sm={12} lg={8}>
+                  <Col
+                    key={cls.classID}
+                    xs={24}
+                    sm={12}
+                    lg={8}>
                     <Card
                       hoverable
                       bodyStyle={{ padding: 0 }}
                       style={{
-                        height: "100%",
+                        height: '100%',
                         borderRadius: 18,
-                        border: "1px solid #e5e7eb",
-                        boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
-                        overflow: "hidden",
-                        backgroundColor: "#ffffff",
-                        transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                      }}
-                    >
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)',
+                        overflow: 'hidden',
+                        backgroundColor: '#ffffff',
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                      }}>
                       {/* Header */}
                       <div
                         style={{
                           padding: 20,
-                          backgroundColor: "#ffffff",
-                          borderBottom: "1px solid #e5e7eb",
-                        }}
-                      >
+                          backgroundColor: '#ffffff',
+                          borderBottom: '1px solid #e5e7eb',
+                        }}>
                         <div
                           style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
                             marginBottom: 12,
-                          }}
-                        >
+                          }}>
                           <Tag
                             color="default"
                             style={{
-                              padding: "4px 12px",
+                              padding: '4px 12px',
                               borderRadius: 999,
                               fontSize: 11,
                               fontWeight: 500,
-                              border: "1px solid #d4d4d4",
-                            }}
-                          >
+                              border: '1px solid #d4d4d4',
+                            }}>
                             {formatStatusLabel(cls.status)}
                           </Tag>
 
                           <div
                             style={{
                               padding: 8,
-                              backgroundColor: "#ffffff",
+                              backgroundColor: '#ffffff',
                               borderRadius: 10,
-                              border: "1px solid #e5e7eb",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <BookOutlined
-                              style={{ color: "#4b5563", fontSize: 16 }}
-                            />
+                              border: '1px solid #e5e7eb',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            <BookOutlined style={{ color: '#4b5563', fontSize: 16 }} />
                           </div>
                         </div>
 
@@ -247,25 +240,23 @@ const MyClasses: React.FC = () => {
                             margin: 0,
                             fontSize: 16,
                             fontWeight: 600,
-                            color: "#111827",
+                            color: '#111827',
                             lineHeight: 1.4,
-                            overflow: "hidden",
-                            display: "-webkit-box",
+                            overflow: 'hidden',
+                            display: '-webkit-box',
                             WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
+                            WebkitBoxOrient: 'vertical',
+                          }}>
                           {cls.title}
                         </Title>
 
                         <Text
                           style={{
-                            display: "block",
+                            display: 'block',
                             marginTop: 4,
                             fontSize: 13,
-                            color: "#6b7280",
-                          }}
-                        >
+                            color: '#6b7280',
+                          }}>
                           {cls.languageName}
                         </Text>
                       </div>
@@ -274,45 +265,41 @@ const MyClasses: React.FC = () => {
                       <div
                         style={{
                           padding: 20,
-                          display: "flex",
-                          flexDirection: "column",
+                          display: 'flex',
+                          flexDirection: 'column',
                           gap: 14,
-                        }}
-                      >
+                        }}>
                         <Paragraph
                           ellipsis={{ rows: 2 }}
                           style={{
                             margin: 0,
                             fontSize: 13,
                             lineHeight: 1.6,
-                            color: "#4b5563",
-                            minHeight: "3rem",
-                          }}
-                        >
+                            color: '#4b5563',
+                            minHeight: '3rem',
+                          }}>
                           {cls.description}
                         </Paragraph>
 
                         {/* Info Blocks */}
                         <div
                           style={{
-                            display: "flex",
-                            flexDirection: "column",
+                            display: 'flex',
+                            flexDirection: 'column',
                             gap: 12,
-                          }}
-                        >
+                          }}>
                           <div
                             style={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               padding: 12,
                               borderRadius: 12,
-                              backgroundColor: "#f9fafb",
-                              border: "1px solid #e5e7eb",
-                            }}
-                          >
+                              backgroundColor: '#f9fafb',
+                              border: '1px solid #e5e7eb',
+                            }}>
                             <CalendarOutlined
                               style={{
-                                color: "#6b7280",
+                                color: '#6b7280',
                                 marginRight: 12,
                                 fontSize: 16,
                               }}
@@ -321,44 +308,36 @@ const MyClasses: React.FC = () => {
                               <Text
                                 style={{
                                   fontSize: 11,
-                                  color: "#9ca3af",
-                                  display: "block",
+                                  color: '#9ca3af',
+                                  display: 'block',
                                   marginBottom: 2,
-                                }}
-                              >
+                                }}>
                                 Duration
                               </Text>
                               <Text
                                 style={{
                                   fontSize: 13,
                                   fontWeight: 500,
-                                  color: "#1f2933",
-                                }}
-                              >
-                                {new Date(cls.startDateTime).toLocaleDateString(
-                                  "en-GB"
-                                )}{" "}
-                                -{" "}
-                                {new Date(cls.endDateTime).toLocaleDateString(
-                                  "en-GB"
-                                )}
+                                  color: '#1f2933',
+                                }}>
+                                {new Date(cls.startDateTime).toLocaleDateString('en-GB')} -{' '}
+                                {new Date(cls.endDateTime).toLocaleDateString('en-GB')}
                               </Text>
                             </div>
                           </div>
 
                           <div
                             style={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               padding: 12,
                               borderRadius: 12,
-                              backgroundColor: "#f9fafb",
-                              border: "1px solid #e5e7eb",
-                            }}
-                          >
+                              backgroundColor: '#f9fafb',
+                              border: '1px solid #e5e7eb',
+                            }}>
                             <ClockCircleOutlined
                               style={{
-                                color: "#6b7280",
+                                color: '#6b7280',
                                 marginRight: 12,
                                 fontSize: 16,
                               }}
@@ -367,35 +346,27 @@ const MyClasses: React.FC = () => {
                               <Text
                                 style={{
                                   fontSize: 11,
-                                  color: "#9ca3af",
-                                  display: "block",
+                                  color: '#9ca3af',
+                                  display: 'block',
                                   marginBottom: 2,
-                                }}
-                              >
+                                }}>
                                 Time
                               </Text>
                               <Text
                                 style={{
                                   fontSize: 13,
                                   fontWeight: 500,
-                                  color: "#1f2933",
-                                }}
-                              >
-                                {new Date(cls.startDateTime).toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}{" "}
-                                -{" "}
-                                {new Date(cls.endDateTime).toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  }
-                                )}
+                                  color: '#1f2933',
+                                }}>
+                                {new Date(cls.startDateTime).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}{' '}
+                                -{' '}
+                                {new Date(cls.endDateTime).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
                               </Text>
                             </div>
                           </div>
@@ -405,9 +376,7 @@ const MyClasses: React.FC = () => {
                             <div className="flex justify-between items-center mb-2">
                               <Space size={6}>
                                 <TeamOutlined className="text-gray-600 text-base" />
-                                <Text className="font-medium text-gray-800">
-                                  Enrollments
-                                </Text>
+                                <Text className="font-medium text-gray-800">Enrollments</Text>
                               </Space>
                               <Text className="font-medium text-gray-700 text-sm">
                                 {cls.currentEnrollments} / {cls.capacity}
@@ -434,7 +403,7 @@ const MyClasses: React.FC = () => {
                               Price per student
                             </Text>
                             <div className="text-xl font-bold text-gray-900">
-                              {cls.pricePerStudent.toLocaleString("vi-VN")} đ
+                              {cls.pricePerStudent.toLocaleString('vi-VN')} đ
                             </div>
                           </div>
                           <Button
@@ -442,8 +411,7 @@ const MyClasses: React.FC = () => {
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`${cls.classID}`)}
                             size="large"
-                            className="rounded-xl font-medium border-gray-300 hover:border-gray-400"
-                          >
+                            className="rounded-xl font-medium border-gray-300 hover:border-gray-400">
                             View
                           </Button>
                         </div>
@@ -472,12 +440,14 @@ const MyClasses: React.FC = () => {
             <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
               <RocketOutlined className="text-5xl text-gray-600" />
             </div>
-            <Title level={3} className="text-gray-900 mb-3 font-semibold">
+            <Title
+              level={3}
+              className="text-gray-900 mb-3 font-semibold">
               No Classes Yet
             </Title>
             <Text className="text-gray-600 max-w-md mx-auto block mb-8 text-base leading-relaxed">
-              Start your teaching journey by creating your first class. Share
-              your knowledge and inspire students!
+              Start your teaching journey by creating your first class. Share your knowledge and
+              inspire students!
             </Text>
             {/* <Button
               type="primary"

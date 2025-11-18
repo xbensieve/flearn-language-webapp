@@ -8,7 +8,7 @@ import {
   DashboardOutlined,
   BookOutlined,
   PlusOutlined,
-  CheckCircleOutlined,
+  // CheckCircleOutlined,
   UserOutlined,
   MenuOutlined,
 } from '@ant-design/icons';
@@ -49,7 +49,7 @@ const TeacherLayout: React.FC = () => {
     { to: '/course', icon: BookOutlined, label: 'Courses' },
     { to: '/classes', icon: School, label: 'Classes' },
     { to: '/course/create', icon: PlusOutlined, label: 'Create Course' },
-    { to: '/status', icon: CheckCircleOutlined, label: 'Status' },
+    // { to: '/status', icon: CheckCircleOutlined, label: 'Status' },
     { to: '/payout-request', icon: UserOutlined, label: 'Bank Account' },
     { to: '/course/exercise-grading/assignments', icon: GraduationCap, label: 'Assignments' },
   ];

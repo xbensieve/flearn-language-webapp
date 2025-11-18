@@ -146,8 +146,6 @@ const TeacherGradingPage: React.FC = () => {
     return { text: 'AI Only', color: 'gray', paid: false };
   };
 
-  const isAlreadyGraded = (record: Assignment) => record.finalScore !== null;
-
   const getAIFeedbackText = (aiFeedback: string) => {
     try {
       const parsed = JSON.parse(aiFeedback);
@@ -160,6 +158,8 @@ const TeacherGradingPage: React.FC = () => {
   const columns = [
     {
       title: 'Student',
+      width: 180,
+      fixed: 'left' as const,
       render: (_: any, record: Assignment) => (
         <Space>
           <Avatar
@@ -174,11 +174,62 @@ const TeacherGradingPage: React.FC = () => {
     {
       title: 'Exercise',
       dataIndex: 'exerciseTitle',
-      render: (t: string) => <Text strong>{t}</Text>,
+      width: 280,
+      render: (text: string, record: Assignment) => (
+        <div>
+          <Text strong>{text}</Text>
+          <br />
+          <Text
+            type="secondary"
+            className="text-xs">
+            {record.lessonTitle} → {record.courseName}
+          </Text>
+        </div>
+      ),
     },
-    { title: 'Course', dataIndex: 'courseName' },
     {
-      title: 'Review Turn',
+      title: 'Submitted',
+      width: 160,
+      render: (_: any, record: Assignment) => (
+        <div>
+          <Text>{record.completedAt}</Text>
+        </div>
+      ),
+    },
+    {
+      title: 'Deadline',
+      width: 130,
+      render: (_: any, record: Assignment) => (
+        <Space
+          direction="vertical"
+          size={0}>
+          <Text>{record.deadline}</Text>
+          {record.isOverdue && (
+            <Tag
+              color="red"
+              className="text-xs">
+              Overdue
+            </Tag>
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: 'AI Score',
+      width: 100,
+      align: 'center' as const,
+      sorter: (a: Assignment, b: Assignment) => a.aiScore - b.aiScore,
+      render: (_: any, record: Assignment) => (
+        <Tag
+          color="cyan"
+          className="font-bold">
+          {record.aiScore}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Review Type',
+      width: 170,
       render: (_: any, record: Assignment) => {
         const info = getGradingInfo(record);
         return (
@@ -191,19 +242,43 @@ const TeacherGradingPage: React.FC = () => {
       },
     },
     {
-      title: 'Action',
+      title: 'Payment',
+      width: 130,
+      align: 'center' as const,
+      render: (_: any, record: Assignment) =>
+        record.earningStatus === 'Approved' ? (
+          <Space
+            direction="vertical"
+            size={0}>
+            <Text
+              strong
+              className="text-green-600">
+              {record.earningAmount.toLocaleString('vi-VN')} VNĐ
+            </Text>
+          </Space>
+        ) : record.earningStatus === 'NO_PAYMENT' ? (
+          <Tag color="orange">No Pay</Tag>
+        ) : (
+          <Text type="secondary">—</Text>
+        ),
+    },
+    {
+      title: 'Status',
+      width: 140,
+      fixed: 'right' as const,
       render: (_: any, record: Assignment) => {
-        const alreadyGraded = isAlreadyGraded(record);
+        const alreadyGraded = record.finalScore !== null;
 
         return alreadyGraded ? (
           <Tag
-            color="success"
-            icon={<CheckCircleFilled />}>
+            icon={<CheckCircleFilled />}
+            color="success">
             Graded ({record.finalScore}/100)
           </Tag>
         ) : (
           <Button
             type="primary"
+            size="middle"
             className="bg-gradient-to-r from-indigo-600 to-purple-600 border-0 font-semibold shadow-lg"
             onClick={() => openGradingModal(record)}>
             Grade Now
@@ -214,7 +289,7 @@ const TeacherGradingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+    <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
           <Title
@@ -224,7 +299,7 @@ const TeacherGradingPage: React.FC = () => {
           </Title>
         </div>
 
-        <Card className="shadow-2xl border-0 overflow-hidden">
+        <Card className="shadow-2xl border-0 !overflow-hidden">
           <Table
             columns={columns}
             dataSource={data?.data || []}
