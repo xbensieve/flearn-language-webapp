@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Data {
   users: User[]
   pagination: Pagination
@@ -40,4 +41,49 @@ export interface Pagination {
   pageSize: number
   totalUsers: number
   totalPages: number
+}
+
+export interface TeacherDashboardResponse {
+  status: string;
+  code: number;
+  message: string;
+  data: {
+    totalClasses: number;
+    totalStudents: number;
+    totalRevenue: number;
+    totalPayout: number;
+    pendingPayouts: number;
+    completedPayouts: number;
+    cancelledPayouts: number;
+    activeClasses: number;
+    finishedClasses: number;
+
+    classes: Array<{
+      classID: string;
+      title: string;
+      status: string;
+      startDateTime: string;
+      endDateTime: string;
+      studentCount: number;
+      revenue: number;
+      programId: string;
+      programName: string;
+    }>;
+
+    payouts: any[];
+    programStats: Array<{
+      programId: string;
+      programName: string;
+      classCount: number;
+      studentCount: number;
+      revenue: number;
+    }>;
+
+    periodStats: Array<{
+      period: string; // YYYY-MM
+      classCount: number;
+      studentCount: number;
+      revenue: number;
+    }>;
+  };
 }
