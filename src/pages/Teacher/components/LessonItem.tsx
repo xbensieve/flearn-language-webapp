@@ -177,7 +177,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             <Panel
               key="1"
               header={
-                <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50">
+                <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 rounded-2xl">
                   <Row
                     align="middle"
                     gutter={16}>
@@ -257,7 +257,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                 </div>
               }
               className="bg-white">
-              <div className="p-6 bg-gradient-to-b from-sky-50 to-white">
+              <div className="p-6 bg-gradient-to-b from-sky-50 to-white rounded-2xl">
                 <Tabs
                   defaultActiveKey="content"
                   className="mt-4"
@@ -278,7 +278,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                       </div>
                     }
                     key="content">
-                    <div className="space-y-6">
+                    <div className="!space-y-6">
                       {lesson.content && (
                         <Card className="border-0 shadow-sm rounded-2xl bg-white">
                           <div className="prose prose-sm max-w-none p-6">

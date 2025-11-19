@@ -208,7 +208,7 @@ const ApplicationStatus: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6 shadow-md rounded-xl">
+        <Card className="!mb-2 shadow-md rounded-xl">
           <Space
             wrap
             className="w-full"
@@ -359,7 +359,7 @@ const ApplicationStatus: React.FC = () => {
               />
 
               {selectedApp.certificates?.length ? (
-                <div>
+                <div className="mt-4">
                   <Title
                     level={5}
                     className="flex items-center gap-2">

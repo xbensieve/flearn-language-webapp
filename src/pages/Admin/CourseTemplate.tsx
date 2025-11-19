@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
   Table,
   Typography,
   Button,
   Drawer,
-  Spin,
   Descriptions,
   Form,
   Input,
   InputNumber,
+  Select,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -19,10 +20,13 @@ import {
   deleteCourseTemplateService,
 } from '../../services/course';
 import type { CourseTemplate, PayloadCourseTemplate } from '../../services/course/type';
+import { getLanguagesService } from '../../services/language';
+import { getProgramsService } from '../../services/program';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { DeleteFilled, EditFilled, EyeOutlined } from '@ant-design/icons';
+import { Edit, Eye, Trash2 } from 'lucide-react';
 
 const { Title } = Typography;
+const { Option } = Select; // ← This was missing!
 
 const CourseTemplatesPage: React.FC = () => {
   const [page, setPage] = useState(1);
@@ -31,53 +35,77 @@ const CourseTemplatesPage: React.FC = () => {
   const [openCreateDrawer, setOpenCreateDrawer] = useState(false);
   const [openUpdateDrawer, setOpenUpdateDrawer] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<CourseTemplate | null>(null);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<string | undefined>();
+  const [form] = Form.useForm();
+  const programIdWatch = Form.useWatch('programId', form);
 
+  // Languages
+  const { data: languagesData, isLoading: languagesLoading } = useQuery({
+    queryKey: ['languages'],
+    queryFn: getLanguagesService,
+    staleTime: 5 * 60 * 1000,
+    select: (data) => data.data,
+  });
+
+  // Programs (by selected language)
+  const { data: programsData, isLoading: programsLoading } = useQuery({
+    queryKey: ['programs', selectedLanguageId],
+    queryFn: () => getProgramsService({ languageId: selectedLanguageId! }),
+    enabled: !!selectedLanguageId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Course Templates List
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['courseTemplates', { page, pageSize }],
+    queryKey: ['courseTemplates', page, pageSize],
     queryFn: () => getCourseTemplatesService({ page, pageSize }),
   });
 
-  // Create mutation
-  const { mutate: createMutate, isPending: isCreating } = useMutation({
-    mutationFn: (payload: PayloadCourseTemplate) => createCourseTemplateService(payload),
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: createCourseTemplateService,
     onSuccess: () => {
       notifySuccess('Course Template created successfully!');
+      form.resetFields();
+      setSelectedLanguageId(undefined);
       setOpenCreateDrawer(false);
       refetch();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to create course template');
+      notifyError(err?.response?.data?.message || 'Failed to create template');
     },
   });
 
-  // Update mutation
-  const { mutate: updateMutate, isPending: isUpdating } = useMutation({
-    mutationFn: (payload: PayloadCourseTemplate & { templateId: string }) =>
-      updateCourseTemplateService({ templateId: payload.templateId, data: payload }),
+  const updateMutation = useMutation({
+    mutationFn: ({ templateId, data }: { templateId: string; data: PayloadCourseTemplate }) =>
+      updateCourseTemplateService({ templateId, data }),
     onSuccess: () => {
-      notifySuccess('Course Template updated successfully!');
+      notifySuccess('Template updated successfully!');
       setOpenUpdateDrawer(false);
       refetch();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to update course template');
+      notifyError(err?.response?.data?.message || 'Failed to update template');
     },
   });
 
-  // Delete mutation
-  const { mutate: deleteMutate } = useMutation({
-    mutationFn: (templateId: string) => deleteCourseTemplateService(templateId),
+  const deleteMutation = useMutation({
+    mutationFn: deleteCourseTemplateService,
     onSuccess: () => {
       notifySuccess('Deleted successfully!');
       refetch();
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to delete course template');
-    },
   });
+
+  // Handlers
+  const handleLanguageChange = (value: string | undefined) => {
+    setSelectedLanguageId(value);
+    form.setFieldsValue({ programId: undefined, levelId: undefined });
+  };
+
+  const handleProgramChange = () => {
+    form.setFieldsValue({ levelId: undefined });
+  };
 
   const handleViewDetail = (record: CourseTemplate) => {
     setSelectedTemplate(record);
@@ -89,25 +117,8 @@ const CourseTemplatesPage: React.FC = () => {
     setOpenUpdateDrawer(true);
   };
 
-  const handleDelete = (record: CourseTemplate) => {
-    deleteMutate(record.templateId);
-  };
-
-  const onFinishCreate = (values: {
-    name: string;
-    description: string;
-    unitCount: number;
-    lessonsPerUnit: number;
-    exercisesPerLesson: number;
-    programId: string;
-    levelId: string;
-  }) => {
-    createMutate(values);
-  };
-
-  const onFinishUpdate = (values: PayloadCourseTemplate) => {
-    if (!selectedTemplate) return;
-    updateMutate({ ...values, templateId: selectedTemplate.templateId });
+  const handleDelete = (templateId: string) => {
+    deleteMutation.mutate(templateId);
   };
 
   const columns: ColumnsType<CourseTemplate> = [
@@ -115,7 +126,7 @@ const CourseTemplatesPage: React.FC = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <span className="font-semibold">{text}</span>,
+      render: (text) => <span className="font-medium">{text}</span>,
     },
     {
       title: 'Description',
@@ -123,57 +134,49 @@ const CourseTemplatesPage: React.FC = () => {
       key: 'description',
       ellipsis: true,
     },
+    { title: 'Program', dataIndex: 'program', key: 'program' },
+    { title: 'Level', dataIndex: 'level', key: 'level' },
+    { title: 'Units', dataIndex: 'unitCount', key: 'unitCount' },
+    { title: 'Lessons/Unit', dataIndex: 'lessonsPerUnit', key: 'lessonsPerUnit' },
+    { title: 'Exercises/Lesson', dataIndex: 'exercisesPerLesson', key: 'exercisesPerLesson' },
     {
-      title: 'Program',
-      dataIndex: 'program',
-      key: 'program',
-    },
-    {
-      title: 'Level',
-      dataIndex: 'level',
-      key: 'level',
-    },
-    {
-      title: 'Unit Count',
-      dataIndex: 'unitCount',
-      key: 'unitCount',
-    },
-    {
-      title: 'Lessons Per Unit',
-      dataIndex: 'lessonsPerUnit',
-      key: 'lessonsPerUnit',
-    },
-    {
-      title: 'Exercises Per Lesson',
-      dataIndex: 'exercisesPerLesson',
-      key: 'exercisesPerLesson',
-    },
-    {
-      title: 'Action',
-      key: 'action',
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      align: 'center' as const,
       render: (_, record) => (
-        <div className="flex justify-start items-center gap-2">
-          <EyeOutlined
-            style={{ fontSize: 20, cursor: 'pointer' }}
+        <div className="flex items-center justify-center gap-3">
+          {/* View */}
+          <button
             onClick={() => handleViewDetail(record)}
-          />
-          <EditFilled
-            style={{ fontSize: 20, cursor: 'pointer' }}
+            className="text-gray-600 hover:text-blue-600 transition-colors"
+            title="View details">
+            <Eye className="w-4 h-4" />
+          </button>
+
+          {/* Edit */}
+          <button
             onClick={() => handleEdit(record)}
-          />
-          <DeleteFilled
-            style={{ fontSize: 20, cursor: 'pointer' }}
-            onClick={() => handleDelete(record)}
-          />
+            className="text-gray-600 hover:text-blue-600 transition-colors"
+            title="Edit">
+            <Edit className="w-4 h-4" />
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={() => handleDelete(record.templateId)}
+            className="text-gray-600 hover:text-red-600 transition-colors"
+            title="Delete">
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       ),
-      width: 150,
     },
   ];
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-6">
         <Title
           level={3}
           className="!mb-0">
@@ -181,222 +184,227 @@ const CourseTemplatesPage: React.FC = () => {
         </Title>
         <Button
           type="primary"
+          size="large"
           onClick={() => setOpenCreateDrawer(true)}>
           + Create Template
         </Button>
       </div>
 
-      <Table<CourseTemplate>
+      <Table
         rowKey="templateId"
         columns={columns}
         dataSource={data?.data || []}
         loading={isLoading}
         pagination={{
           current: page,
-          pageSize: pageSize,
-          total: data?.meta.totalItems || 0,
+          pageSize,
+          total: data?.meta?.totalItems || 0,
           onChange: (p, ps) => {
             setPage(p);
-            setPageSize(ps);
+            setPageSize(ps || 10);
           },
         }}
       />
 
-      {/* Drawer for Details */}
+      {/* Detail Drawer */}
       <Drawer
         title={selectedTemplate?.name || 'Template Detail'}
-        width={480}
+        width={500}
         open={openDetailDrawer}
         onClose={() => setOpenDetailDrawer(false)}>
-        {!selectedTemplate ? (
-          <Spin />
-        ) : (
+        {selectedTemplate && (
           <Descriptions
             column={1}
             bordered>
+            <Descriptions.Item label="Name">{selectedTemplate.name}</Descriptions.Item>
             <Descriptions.Item label="Description">
-              {selectedTemplate.description}
+              {selectedTemplate.description || '-'}
             </Descriptions.Item>
             <Descriptions.Item label="Program">{selectedTemplate.program}</Descriptions.Item>
             <Descriptions.Item label="Level">{selectedTemplate.level}</Descriptions.Item>
-            <Descriptions.Item label="Unit Count">{selectedTemplate.unitCount}</Descriptions.Item>
-            <Descriptions.Item label="Lessons Per Unit">
+            <Descriptions.Item label="Units">{selectedTemplate.unitCount}</Descriptions.Item>
+            <Descriptions.Item label="Lessons/Unit">
               {selectedTemplate.lessonsPerUnit}
             </Descriptions.Item>
-            <Descriptions.Item label="Exercises Per Lesson">
+            <Descriptions.Item label="Exercises/Lesson">
               {selectedTemplate.exercisesPerLesson}
             </Descriptions.Item>
-            <Descriptions.Item label="Version">{selectedTemplate.version}</Descriptions.Item>
-            <Descriptions.Item label="Created At">{selectedTemplate.createdAt}</Descriptions.Item>
-            <Descriptions.Item label="Modified At">{selectedTemplate.modifiedAt}</Descriptions.Item>
           </Descriptions>
         )}
       </Drawer>
 
-      {/* Drawer for Create */}
+      {/* Create Drawer - NOW FULLY WORKING */}
       <Drawer
-        title="Create Course Template"
-        width={600}
+        title="Create New Course Template"
+        width={700}
         open={openCreateDrawer}
-        onClose={() => setOpenCreateDrawer(false)}>
+        onClose={() => {
+          setOpenCreateDrawer(false);
+          form.resetFields();
+          setSelectedLanguageId(undefined);
+        }}
+        destroyOnClose>
         <Form
+          form={form}
           layout="vertical"
-          onFinish={onFinishCreate}
-          initialValues={{
-            unitCount: 1,
-            lessonsPerUnit: 1,
-            exercisesPerLesson: 1,
-          }}>
+          onFinish={(v) => createMutation.mutate(v as PayloadCourseTemplate)}>
           <Form.Item
-            label="Name"
+            label="Template Name"
             name="name"
-            rules={[{ required: true, message: 'Please enter template name' }]}>
-            <Input placeholder="Enter template name" />
+            rules={[{ required: true }]}>
+            <Input placeholder="e.g., Beginner Communication Template" />
           </Form.Item>
 
           <Form.Item
             label="Description"
-            name="description"
-            rules={[{ required: true, message: 'Please enter description' }]}>
+            name="description">
             <Input.TextArea
               rows={3}
-              placeholder="Enter template description"
+              placeholder="Optional description..."
             />
           </Form.Item>
 
           <Form.Item
-            label="Program ID"
+            label="Language"
+            name="languageId"
+            rules={[{ required: true }]}>
+            <Select
+              placeholder="Select language"
+              loading={languagesLoading}
+              onChange={handleLanguageChange}
+              allowClear>
+              {languagesData?.map((lang) => (
+                <Option
+                  key={lang.id}
+                  value={lang.id}>
+                  {lang.langName} ({lang.langCode.toUpperCase()})
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Program"
             name="programId"
-            rules={[{ required: true, message: 'Please enter program ID' }]}>
-            <Input placeholder="Enter program ID (e.g., 3fa85f64-5717-4562-b3fc-2c963f66afa6)" />
+            rules={[{ required: true }]}>
+            <Select
+              placeholder="First select a language"
+              loading={programsLoading}
+              disabled={!selectedLanguageId}
+              onChange={handleProgramChange}
+              allowClear>
+              {programsData?.map((p) => (
+                <Option
+                  key={p.programId}
+                  value={p.programId}>
+                  {p.name}
+                  {p.description && ` - ${p.description}`}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
-            label="Level ID"
+            label="Level"
             name="levelId"
-            rules={[{ required: true, message: 'Please enter level ID' }]}>
-            <Input placeholder="Enter level ID (e.g., 3fa85f64-5717-4562-b3fc-2c963f66afa6)" />
+            rules={[{ required: true }]}>
+            <Select
+              placeholder="First select a program"
+              disabled={!programIdWatch}>
+              {programIdWatch &&
+                (programsData || [])
+                  .find((p) => p.programId === programIdWatch)
+                  ?.levels.map((level) => (
+                    <Option
+                      key={level.levelId}
+                      value={level.levelId}>
+                      {level.name} - {level.description}
+                    </Option>
+                  ))}
+            </Select>
           </Form.Item>
 
-          <Form.Item
-            label="Unit Count"
-            name="unitCount"
-            rules={[{ required: true, message: 'Please enter unit count' }]}>
-            <InputNumber
-              min={1}
-              className="w-full"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Lessons Per Unit"
-            name="lessonsPerUnit"
-            rules={[{ required: true, message: 'Please enter lessons per unit' }]}>
-            <InputNumber
-              min={1}
-              className="w-full"
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Exercises Per Lesson"
-            name="exercisesPerLesson"
-            rules={[{ required: true, message: 'Please enter exercises per lesson' }]}>
-            <InputNumber
-              min={1}
-              className="w-full"
-            />
-          </Form.Item>
+          <div className="grid grid-cols-3 gap-6">
+            <Form.Item
+              label="Number of Units"
+              name="unitCount"
+              initialValue={12}
+              rules={[{ required: true }]}>
+              <InputNumber
+                min={1}
+                max={100}
+                className="w-full"
+              />
+            </Form.Item>
+            <Form.Item
+              label="Lessons per Unit"
+              name="lessonsPerUnit"
+              initialValue={6}
+              rules={[{ required: true }]}>
+              <InputNumber
+                min={1}
+                max={30}
+                className="w-full"
+              />
+            </Form.Item>
+            <Form.Item
+              label="Exercises per Lesson"
+              name="exercisesPerLesson"
+              initialValue={10}
+              rules={[{ required: true }]}>
+              <InputNumber
+                min={1}
+                max={50}
+                className="w-full"
+              />
+            </Form.Item>
+          </div>
 
           <Form.Item>
             <Button
               type="primary"
               htmlType="submit"
-              loading={isCreating}>
+              loading={createMutation.isPending}
+              block
+              size="large">
               Create Template
             </Button>
           </Form.Item>
         </Form>
       </Drawer>
 
-      {/* Drawer for Update */}
+      {/* Update Drawer (simple for now) */}
       <Drawer
-        title={`Update Template: ${selectedTemplate?.name || ''}`}
+        title={`Update: ${selectedTemplate?.name || ''}`}
         width={600}
         open={openUpdateDrawer}
         onClose={() => setOpenUpdateDrawer(false)}>
         {selectedTemplate && (
           <Form
             layout="vertical"
-            onFinish={onFinishUpdate}
-            initialValues={selectedTemplate}>
+            onFinish={(v) =>
+              updateMutation.mutate({ templateId: selectedTemplate.templateId, data: v })
+            }>
             <Form.Item
               label="Name"
               name="name"
-              rules={[{ required: true, message: 'Please enter template name' }]}>
-              <Input placeholder="Enter template name" />
+              initialValue={selectedTemplate.name}
+              rules={[{ required: true }]}>
+              <Input />
             </Form.Item>
-
             <Form.Item
               label="Description"
               name="description"
-              rules={[{ required: true, message: 'Please enter description' }]}>
-              <Input.TextArea
-                rows={3}
-                placeholder="Enter template description"
-              />
+              initialValue={selectedTemplate.description}>
+              <Input.TextArea rows={3} />
             </Form.Item>
-
-            <Form.Item
-              label="Program"
-              name="program"
-              rules={[{ required: true, message: 'Please enter program' }]}>
-              <Input placeholder="Enter program ID" />
-            </Form.Item>
-
-            <Form.Item
-              label="Level"
-              name="level"
-              rules={[{ required: true, message: 'Please enter level' }]}>
-              <Input placeholder="Enter level ID" />
-            </Form.Item>
-
-            <Form.Item
-              label="Unit Count"
-              name="unitCount"
-              rules={[{ required: true, message: 'Please enter unit count' }]}>
-              <InputNumber
-                min={1}
-                className="w-full"
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Lessons Per Unit"
-              name="lessonsPerUnit"
-              rules={[{ required: true, message: 'Please enter lessons per unit' }]}>
-              <InputNumber
-                min={1}
-                className="w-full"
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Exercises Per Lesson"
-              name="exercisesPerLesson"
-              rules={[{ required: true, message: 'Please enter exercises per lesson' }]}>
-              <InputNumber
-                min={1}
-                className="w-full"
-              />
-            </Form.Item>
-
+            {/* You can enhance this later with dropdowns */}
             <Form.Item>
               <Button
                 type="primary"
                 htmlType="submit"
-                loading={isUpdating}>
-                Update Template
+                loading={updateMutation.isPending}>
+                Update
               </Button>
             </Form.Item>
           </Form>
