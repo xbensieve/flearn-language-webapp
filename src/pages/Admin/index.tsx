@@ -16,14 +16,14 @@ const Admin: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center min-h-screen'>
-        <Spin size='large' />
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
       </div>
     );
   }
 
   if (isError || !data?.success) {
-    return <div className='text-center mt-10'>Không thể tải dashboard.</div>;
+    return <div className="text-center mt-10">Không thể tải dashboard.</div>;
   }
 
   const dashboard: IDashboard = data.data;
@@ -54,43 +54,49 @@ const Admin: React.FC = () => {
   ];
 
   return (
-    <div className='p-6'>
-      <Card className='shadow-md rounded-xl'>
-        <Title level={3}>Dashboard</Title>
+    <div className=" rounded-xl">
+      <Title level={3}>Dashboard</Title>
+      <div
+        style={{ marginBottom: '1rem' }}
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <Card
+          className="text-center"
+          style={{ margin: '6px' }}>
+          <Text strong>Tổng người dùng</Text>
+          <div className="text-xl">{totalUsers}</div>
+        </Card>
+        <Card
+          className="text-center"
+          style={{ margin: '6px' }}>
+          <Text strong>Tổng nhân viên</Text>
+          <div className="text-xl">{totalStaff}</div>
+        </Card>
+        <Card
+          className="text-center"
+          style={{ margin: '6px' }}>
+          <Text strong>Tổng khóa học</Text>
+          <div className="text-xl">{totalCourses}</div>
+        </Card>
+        <Card
+          className="text-center"
+          style={{ margin: '6px' }}>
+          <Text strong>Người dùng hoạt động</Text>
+          <div className="text-xl">{activeUsers}</div>
+        </Card>
+        <Card
+          className="text-center"
+          style={{ margin: '6px' }}>
+          <Text strong>Khóa học chờ duyệt</Text>
+          <div className="text-xl">{pendingCourses}</div>
+        </Card>
+      </div>
 
-        <div
-          style={{ marginBottom: '1rem' }}
-          className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4'
-        >
-          <Card className='text-center' style={{ margin: '6px' }}>
-            <Text strong>Tổng người dùng</Text>
-            <div className='text-xl'>{totalUsers}</div>
-          </Card>
-          <Card className='text-center' style={{ margin: '6px' }}>
-            <Text strong>Tổng nhân viên</Text>
-            <div className='text-xl'>{totalStaff}</div>
-          </Card>
-          <Card className='text-center' style={{ margin: '6px' }}>
-            <Text strong>Tổng khóa học</Text>
-            <div className='text-xl'>{totalCourses}</div>
-          </Card>
-          <Card className='text-center' style={{ margin: '6px' }}>
-            <Text strong>Người dùng hoạt động</Text>
-            <div className='text-xl'>{activeUsers}</div>
-          </Card>
-          <Card className='text-center' style={{ margin: '6px' }}>
-            <Text strong>Khóa học chờ duyệt</Text>
-            <div className='text-xl'>{pendingCourses}</div>
-          </Card>
-        </div>
-
-        <Table<RecentUser>
-          rowKey='userID'
-          columns={columns}
-          dataSource={recentUsers}
-          pagination={{ pageSize: 5 }}
-        />
-      </Card>
+      <Table<RecentUser>
+        rowKey="userID"
+        columns={columns}
+        dataSource={recentUsers}
+        pagination={{ pageSize: 5 }}
+      />
     </div>
   );
 };

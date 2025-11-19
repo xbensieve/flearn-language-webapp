@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Table,
-  Card,
   Typography,
   Button,
   Drawer,
@@ -173,37 +172,35 @@ const CourseTemplatesPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <Card className="shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <Title
-            level={3}
-            className="!mb-0">
-            Course Templates
-          </Title>
-          <Button
-            type="primary"
-            onClick={() => setOpenCreateDrawer(true)}>
-            + Create Template
-          </Button>
-        </div>
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <Title
+          level={3}
+          className="!mb-0">
+          Course Templates
+        </Title>
+        <Button
+          type="primary"
+          onClick={() => setOpenCreateDrawer(true)}>
+          + Create Template
+        </Button>
+      </div>
 
-        <Table<CourseTemplate>
-          rowKey="templateId"
-          columns={columns}
-          dataSource={data?.data || []}
-          loading={isLoading}
-          pagination={{
-            current: page,
-            pageSize: pageSize,
-            total: data?.meta.totalItems || 0,
-            onChange: (p, ps) => {
-              setPage(p);
-              setPageSize(ps);
-            },
-          }}
-        />
-      </Card>
+      <Table<CourseTemplate>
+        rowKey="templateId"
+        columns={columns}
+        dataSource={data?.data || []}
+        loading={isLoading}
+        pagination={{
+          current: page,
+          pageSize: pageSize,
+          total: data?.meta.totalItems || 0,
+          onChange: (p, ps) => {
+            setPage(p);
+            setPageSize(ps);
+          },
+        }}
+      />
 
       {/* Drawer for Details */}
       <Drawer
@@ -405,7 +402,7 @@ const CourseTemplatesPage: React.FC = () => {
           </Form>
         )}
       </Drawer>
-    </div>
+    </>
   );
 };
 

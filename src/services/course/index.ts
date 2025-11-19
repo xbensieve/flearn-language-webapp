@@ -238,7 +238,7 @@ export const getCourseTemplatesByProgramService = async ({
   programId = "",
   levelId = "",
 }: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
-  const res = await api.get<CourseTemplateResponse>("templates", {
+  const res = await api.get<CourseTemplateResponse>("templates/by-program-and-level", {
     params: { page, pageSize, programId, levelId },
   });
   return res.data;
