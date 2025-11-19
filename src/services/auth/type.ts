@@ -22,6 +22,35 @@ export interface ProfileResponse {
   roles: string[];
 }
 
+export interface TeacherProfile {
+  profile: Profile
+  wallet: Wallet
+}
+
+export interface Profile {
+  teacherId: string
+  language: string
+  fullName: string
+  dateOfBirth: string
+  bio: string
+  avatar: string
+  email: string
+  phoneNumber: string
+  proficiencyCode: string
+  averageRating: number
+  reviewCount: number
+  meetingUrl: string
+}
+
+export interface Wallet {
+  walletId: string
+  totalBalance: number
+  availableBalance: number
+  holdBalance: number
+  currency: string
+}
+
+
 export interface IRefreshToken {
   accessToken: string;
   refreshToken: string;

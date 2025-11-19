@@ -32,9 +32,13 @@ export interface Credential {
 }
 
 export interface ApplicationData {
-  applicationID: string;
   userID: string;
   languageID: string;
+  reviewedBy: any;
+  reviewedByName: any;
+  user: User;
+  applicationID: string;
+  language: string;
   fullName: string;
   dateOfBirth: string;
   bio: string;
@@ -42,20 +46,71 @@ export interface ApplicationData {
   email: string;
   phoneNumber: string;
   teachingExperience: string;
+  proficiencyCode: string;
   meetingUrl: string;
   rejectionReason: any;
   status: string;
-  reviewedBy: any;
-  reviewedByName: any;
   submittedAt: string;
   reviewedAt: string;
-  language: string;
-  user: User;
-  certificates: any[];
+  certificates: Certificate[];
+  submitter: Submitter;
+  reviewer: any;
+}
+
+export interface GetMyApplicationsParams {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  sortBy?: 'newest' | 'oldest';
+  status?: 'Pending' | 'Approved' | 'Rejected';
+}
+
+export interface Certificate {
+  id: string;
+  certificateImageUrl: string;
+  certificateName: string;
+}
+
+export interface Submitter {
+  userId: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
 }
 
 export interface User {
   userId: string;
   userName: string;
   email: string;
+}
+
+export interface BankAccountRequest {
+  bankName: string;
+  bankBranch: string;
+  accountNumber: string;
+  accountHolderName: string;
+}
+
+export interface BankAccountResponse {
+  bankAccountId: string;
+  teacherId: string;
+  bankBranch: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+  isDefault: boolean;
+}
+
+export interface ApiResponse<T> {
+  status: string;
+  code: number;
+  message: string;
+  data: T;
+  errors?: string;
+  meta?: string;
+}
+
+export interface PayoutRequest {
+  amount: number;
+  bankAccountId: string;
 }

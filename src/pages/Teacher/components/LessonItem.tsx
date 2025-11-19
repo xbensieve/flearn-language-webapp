@@ -45,9 +45,10 @@ const { TabPane } = Tabs;
 interface Props {
   lesson: Lesson;
   onUpdated: () => void;
+  onDeleted: (id: string) => void;
 }
 
-const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
+const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
   const [exerciseDrawerVisible, setExerciseDrawerVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
@@ -100,9 +101,9 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
     setConfirmDeleteVisible(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = (id: string) => {
     // Implement delete API call (assumed useDeleteLesson hook)
-    message.success('Lesson deleted successfully');
+    onDeleted(id);
     onUpdated();
     setConfirmDeleteVisible(false);
   };
@@ -176,7 +177,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
             <Panel
               key="1"
               header={
-                <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50">
+                <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 rounded-2xl">
                   <Row
                     align="middle"
                     gutter={16}>
@@ -256,7 +257,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
                 </div>
               }
               className="bg-white">
-              <div className="p-6 bg-gradient-to-b from-sky-50 to-white">
+              <div className="p-6 bg-gradient-to-b from-sky-50 to-white rounded-2xl">
                 <Tabs
                   defaultActiveKey="content"
                   className="mt-4"
@@ -277,7 +278,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
                       </div>
                     }
                     key="content">
-                    <div className="space-y-6">
+                    <div className="!space-y-6">
                       {lesson.content && (
                         <Card className="border-0 shadow-sm rounded-2xl bg-white">
                           <div className="prose prose-sm max-w-none p-6">
@@ -349,7 +350,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated }) => {
         {confirmDeleteVisible && (
           <Modal
             open={confirmDeleteVisible}
-            onOk={handleConfirmDelete}
+            onOk={() => handleConfirmDelete(lesson.lessonID)}
             onCancel={handleCancelDelete}
             okText="Delete"
             cancelText="Cancel"

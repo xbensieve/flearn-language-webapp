@@ -34,6 +34,10 @@ import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
 import ProgramPage from '../../pages/Admin/Program';
 import LevelPage from '../../pages/Admin/Level';
 import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
+import PayoutPage from '../../pages/Teacher/PayoutPage';
+import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
+import LandingPage from '../../pages/LandingPage';
+import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -43,7 +47,7 @@ const routes: RouteObject[] = [
   },
   {
     path: '/',
-    element: <LoginPage />,
+    element: <LandingPage />,
   },
   {
     path: '/register',
@@ -101,6 +105,10 @@ const routes: RouteObject[] = [
       {
         path: 'levels/:programId',
         element: <LevelPage />,
+      },
+      {
+        path: 'payouts',
+        element: <AdminPayoutsPage />,
       },
     ],
   },
@@ -168,6 +176,7 @@ const routes: RouteObject[] = [
       { path: 'status', element: <ApplicationStatus /> },
       { path: 'survey/create', element: <CreateSurvey /> },
       { path: 'course', element: <MyCourses /> },
+      { path: 'course/exercise-grading/assignments', element: <TeacherGradingPage /> },
       { path: 'course/create', element: <CreateCourse /> },
       { path: 'course/:id', element: <CourseDetailView /> },
       { path: 'course/:id/edit', element: <CourseDetail /> },
@@ -175,6 +184,7 @@ const routes: RouteObject[] = [
       { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
       { path: 'classes', element: <MyClasses /> },
       { path: 'classes/:id', element: <ClassDetail /> },
+      { path: 'payout-request', element: <PayoutPage /> },
     ],
   },
   {

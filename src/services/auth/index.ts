@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { AuthResponse, IRefreshToken, ProfileResponse, ResetPasswordPayload } from './type';
+import type { AuthResponse, IRefreshToken, ProfileResponse, ResetPasswordPayload, TeacherProfile } from './type';
 
 export const login = async (payload: {
   usernameOrEmail: string;
@@ -12,6 +12,11 @@ export const login = async (payload: {
 
 export const getProfile = async () => {
   const res = await api.get<API.Response<ProfileResponse>>('/auth/me');
+  return res.data;
+};
+
+export const getProfileTeacher = async () => {
+  const res = await api.get<API.Response<TeacherProfile>>('/teachers/profile');
   return res.data;
 };
 

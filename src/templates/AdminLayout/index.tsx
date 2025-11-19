@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { logoutService } from '../../services/auth';
 import { toast } from 'react-toastify';
 
-const { Header, Sider, Content, Footer } = Layout;
+const { Header, Sider, Content } = Layout;
 
 const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -69,11 +69,18 @@ const DashboardLayout: React.FC = () => {
                 label: 'Dashboard',
                 children: [
                   { key: '/admin/dashboard', label: 'Users' },
-                  { key: '/admin/course-templates', label: 'Courses Templates' },
-                  { key: '/admin/goals', label: 'Goals' },
-                  { key: '/admin/conversation-prompts', label: 'Conversation Prompts' },
+                  {
+                    key: '/admin/course-templates',
+                    label: 'Courses Templates',
+                  },
+                  // { key: "/admin/goals", label: "Goals" },
+                  {
+                    key: '/admin/conversation-prompts',
+                    label: 'Conversation Prompts',
+                  },
                   { key: '/admin/refund', label: 'Refund' },
                   { key: '/admin/programs', label: 'Programs' },
+                  { key: '/admin/payouts', label: 'Payouts' },
                 ],
               },
               { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
@@ -92,9 +99,6 @@ const DashboardLayout: React.FC = () => {
             }}>
             <Outlet />
           </Content>
-          <Footer className="text-center text-gray-500">
-            © {new Date().getFullYear()} Flearn Admin
-          </Footer>
         </Layout>
       </Layout>
     </Layout>

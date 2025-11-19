@@ -5,7 +5,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { logoutService } from '../../services/auth';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { LogOut, } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 const { Header, Content, Footer } = Layout;
 
@@ -39,7 +39,6 @@ const LearnerLayout = () => {
         label: 'Logout',
         onClick: () => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') || ''),
       },
-     
     ],
   };
 
@@ -64,7 +63,7 @@ const LearnerLayout = () => {
         className="bg-background">
         {/* Header */}
         <Header
-          className="flex items-center justify-between px-8 bg-white shadow-md border-b"
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 bg-white shadow-lg border-b border-gray-200"
           style={{
             background: '#fff',
             borderBottom: '1px solid #f0f0f0',
@@ -76,7 +75,7 @@ const LearnerLayout = () => {
           {/* Brand */}
           <div className="flex items-center gap-4">
             <div
-              onClick={() => navigate('/learner')}
+              onClick={() => navigate('/')}
               className="text-xl font-bold bg-gradient-to-r
                from-indigo-500 to-blue-500 bg-clip-text text-transparent cursor-pointer">
               Flearn
@@ -122,14 +121,16 @@ const LearnerLayout = () => {
                 icon={<UserOutlined />}
                 className="bg-primary"
               />
-              <span className="text-foreground font-medium">{localStorage.getItem('FLEARN_USER_NAME')}</span>
+              <span className="text-foreground font-medium">
+                {localStorage.getItem('FLEARN_USER_NAME')}
+              </span>
             </div>
           </Dropdown>
         </Header>
 
         {/* Body Layout */}
         <Layout className="p-6">
-          <Content className="bg-card rounded-lg shadow-sm p-6">
+          <Content className="!max-w-7xl mx-auto bg-card rounded-lg shadow-sm p-6">
             <Outlet />
           </Content>
         </Layout>

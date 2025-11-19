@@ -183,6 +183,45 @@ export const getTeachingProgramService = async ({
   return res.data;
 };
 
+export const updateCourseVisibilityService = async ({
+  id,
+  isPublic,
+}: {
+  id: string;
+  isPublic: boolean;
+}) => {
+  const res = await api.patch(`/courses/${id}/visibility`, { isHidden: isPublic });
+  return res.data;
+};
+
+export const deleteCourseUnitService = async ({
+  id
+}: {
+  id: string;
+}) => {
+  const res = await api.delete(`/courses/${id}`);
+  return res.data;
+};
+
+export const deleteUnitsService = async ({
+  id
+}: {
+  id: string;
+}) => {
+  const res = await api.delete(`/units/${id}`);
+  return res.data;
+};
+
+export const deleteLessonService = async ({
+  id
+}: {
+  id: string;
+}) => {
+  const res = await api.delete(`/lessons/${id}`);
+  return res.data;
+};
+
+
 export const getCourseTemplatesService = async ({
   page = 1,
   pageSize = 100,
@@ -199,7 +238,7 @@ export const getCourseTemplatesByProgramService = async ({
   programId = "",
   levelId = "",
 }: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
-  const res = await api.get<CourseTemplateResponse>("templates", {
+  const res = await api.get<CourseTemplateResponse>("templates/by-program-and-level", {
     params: { page, pageSize, programId, levelId },
   });
   return res.data;

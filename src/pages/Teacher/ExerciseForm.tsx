@@ -117,7 +117,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <Card
           className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
@@ -143,7 +143,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             layout="vertical"
             form={form}
             onFinish={handleSubmit}
-            initialValues={{ type: 'multiple-choice', difficulty: 'medium' }}
             className="space-y-6 pt-4">
             <Collapse
               defaultActiveKey={['basic', 'scores', 'feedback']}
@@ -304,7 +303,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                             className="text-gray-400"
                           />
                         }
-                        defaultValue={{ label: 'RepeatAfterMe', value: 1 }}
                         options={[
                           { label: 'RepeatAfterMe', value: 1 },
                           { label: 'PictureDescription', value: 2 },

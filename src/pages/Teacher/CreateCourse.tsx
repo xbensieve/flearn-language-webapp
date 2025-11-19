@@ -71,6 +71,9 @@ const CreateCourse: React.FC = () => {
   const [selectedLevelId, setSelectedLevelId] = useState<string>('');
 
   const courseTypeWatch = Form.useWatch('courseType', form);
+  const titleWatch = Form.useWatch('title', form);
+  const descriptionWatch = Form.useWatch('description', form);
+  const topicIdsWatch = Form.useWatch('topicIds', form);
 
   const { data: programLevels = [], isLoading: programLevelsLoading } = useQuery({
     queryKey: ['programLevels'],
@@ -209,10 +212,7 @@ const CreateCourse: React.FC = () => {
     createCourse(payload);
   };
 
-  const steps =
-    courseTypeWatch === 1 ? ['Basic Info', 'Settings'] : ['Basic Info', 'Pricing', 'Settings'];
-
-  console.log('formValues', programLevels);
+  console.log('formValues', courseTypeWatch);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -224,13 +224,6 @@ const CreateCourse: React.FC = () => {
             className="!mb-0 text-gray-900">
             Create New Course
           </Title>
-          {/* <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            size="large"
-            className="bg-blue-600 hover:bg-blue-700">
-            Preview
-          </Button> */}
         </div>
       </div>
 
@@ -243,12 +236,22 @@ const CreateCourse: React.FC = () => {
               <div className="p-8 border-b border-gray-100">
                 <Steps
                   current={currentStep}
-                  items={steps.map((title) => ({
+                  items={(courseTypeWatch === 1
+                    ? ['Basic Info', 'Settings']
+                    : ['Basic Info', 'Pricing', 'Settings']
+                  ).map((title) => ({
                     title: <span className="font-medium text-gray-700">{title}</span>,
                   }))}
                 />
                 <Progress
-                  percent={((currentStep + 1) / steps.length) * 100}
+                  percent={
+                    ((currentStep + 1) /
+                      (courseTypeWatch === 1
+                        ? ['Basic Info', 'Settings']
+                        : ['Basic Info', 'Pricing', 'Settings']
+                      ).length) *
+                    100
+                  }
                   showInfo={false}
                   strokeColor="#2563eb"
                   className="mt-4"
@@ -276,7 +279,7 @@ const CreateCourse: React.FC = () => {
                           <Input
                             bordered={false}
                             placeholder="Enter your title..."
-                            className="text-4xl font-bold !p-0 hover:bg-gray-50 rounded-xl"
+                            className="text-3 xl font-bold mt-2 !p-0 hover:bg-gray-50 rounded-xl"
                             style={{ fontSize: '2.5rem', fontWeight: 700 }}
                           />
                         </Form.Item>
@@ -289,7 +292,12 @@ const CreateCourse: React.FC = () => {
                         <Form.Item
                           name="programLevelCombo"
                           label="Program & Level"
-                          rules={[{ required: true, message: 'Program and level is required' }]}>
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Program and level is required',
+                            },
+                          ]}>
                           <Select
                             placeholder="Select program and level"
                             loading={programLevelsLoading}
@@ -328,12 +336,41 @@ const CreateCourse: React.FC = () => {
                           <Select
                             placeholder="Select template"
                             loading={templatesLoading}
-                            disabled={!selectedProgramId || !selectedLevelId}>
+                            disabled={!selectedProgramId || !selectedLevelId}
+                            optionLabelProp="label">
                             {templates.map((t: any) => (
                               <Option
                                 key={t.templateId}
-                                value={t.templateId}>
-                                {t.name}
+                                value={t.templateId}
+                                label={t.name}>
+                                {/* Hiện trong dropdown */}
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                  }}>
+                                  <span
+                                    style={{
+                                      fontWeight: 500,
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}>
+                                    {t.name}
+                                  </span>
+
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      color: '#8c8c8c',
+                                      whiteSpace: 'nowrap',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                    }}>
+                                    {t.unitCount} units · {t.lessonsPerUnit} lessons ·{' '}
+                                    {t.exercisesPerLesson} exercises
+                                  </span>
+                                </div>
                               </Option>
                             ))}
                           </Select>
@@ -369,7 +406,7 @@ const CreateCourse: React.FC = () => {
 
                     <Form.Item
                       name="description"
-                      label="Course Description"
+                      label="Description"
                       rules={[{ required: true }]}>
                       <TextArea
                         rows={6}
@@ -485,7 +522,12 @@ const CreateCourse: React.FC = () => {
                     Previous
                   </Button>
                   <Space>
-                    {currentStep < steps.length - 1 && (
+                    {currentStep <
+                      (courseTypeWatch === 1
+                        ? ['Basic Info', 'Settings']
+                        : ['Basic Info', 'Pricing', 'Settings']
+                      ).length -
+                        1 && (
                       <Button
                         type="primary"
                         size="large"
@@ -493,7 +535,12 @@ const CreateCourse: React.FC = () => {
                         Next <ChevronRight className="ml-2" />
                       </Button>
                     )}
-                    {currentStep === steps.length - 1 && (
+                    {currentStep ===
+                      (courseTypeWatch === 1
+                        ? ['Basic Info', 'Settings']
+                        : ['Basic Info', 'Pricing', 'Settings']
+                      ).length -
+                        1 && (
                       <Button
                         type="primary"
                         size="large"
@@ -544,22 +591,22 @@ const CreateCourse: React.FC = () => {
                   <Title
                     level={4}
                     className="line-clamp-2">
-                    {formValues.title || 'Your Course Title'}
+                    {titleWatch || formValues.title || 'Your Course Title'}
                   </Title>
                   <Text
                     type="secondary"
                     className="line-clamp-2 block mt-2">
-                    {formValues.description || 'No description yet...'}
+                    {descriptionWatch || formValues.description || 'No description yet...'}
                   </Text>
 
                   <div className="mt-6 flex items-center justify-between">
-                    <Tag color={courseTypeWatch === 1 ? 'green' : 'blue'}>
-                      {courseTypeWatch === 1 ? 'FREE' : 'PAID'}
+                    <Tag color={courseTypeWatch || formValues.courseType === 1 ? 'green' : 'blue'}>
+                      {courseTypeWatch || formValues.courseType === 1 ? 'FREE' : 'PAID'}
                     </Tag>
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {formValues.topicIds?.slice(0, 3).map((id) => {
+                    {(topicIdsWatch || formValues.topicIds)?.slice(0, 3).map((id) => {
                       const topic = topics?.data?.find((t: any) => t.topicId === id);
                       return topic ? (
                         <Tag
