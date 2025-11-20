@@ -1,91 +1,92 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface CourseTemplate {
-  templateId: string
-  program: string
-  level: string
-  name: string
-  description: string
-  unitCount: number
-  lessonsPerUnit: number
-  exercisesPerLesson: number
-  scoringCriteriaJson: string
-  version: string
-  createdAt: string
-  modifiedAt: string
+  templateId: string;
+  program: string;
+  level: string;
+  name: string;
+  description: string;
+  unitCount: number;
+  lessonsPerUnit: number;
+  exercisesPerLesson: number;
+  scoringCriteriaJson: string;
+  version: string;
+  createdAt: string;
+  modifiedAt: string;
 }
 
 export interface PayloadCourseTemplate {
-  name: string
-  description: string
-  unitCount: number
-  lessonsPerUnit: number
-  exercisesPerLesson: number
-  programId: string
-  levelId: string
+  name: string;
+  description: string;
+  unitCount: number;
+  lessonsPerUnit: number;
+  exercisesPerLesson: number;
+  programId: string;
+  levelId: string;
 }
 
 export interface Course {
-  courseId: string
-  templateId: string
-  language: string
-  program: Program
-  teacher: Teacher
-  title: string
-  description: string
-  learningOutcome: string
-  imageUrl: string
-  price: number
-  discountPrice: number
-  courseType: string
-  gradingType: string
-  learnerCount: number
-  averageRating: number
-  reviewCount: number
-  numLessons: number
-  numUnits: number
-  durationDays: number
-  estimatedHours: number
-  courseStatus: string
-  publishedAt: string
-  createdAt: string
-  modifiedAt: string
-  approvedBy: ApprovedBy
-  approvedAt: string
-  topics: Topic[]
-  units: Unit[]
+  courseId: string;
+  templateId: string;
+  language: string;
+  program: Program;
+  teacher: Teacher;
+  title: string;
+  description: string;
+  learningOutcome: string;
+  imageUrl: string;
+  price: number;
+  discountPrice: number;
+  courseType: string;
+  gradingType: string;
+  learnerCount: number;
+  averageRating: number;
+  reviewCount: number;
+  numLessons: number;
+  numUnits: number;
+  durationDays: number;
+  estimatedHours: number;
+  courseStatus: string;
+  publishedAt: string;
+  createdAt: string;
+  modifiedAt: string;
+  approvedBy: ApprovedBy;
+  approvedAt: string;
+  topics: Topic[];
+  units: Unit[];
 }
 
 export interface Program {
-  programId: string
-  name: string
-  description: string
-  level: Level
+  programId: string;
+  name: string;
+  description: string;
+  level: Level;
 }
 
 export interface Level {
-  levelId: string
-  name: string
-  description: string
+  levelId: string;
+  name: string;
+  description: string;
 }
 
 export interface Teacher {
-  teacherId: string
-  name: string
-  avatar: string
-  email: string
+  teacherId: string;
+  name: string;
+  avatar: string;
+  email: string;
 }
 
 export interface CreateCourseRequest {
   templateId: string;
   title: string;
+  levelId: string;
   description: string;
   learningOutcome: string;
-  image?: File;            // string($binary) → File trong FE
-  topicIds: string[];     // string → sẽ gửi dạng array
+  image?: File; // string($binary) → File trong FE
+  topicIds: string[]; // string → sẽ gửi dạng array
   price: string;
   courseType: string;
   gradingType: string;
-  durationDays: number;   // integer
+  durationDays: number; // integer
 }
 export interface CourseParams {
   Page?: number;
@@ -154,10 +155,10 @@ export interface CourseTemplateQuery {
 }
 
 export interface Program {
-  programId: string
-  programName: string
-  levelId: string
-  levelName: string
+  programId: string;
+  programName: string;
+  levelId: string;
+  levelName: string;
 }
 
 export interface CourseUnitsRequest {
@@ -217,34 +218,34 @@ export interface ApplicationForm {
 }
 
 export interface CourseDetail {
-  courseId: string
-  templateId: string
-  language: string
-  program: Program
-  teacher: Teacher
-  title: string
-  description: string
-  learningOutcome: string
-  imageUrl: string
-  price: number
-  discountPrice: number
-  courseType: string
-  gradingType: string
-  learnerCount: number
-  averageRating: number
-  reviewCount: number
-  numLessons: number
-  numUnits: number
-  durationDays: number
-  estimatedHours: number
-  courseStatus: string
-  publishedAt: string
-  createdAt: string
-  modifiedAt: string
-  approvedBy: ApprovedBy
-  approvedAt: string
-  topics: Topic[]
-  units: Unit[]
+  courseId: string;
+  templateId: string;
+  language: string;
+  program: Program;
+  teacher: Teacher;
+  title: string;
+  description: string;
+  learningOutcome: string;
+  imageUrl: string;
+  price: number;
+  discountPrice: number;
+  courseType: string;
+  gradingType: string;
+  learnerCount: number;
+  averageRating: number;
+  reviewCount: number;
+  numLessons: number;
+  numUnits: number;
+  durationDays: number;
+  estimatedHours: number;
+  courseStatus: string;
+  publishedAt: string;
+  createdAt: string;
+  modifiedAt: string;
+  approvedBy: ApprovedBy;
+  approvedAt: string;
+  topics: Topic[];
+  units: Unit[];
 }
 
 export interface Unit {
@@ -261,14 +262,14 @@ export interface Unit {
 }
 
 export interface ICourseDataStaff {
-  submissionId: string
-  course: Course
-  submitter: Submitter
-  reviewer?: Reviewer
-  submissionStatus: string
-  feedback: any
-  submittedAt: string
-  reviewedAt?: string
+  submissionId: string;
+  course: Course;
+  submitter: Submitter;
+  reviewer?: Reviewer;
+  submissionStatus: string;
+  feedback: any;
+  submittedAt: string;
+  reviewedAt?: string;
 }
 
 export interface TemplateInfo {
@@ -368,66 +369,66 @@ export interface ExerciseData {
 }
 
 export interface ICourseDataStaff {
-  courseId: string
-  templateId: string
-  language: string
-  program: Program
-  teacher: Teacher
-  title: string
-  description: string
-  learningOutcome: string
-  imageUrl: string
-  price: number
-  discountPrice: number
-  courseType: string
-  gradingType: string
-  learnerCount: number
-  averageRating: number
-  reviewCount: number
-  numLessons: number
-  numUnits: number
-  durationDays: number
-  estimatedHours: number
-  courseStatus: string
-  publishedAt?: string
-  createdAt: string
-  modifiedAt: string
-  approvedBy: any
-  approvedAt: any
-  topics: any[]
-  units: any[]
+  courseId: string;
+  templateId: string;
+  language: string;
+  program: Program;
+  teacher: Teacher;
+  title: string;
+  description: string;
+  learningOutcome: string;
+  imageUrl: string;
+  price: number;
+  discountPrice: number;
+  courseType: string;
+  gradingType: string;
+  learnerCount: number;
+  averageRating: number;
+  reviewCount: number;
+  numLessons: number;
+  numUnits: number;
+  durationDays: number;
+  estimatedHours: number;
+  courseStatus: string;
+  publishedAt?: string;
+  createdAt: string;
+  modifiedAt: string;
+  approvedBy: any;
+  approvedAt: any;
+  topics: any[];
+  units: any[];
 }
 
 export interface Program {
-  programId: string
-  name: string
-  description: string
-  level: Level
+  programId: string;
+  name: string;
+  description: string;
+  level: Level;
 }
 
 export interface Level {
-  levelId: string
-  name: string
-  description: string
+  levelId: string;
+  name: string;
+  description: string;
 }
 
 export interface Teacher {
-  teacherId: string
-  name: string
-  avatar: string
-  email: string
+  teacherId: string;
+  name: string;
+  avatar: string;
+  email: string;
 }
 
 export interface Submitter {
-  teacherId: string
-  name: string
-  avatar: string
-  email: string
-  phoneNumber: string
+  teacherId: string;
+  name: string;
+  avatar: string;
+  email: string;
+  phoneNumber: string;
 }
 
 export interface Reviewer {
-  managerId: string
-  name: any
-  email: string
+  managerId: string;
+  name: any;
+  email: string;
 }
