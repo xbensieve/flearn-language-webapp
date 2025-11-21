@@ -78,7 +78,7 @@ export interface Teacher {
 export interface CreateCourseRequest {
   templateId: string;
   title: string;
-  levelId: string;
+  LevelId: string;
   description: string;
   learningOutcome: string;
   image?: File; // string($binary) → File trong FE

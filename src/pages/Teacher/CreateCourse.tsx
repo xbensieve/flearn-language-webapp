@@ -195,7 +195,7 @@ const CreateCourse: React.FC = () => {
   const onFinish = (values: CourseFormValues) => {
     const payload: CreateCourseRequest = {
       title: formValues.title || values.title,
-      levelId: selectedLevelId || values.levelId,
+      LevelId: selectedLevelId || values.levelId,
       description: formValues.description || values.description,
       topicIds: formValues.topicIds || values.topicIds,
       courseType: formValues?.courseType?.toString() || '',
