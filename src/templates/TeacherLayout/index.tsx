@@ -90,7 +90,7 @@ const TeacherLayout: React.FC = () => {
               const Icon = item.icon;
               const active = isActive(item.to);
               return (
-                <li key={item.to}>
+                <div key={item.to}>
                   <Link
                     to={`/teacher${item.to}`}
                     onClick={() => setSidebarOpen(false)}
@@ -105,7 +105,7 @@ const TeacherLayout: React.FC = () => {
                       <span className="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
                     )}
                   </Link>
-                </li>
+                </div>
               );
             })}
           </ul>
