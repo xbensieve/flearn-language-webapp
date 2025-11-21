@@ -121,20 +121,19 @@ export const rejectedCourseService = async ({ id, reason }: { id: string; reason
 export const createCourseService = async (data: CreateCourseRequest) => {
   const formData = new FormData();
 
-  formData.append('TemplateId', data.templateId);
-  formData.append('Title', data.title);
-  formData.append('Description', data.description);
-  formData.append('LearningOutcome', data.learningOutcome);
-  formData.append('Image', data.image as File);
   formData.append('Price', data.price.toString());
-  formData.append('CourseType', data.courseType);
-  formData.append('GradingType', data.gradingType);
-  formData.append('LeveId', data.levelId);
-  formData.append('DurationDays', data.durationDays.toString());
-
   data.topicIds.forEach((id) => {
     formData.append('TopicIds', id);
   });
+  formData.append('DurationDays', data.durationDays.toString());
+  formData.append('GradingType', data.gradingType);
+  formData.append('LearningOutcome', data.learningOutcome);
+  formData.append('CourseType', data.courseType);
+  formData.append('TemplateId', data.templateId);
+  formData.append('Title', data.title);
+  formData.append('Image', data.image as File);
+  formData.append('Description', data.description);
+  formData.append('LevelId', data.LevelId);
 
   return api.post('/courses', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -231,7 +230,7 @@ export const getCourseTemplatesByProgramService = async ({
   programId = '',
   levelId = '',
 }: Partial<CourseTemplateQuery> = {}): Promise<CourseTemplateResponse> => {
-  const res = await api.get<CourseTemplateResponse>('templates/by-program-and-level', {
+  const res = await api.get<CourseTemplateResponse>('templates', {
     params: { page, pageSize, programId, levelId },
   });
   return res.data;
