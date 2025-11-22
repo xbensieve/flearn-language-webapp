@@ -32,7 +32,7 @@ const statusOptions = [
 
 const statusColors: Record<string, string> = {
   Draft: 'orange',
-  PendingApproval: 'gold',
+  PendingApproval: 'blue',
   Published: 'green',
   Rejected: 'red',
   Archived: 'gray',

@@ -12,6 +12,7 @@ import { Menu } from 'antd';
 const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const token = localStorage.getItem('FLEARN_ACCESS_TOKEN');
+  const isTeacher = localStorage.getItem('isTeacher') === 'true'; // Giả sử có một flag 'isTeacher' trong localStorage
 
   // Smooth scroll + close mobile menu
   const scrollToSection = (id: string) => {
@@ -67,18 +68,37 @@ const LandingPage = () => {
               className="text-left text-gray-700 font-medium cursor-pointer">
               Start Journey
             </button>
-            {!token && (
-              <a
-                href="/login"
-                className="text-gray-700 hover:text-sky-600 font-medium transition cursor-pointer">
-                Log In
-              </a>
+
+            {/* Conditionally show buttons based on login state */}
+            {!token ? (
+              <>
+                <a
+                  href="/login"
+                  className="text-gray-700 hover:text-sky-600 font-medium transition cursor-pointer">
+                  Log In
+                </a>
+                <a
+                  href="/login"
+                  className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
+                  Apply Now
+                </a>
+              </>
+            ) : (
+              // If logged in, show Apply Now or Manage Courses depending on isTeacher
+              !isTeacher ? (
+                <a
+                  href="/teacher"
+                  className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
+                  Manager course
+                </a>
+              ) : (
+                <a
+                  href="/teacher-dashboard"
+                  className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
+                  Manage Courses
+                </a>
+              )
             )}
-            <a
-              href="/login"
-              className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
-              Apply Now
-            </a>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -113,16 +133,36 @@ const LandingPage = () => {
                 className="text-left text-gray-700 font-medium cursor-pointer">
                 Start Journey
               </button>
-              <a
-                href="/login"
-                className="text-gray-700 font-medium cursor-pointer">
-                Log In
-              </a>
-              <a
-                href="/login"
-                className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-2 rounded-full font-medium cursor-pointer">
-                Apply Now
-              </a>
+
+              {/* Conditionally show buttons based on login state */}
+              {!token ? (
+                <>
+                  <a
+                    href="/login"
+                    className="text-gray-700 font-medium cursor-pointer">
+                    Log In
+                  </a>
+                  <a
+                    href="/login"
+                    className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-2 rounded-full font-medium cursor-pointer">
+                    Apply Now
+                  </a>
+                </>
+              ) : (
+                !isTeacher ? (
+                  <a
+                    href="/teacher"
+                    className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-2 rounded-full font-medium cursor-pointer">
+                    Apply Now
+                  </a>
+                ) : (
+                  <a
+                    href="/teacher-dashboard"
+                    className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-2 rounded-full font-medium cursor-pointer">
+                    Manage Courses
+                  </a>
+                )
+              )}
             </nav>
           </div>
         )}
@@ -130,7 +170,6 @@ const LandingPage = () => {
 
       {/* === MAIN CONTENT (with IDs) === */}
       <main className="pt-18">
-        {' '}
         {/* Offset for fixed header */}
         <section id="hero">
           <HeroSection />

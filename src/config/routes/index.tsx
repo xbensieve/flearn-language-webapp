@@ -38,6 +38,7 @@ import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
 import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
+import TeacherPayoutPage from '../../pages/Teacher/TeacherPayoutPage';
 
 // Route configuration
 const routes: RouteObject[] = [
@@ -185,6 +186,7 @@ const routes: RouteObject[] = [
       { path: 'classes', element: <MyClasses /> },
       { path: 'classes/:id', element: <ClassDetail /> },
       { path: 'payout-request', element: <PayoutPage /> },
+      { path: 'payouts', element: <TeacherPayoutPage /> }, 
     ],
   },
   {

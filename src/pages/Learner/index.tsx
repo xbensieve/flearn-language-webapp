@@ -17,11 +17,9 @@ import {
   Button,
 } from 'antd';
 import {
-  DollarOutlined,
   TeamOutlined,
   BookOutlined,
   FilterOutlined,
-  ReloadOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -30,7 +28,7 @@ import { getTeacherDashboard } from '../../services/dashboard';
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
-// Beautiful VNĐ formatting: 1,250,000 ₫
+
 const formatVND = (value: number): string => {
   return value.toLocaleString('vi-VN') + ' ₫';
 };
@@ -45,7 +43,6 @@ const TeacherDashboard: React.FC = () => {
     isLoading,
     isError,
     error,
-    refetch,
   } = useQuery({
     queryKey: [
       'teacherDashboard',
@@ -160,11 +157,7 @@ const TeacherDashboard: React.FC = () => {
           className="!mb-0">
           Teacher Dashboard
         </Title>
-        <Button
-          icon={<ReloadOutlined />}
-          onClick={() => refetch()}>
-          Refresh
-        </Button>
+        
       </div>
 
       {/* FILTER BAR */}
@@ -255,10 +248,10 @@ const TeacherDashboard: React.FC = () => {
           md={6}>
           <Card>
             <Statistic
-              title="Total Revenue"
-              value={data.totalRevenue}
-              prefix={<DollarOutlined />}
-            />
+          title="Total Revenue"
+          value={`${data.totalRevenue} đ`}
+/>
+
           </Card>
         </Col>
         <Col
