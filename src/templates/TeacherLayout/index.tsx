@@ -52,6 +52,7 @@ const TeacherLayout: React.FC = () => {
     // { to: '/status', icon: CheckCircleOutlined, label: 'Status' },
     { to: '/payout-request', icon: UserOutlined, label: 'Bank Account' },
     { to: '/course/exercise-grading/assignments', icon: GraduationCap, label: 'Assignments' },
+    { to: '/payouts', icon: UserOutlined, label: 'Payouts' },
   ];
 
   return (
@@ -101,9 +102,9 @@ const TeacherLayout: React.FC = () => {
                     }`}>
                     <Icon className={`w-5 h-5 ${active ? 'text-blue-700' : 'text-gray-500'}`} />
                     <span>{item.label}</span>
-                    {item.to === '/course' && (
+                    {/* {item.to === '/course' && (
                       <span className="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
-                    )}
+                    )} */}
                   </Link>
                 </div>
               );

@@ -38,10 +38,11 @@ import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
 import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
+import TeacherPayoutPage from '../../pages/Teacher/TeacherPayoutPage';
 
-import Courses from "@/pages/Manager/Course/Courses";
-import CourseDetailByManager from "@/pages/Manager/Course/CourseDetail";
-import ProfileByManager from "@/pages/Manager/Profile/Profile";
+import Courses from '@/pages/Manager/Course/Courses';
+import CourseDetailByManager from '@/pages/Manager/Course/CourseDetail';
+import ProfileByManager from '@/pages/Manager/Profile/Profile';
 import UsersPage from '../../pages/Admin/UsersPage';
 import StaffPage from '../../pages/Admin/StaffPage';
 import CoursesPage from '../../pages/Admin/CoursesPage';
@@ -49,72 +50,72 @@ import Dashboard from '@/pages/Manager/Dashboard';
 // Route configuration
 const routes: RouteObject[] = [
   {
-    path: "/login",
+    path: '/login',
     element: <LoginPage />,
   },
   {
-    path: "/",
+    path: '/',
     element: <LandingPage />,
   },
   {
-    path: "/register",
+    path: '/register',
     element: <Register />,
   },
   {
-    path: "/forgot-password",
+    path: '/forgot-password',
     element: <ForgotPassword />,
   },
   {
-    path: "/reset-password",
+    path: '/reset-password',
     element: <ResetPassword />,
   },
   {
-    path: "/unauthorized",
+    path: '/unauthorized',
     element: <UnauthorizedPage />,
   },
   {
-    path: "/admin",
+    path: '/admin',
     element: (
-      <PrivateRoute allowedRoles={["admin"]}>
+      <PrivateRoute allowedRoles={['admin']}>
         <DashboardLayout />
       </PrivateRoute>
     ),
     children: [
       {
         index: true,
-        path: "dashboard",
+        path: 'dashboard',
         element: <Admin />,
       },
       {
-        path: "profile",
+        path: 'profile',
         element: <Profile />,
       },
       {
-        path: "course-templates",
+        path: 'course-templates',
         element: <CourseTemplatesPage />,
       },
       {
-        path: "goals",
+        path: 'goals',
         element: <Goals />,
       },
       {
-        path: "conversation-prompts",
+        path: 'conversation-prompts',
         element: <ConversationPromptPage />,
       },
       {
-        path: "programs",
+        path: 'programs',
         element: <ProgramPage />,
       },
       {
-        path: "refund",
+        path: 'refund',
         element: <RefundAdminPage />,
       },
       {
-        path: "levels/:programId",
+        path: 'levels/:programId',
         element: <LevelPage />,
       },
       {
-        path: "payouts",
+        path: 'payouts',
         element: <AdminPayoutsPage />,
       },
       {
@@ -133,9 +134,9 @@ const routes: RouteObject[] = [
   },
 
   {
-    path: "/dashboard",
+    path: '/dashboard',
     element: (
-      <PrivateRoute allowedRoles={["manager"]}>
+      <PrivateRoute allowedRoles={['manager']}>
         <Outlet />
       </PrivateRoute>
     ),
@@ -145,75 +146,76 @@ const routes: RouteObject[] = [
         element: <Dashboard />,
       },
       {
-        path: "application/pending",
+        path: 'application/pending',
         element: <ApplicationsPending />,
       },
       {
-        path: "courses",
+        path: 'courses',
         element: <Courses />,
       },
       {
-        path: "courses/:id",
+        path: 'courses/:id',
         element: <CourseDetailByManager />,
       },
       {
-        path: "courses/pending/:id/:courseSubmissionID",
+        path: 'courses/pending/:id/:courseSubmissionID',
         element: <CourseReviewDetail />,
       },
       {
-        path: "profile",
+        path: 'profile',
         element: <ProfileByManager />,
       },
     ],
   },
   {
-    path: "/learner",
+    path: '/learner',
     element: (
-      <PrivateRoute allowedRoles={["learner", "teacher"]}>
+      <PrivateRoute allowedRoles={['learner', 'teacher']}>
         <LearnerLayout />
       </PrivateRoute>
     ),
     children: [
-      { index: true, path: "", element: <BrowseCourses /> },
-      { index: true, path: "survey", element: <MySurvey /> },
-      { path: "application", element: <TeacherApplicationPage /> },
-      { path: "profile", element: <Profile /> },
-      { path: "status", element: <ApplicationStatus /> },
-      { path: "survey/create", element: <CreateSurvey /> },
-      { path: "course", element: <MyCourses /> },
-      { path: "course/create", element: <CreateCourse /> },
+      { index: true, path: '', element: <BrowseCourses /> },
+      { index: true, path: 'survey', element: <MySurvey /> },
+      { path: 'application', element: <TeacherApplicationPage /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'status', element: <ApplicationStatus /> },
+      { path: 'survey/create', element: <CreateSurvey /> },
+      { path: 'course', element: <MyCourses /> },
+      { path: 'course/create', element: <CreateCourse /> },
     ],
   },
   {
-    path: "/teacher",
+    path: '/teacher',
     element: (
-      <PrivateRoute allowedRoles={["teacher"]}>
+      <PrivateRoute allowedRoles={['teacher']}>
         <TeacherLayout />
       </PrivateRoute>
     ),
     children: [
-      { index: true, path: "", element: <BrowseCourses /> },
-      { path: "application", element: <TeacherApplicationPage /> },
-      { path: "profile", element: <Profile /> },
-      { path: "status", element: <ApplicationStatus /> },
-      { path: "survey/create", element: <CreateSurvey /> },
-      { path: "course", element: <MyCourses /> },
+      { index: true, path: '', element: <BrowseCourses /> },
+      { path: 'application', element: <TeacherApplicationPage /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'status', element: <ApplicationStatus /> },
+      { path: 'survey/create', element: <CreateSurvey /> },
+      { path: 'course', element: <MyCourses /> },
       {
-        path: "course/exercise-grading/assignments",
+        path: 'course/exercise-grading/assignments',
         element: <TeacherGradingPage />,
       },
-      { path: "course/create", element: <CreateCourse /> },
-      { path: "course/:id", element: <CourseDetailView /> },
-      { path: "course/:id/edit", element: <CourseDetail /> },
-      { path: "course/:id/edit-course", element: <EditCoursePage /> },
-      { path: "course/:id/edit/unit/:id", element: <UnitsManager /> },
-      { path: "classes", element: <MyClasses /> },
-      { path: "classes/:id", element: <ClassDetail /> },
-      { path: "payout-request", element: <PayoutPage /> },
+      { path: 'course/create', element: <CreateCourse /> },
+      { path: 'course/:id', element: <CourseDetailView /> },
+      { path: 'course/:id/edit', element: <CourseDetail /> },
+      { path: 'course/:id/edit-course', element: <EditCoursePage /> },
+      { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
+      { path: 'classes', element: <MyClasses /> },
+      { path: 'classes/:id', element: <ClassDetail /> },
+      { path: 'payout-request', element: <PayoutPage /> },
+      { path: 'payouts', element: <TeacherPayoutPage /> },
     ],
   },
   {
-    path: "*",
+    path: '*',
     element: <NotFoundPage />,
   },
 ];

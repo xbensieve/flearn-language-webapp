@@ -272,11 +272,11 @@ const CreateCourse: React.FC = () => {
                           rules={[{ required: true, message: 'Title is required' }]}
                         >
                           <Input
-                            bordered={false}
-                            placeholder='Enter your title...'
-                            className='text-3 xl font-bold mt-2 !p-0 hover:bg-gray-50 rounded-xl'
-                            style={{ fontSize: '2.5rem', fontWeight: 700 }}
-                          />
+  bordered={false}
+  placeholder="Enter your title..."
+  className="text-xl font-medium mt-2 !p-2 hover:bg-gray-50 rounded-xl"
+  style={{ fontSize: '1.75rem', fontWeight: 600 }}
+/>
                         </Form.Item>
                       </Title>
                     </div>
@@ -324,7 +324,7 @@ const CreateCourse: React.FC = () => {
                         <Form.Item
                           name='templateId'
                           label='Template'
-                          rules={[{ required: true, message: 'Template is required' }]}
+                          // rules={[{ required: true, message: 'Template is required' }]}
                         >
                           <Select
                             placeholder='Select template'
@@ -449,7 +449,7 @@ const CreateCourse: React.FC = () => {
                     </Form.Item>
                   </div>
                 )}
-
+                  
                 {/* Step 3: Settings */}
                 {currentStep === (courseTypeWatch === 1 ? 1 : 2) && (
                   <div className='space-y-8'>
