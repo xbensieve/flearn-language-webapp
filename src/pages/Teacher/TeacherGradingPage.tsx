@@ -268,6 +268,18 @@ const TeacherGradingPage: React.FC = () => {
       fixed: 'right' as const,
       render: (_: any, record: Assignment) => {
         const alreadyGraded = record.finalScore !== null;
+        const gradingInfo = getGradingInfo(record);
+
+        // Nếu Review Type là "AI Only", ẩn nút Grade Now
+        if (gradingInfo.paid === false && gradingInfo.text === 'AI Only') {
+          return (
+            <Tag
+              icon={<RobotOutlined />}
+              color="gray">
+              AI Only
+            </Tag>
+          );
+        }
 
         return alreadyGraded ? (
           <Tag

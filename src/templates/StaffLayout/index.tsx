@@ -49,6 +49,7 @@ const getStaffLanguages = (data: string) => {
       );
     default:
       return 'Ngoại ngữ';
+      
   }
 };
 
@@ -96,32 +97,49 @@ const StaffDashboardLayout: React.FC = () => {
   }
 
   return (
-    <Layout className="min-h-screen">
+    <Layout className="min-h-screen bg-gray-100">
+      {/* Header */}
       <Header
-        style={{ color: '#fff' }}
-        className="bg-white shadow px-4 flex items-center font-bold">
+        style={{
+          color: '#333', // Chữ màu đen đậm cho dễ đọc
+          backgroundColor: '#ffffff', // Màu nền trắng
+          padding: '0 24px', // Padding hợp lý cho header
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)', // Shadow nhẹ cho header
+          borderBottom: '1px solid #e0e0e0', // Đường viền dưới nhẹ
+        }}
+      >
+        <div style={{ fontSize: '20px', fontWeight: '600', color: '#333' }}>
+          Flearn Admin
+        </div>
+        {/* Ngôn ngữ nhân viên */}
         {getStaffLanguages(data?.data.username || '')}
       </Header>
 
-      <Layout>
+      <Layout style={{ minHeight: 'calc(100vh - 64px)' }}>
+        {/* Sider */}
         <Sider
-          width={200}
-          className="bg-white border-r">
+          width={240}
+          style={{
+            backgroundColor: '#ffffff', // Nền trắng cho sidebar
+            boxShadow: '2px 0 6px rgba(0, 0, 0, 0.1)', // Shadow cho sidebar
+            borderRight: '1px solid #e0e0e0', // Đường viền bên phải
+          }}
+        >
           <Menu
             mode="inline"
             defaultSelectedKeys={['/admin']}
-            style={{ height: '100%', borderRight: 0 }}
+            style={{
+              height: '100%',
+              borderRight: 'none',
+              fontSize: '16px',
+              paddingTop: '20px',
+              paddingLeft: '16px',
+            }}
             onClick={handleMenuClick}
             items={[
-              // {
-              //   key: '/staff',
-              //   icon: <DashboardOutlined />,
-              //   label: 'Dashboard',
-              //   children: [
-              //     { key: '/staff/dashboard', label: 'Users' },
-              //     { key: '/staff/courses', label: 'Courses' },
-              //   ],
-              // },
               {
                 key: 'courses/pending',
                 icon: <Book size={18} />,
@@ -132,24 +150,25 @@ const StaffDashboardLayout: React.FC = () => {
                 icon: <UserOutlined />,
                 label: 'Teacher Application',
               },
-              { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
+              // { key: 'profile', icon: <UserOutlined />, label: 'Profile' },
               { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
             ]}
           />
         </Sider>
 
-        <Layout style={{ padding: '24px', height: '100vh', overflow: 'auto' }}>
+        {/* Main Content */}
+        <Layout style={{ padding: '24px' }}>
           <Content
             style={{
               padding: 24,
               minHeight: 280,
-              borderRadius: 8,
-            }}>
+              borderRadius: '8px', // Góc bo tròn
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', // Shadow nhẹ cho content
+              backgroundColor: '#fff', // Nền trắng cho content
+            }}
+          >
             <Outlet />
           </Content>
-          {/* <Footer className="text-center text-gray-500">
-            © {new Date().getFullYear()} Flearn Admin
-          </Footer> */}
         </Layout>
       </Layout>
     </Layout>
