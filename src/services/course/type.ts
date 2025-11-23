@@ -220,6 +220,8 @@ export interface ApplicationForm {
 export interface CourseDetail {
   courseId: string;
   templateId: string;
+  programId: string;
+  LevelId: string;
   language: string;
   program: Program;
   teacher: Teacher;
