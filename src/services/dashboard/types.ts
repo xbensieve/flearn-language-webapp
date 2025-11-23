@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+export interface Data {
+  users: User[];
+  pagination: Pagination;
+}
+
 export interface IDashboard {
-  totalUsers: number;
-  totalStaff: number;
+  totalUsers: number;;
+  totalStaff: number;;
   totalCourses: number;
-  totalTeachers: number;
-  activeUsers: number;
-  pendingRequest: number;
-  recentUsers: RecentUser[];
+  totalTeachers: number;;
+  activeUsers: number;;
+  pendingRequest: number;;
+  recentUsers: RecentUser[];;
 }
 
 export interface RecentUser {
