@@ -32,7 +32,9 @@ export const useCreateLesson = (unitId: string, onSuccess: () => void) =>
       notifySuccess('Lesson created successfully!');
       onSuccess();
     },
-    onError: () => notifyError('Failed to create lesson'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) =>
+      notifyError(error?.response?.data?.errors || 'Failed to create lesson'),
   });
 
 export const useUpdateLesson = (unitId: string, onSuccess: () => void) =>
@@ -54,7 +56,7 @@ export const useCreateExercise = (lessonId: string) => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: AxiosError<any>) => {
-      notifyError(error?.response?.data?.message || 'Failed to create exercise');
+      notifyError(error?.response?.data?.errors || 'Failed to create exercise');
     },
   });
 };

@@ -3,34 +3,39 @@ import { Brain, MessageCircle, Target, Trophy, Zap, Users } from 'lucide-react';
 const features = [
   {
     icon: Brain,
-    title: 'AI-Powered Learning',
+    title: 'Học Tập Bằng Trí Tuệ Nhân Tạo',
     description:
-      'Advanced algorithms adapt to your learning style and pace, ensuring optimal progress.',
+      'Thuật toán AI tiên tiến tự động điều chỉnh theo phong cách và tốc độ học của bạn, giúp bạn tiến bộ nhanh nhất có thể.',
   },
   {
     icon: MessageCircle,
-    title: 'Real Conversations',
-    description: 'Practice with native speakers and AI tutors in realistic, everyday scenarios.',
+    title: 'Luyện Hội Thoại Thật Như Người Bản Xứ',
+    description:
+      'Luyện nói với người bản ngữ và gia sư AI trong những tình huống giao tiếp thực tế hàng ngày.',
   },
   {
     icon: Target,
-    title: 'Personalized Path',
-    description: 'Custom curriculum based on your goals, whether travel, business, or fluency.',
+    title: 'Lộ Trình Học Cá Nhân Hóa',
+    description:
+      'Chương trình học được thiết kế riêng theo mục tiêu của bạn: du lịch, công việc hay nói lưu loát như người bản xứ.',
   },
   {
     icon: Zap,
-    title: 'Quick Wins',
-    description: 'Start speaking from day one with our proven immersive methodology.',
+    title: 'Nói Được Ngay Từ Buổi Đầu Tiên',
+    description:
+      'Phương pháp học nhập vai đã được chứng minh giúp bạn tự tin nói ngay từ ngày đầu tiên.',
   },
   {
     icon: Trophy,
-    title: 'Track Progress',
-    description: 'Detailed analytics and achievements keep you motivated throughout your journey.',
+    title: 'Theo Dõi Tiến Độ Chi Tiết',
+    description:
+      'Thống kê chuyên sâu và hệ thống thành tựu giúp bạn luôn giữ được động lực trên hành trình chinh phục ngoại ngữ.',
   },
   {
     icon: Users,
-    title: 'Global Community',
-    description: 'Connect with millions of learners worldwide for practice and support.',
+    title: 'Cộng Đồng Học Viên Toàn Cầu',
+    description:
+      'Kết nối với hàng triệu người học trên khắp thế giới để cùng luyện tập và hỗ trợ nhau.',
   },
 ];
 
@@ -46,22 +51,22 @@ const Features = () => {
         <div className='flex items-center justify-center flex-col text-center mb-16 space-y-4'>
           {/* Badge */}
           <div className='inline-block px-5 py-2 rounded-full bg-gradient-to-r from-sky-500 to-blue-600 text-white font-bold text-sm shadow-lg'>
-            Why Choose Flearn
+            Tại Sao Chọn Flearn
           </div>
 
           {/* Title */}
           <h2 className='text-4xl md:text-5xl font-bold text-gray-900 leading-tight'>
-            Everything You Need to{' '}
+            Mọi Thứ Bạn Cần Để{' '}
             <span className='bg-gradient-to-r from-sky-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent'>
-              Succeed
+              Thành Công
             </span>
           </h2>
 
           {/* Subtitle */}
           <p className='text-xl text-gray-600 max-w-2xl mx-auto font-light'>
-            Powerful features designed to{' '}
-            <span className='font-semibold text-sky-600'>accelerate</span> your language learning
-            journey
+            Những tính năng mạnh mẽ được thiết kế để{' '}
+            <span className='font-semibold text-sky-600'>tăng tốc</span> hành trình học ngoại ngữ
+            của bạn journey
           </p>
         </div>
 
