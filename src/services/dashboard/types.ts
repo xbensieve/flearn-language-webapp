@@ -1,46 +1,83 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface Data {
-  users: User[]
-  pagination: Pagination
+  users: User[];
+  pagination: Pagination;
 }
 
-
 export interface IDashboard {
-  totalUsers: number
-  totalStaff: number
-  totalCourses: number
-  activeUsers: number
-  pendingCourses: number
-  recentUsers: RecentUser[]
+  totalUsers: number;
+  totalStaff: number;
+  totalCourses: number;
+  activeUsers: number;
+  pendingCourses: number;
+  recentUsers: RecentUser[];
 }
 
 export interface RecentUser {
-  userID: string
-  userName: string
-  email: string
-  status: boolean
-  createdAt: string
-  lastAccessAt: string
-  isEmailConfirmed: boolean
-  roles: string[]
+  userID: string;
+  userName: string;
+  email: string;
+  status: boolean;
+  createdAt: string;
+  lastAccessAt: string;
+  isEmailConfirmed: boolean;
+  roles: string[];
 }
 
 export interface User {
-  userID: string
-  userName: string
-  email: string
-  status: boolean
-  createdAt: string
-  lastAccessAt: string
-  isEmailConfirmed: boolean
-  roles: string[]
+  userID: string;
+  userName: string;
+  email: string;
+  status: boolean;
+  createdAt: string;
+  lastAccessAt: string;
+  isEmailConfirmed: boolean;
+  roles: string[];
 }
 
 export interface Pagination {
-  currentPage: number
-  pageSize: number
-  totalUsers: number
-  totalPages: number
+  currentPage: number;
+  pageSize: number;
+  totalUsers: number;
+  totalPages: number;
+}
+
+export interface DashboardData {
+  totalUsers: number;
+  totalStaff: number;
+  totalCourses: number;
+  activeUsers: number;
+  pendingCourses: number;
+  recentUsers: RecentUser[];
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface SearchUsersParams {
+  keyword?: string;
+  role?: string;
+  status?: '' | 'true' | 'false' | boolean;
+}
+
+export interface ChangePasswordPayload {
+  staffUserId: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export interface UserAll {
+  userID: string;
+  userName: string;
+  email: string;
+  status: boolean;
+  createdAt: string;
+  lastAccessAt: string;
+  isEmailConfirmed: boolean;
+  roles: string[];
 }
 
 export interface TeacherDashboardResponse {

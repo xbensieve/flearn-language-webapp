@@ -7,7 +7,6 @@ import type {
   CourseTemplateResponse,
   CourseUnitsRequest,
   CreateCourseRequest,
-  Exercise,
   ExerciseData,
   ExercisePayload,
   ICourseDataStaff,
@@ -316,21 +315,25 @@ export const submitCourseService = async (courseId: string) => {
   return res.data;
 };
 
-export const createExerciseService = async (
-  lessonId: string,
-  payload: ExercisePayload
-): Promise<Exercise> => {
+// services/exercise.ts (or wherever createExerciseService lives)
+export const createExerciseService = async (lessonId: string, payload: ExercisePayload) => {
   const formData = new FormData();
 
   Object.entries(payload).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      if (value instanceof File) {
-        formData.append(key, value);
-      } else {
-        formData.append(key, String(value));
-      }
+    if (value === undefined || value === null || key === 'MediaFiles') return;
+
+    if (Array.isArray(value)) {
+      value.forEach((v) => formData.append(key, String(v)));
+    } else {
+      formData.append(key, String(value));
     }
   });
+
+  if (payload.MediaFiles && Array.isArray(payload.MediaFiles)) {
+    payload.MediaFiles.forEach((file: File) => {
+      formData.append('MediaFiles', file, file.name);
+    });
+  }
 
   const { data } = await api.post(`/lessons/${lessonId}/exercises`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

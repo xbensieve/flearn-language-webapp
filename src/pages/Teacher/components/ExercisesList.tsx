@@ -25,6 +25,7 @@ import ExerciseForm from '../ExerciseForm';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notifyError, notifySuccess } from '../../../utils/toastConfig';
 import { deleteExercisesByLesson, getExercisesByLesson } from '../../../services/course';
+import { ImageIcon } from 'lucide-react';
 
 const { Text, Paragraph } = Typography;
 
@@ -314,18 +315,90 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
           <>
             {drawerMode === 'preview' ? (
               <div className='space-y-6'>
-                {/* Media */}
-                {selectedExercise.mediaUrls?.length > 0 && (
-                  <div className='space-y-3'>
-                    <Text strong className='text-gray-800'>
-                      Media
+                {/* Smart Media Preview - Supports Images + Audio */}
+                {selectedExercise?.mediaUrls && selectedExercise.mediaUrls.length > 0 && (
+                  <div className='space-y-6'>
+                    <Text strong className='text-lg text-gray-800 flex items-center gap-2'>
+                      <FileOutlined style={{ marginRight: '8px' }} className='text-blue-600' />
+                      Media ({selectedExercise.mediaUrls.length} file
+                      {selectedExercise.mediaUrls.length > 1 ? 's' : ''})
                     </Text>
-                    {selectedExercise.mediaUrls.map((url, i) => (
-                      <audio key={i} controls className='w-full rounded-xl'>
-                        <source src={url} type='audio/mpeg' />
-                        Your browser does not support audio.
-                      </audio>
-                    ))}
+
+                    <div className='space-y-8'>
+                      {selectedExercise.mediaUrls.map((url, index) => {
+                        const fileName =
+                          url.split('/').pop()?.split('?')[0] || `media-${index + 1}`;
+                        const isImage = /\.(jpe?g|png|webp|gif|svg)$/i.test(url);
+                        const isAudio = /\.(mp3|mpeg|wav|ogg)$/i.test(url);
+
+                        return (
+                          <div
+                            key={index}
+                            className='bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden'
+                          >
+                            {/* Header */}
+                            <div className='bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200'>
+                              <div className='flex items-center justify-between'>
+                                <div className='flex items-center gap-3'>
+                                  {isImage ? (
+                                    <ImageIcon size={18} className='text-blue-600' />
+                                  ) : isAudio ? (
+                                    <SoundOutlined className='text-purple-600 text-lg' />
+                                  ) : (
+                                    <FileOutlined className='text-gray-600' />
+                                  )}
+                                  <Text strong className='text-gray-800'>
+                                    {fileName}
+                                  </Text>
+                                </div>
+                                <Tag color={isImage ? 'blue' : isAudio ? 'purple' : 'default'}>
+                                  {isImage ? 'Image' : isAudio ? 'Audio' : 'File'}
+                                </Tag>
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className='p-8 bg-gray-50'>
+                              {isImage ? (
+                                <div className='flex justify-center'>
+                                  <img
+                                    src={url}
+                                    alt={fileName}
+                                    className='rounded-xl shadow-xl max-h-96 object-contain border-4 border-white'
+                                    style={{ maxHeight: '70vh' }}
+                                  />
+                                </div>
+                              ) : isAudio ? (
+                                <div className='max-w-2xl mx-auto'>
+                                  <div className='bg-white rounded-2xl shadow-inner p-6 border border-gray-200'>
+                                    <audio
+                                      controls
+                                      controlsList='nodownload'
+                                      className='w-full h-14'
+                                      style={{
+                                        borderRadius: '12px',
+                                        background: '#f8fafc',
+                                      }}
+                                    >
+                                      <source src={url} type='audio/mpeg' />
+                                      Your browser does not support the audio element.
+                                    </audio>
+                                  </div>
+                                  <Text type='secondary' className='block text-center mt-3 text-sm'>
+                                    Click play to listen
+                                  </Text>
+                                </div>
+                              ) : (
+                                <div className='text-center py-12 text-gray-500'>
+                                  <FileOutlined className='text-5xl mb-4 text-gray-400' />
+                                  <Text>Unsupported file type</Text>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
 

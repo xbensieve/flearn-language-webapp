@@ -289,7 +289,7 @@ export interface ExercisePayload {
   Hints?: string;
   Content?: string;
   ExpectedAnswer?: string;
-  MediaFiles?: File;
+  MediaFiles?: File[];
   MediaFileString?: string;
   Type?: number;
   Difficulty?: string;
@@ -322,7 +322,7 @@ export interface ExerciseData {
   content: string;
   expectedAnswer: string;
   mediaUrls: string[];
-  mediaPublicId: string;
+  mediaPublicIds: string[];
   position: number;
   exerciseType: string;
   difficulty: string;
@@ -330,7 +330,6 @@ export interface ExerciseData {
   passScore: number;
   feedbackCorrect: string;
   feedbackIncorrect: string;
-  prerequisiteExerciseID: string;
   courseID: string;
   courseTitle: string;
   unitID: string;
@@ -339,6 +338,19 @@ export interface ExerciseData {
   lessonTitle: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CoursePopular {
+  courseId: string;
+  title: string;
+  teacherName: string;
+  price: number;
+  averageRating: number;
+  reviewCount: number;
+  learnerCount: number;
+  imageUrl: string;
+  programName: string;
+  proficiencyCode: string;
 }
 
 export interface ICourseDataStaff {
