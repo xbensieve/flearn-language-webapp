@@ -38,7 +38,7 @@ import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
 import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
-mport Dashboard from "@/pages/Manager/Dashboard";
+
 import Courses from "@/pages/Manager/Course/Courses";
 import CourseDetailByManager from "@/pages/Manager/Course/CourseDetail";
 import ProfileByManager from "@/pages/Manager/Profile/Profile";
