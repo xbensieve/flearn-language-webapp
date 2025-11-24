@@ -14,6 +14,7 @@ import type {
   Lesson,
   PayloadCourseTemplate,
   Program,
+  CourseListResponse, CourseParams 
 } from "./type";
 
 export const getCourseTemplateByIdService = async (id: string) => {
@@ -27,7 +28,17 @@ export const createCourseTemplateService = async (
   const res = await api.post("/templates", payload);
   return res.data;
 };
-
+export const getAdminCourseSubmissionsService = async (params: {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+}) => {
+ 
+  const res = await api.get<API.Response<ICourseDataStaff[]>>('/courses/submissions/by-admin', {
+    params,
+  });
+  return res.data;
+};
 export const updateCourseTemplateService = async (payload: {
   templateId: string;
   data: PayloadCourseTemplate;
@@ -59,7 +70,11 @@ export const getMyCoursesService = async (params: {
   });
   return res.data;
 };
-
+export const getAdminCoursesService = async (params: CourseParams) => {
+ 
+  const res = await api.get<CourseListResponse>('/courses', { params });
+  return res.data;
+};
 export const getTeacherCoursesService = async (params: {
   page?: number;
   pageSize?: number;

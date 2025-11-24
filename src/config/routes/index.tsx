@@ -38,8 +38,11 @@ import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
 import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
+import UsersPage from '../../pages/Admin/UsersPage';
+import StaffPage from '../../pages/Admin/StaffPage';
+import CoursesPage from '../../pages/Admin/CoursesPage';
 
-// Route configuration
+
 const routes: RouteObject[] = [
   {
     path: '/login',
@@ -109,6 +112,18 @@ const routes: RouteObject[] = [
       {
         path: 'payouts',
         element: <AdminPayoutsPage />,
+      },
+      {
+        path: 'users',
+        element: <UsersPage />,
+      },
+      {
+        path: 'staff',
+        element: <StaffPage />,
+      },
+      {
+        path: 'courses',
+        element: <CoursesPage />,
       },
     ],
   },

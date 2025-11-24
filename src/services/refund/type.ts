@@ -1,38 +1,52 @@
-// src/app/api/refund/types/refund.types.ts
+
 
 export interface NotifyStudentRequest {
   studentId: string;
   classId: string;
   className: string;
-  classStartDateTime: string; // ISO date string
+  classStartDateTime: string;
   reason: string;
 }
 
 export interface ProcessRefundRequest {
   RefundRequestId: string;
-  Action: 'Approve' | 'Reject';
+  Action: 'Approve' | 'Reject' | 'Complete' | 'Cancel'; 
   AdminNote?: string;
-  ProofImage?: File; // will be appended to FormData
+  ProofImage?: File;
 }
 
-// src/types/refund.types.ts
+
 export type RefundStatus = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface RefundRequest {
-  refundRequestId: string;
-  studentId: string;
+ 
+  refundRequestID: string;
+  enrollmentID: string;
+  studentID: string;
   studentName: string;
-  classId: string;
+  classID: string;
   className: string;
-  classStartDateTime: string;
+  requestType: number;
   reason: string;
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountHolderName: string;
   status: RefundStatus;
-  createdAt: string;
   adminNote?: string;
+  refundAmount: number;
+  requestedAt: string;
+  processedAt?: string;
   proofImageUrl?: string;
 }
 
 export interface RefundListResponse {
+  success: boolean;
   data: RefundRequest[];
-  total?: number;
+}
+export interface NotifyStudentPayload {
+  studentId: string;
+  classId: string;
+  className: string;
+  classStartDateTime: string; 
+  reason: string;
 }

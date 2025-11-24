@@ -1,5 +1,5 @@
 import api from '../../config/axios';
-import type { AdminPayout } from './type';
+import type { AdminPayout, AdminWallet } from './type';
 
 interface ApiResponse<T> {
   status: string;
@@ -34,4 +34,8 @@ export const processPayoutService = async (
   payload: ProcessPayoutPayload
 ): Promise<void> => {
   await api.post(`/admin/payout/${payoutRequestId}/process`, payload);
+};
+export const getAdminWalletService = async () => {
+  const res = await api.get<API.Response<AdminWallet>>('/Admin/wallet');
+  return res.data.data;
 };

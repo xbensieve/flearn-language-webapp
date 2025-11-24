@@ -1,4 +1,4 @@
-// src/services/payout/type.ts
+
 export interface AdminPayout {
   payoutRequestId: string;
   teacherId: string;
@@ -10,10 +10,23 @@ export interface AdminPayout {
   accountNumber: string;
   accountHolder: string;
   amount: number;
-  payoutStatus: string; // "Completed" | "Pending" | "Rejected" | ...
+  payoutStatus: string;
   requestedAt: string;
   approvedAt: string | null;
   transactionRef: string | null;
   note: string | null;
   adminNote: string | null;
+}
+export interface AdminWallet {
+  walletId: string;
+  ownerId: string;
+  name: string;
+  ownerType: string;
+  totalBalance: number;
+  availableBalance: number;
+  holdBalance: number;
+  currency: string;
+  status: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

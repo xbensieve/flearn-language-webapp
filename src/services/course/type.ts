@@ -87,7 +87,34 @@ export interface CreateCourseRequest {
   gradingType: string;
   durationDays: number;   // integer
 }
+export interface CourseParams {
+  Page?: number;
+  PageSize?: number;
+  SearchTerm?: string;
+  SortBy?: string; // 'newest', 'oldest', 'price_asc', 'price_desc'
+  Status?: string; // 'Draft', 'Published', 'Pending', 'Rejected'
+  lang?: string;
+  programId?: string;
+  levelId?: string;
+  teacherId?: string;
+  title?: string;
+}
 
+export interface CourseMeta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+
+export interface CourseListResponse {
+  meta: CourseMeta;
+  status: string;
+  code: number;
+  message: string;
+  data: Course[];
+}
 export interface PaginationMeta {
   page: number;
   pageSize: number;

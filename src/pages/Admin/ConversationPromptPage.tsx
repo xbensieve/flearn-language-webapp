@@ -166,7 +166,7 @@ const ConversationPromptPage: React.FC = () => {
     createConversation(payload);
   };
 
-  // === Edit handler ===
+
   const handleEdit = (values: any) => {
     if (!selectedPrompt) return;
     editConversation({ ...selectedPrompt, ...values });
@@ -174,7 +174,7 @@ const ConversationPromptPage: React.FC = () => {
 
   return (
     <div>
-      {/* Header */}
+
       <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
         <Title level={3} style={{ margin: 0 }}>
           Conversation Prompts
@@ -184,10 +184,10 @@ const ConversationPromptPage: React.FC = () => {
         </Button>
       </Space>
 
-      {/* Table */}
+    
       <Table columns={columns} dataSource={conversationPrompts} rowKey='id' pagination={false} />
 
-      {/* === VIEW DRAWER === */}
+
       <Drawer
         width={720}
         title={selectedPrompt?.promptName}
@@ -233,7 +233,7 @@ const ConversationPromptPage: React.FC = () => {
         )}
       </Drawer>
 
-      {/* === CREATE DRAWER === */}
+   
       <Drawer
         width={640}
         title='Create New Conversation Prompt'

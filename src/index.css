@@ -1,1 +1,89 @@
 @import 'tailwindcss';
+
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #bfdbfe; 
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #60a5fa; 
+}
+
+
+:root {
+  --primary-color: #0ea5e9; 
+}
+
+
+.ant-layout-sider {
+  background: #ffffff !important;
+  border-right: 1px solid #f1f5f9;
+}
+.ant-menu-light {
+  border-inline-end: none !important;
+}
+.ant-menu-item {
+  border-radius: 8px !important;
+  margin-bottom: 4px !important;
+  color: #64748b !important; 
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+
+.ant-menu-item-selected {
+  background-color: #e0f2fe !important; 
+  color: #0284c7 !important;
+  font-weight: 600;
+}
+.ant-menu-item-selected svg {
+  color: #0284c7 !important;
+}
+
+
+.ant-menu-item:hover {
+  color: #0ea5e9 !important;
+  background-color: #f0f9ff !important;
+}
+
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background: #ffffff !important;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #f1f5f9;
+}
+.ant-table-row:hover > td {
+  background: #f0f9ff !important; 
+}
+
+
+.ant-btn-primary {
+  background-color: #0ea5e9 !important;
+  border-color: #0ea5e9 !important;
+  box-shadow: 0 2px 0 rgba(14, 165, 233, 0.1);
+}
+.ant-btn-primary:hover {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+}

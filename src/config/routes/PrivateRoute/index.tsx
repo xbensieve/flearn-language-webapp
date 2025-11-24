@@ -19,7 +19,7 @@ const PrivateRoute: React.FC<{
   */
 
   if (loading) {
-    return <div>Loading...</div>; // Consider using an AntD spinner here
+    return <div>Loading...</div>; 
   }
 
   if (!isAuthenticated) {
@@ -37,7 +37,7 @@ const PrivateRoute: React.FC<{
 
   return (
     <Navigate
-      to="/unauthorized"
+      to="/login"
       replace
     />
   );
