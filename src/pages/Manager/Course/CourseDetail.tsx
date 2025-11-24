@@ -28,7 +28,7 @@ export default function CourseDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [submissionId, setSubmissionId] = useState<string | null>(
+  const [submissionId] = useState<string | null>(
     location.state?.submissionId || null
   );
   const [loading, setLoading] = useState(true);

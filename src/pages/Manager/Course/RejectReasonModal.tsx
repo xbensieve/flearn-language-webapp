@@ -10,6 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Ban } from "lucide-react";
 
+interface RejectReasonModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  reason: string;
+  setReason: (value: string) => void;
+  onConfirm: () => void;
+  isProcessing: boolean;
+}
+
 export default function RejectReasonModal({
   open,
   onOpenChange,
@@ -17,7 +26,7 @@ export default function RejectReasonModal({
   setReason,
   onConfirm,
   isProcessing,
-}) {
+}: RejectReasonModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md w-[95vw] rounded-2xl p-6">
