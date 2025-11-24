@@ -42,9 +42,6 @@ import TeacherPayoutPage from '../../pages/Teacher/TeacherPayoutPage';
 import Courses from '@/pages/Manager/Course/Courses';
 import CourseDetailByManager from '@/pages/Manager/Course/CourseDetail';
 import ProfileByManager from '@/pages/Manager/Profile/Profile';
-import Courses from '@/pages/Manager/Course/Courses';
-import CourseDetailByManager from '@/pages/Manager/Course/CourseDetail';
-import ProfileByManager from '@/pages/Manager/Profile/Profile';
 import UsersPage from '../../pages/Admin/UsersPage';
 import StaffPage from '../../pages/Admin/StaffPage';
 import CoursesPage from '../../pages/Admin/CoursesPage';
@@ -52,7 +49,6 @@ import Dashboard from '@/pages/Manager/Dashboard';
 // Route configuration
 const routes: RouteObject[] = [
   {
-    path: '/login',
     path: '/login',
     element: <LoginPage />,
   },
@@ -210,7 +206,6 @@ const routes: RouteObject[] = [
       { path: 'course', element: <MyCourses /> },
       {
         path: 'course/exercise-grading/assignments',
-        path: 'course/exercise-grading/assignments',
         element: <TeacherGradingPage />,
       },
       { path: 'course/create', element: <CreateCourse /> },
@@ -233,7 +228,6 @@ const routes: RouteObject[] = [
     ],
   },
   {
-    path: '*',
     path: '*',
     element: <NotFoundPage />,
   },

@@ -1,4 +1,3 @@
-import { SearchUsersParams } from './types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "../../config/axios";
 import type { 
@@ -84,7 +83,11 @@ export const getAllUsers = async (params: {
 
 // Search users (keyword + role + status)
 export const searchUsers = async (
-  params: SearchUsersParams
+  params: {
+    keyword?: string;
+    role?: string;
+    status?: boolean | null;
+  }
 ): Promise<API.Response<RecentUser[]>> => {
   const response = await api.get('/Admin/users/search', { params });
   return response.data;
