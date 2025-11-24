@@ -10,13 +10,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
+import { logoutService } from "@/services/auth";
 export const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    toast.success("Logged out successfully");
-    navigate("/login");
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      if (refreshToken) {
+        await logoutService(refreshToken);
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      localStorage.removeItem("FLEARN_ACCESS_TOKEN");
+      localStorage.removeItem("FLEARN_REFRESH_TOKEN");
+      localStorage.removeItem("FLEARN_USER_ROLE");
+      localStorage.removeItem("FLEARN_USER_ROLES");
+      toast.success("Logout successful");
+      navigate("/login");
+    }
   };
 
   return (
@@ -44,14 +58,17 @@ export const Header = () => {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/dashboard/settings")}>
+            <DropdownMenuItem
+              onClick={() => navigate("/dashboard/profile")}
+              className="cursor-pointer"
+            >
               <User className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
-              className="text-destructive"
+              className="text-destructive cursor-pointer focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Logout

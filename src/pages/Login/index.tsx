@@ -14,7 +14,7 @@ const { Title, Text } = Typography;
 
 const ROLE_PATHS: Record<string, string> = {
   admin: '/admin',
-  manager: '/manager',
+  manager: '/dashboard',
   teacher: '/teacher',
   learner: '/learner/application',
 };

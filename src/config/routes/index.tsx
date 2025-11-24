@@ -43,6 +43,7 @@ import TeacherGradingPage from "../../pages/Teacher/TeacherGradingPage";
 import Dashboard from "@/pages/Manager/Dashboard";
 import Courses from "@/pages/Manager/Course/Courses";
 import CourseDetailByManager from "@/pages/Manager/Course/CourseDetail";
+import ProfileByManager from "@/pages/Manager/Profile/Profile";
 // Route configuration
 const routes: RouteObject[] = [
   {
@@ -147,7 +148,7 @@ const routes: RouteObject[] = [
       },
       {
         path: "profile",
-        element: <Profile />,
+        element: <ProfileByManager />,
       },
     ],
   },
