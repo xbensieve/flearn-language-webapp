@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { Layout, Menu, Avatar, Button, Dropdown, Spin, theme, Typography } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
-  UserOutlined,
   LogoutOutlined,
   AppstoreOutlined,
   WalletOutlined,
@@ -11,7 +11,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   BookOutlined,
-
+  UserOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { logoutService } from '../../services/auth';
@@ -29,11 +29,10 @@ const DashboardLayout: React.FC = () => {
     token: { colorBgContainer },
   } = theme.useToken();
 
- 
   const { data: wallet } = useQuery({
     queryKey: ['admin-wallet'],
     queryFn: getAdminWalletService,
-    refetchInterval: 60000, 
+    refetchInterval: 60000,
   });
 
   const { mutate: logout, isPending: isLoggingOut } = useMutation({
@@ -61,12 +60,13 @@ const DashboardLayout: React.FC = () => {
       children: [
         { key: '/admin/users', icon: <UserOutlined />, label: 'Users' },
         { key: '/admin/staff', icon: <UserOutlined />, label: 'Staff' },
-       
-        { key: '/admin/courses', icon: <BookOutlined />, label: 'Courses' }, 
+
+        { key: '/admin/courses', icon: <BookOutlined />, label: 'Courses' },
         { key: '/admin/course-templates', icon: <AppstoreOutlined />, label: 'Templates' },
-        { key: '/admin/programs', icon: <MenuFoldOutlined/>, label: 'Programs' }, 
+        { key: '/admin/programs', icon: <MenuFoldOutlined />, label: 'Programs' },
+        { key: '/admin/programs', icon: <MenuFoldOutlined />, label: 'Programs' },
         { key: '/admin/conversation-prompts', icon: <CommentOutlined />, label: 'Prompts' },
-      ]
+      ],
     },
     {
       type: 'group',
@@ -74,27 +74,33 @@ const DashboardLayout: React.FC = () => {
       children: [
         { key: '/admin/refund', icon: <WalletOutlined />, label: 'Refunds' },
         { key: '/admin/payouts', icon: <WalletOutlined />, label: 'Payouts' },
-      ]
+      ],
     },
   ];
 
-
   const userMenu = {
     items: [
-      { 
-        key: 'logout', 
-        label: 'Logout', 
-        icon: <LogoutOutlined />, 
+      {
+        key: 'logout',
+        label: 'Logout',
+        icon: <LogoutOutlined />,
         danger: true,
-        onClick: () => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') as string)
+        onClick: () => logout(localStorage.getItem('FLEARN_REFRESH_TOKEN') as string),
       },
-    ]
+    ],
   };
 
-  if (isLoggingOut) return <div className="flex h-screen justify-center items-center"><Spin size="large"/></div>;
+  if (isLoggingOut)
+    return (
+      <div className="flex h-screen justify-center items-center">
+        <Spin size="large" />
+      </div>
+    );
 
   return (
-    <Layout style={{ minHeight: '100vh' }} hasSider>
+    <Layout
+      style={{ minHeight: '100vh' }}
+      hasSider>
       <Sider
         trigger={null}
         collapsible
@@ -108,16 +114,17 @@ const DashboardLayout: React.FC = () => {
           left: 0,
           top: 0,
           bottom: 0,
-          zIndex: 20
-        }}
-      >
+          zIndex: 20,
+        }}>
         <div className="h-16 flex items-center justify-center border-b border-gray-50">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
             F
           </div>
-          {!collapsed && <span className="ml-3 text-lg font-bold text-slate-700">Flearn Admin</span>}
+          {!collapsed && (
+            <span className="ml-3 text-lg font-bold text-slate-700">Flearn Admin</span>
+          )}
         </div>
-        
+
         <Menu
           mode="inline"
           defaultSelectedKeys={[location.pathname]}
@@ -128,19 +135,16 @@ const DashboardLayout: React.FC = () => {
         />
       </Sider>
 
-      <Layout 
-        style={{ 
-          marginLeft: collapsed ? 80 : 230, 
+      <Layout
+        style={{
+          marginLeft: collapsed ? 80 : 230,
           transition: 'all 0.2s',
           minHeight: '100vh',
-          background: '#f8fafc'
-        }}
-      >
-        <Header 
-          style={{ background: colorBgContainer, padding: '0 24px' }} 
-          className="sticky top-0 z-10 flex justify-between items-center h-16 shadow-sm border-b border-gray-100"
-        >
-        
+          background: '#f8fafc',
+        }}>
+        <Header
+          style={{ background: colorBgContainer, padding: '0 24px' }}
+          className="sticky top-0 z-10 flex justify-between items-center h-16 shadow-sm border-b border-gray-100">
           <div className="flex items-center">
             <Button
               type="text"
@@ -150,10 +154,7 @@ const DashboardLayout: React.FC = () => {
             />
           </div>
 
-       
           <div className="flex items-center gap-5">
-            
-         
             {wallet && (
               <div className="hidden md:flex items-center gap-3 px-5 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all cursor-default">
                 <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
@@ -164,24 +165,37 @@ const DashboardLayout: React.FC = () => {
                     <Text className="text-sm font-extrabold text-gray-800 font-sans">
                       {wallet.totalBalance?.toLocaleString('vi-VN')}
                     </Text>
-                    <Text className="text-[10px] text-gray-400 font-semibold">{wallet.currency}</Text>
+                    <Text className="text-[10px] text-gray-400 font-semibold">
+                      {wallet.currency}
+                    </Text>
                   </div>
                   <Text className="text-[10px] text-gray-400 font-medium leading-tight">
-                    (Avail: <span className="text-emerald-500 font-bold">{wallet.availableBalance?.toLocaleString()}</span> - Hold: <span className="text-amber-500 font-bold">{wallet.holdBalance?.toLocaleString()}</span>)
+                    (Avail:{' '}
+                    <span className="text-emerald-500 font-bold">
+                      {wallet.availableBalance?.toLocaleString()}
+                    </span>{' '}
+                    - Hold:{' '}
+                    <span className="text-amber-500 font-bold">
+                      {wallet.holdBalance?.toLocaleString()}
+                    </span>
+                    )
                   </Text>
                 </div>
               </div>
             )}
 
             {/* User Dropdown (Chỉ còn Avatar) */}
-            <Dropdown menu={userMenu as any} trigger={['click']} placement="bottomRight">
+            <Dropdown
+              menu={userMenu as any}
+              trigger={['click']}
+              placement="bottomRight">
               <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 py-1 px-2 rounded-full transition-colors">
                 <div className="hidden md:block text-right leading-tight">
                   <div className="font-bold text-slate-700 text-sm">Admin</div>
                   <div className="text-[10px] text-slate-400 font-medium">Administrator</div>
                 </div>
-                <Avatar 
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" 
+                <Avatar
+                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"
                   size="default"
                   className="bg-blue-100 text-blue-600 border-2 border-white shadow-sm"
                 />

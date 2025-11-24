@@ -1,4 +1,11 @@
+import type { User } from "../teacherApplication/types";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
+export interface Data {
+  users: User[];
+  pagination: Pagination;
+}
+
 export interface IDashboard {
   totalUsers: number;
   totalStaff: number;

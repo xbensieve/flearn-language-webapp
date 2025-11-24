@@ -45,6 +45,8 @@ import {
   reviewRejectApplication,
 } from '../../services/staff';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -219,8 +221,9 @@ const ApplicationsManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 min-h-screen">
-      <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+    <DashboardLayout>
+      <Sidebar />
+      <div className="flex  justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
         <Space>
           <UserOutlined className="text-2xl text-blue-600" />
           <h1 className="text-2xl font-bold text-gray-800">Teacher Applications</h1>
@@ -637,7 +640,7 @@ const ApplicationsManagement: React.FC = () => {
           </Tabs>
         )}
       </Modal>
-    </div>
+    </DashboardLayout>
   );
 };
 

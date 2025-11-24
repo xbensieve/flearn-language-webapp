@@ -1,16 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { 
-  Table, Card, Typography, Tag, Avatar, Input, Select, Image, Tooltip, Empty, Button 
+import {
+  Table,
+  Card,
+  Typography,
+  Tag,
+  Avatar,
+  Input,
+  Select,
+  Image,
+  Tooltip,
+  Empty,
+  Button,
 } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { getAdminCoursesService, getAdminCourseSubmissionsService } from '../../services/course';
 import type { Course, ICourseDataStaff } from '../../services/course/type';
-import { 
-  SearchOutlined, 
-  BookOutlined, 
-  UserOutlined, 
-  ClockCircleOutlined, 
-  ReloadOutlined 
+import {
+  SearchOutlined,
+  BookOutlined,
+  UserOutlined,
+  ClockCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { useDebounce } from '../../utils/useDebound';
 
@@ -27,7 +38,6 @@ const CoursesPage: React.FC = () => {
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-
   const handleClearFilters = () => {
     setSearchTerm('');
     setLanguage(undefined);
@@ -36,48 +46,42 @@ const CoursesPage: React.FC = () => {
     setPage(1);
   };
 
-  
   const formatDateSafe = (dateString: string) => {
     if (!dateString) return 'N/A';
-    
 
     const date = new Date(dateString);
-    
-  
+
     if (isNaN(date.getTime())) {
       return dateString;
     }
-    
-   
+
     return date.toLocaleDateString('en-GB');
   };
-
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-courses', page, pageSize, debouncedSearch, language, status, sortBy],
     queryFn: async () => {
       try {
-     
         if (status === 'Pending') {
           const res = await getAdminCourseSubmissionsService({
             page,
             pageSize,
-            status: 'Pending'
+            status: 'Pending',
           });
-          
-        
-          const mappedData = (res as any)?.data?.map((item: ICourseDataStaff) => ({
-            ...item.course,
-            courseId: item.course.courseId,
-            teacher: {
-              teacherId: item.submitter?.teacherId,
-              name: item.submitter?.name,
-              email: item.submitter?.email,
-              avatar: item.submitter?.avatar
-            },
-            courseStatus: 'Pending', 
-            createdAt: item.submittedAt
-          })) || [];
+
+          const mappedData =
+            (res as any)?.data?.map((item: ICourseDataStaff) => ({
+              ...item.course,
+              courseId: item.course.courseId,
+              teacher: {
+                teacherId: item.submitter?.teacherId,
+                name: item.submitter?.name,
+                email: item.submitter?.email,
+                avatar: item.submitter?.avatar,
+              },
+              courseStatus: 'Pending',
+              createdAt: item.submittedAt,
+            })) || [];
 
           return {
             data: mappedData,
@@ -85,28 +89,24 @@ const CoursesPage: React.FC = () => {
               page: page,
               pageSize: pageSize,
               totalItems: mappedData.length,
-              totalPages: 1
-            }
+              totalPages: 1,
+            },
           };
-        } 
-        
-        
-        else {
+        } else {
           return await getAdminCoursesService({
             Page: page,
             PageSize: pageSize,
             SearchTerm: debouncedSearch,
             lang: language,
             Status: status,
-            SortBy: sortBy
+            SortBy: sortBy,
           });
         }
       } catch (error: any) {
-      
         if (error.response && error.response.status === 404) {
           return {
             data: [],
-            meta: { page: 1, pageSize: pageSize, totalItems: 0, totalPages: 0 }
+            meta: { page: 1, pageSize: pageSize, totalItems: 0, totalPages: 0 },
           };
         }
         throw error;
@@ -115,7 +115,7 @@ const CoursesPage: React.FC = () => {
     retry: (failureCount, error: any) => {
       if (error.response && error.response.status === 404) return false;
       return failureCount < 2;
-    }
+    },
   });
 
   const columns = [
@@ -125,22 +125,33 @@ const CoursesPage: React.FC = () => {
       render: (_: any, record: Course) => (
         <div className="flex gap-3">
           <div className="flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border border-gray-100 relative">
-            <Image 
-              src={record.imageUrl || 'error'} 
+            <Image
+              src={record.imageUrl || 'error'}
               fallback="https://via.placeholder.com/80x60?text=No+Img"
-              width="100%" height="100%" 
+              width="100%"
+              height="100%"
               style={{ objectFit: 'cover' }}
               preview={false}
             />
           </div>
           <div className="flex flex-col justify-center flex-1 min-w-0">
             <Tooltip title={record.title}>
-              <Text strong className="truncate text-sm mb-0.5 block text-slate-700">{record.title}</Text>
+              <Text
+                strong
+                className="truncate text-sm mb-0.5 block text-slate-700">
+                {record.title}
+              </Text>
             </Tooltip>
             <div className="flex flex-wrap gap-1">
-              {record.language && <Tag className="mr-0 text-[10px] px-1 bg-gray-50">{record.language}</Tag>}
+              {record.language && (
+                <Tag className="mr-0 text-[10px] px-1 bg-gray-50">{record.language}</Tag>
+              )}
               {record.program?.level?.name && (
-                <Tag color="blue" className="mr-0 text-[10px] px-1">{record.program.level.name}</Tag>
+                <Tag
+                  color="blue"
+                  className="mr-0 text-[10px] px-1">
+                  {record.program.level.name}
+                </Tag>
               )}
             </div>
           </div>
@@ -153,7 +164,11 @@ const CoursesPage: React.FC = () => {
       width: 200,
       render: (teacher: any) => (
         <div className="flex items-center gap-2">
-          <Avatar src={teacher?.avatar} icon={<UserOutlined />} size="small" />
+          <Avatar
+            src={teacher?.avatar}
+            icon={<UserOutlined />}
+            size="small"
+          />
           <div className="flex flex-col">
             <Text className="text-xs font-medium">{teacher?.name || 'Unknown'}</Text>
             <Text className="text-[10px] text-gray-400 truncate w-32">{teacher?.email}</Text>
@@ -168,13 +183,25 @@ const CoursesPage: React.FC = () => {
       render: (price: number, record: Course) => (
         <div>
           {record.courseType === 'Free' || price === 0 ? (
-            <Tag color="green" className="font-semibold">Free</Tag>
+            <Tag
+              color="green"
+              className="font-semibold">
+              Free
+            </Tag>
           ) : (
             <div className="flex flex-col">
-               <Text strong className="text-emerald-600">{price?.toLocaleString()} ₫</Text>
-               {record.discountPrice ? (
-                 <Text delete className="text-[10px] text-gray-400">{record.discountPrice.toLocaleString()} ₫</Text>
-               ) : null}
+              <Text
+                strong
+                className="text-emerald-600">
+                {price?.toLocaleString()} ₫
+              </Text>
+              {record.discountPrice ? (
+                <Text
+                  delete
+                  className="text-[10px] text-gray-400">
+                  {record.discountPrice.toLocaleString()} ₫
+                </Text>
+              ) : null}
             </div>
           )}
         </div>
@@ -185,8 +212,12 @@ const CoursesPage: React.FC = () => {
       width: 160,
       render: (_: any, record: Course) => (
         <div className="text-xs text-gray-500 space-y-1">
-          <div className="flex items-center gap-1"><UserOutlined /> {record.learnerCount || 0} learners</div>
-          <div className="flex items-center gap-1"><ClockCircleOutlined /> {record.estimatedHours || 0}h ({record.numLessons || 0} lessons)</div>
+          <div className="flex items-center gap-1">
+            <UserOutlined /> {record.learnerCount || 0} learners
+          </div>
+          <div className="flex items-center gap-1">
+            <ClockCircleOutlined /> {record.estimatedHours || 0}h ({record.numLessons || 0} lessons)
+          </div>
         </div>
       ),
     },
@@ -200,7 +231,13 @@ const CoursesPage: React.FC = () => {
         if (st === 'Draft') color = 'warning';
         if (st === 'Rejected') color = 'error';
         if (st === 'Pending') color = 'processing';
-        return <Tag color={color} className="min-w-[70px] text-center">{st}</Tag>;
+        return (
+          <Tag
+            color={color}
+            className="min-w-[70px] text-center">
+            {st}
+          </Tag>
+        );
       },
     },
     {
@@ -209,47 +246,49 @@ const CoursesPage: React.FC = () => {
       width: 120,
       render: (date: string) => (
         <div className="flex flex-col">
-      
           <Text className="text-xs text-gray-600">{formatDateSafe(date)}</Text>
           <Text className="text-[10px] text-gray-400">Created</Text>
         </div>
-      ), 
+      ),
     },
   ];
 
   return (
     <div className="space-y-6">
-      <Card bordered={false} className="rounded-2xl shadow-sm border border-gray-100">
-   
+      <Card
+        bordered={false}
+        className="rounded-2xl shadow-sm border border-gray-100">
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-               <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
-                  <BookOutlined className="text-xl" />
-               </div>
-               <div>
-                 <Title level={4} className="!mb-0 !font-bold text-gray-800">All Courses</Title>
-                 <Text className="text-xs text-gray-500">Manage and monitor all courses</Text>
-               </div>
+              <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                <BookOutlined className="text-xl" />
+              </div>
+              <div>
+                <Title
+                  level={4}
+                  className="!mb-0 !font-bold text-gray-800">
+                  All Courses
+                </Title>
+                <Text className="text-xs text-gray-500">Manage and monitor all courses</Text>
+              </div>
             </div>
-            
-         
+
             {(searchTerm || language || status || sortBy !== 'newest') && (
-              <Button 
-                icon={<ReloadOutlined />} 
+              <Button
+                icon={<ReloadOutlined />}
                 onClick={handleClearFilters}
                 size="small"
-                className="text-gray-500"
-              >
+                className="text-gray-500">
                 Reset Filters
               </Button>
             )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3 bg-gray-50 p-3 rounded-xl">
-            <Input 
-              placeholder="Search by title..." 
-              prefix={<SearchOutlined className="text-gray-400" />} 
+            <Input
+              placeholder="Search by title..."
+              prefix={<SearchOutlined className="text-gray-400" />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -262,8 +301,7 @@ const CoursesPage: React.FC = () => {
               allowClear
               value={language}
               onChange={(val) => setLanguage(val)}
-              disabled={status === 'Pending'}
-            >
+              disabled={status === 'Pending'}>
               <Option value="en">English</Option>
               <Option value="ja">Japanese</Option>
               <Option value="zh">Chinese</Option>
@@ -276,8 +314,7 @@ const CoursesPage: React.FC = () => {
               onChange={(val) => {
                 setStatus(val);
                 setPage(1);
-              }}
-            >
+              }}>
               <Option value="Published">Published</Option>
               <Option value="Draft">Draft</Option>
               <Option value="Pending">Pending (Review)</Option>
@@ -287,8 +324,7 @@ const CoursesPage: React.FC = () => {
               value={sortBy}
               style={{ width: 140 }}
               onChange={(val) => setSortBy(val)}
-              disabled={status === 'Pending'}
-            >
+              disabled={status === 'Pending'}>
               <Option value="newest">Newest</Option>
               <Option value="oldest">Oldest</Option>
               <Option value="price_asc">Price: Low to High</Option>
@@ -313,12 +349,17 @@ const CoursesPage: React.FC = () => {
               setPageSize(ps);
             },
             showTotal: (total) => `Total ${total} courses`,
-            position: ['bottomRight']
+            position: ['bottomRight'],
           }}
           scroll={{ x: 1100 }}
           size="middle"
-          locale={{ 
-            emptyText: <Empty description="No courses found" image={Empty.PRESENTED_IMAGE_SIMPLE} /> 
+          locale={{
+            emptyText: (
+              <Empty
+                description="No courses found"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            ),
           }}
         />
       </Card>
