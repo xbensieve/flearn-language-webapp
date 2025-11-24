@@ -4,7 +4,6 @@ import { Layout, Menu, Avatar, Button, Dropdown, Spin, theme, Typography } from 
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
-  UserOutlined,
   LogoutOutlined,
   AppstoreOutlined,
   WalletOutlined,
@@ -19,6 +18,23 @@ import { getAdminWalletService } from '../../services/payout';
 import { toast } from 'react-toastify';
 
 const { Header, Sider, Content } = Layout;
+
+const menuItems = [
+  {
+    key: '/admin',
+    icon: <DashboardOutlined />,
+    label: 'Dashboard',
+    children: [
+      { key: '/admin/dashboard', label: 'Users' },
+      { key: '/admin/course-templates', label: 'Courses Templates' },
+      { key: '/admin/conversation-prompts', label: 'Conversation Prompts' },
+      { key: '/admin/refund', label: 'Refund' },
+      { key: '/admin/programs', label: 'Programs' },
+      { key: '/admin/payouts', label: 'Payouts' },
+    ],
+  },
+  { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
+];
 const { Text } = Typography;
 
 const DashboardLayout: React.FC = () => {
@@ -60,10 +76,14 @@ const DashboardLayout: React.FC = () => {
       children: [
         { key: '/admin/users', icon: <UserOutlined />, label: 'Users' },
         { key: '/admin/staff', icon: <UserOutlined />, label: 'Staff' },
+
+        { key: '/admin/courses', icon: <BookOutlined />, label: 'Courses' },
         { key: '/admin/courses', icon: <BookOutlined />, label: 'Courses' },
         { key: '/admin/course-templates', icon: <AppstoreOutlined />, label: 'Templates' },
         { key: '/admin/programs', icon: <MenuFoldOutlined />, label: 'Programs' },
+        { key: '/admin/programs', icon: <MenuFoldOutlined />, label: 'Programs' },
         { key: '/admin/conversation-prompts', icon: <CommentOutlined />, label: 'Prompts' },
+      ],
       ],
     },
     {

@@ -37,7 +37,11 @@ import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
 import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
+import TeacherPayoutPage from '../../pages/Teacher/TeacherPayoutPage';
 
+import Courses from '@/pages/Manager/Course/Courses';
+import CourseDetailByManager from '@/pages/Manager/Course/CourseDetail';
+import ProfileByManager from '@/pages/Manager/Profile/Profile';
 import Courses from '@/pages/Manager/Course/Courses';
 import CourseDetailByManager from '@/pages/Manager/Course/CourseDetail';
 import ProfileByManager from '@/pages/Manager/Profile/Profile';
@@ -48,6 +52,7 @@ import Dashboard from '@/pages/Manager/Dashboard';
 // Route configuration
 const routes: RouteObject[] = [
   {
+    path: '/login',
     path: '/login',
     element: <LoginPage />,
   },
@@ -197,7 +202,14 @@ const routes: RouteObject[] = [
       { path: 'status', element: <ApplicationStatus /> },
       { path: 'survey/create', element: <CreateSurvey /> },
       { path: 'course', element: <MyCourses /> },
+      { index: true, path: '', element: <BrowseCourses /> },
+      { path: 'application', element: <TeacherApplicationPage /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'status', element: <ApplicationStatus /> },
+      { path: 'survey/create', element: <CreateSurvey /> },
+      { path: 'course', element: <MyCourses /> },
       {
+        path: 'course/exercise-grading/assignments',
         path: 'course/exercise-grading/assignments',
         element: <TeacherGradingPage />,
       },
@@ -209,9 +221,19 @@ const routes: RouteObject[] = [
       { path: 'classes', element: <MyClasses /> },
       { path: 'classes/:id', element: <ClassDetail /> },
       { path: 'payout-request', element: <PayoutPage /> },
+      { path: 'course/create', element: <CreateCourse /> },
+      { path: 'course/:id', element: <CourseDetailView /> },
+      { path: 'course/:id/edit', element: <CourseDetail /> },
+      { path: 'course/:id/edit-course', element: <EditCoursePage /> },
+      { path: 'course/:id/edit/unit/:id', element: <UnitsManager /> },
+      { path: 'classes', element: <MyClasses /> },
+      { path: 'classes/:id', element: <ClassDetail /> },
+      { path: 'payout-request', element: <PayoutPage /> },
+      { path: 'payouts', element: <TeacherPayoutPage /> },
     ],
   },
   {
+    path: '*',
     path: '*',
     element: <NotFoundPage />,
   },
