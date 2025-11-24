@@ -11,7 +11,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isOpen } = useSidebarStore();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background font-sans">
       <Sidebar />
       <div
         className={`transition-all duration-300 ${isOpen ? "ml-64" : "ml-16"}`}
