@@ -1,51 +1,55 @@
-import { createBrowserRouter, Outlet, type RouteObject } from 'react-router-dom';
-import LoginPage from '../../pages/Login';
-import UnauthorizedPage from '../../pages/UnauthorizedPage';
-import PrivateRoute from './PrivateRoute';
-import Admin from '../../pages/Admin';
-import NotFoundPage from '../../pages/NotFoundPage';
-import DashboardLayout from '../../templates/AdminLayout';
-import Profile from '../../pages/Profile';
-import TeacherApplicationPage from '../../pages/Teacher';
-import LearnerLayout from '../../templates/LearnerLayout';
-import ApplicationStatus from '../../pages/Teacher/ApplicationStatus';
-import StaffDashboardLayout from '../../templates/StaffLayout';
-import ApplicationsPending from '../../pages/Staff/ApplicationPending';
-import Register from '../../pages/Register';
-import CreateSurvey from '../../pages/Teacher/CreateSurvey';
-import MySurvey from '../../pages/Teacher/MySurvey';
-import CreateCourse from '../../pages/Teacher/CreateCourse';
-import MyCourses from '../../pages/Teacher/MyCourse';
-import CourseTemplatesPage from '../../pages/Admin/CourseTemplate';
-import Goals from '../../pages/Admin/Goals';
-import BrowseCourses from '../../pages/Learner';
-import TeacherLayout from '../../templates/TeacherLayout';
-import CourseDetail from '../../pages/Teacher/CourseDetail';
-import CourseDetailView from '../../pages/Teacher/CourseDetailView';
-import UnitsManager from '../../pages/Teacher/UnitsManager';
-import EditCoursePage from '../../pages/Teacher/EditCoursePage';
+import {
+  createBrowserRouter,
+  Outlet,
+  type RouteObject,
+} from "react-router-dom";
+import LoginPage from "../../pages/Login";
+import UnauthorizedPage from "../../pages/UnauthorizedPage";
+import PrivateRoute from "./PrivateRoute";
+import Admin from "../../pages/Admin";
+import NotFoundPage from "../../pages/NotFoundPage";
+import DashboardLayout from "../../templates/AdminLayout";
+import Profile from "../../pages/Profile";
+import TeacherApplicationPage from "../../pages/Teacher";
+import LearnerLayout from "../../templates/LearnerLayout";
+import ApplicationStatus from "../../pages/Teacher/ApplicationStatus";
+import Register from "../../pages/Register";
+import CreateSurvey from "../../pages/Teacher/CreateSurvey";
+import MySurvey from "../../pages/Teacher/MySurvey";
+import CreateCourse from "../../pages/Teacher/CreateCourse";
+import MyCourses from "../../pages/Teacher/MyCourse";
+import CourseTemplatesPage from "../../pages/Admin/CourseTemplate";
+import Goals from "../../pages/Admin/Goals";
+import BrowseCourses from "../../pages/Learner";
+import TeacherLayout from "../../templates/TeacherLayout";
+import CourseDetail from "../../pages/Teacher/CourseDetail";
+import CourseDetailView from "../../pages/Teacher/CourseDetailView";
+import UnitsManager from "../../pages/Teacher/UnitsManager";
+import EditCoursePage from "../../pages/Teacher/EditCoursePage";
 
-import CourseReviewDetail from '../../pages/Staff/CourseReviewDetail';
-import ConversationPromptPage from '../../pages/Admin/ConversationPromptPage';
-import MyClasses from '../../pages/Teacher/MyClasses';
-import ClassDetail from '../../pages/Teacher/ClassDetail';
-import ForgotPassword from '../../pages/ForgotPassword';
-import ResetPassword from '../../pages/ForgotPassword/ResetPassword';
-import ProgramPage from '../../pages/Admin/Program';
-import LevelPage from '../../pages/Admin/Level';
-import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
-import PayoutPage from '../../pages/Teacher/PayoutPage';
-import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
-import LandingPage from '../../pages/LandingPage';
-import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
+import CourseReviewDetail from "../../pages/Staff/CourseReviewDetail";
+import ConversationPromptPage from "../../pages/Admin/ConversationPromptPage";
+import MyClasses from "../../pages/Teacher/MyClasses";
+import ClassDetail from "../../pages/Teacher/ClassDetail";
+import ForgotPassword from "../../pages/ForgotPassword";
+import ResetPassword from "../../pages/ForgotPassword/ResetPassword";
+import ProgramPage from "../../pages/Admin/Program";
+import LevelPage from "../../pages/Admin/Level";
+import RefundAdminPage from "../../pages/Admin/RefundAdminPage";
+import PayoutPage from "../../pages/Teacher/PayoutPage";
+import AdminPayoutsPage from "../../pages/Admin/AdminPayoutPage";
+import LandingPage from "../../pages/LandingPage";
+import TeacherGradingPage from "../../pages/Teacher/TeacherGradingPage";
 
 import Courses from "@/pages/Manager/Course/Courses";
 import CourseDetailByManager from "@/pages/Manager/Course/CourseDetail";
 import ProfileByManager from "@/pages/Manager/Profile/Profile";
-import UsersPage from '../../pages/Admin/UsersPage';
-import StaffPage from '../../pages/Admin/StaffPage';
-import CoursesPage from '../../pages/Admin/CoursesPage';
-import Dashboard from '@/pages/Manager/Dashboard';
+import UsersPage from "../../pages/Admin/UsersPage";
+import StaffPage from "../../pages/Admin/StaffPage";
+import CoursesPage from "../../pages/Admin/CoursesPage";
+import Dashboard from "@/pages/Manager/Dashboard";
+import TeacherApplicationByManager from "@/pages/Manager/Teacher/TeacherApplications";
+import TeacherApplicationDetailByManager from "@/pages/Manager/Teacher/ApplicationDetail";
 // Route configuration
 const routes: RouteObject[] = [
   {
@@ -118,15 +122,15 @@ const routes: RouteObject[] = [
         element: <AdminPayoutsPage />,
       },
       {
-        path: 'users',
+        path: "users",
         element: <UsersPage />,
       },
       {
-        path: 'staff',
+        path: "staff",
         element: <StaffPage />,
       },
       {
-        path: 'courses',
+        path: "courses",
         element: <CoursesPage />,
       },
     ],
@@ -145,8 +149,12 @@ const routes: RouteObject[] = [
         element: <Dashboard />,
       },
       {
-        path: "application/pending",
-        element: <ApplicationsPending />,
+        path: "teachers",
+        element: <TeacherApplicationByManager />,
+      },
+      {
+        path: "teachers/:id",
+        element: <TeacherApplicationDetailByManager />,
       },
       {
         path: "courses",
