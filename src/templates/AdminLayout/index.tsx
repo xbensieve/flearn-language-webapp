@@ -11,6 +11,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   BookOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { logoutService } from '../../services/auth';
@@ -18,23 +19,6 @@ import { getAdminWalletService } from '../../services/payout';
 import { toast } from 'react-toastify';
 
 const { Header, Sider, Content } = Layout;
-
-const menuItems = [
-  {
-    key: '/admin',
-    icon: <DashboardOutlined />,
-    label: 'Dashboard',
-    children: [
-      { key: '/admin/dashboard', label: 'Users' },
-      { key: '/admin/course-templates', label: 'Courses Templates' },
-      { key: '/admin/conversation-prompts', label: 'Conversation Prompts' },
-      { key: '/admin/refund', label: 'Refund' },
-      { key: '/admin/programs', label: 'Programs' },
-      { key: '/admin/payouts', label: 'Payouts' },
-    ],
-  },
-  { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
-];
 const { Text } = Typography;
 
 const DashboardLayout: React.FC = () => {
