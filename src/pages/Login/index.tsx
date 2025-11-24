@@ -13,8 +13,8 @@ import type { AxiosError } from 'axios';
 const { Title, Text } = Typography;
 
 const ROLE_PATHS: Record<string, string> = {
- admin: '/admin/dashboard',
-  manager: '/manager/dashboard',
+  admin: '/admin/dashboard',
+  manager: '/dashboard',
   teacher: '/teacher',
   learner: '/learner/application',
 };
