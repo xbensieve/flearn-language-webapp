@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/pages/Teacher/EditCoursePage.tsx
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Form,
@@ -31,25 +30,37 @@ import {
 } from '../../services/course';
 import { getTopicsService } from '../../services/topics';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import type { CreateCourseRequest } from '../../services/course/type';
 import { UploadCloud, Sparkles, DollarSign, Calendar, ArrowLeft, ChevronRight } from 'lucide-react';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+interface CourseFormValues {
+  title: string;
+  description: string;
+  programLevelCombo: string;
+  topicIds: string[];
+  templateId?: string;
+  courseType: number;
+  price?: number;
+  learningOutcome: string;
+  durationDays: number;
+  gradingType: string;
+}
+
 const EditCoursePage: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<CourseFormValues>();
+
   const [fileList, setFileList] = useState<any[]>([]);
   const [removeImage, setRemoveImage] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [formValues, setFormValues] = useState<Partial<any>>({});
 
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [selectedLevelId, setSelectedLevelId] = useState<string>('');
 
-  const courseTypeWatch = Form.useWatch('courseType', form) || 1;
+  const courseType = Form.useWatch('courseType', form);
 
   // Fetch course detail
   const { data: course, isLoading: loadingCourse } = useQuery({
@@ -58,7 +69,7 @@ const EditCoursePage: React.FC = () => {
     enabled: !!courseId,
   });
 
-  // Fetch program + level combos
+  // Program + Level
   const { data: programLevels = [], isLoading: programLevelsLoading } = useQuery({
     queryKey: ['programLevels'],
     queryFn: () => getTeachingProgramService({ pageSize: 1000 }),
@@ -74,7 +85,7 @@ const EditCoursePage: React.FC = () => {
     [programLevels]
   );
 
-  // Fetch templates based on selected program & level
+  // Templates
   const { data: templates = [], isLoading: templatesLoading } = useQuery({
     queryKey: ['courseTemplates', selectedProgramId, selectedLevelId],
     queryFn: () =>
@@ -86,14 +97,14 @@ const EditCoursePage: React.FC = () => {
     select: (data) => data.data || [],
   });
 
-  // Fetch topics
+  // Topics
   const { data: topics, isLoading: topicsLoading } = useQuery({
     queryKey: ['topics'],
     queryFn: getTopicsService,
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: CreateCourseRequest) => updateCourseService({ id: courseId!, payload }),
+    mutationFn: (payload: any) => updateCourseService({ id: courseId!, payload }),
     onSuccess: () => {
       notifySuccess('Course updated successfully!');
       navigate(`/teacher/course/${courseId}`);
@@ -103,40 +114,41 @@ const EditCoursePage: React.FC = () => {
     },
   });
 
-  // Prefill form when course loads
+  // Prefill form on course load
   useEffect(() => {
-    if (course) {
-      const programLevelKey = `${course.programId}|${course.LevelId}`;
+    if (!course) return;
 
-      setSelectedProgramId(course.programId);
-      setSelectedLevelId(course.LevelId);
+    const programLevelKey = `${course.programId}|${course.LevelId}`;
 
-      const values = {
-        title: course.title,
-        description: course.description,
-        programLevelCombo: programLevelKey,
-        topicIds: course.topics?.map((t: any) => t.topicId.toString()) || [],
-        templateId: course.templateId,
-        courseType: Number(course.courseType) || 1,
-        price: course.price ? Number(course.price) : undefined,
-        learningOutcome: course.learningOutcome || '',
-        durationDays: course.durationDays || 30,
-        gradingType: course.gradingType?.toString() || '1',
-      };
+    setSelectedProgramId(course.programId);
+    setSelectedLevelId(course.LevelId);
 
-      form.setFieldsValue(values);
-      setFormValues(values);
+    const values: Partial<CourseFormValues> = {
+      title: course.title,
+      description: course.description,
+      programLevelCombo: programLevelKey,
+      topicIds: course.topics?.map((t: any) => t.topicId.toString()) || [],
+      templateId: course.templateId || undefined,
+      courseType: Number(course.courseType) || 1,
+      price: course.price ? Number(course.price) : undefined,
+      learningOutcome: course.learningOutcome || '',
+      durationDays: course.durationDays || 30,
+      gradingType: course.gradingType?.toString() || '1',
+    };
 
-      if (course.imageUrl) {
-        setFileList([
-          {
-            uid: '-1',
-            name: 'current-image.jpg',
-            status: 'done',
-            url: course.imageUrl,
-          },
-        ]);
-      }
+    form.setFieldsValue(values);
+
+    // Set existing image
+    if (course.imageUrl) {
+      setFileList([
+        {
+          uid: '-1',
+          name: 'current-image.jpg',
+          status: 'done',
+          url: course.imageUrl,
+          thumbUrl: course.imageUrl,
+        },
+      ]);
     }
   }, [course, form]);
 
@@ -145,7 +157,6 @@ const EditCoursePage: React.FC = () => {
       const [programId, levelId] = value.split('|');
       setSelectedProgramId(programId);
       setSelectedLevelId(levelId);
-      form.setFieldsValue({ programId, levelId });
     } else {
       setSelectedProgramId('');
       setSelectedLevelId('');
@@ -153,6 +164,7 @@ const EditCoursePage: React.FC = () => {
   };
 
   const uploadProps = {
+    fileList,
     onRemove: () => {
       setFileList([]);
       setRemoveImage(true);
@@ -162,125 +174,140 @@ const EditCoursePage: React.FC = () => {
       const isImage = file.type.startsWith('image/');
       if (!isImage) {
         message.error('Only image files allowed!');
-        return false;
+        return Upload.LIST_IGNORE;
       }
-      const isLt10M = file.size / 1024 / 1024 < 10;
-      if (!isLt10M) {
+      if (file.size / 1024 / 1024 > 10) {
         message.error('Image must be smaller than 10MB!');
-        return false;
+        return Upload.LIST_IGNORE;
       }
       setFileList([file]);
       setRemoveImage(false);
       return false;
     },
-    fileList,
   };
 
   const next = async () => {
     try {
-      const values = await form.validateFields();
-      setFormValues((prev) => ({ ...prev, ...values }));
-      setCurrentStep((s) => (values.courseType === 1 && s === 0 ? 2 : s + 1));
+      await form.validateFields();
+      setCurrentStep((s) => {
+        if (courseType === 1 && s === 0) return 2;
+        return s + 1;
+      });
     } catch {
-      return;
+      // Validation failed
     }
   };
 
   const prev = () => {
-    setCurrentStep((s) => (formValues.courseType === 1 && s === 2 ? 0 : s - 1));
+    setCurrentStep((s) => {
+      if (courseType === 1 && s === 2) return 0;
+      return s - 1;
+    });
   };
 
-  const onFinish = (values: any) => {
-    const newFile = fileList[0]?.originFileObj || (fileList[0] as unknown as File);
+  const onFinish = (values: CourseFormValues) => {
+    const newImageFile = fileList[0]?.originFileObj;
 
-    const payload: CreateCourseRequest = {
-      title: values.title || course?.title,
-      description: values.description || course?.description,
-      LevelId: selectedLevelId || course?.LevelId || '',
-      topicIds: values.topicIds || course?.topics?.map((t: any) => t.topicId.toString()) || [],
-      templateId: values.templateId || course?.templateId,
-      courseType: (values.courseType || course?.courseType || 1).toString(),
+    const payload: any = {
+      title: values.title,
+      description: values.description,
+      LevelId: selectedLevelId,
+      topicIds: values.topicIds,
+      templateId: values.templateId || null,
+      courseType: (values.courseType || 1).toString(),
       price: values.courseType === 2 ? (values.price || 0).toString() : '0',
-      image: removeImage ? null : newFile || undefined,
-      learningOutcome: values.learningOutcome || course?.learningOutcome || '',
-      durationDays: values.durationDays || course?.durationDays || 30,
-      gradingType: values.gradingType || course?.gradingType?.toString() || '1',
+      learningOutcome: values.learningOutcome,
+      durationDays: values.durationDays,
+      gradingType: values.gradingType,
+      image: removeImage ? null : newImageFile || undefined,
     };
+    console.log(values);
 
     updateMutation.mutate(payload);
   };
 
   if (loadingCourse) {
     return (
-      <div className='flex justify-center items-center min-h-screen'>
-        <Spin size='large' />
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
       </div>
     );
   }
 
+  console.log(courseType);
+
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className='bg-white border-b border-gray-200 px-8 py-6 shadow-sm'>
-        <div className='max-w-7xl mx-auto flex items-center gap-4'>
-          <Button onClick={() => navigate(-1)} type='text'>
-            <ArrowLeft size={20} />
-          </Button>
-          <Title level={3} className='!mb-0 text-gray-900'>
+      <div className="bg-white border-b border-gray-200 px-8 py-6 shadow-sm">
+        <div className="max-w-7xl mx-auto flex items-center gap-4">
+          <Button
+            onClick={() => navigate(-1)}
+            type="text"
+            icon={<ArrowLeft size={20} />}
+          />
+          <Title
+            level={3}
+            className="!mb-0 text-gray-900">
             Edit Course
           </Title>
         </div>
       </div>
 
-      <div className='max-w-7xl mx-auto py-8'>
-        <div className='grid grid-cols-1 xl:grid-cols-3 gap-8'>
+      <div className="max-w-7xl mx-auto py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Form */}
-          <div className='xl:col-span-2'>
-            <Card className='bg-white rounded-2xl shadow-lg border-0'>
-              {/* Steps */}
-              <div className='p-8 border-b border-gray-100'>
+          <div className="xl:col-span-2">
+            <Card className="bg-white rounded-2xl shadow-lg border-0">
+              <div className="p-8 border-b border-gray-100">
                 <Steps
                   current={currentStep}
                   items={
-                    courseTypeWatch === 1
-                      ? (['Basic Info', 'Settings'] as any[])
-                      : (['Basic Info', 'Pricing', 'Settings'] as any[])
+                    courseType === 1
+                      ? [{ title: 'Basic Info' }, { title: 'Settings' }]
+                      : [{ title: 'Basic Info' }, { title: 'Pricing' }, { title: 'Settings' }]
                   }
                 />
                 <Progress
-                  percent={((currentStep + 1) / (courseTypeWatch === 1 ? 2 : 3)) * 100}
+                  percent={((currentStep + 1) / courseType === 1 ? 2 : 3) * 100}
                   showInfo={false}
-                  strokeColor='#2563eb'
-                  className='mt-4'
+                  strokeColor="#2563eb"
+                  className="mt-4"
                 />
               </div>
 
-              <Form form={form} onFinish={onFinish} layout='vertical' className='p-8'>
+              <Form
+                form={form}
+                onFinish={onFinish}
+                layout="vertical"
+                className="p-8">
                 {/* Step 1: Basic Info */}
                 {currentStep === 0 && (
-                  <div className='space-y-8'>
-                    <div>
-                      <Title level={2} className='!mb-6'>
-                        <Form.Item name='title' noStyle rules={[{ required: true }]}>
-                          <Input
-                            bordered={false}
-                            placeholder='Enter your course title...'
-                            className='text-4xl font-bold !p-0 hover:bg-gray-50 rounded-xl'
-                            style={{ fontSize: '2.5rem', fontWeight: 700 }}
-                          />
-                        </Form.Item>
-                      </Title>
-                    </div>
+                  <div className="space-y-8">
+                    <Title
+                      level={2}
+                      className="!mb-6">
+                      <Form.Item
+                        name="title"
+                        noStyle
+                        rules={[{ required: true, message: 'Title is required' }]}>
+                        <Input
+                          bordered={false}
+                          placeholder="Enter your course title..."
+                          className="text-4xl font-bold !p-0 hover:bg-gray-50 rounded-xl"
+                          style={{ fontSize: '2.5rem', fontWeight: 700 }}
+                        />
+                      </Form.Item>
+                    </Title>
 
                     <Row gutter={16}>
                       <Col span={24}>
                         <Form.Item
-                          name='programLevelCombo'
-                          label='Program & Level'
-                          rules={[{ required: true }]}
-                        >
+                          name="programLevelCombo"
+                          label="Program & Level"
+                          rules={[{ required: true, message: 'Please select program and level' }]}>
                           <Select
-                            placeholder='Select program and level'
+                            placeholder="Select program and level"
                             loading={programLevelsLoading}
                             options={programOptions}
                             onChange={handleProgramLevelChange}
@@ -291,14 +318,18 @@ const EditCoursePage: React.FC = () => {
 
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name='topicIds' label='Topics' rules={[{ required: true }]}>
+                        <Form.Item
+                          name="topicIds"
+                          label="Topics"
+                          rules={[{ required: true }]}>
                           <Select
-                            mode='multiple'
-                            placeholder='Select topics'
-                            loading={topicsLoading}
-                          >
+                            mode="multiple"
+                            placeholder="Select topics"
+                            loading={topicsLoading}>
                             {topics?.data?.map((t: any) => (
-                              <Select.Option key={t.topicId} value={t.topicId.toString()}>
+                              <Select.Option
+                                key={t.topicId}
+                                value={t.topicId.toString()}>
                                 {t.topicName}
                               </Select.Option>
                             ))}
@@ -306,17 +337,21 @@ const EditCoursePage: React.FC = () => {
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name='templateId' label='Template'>
+                        <Form.Item
+                          name="templateId"
+                          label="Template">
                           <Select
-                            placeholder='Select template'
+                            placeholder="Select template (optional)"
                             loading={templatesLoading}
                             disabled={!selectedProgramId || !selectedLevelId}
-                          >
+                            allowClear>
                             {templates.map((t: any) => (
-                              <Select.Option key={t.templateId} value={t.templateId}>
+                              <Select.Option
+                                key={t.templateId}
+                                value={t.templateId}>
                                 <div>
-                                  <div className='font-medium'>{t.name}</div>
-                                  <div className='text-xs text-gray-500'>
+                                  <div className="font-medium">{t.name}</div>
+                                  <div className="text-xs text-gray-500">
                                     {t.unitCount} units • {t.lessonsPerUnit} lessons/unit •{' '}
                                     {t.exercisesPerLesson} exercises
                                   </div>
@@ -330,17 +365,20 @@ const EditCoursePage: React.FC = () => {
 
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name='courseType' label='Type' rules={[{ required: true }]}>
+                        <Form.Item
+                          name="courseType"
+                          label="Type"
+                          rules={[{ required: true }]}>
                           <Select>
                             <Select.Option value={1}>
                               <Space>
-                                <Sparkles className='w-4 h-4 text-green-500' />
+                                <Sparkles className="w-4 h-4 text-green-500" />
                                 Free Course
                               </Space>
                             </Select.Option>
                             <Select.Option value={2}>
                               <Space>
-                                <DollarSign className='w-4 h-4 text-blue-500' />
+                                <DollarSign className="w-4 h-4 text-blue-500" />
                                 Paid Course
                               </Space>
                             </Select.Option>
@@ -349,59 +387,64 @@ const EditCoursePage: React.FC = () => {
                       </Col>
                     </Row>
 
-                    <Form.Item name='description' label='Description' rules={[{ required: true }]}>
+                    <Form.Item
+                      name="description"
+                      label="Description"
+                      rules={[{ required: true }]}>
                       <TextArea
                         rows={6}
-                        placeholder='Write a compelling description...'
-                        className='rounded-xl'
+                        placeholder="Write a compelling description..."
+                        className="rounded-xl"
                       />
                     </Form.Item>
 
-                    <Form.Item
-                      label='Image'
-                      rules={[{ required: !fileList.length && !course?.imageUrl }]}
-                    >
+                    <Form.Item label="Course Image">
                       <Upload.Dragger
                         {...uploadProps}
-                        className='bg-gray-50 border-2 border-dashed rounded-2xl'
-                      >
+                        className="bg-gray-50 border-2 border-dashed rounded-2xl">
                         {fileList.length > 0 ? (
                           <img
                             src={fileList[0].url || URL.createObjectURL(fileList[0])}
-                            alt='thumb'
-                            className='w-full h-64 object-cover rounded-xl'
+                            alt="course"
+                            className="w-full h-64 object-cover rounded-xl"
                           />
                         ) : (
-                          <div className='py-16 text-center'>
-                            <UploadCloud className='w-16 h-16 text-blue-500 mx-auto mb-4' />
-                            <Text className='text-lg'>Drop image or click to upload</Text>
-                            <Text type='secondary'>JPG/PNG • Max 10MB</Text>
+                          <div className="py-16 text-center">
+                            <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                            <Text className="text-lg">Drop image or click to upload</Text>
+                            <Text type="secondary">JPG/PNG • Max 10MB</Text>
                           </div>
                         )}
                       </Upload.Dragger>
                       {fileList[0]?.url && (
-                        <div className='mt-2 flex items-center gap-2'>
-                          <Switch checked={removeImage} onChange={setRemoveImage} size='small' />
-                          <Text type='secondary'>Remove current image</Text>
+                        <div className="mt-3 flex items-center gap-2">
+                          <Switch
+                            checked={removeImage}
+                            onChange={setRemoveImage}
+                            size="small"
+                          />
+                          <Text type="secondary">Remove current image</Text>
                         </div>
                       )}
                     </Form.Item>
                   </div>
                 )}
 
-                {/* Step 2: Pricing (Paid only) */}
-                {currentStep === 1 && courseTypeWatch === 2 && (
-                  <div className='bg-blue-50 rounded-2xl p-10 text-center'>
-                    <DollarSign className='w-20 h-20 text-blue-600 mx-auto mb-6' />
+                {/* Step 2: Pricing */}
+                {currentStep === 1 && courseType === 2 && (
+                  <div className="bg-blue-50 rounded-2xl p-10 text-center">
+                    <DollarSign className="w-20 h-20 text-blue-600 mx-auto mb-6" />
                     <Title level={3}>Set Your Course Price</Title>
-                    <Form.Item name='price' rules={[{ required: true }]}>
+                    <Form.Item
+                      name="price"
+                      rules={[{ required: true, message: 'Price is required' }]}>
                       <InputNumber
-                        size='large'
+                        size="large"
                         min={0}
                         formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        className='!w-full max-w-xs mx-auto'
-                        placeholder='1,500,000'
-                        prefix='₫'
+                        className="!w-full max-w-xs mx-auto"
+                        placeholder="1,500,000"
+                        prefix="₫"
                         style={{ fontSize: '2rem' }}
                       />
                     </Form.Item>
@@ -409,43 +452,40 @@ const EditCoursePage: React.FC = () => {
                 )}
 
                 {/* Step 3: Settings */}
-                {currentStep === (courseTypeWatch === 1 ? 1 : 2) && (
-                  <div className='space-y-8'>
+                {currentStep === (courseType === 1 ? 1 : 2) && (
+                  <div className="space-y-8">
                     <Form.Item
-                      name='learningOutcome'
-                      label='What Students Will Learn'
-                      rules={[{ required: true }]}
-                    >
+                      name="learningOutcome"
+                      label="What Students Will Learn"
+                      rules={[{ required: true }]}>
                       <TextArea
                         rows={5}
-                        placeholder='Students will be able to...'
-                        className='rounded-xl'
+                        placeholder="Students will be able to..."
+                        className="rounded-xl"
                       />
                     </Form.Item>
 
                     <Row gutter={16}>
                       <Col span={12}>
                         <Form.Item
-                          name='durationDays'
-                          label='Duration (days)'
-                          rules={[{ required: true }]}
-                        >
+                          name="durationDays"
+                          label="Duration (days)"
+                          rules={[{ required: true }]}>
                           <InputNumber
                             min={1}
-                            className='w-full'
-                            prefix={<Calendar className='text-blue-500' />}
+                            className="w-full"
+                            prefix={<Calendar className="text-blue-500" />}
                           />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
                         <Form.Item
-                          name='gradingType'
-                          label='Grading Type'
-                          rules={[{ required: true }]}
-                        >
+                          name="gradingType"
+                          label="Grading Type"
+                          rules={[{ required: true }]}>
                           <Select>
-                            <Select.Option value='1'>AI</Select.Option>
-                            <Select.Option value='2'>AI and Teacher</Select.Option>
+                            <Select.Option value="1">AI Only</Select.Option>
+                            <Select.Option value="2">AI + Teacher Review</Select.Option>
                           </Select>
                         </Form.Item>
                       </Col>
@@ -454,25 +494,32 @@ const EditCoursePage: React.FC = () => {
                 )}
 
                 {/* Navigation */}
-                <div className='flex justify-between pt-8 border-t border-gray-200'>
-                  <Button size='large' onClick={prev} disabled={currentStep === 0}>
+                <div className="flex justify-between pt-8 border-t border-gray-200">
+                  <Button
+                    size="large"
+                    onClick={prev}
+                    disabled={currentStep === 0}>
                     Previous
                   </Button>
+
                   <Space>
-                    {currentStep < (courseTypeWatch === 1 ? 1 : 2) && (
-                      <Button type='primary' size='large' onClick={next}>
-                        Next <ChevronRight className='ml-2' />
+                    {!(currentStep === (courseType === 1 ? 2 : 3) - 1) && (
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={next}>
+                        Next <ChevronRight className="ml-2" />
                       </Button>
                     )}
-                    {currentStep === (courseTypeWatch === 1 ? 1 : 2) && (
+                    {currentStep === (courseType === 1 ? 2 : 3) - 1 && (
                       <Button
-                        type='primary'
-                        size='large'
-                        htmlType='submit'
+                        type="primary"
+                        size="large"
+                        htmlType="submit"
                         loading={updateMutation.isPending}
-                        className='bg-gradient-to-r from-blue-600 to-indigo-600'
-                      >
-                        Save Changes <Sparkles className='ml-2' />
+                        icon={<Sparkles className="mr-2" />}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                        Save Changes
                       </Button>
                     )}
                   </Space>
@@ -482,56 +529,70 @@ const EditCoursePage: React.FC = () => {
           </div>
 
           {/* Live Preview */}
-          <div className='xl:col-span-1'>
-            <div className='sticky top-8'>
-              <Card className='bg-white !rounded-2xl shadow-lg border-0 overflow-hidden'>
-                <div className='bg-gradient-to-br from-blue-400 to-indigo-500 p-6 text-white'>
-                  <div className='flex items-center gap-3 mb-2'>
-                    <EyeOutlined className='text-2xl' />
-                    <Title level={4} className='!text-white !m-0'>
+          <div className="xl:col-span-1">
+            <div className="sticky top-8">
+              <Card className="bg-white !rounded-2xl shadow-lg border-0 overflow-hidden">
+                <div className="bg-gradient-to-br from-blue-400 to-indigo-500 p-6 text-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <EyeOutlined className="text-2xl" />
+                    <Title
+                      level={4}
+                      className="!text-white !m-0">
                       Live Preview
                     </Title>
                   </div>
                 </div>
-                <div className='p-6'>
-                  <div className='relative h-48 bg-gray-200 rounded-xl overflow-hidden mb-6'>
+                <div className="p-6">
+                  <div className="relative h-48 bg-gray-200 rounded-xl overflow-hidden mb-6">
                     {fileList.length > 0 ? (
                       <img
                         src={fileList[0].url || URL.createObjectURL(fileList[0])}
-                        alt='preview'
-                        className='w-full h-full object-cover'
+                        alt="preview"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className='flex items-center justify-center h-full bg-gray-100'>
-                        <UploadCloud className='w-16 h-16 text-gray-400' />
+                      <div className="flex items-center justify-center h-full bg-gray-100">
+                        <UploadCloud className="w-16 h-16 text-gray-400" />
                       </div>
                     )}
                   </div>
 
-                  <Title level={4} className='line-clamp-2'>
-                    {form.getFieldValue('title') || course?.title || 'Your Course Title'}
+                  <Title
+                    level={4}
+                    className="line-clamp-2">
+                    {form.getFieldValue('title') || course?.title || 'Untitled Course'}
                   </Title>
-                  <Text type='secondary' className='line-clamp-2 block mt-2'>
+                  <Text
+                    type="secondary"
+                    className="line-clamp-2 block mt-2">
                     {form.getFieldValue('description') ||
                       course?.description ||
                       'No description yet...'}
                   </Text>
 
-                  <div className='mt-6 flex items-center justify-between'>
-                    <Tag color={courseTypeWatch === 1 ? 'green' : 'blue'}>
-                      {courseTypeWatch === 1 ? 'FREE' : 'PAID'}
+                  <div className="mt-6">
+                    <Tag color={courseType === 1 ? 'green' : 'blue'}>
+                      {courseType === 1 ? 'FREE' : 'PAID'}
                     </Tag>
                   </div>
 
-                  <div className='mt-4 flex flex-wrap gap-2'>
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {(form.getFieldValue('topicIds') || course?.topics || [])
                       .slice(0, 3)
-                      .map((t: any) => (
-                        <Tag key={t.topicId || t} color='blue' className='rounded-full'>
-                          {t.topicName ||
-                            topics?.data?.find((x: any) => x.topicId === t)?.topicName}
-                        </Tag>
-                      ))}
+                      .map((t: any) => {
+                        const topicName =
+                          typeof t === 'object'
+                            ? t.topicName
+                            : topics?.data?.find((x: any) => x.topicId === t)?.topicName;
+                        return topicName ? (
+                          <Tag
+                            key={t.topicId || t}
+                            color="blue"
+                            className="rounded-full">
+                            {topicName}
+                          </Tag>
+                        ) : null;
+                      })}
                   </div>
                 </div>
               </Card>

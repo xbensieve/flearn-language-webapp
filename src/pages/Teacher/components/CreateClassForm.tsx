@@ -14,17 +14,17 @@ import {
   Divider,
 } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getLanguagesService } from '../../../services/language';
+// import { getLanguagesService } from '../../../services/language';
 import { createClassService } from '../../../services/class';
 import type { CreateClassRequest } from '../../../services/class/type';
 import dayjs from 'dayjs';
 import {
   BookOutlined,
-  GlobalOutlined,
+  // GlobalOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  VideoCameraOutlined,
+  // VideoCameraOutlined,
   FileTextOutlined,
   RocketOutlined,
 } from '@ant-design/icons';
@@ -44,10 +44,10 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  const { data: languages, isLoading: isLoadingLanguages } = useQuery({
-    queryKey: ['languages'],
-    queryFn: getLanguagesService,
-  });
+  // const { data: languages, isLoading: isLoadingLanguages } = useQuery({
+  //   queryKey: ['languages'],
+  //   queryFn: getLanguagesService,
+  // });
 
   // Inside your CreateClassForm component
   const { data: programsRes, isLoading: isLoadingPrograms } = useQuery({
@@ -189,7 +189,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
             />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             name="languageID"
             label={
               <span className="text-gray-700 font-medium">
@@ -211,7 +211,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
+          </Form.Item> */}
         </div>
 
         <Divider className="my-6" />
@@ -373,7 +373,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
               </Form.Item>
             </Col>
 
-            <Col
+            {/* <Col
               xs={24}
               md={12}>
               <Form.Item
@@ -397,7 +397,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
                   className="rounded-lg"
                 />
               </Form.Item>
-            </Col>
+            </Col> */}
           </Row>
         </div>
 
