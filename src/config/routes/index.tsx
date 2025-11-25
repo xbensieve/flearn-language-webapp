@@ -146,11 +146,11 @@ const routes: RouteObject[] = [
         element: <Dashboard />,
       },
       {
-        path: 'teachers',
+        path: 'applications',
         element: <TeacherApplicationByManager />,
       },
       {
-        path: 'teachers/:id',
+        path: 'applications/:id',
         element: <TeacherApplicationDetailByManager />,
       },
       {

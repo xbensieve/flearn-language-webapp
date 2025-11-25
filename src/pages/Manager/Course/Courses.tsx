@@ -33,19 +33,17 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 export default function Courses() {
   const navigate = useNavigate();
 
-  // Data State
   const [submissions, setSubmissions] = useState<CourseSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [meta, setMeta] = useState<MetaData | null>(null);
-
-  // Filter State
+  const [sortBy, setSortBy] = useState<
+    "newest" | "oldest" | "atoz" | "ztoa" | "price-asc" | "price-desc"
+  >("newest");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<SubmissionStatus | "all">(
     "all"
-  ); // Default có thể là 'Pending' tùy logic của bạn
+  );
   const [page, setPage] = useState(1);
-
-  // Client-side Filter State
   const [levelFilter, setLevelFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
 
@@ -55,8 +53,6 @@ export default function Courses() {
       const res = await courseService.getSubmissions({
         Page: page,
         PageSize: 10,
-        SearchTerm: searchTerm || undefined,
-        SortBy: "newest",
         status: statusFilter === "all" ? undefined : statusFilter,
       });
       setSubmissions(res.data);
@@ -66,7 +62,7 @@ export default function Courses() {
     } finally {
       setLoading(false);
     }
-  }, [page, searchTerm, statusFilter]);
+  }, [page, statusFilter]);
 
   useEffect(() => {
     fetchData();
@@ -74,11 +70,15 @@ export default function Courses() {
 
   // --- LOGIC LỌC CLIENT ---
   const filteredSubmissions = useMemo(() => {
-    return submissions.filter((item) => {
+    const filtered = submissions.filter((item) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        item.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.submitter.name.toLowerCase().includes(searchTerm.toLowerCase());
+
       const itemLevel =
         item.course.program.level.name?.toLowerCase().trim() || "";
       const filterLevel = levelFilter.toLowerCase();
-
       const matchLevel = levelFilter === "all" || itemLevel === filterLevel;
 
       let matchPrice = true;
@@ -88,9 +88,34 @@ export default function Courses() {
         matchPrice = item.course.price > 0;
       }
 
-      return matchLevel && matchPrice;
+      return matchesSearch && matchLevel && matchPrice;
     });
-  }, [submissions, levelFilter, priceFilter]);
+
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "newest":
+          return (
+            new Date(b.submittedAt.split("-").reverse().join("-")).getTime() -
+            new Date(a.submittedAt.split("-").reverse().join("-")).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.submittedAt.split("-").reverse().join("-")).getTime() -
+            new Date(b.submittedAt.split("-").reverse().join("-")).getTime()
+          );
+        case "atoz":
+          return a.course.title.localeCompare(b.course.title);
+        case "ztoa":
+          return b.course.title.localeCompare(a.course.title);
+        case "price-asc":
+          return a.course.price - b.course.price;
+        case "price-desc":
+          return b.course.price - a.course.price;
+        default:
+          return 0;
+      }
+    });
+  }, [submissions, searchTerm, levelFilter, priceFilter, sortBy]);
   // ------------------------
 
   const getTimeAgo = (submittedAt: string) => {
@@ -104,17 +129,6 @@ export default function Courses() {
     if (diffDays === 0) return "just now";
     if (diffDays === 1) return "1 day ago";
     return `${diffDays} days ago`;
-  };
-
-  const handleSearch = () => {
-    setPage(1);
-    fetchData();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
   };
 
   const getStatusColor = (status: string) => {
@@ -208,35 +222,18 @@ export default function Courses() {
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search courses..."
+                  placeholder="Search by course title, teacher name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="pl-12 pr-4 h-10 text-base
-                            bg-gray-50 hover:bg-gray-100 focus:bg-white
-                            border border-gray-200 focus:border-none
-                            rounded-md
-                            transition-all duration-200
-                            placeholder:text-gray-400
-                            focus:ring-4 focus:ring-blue-500/10
-                          "
+                  className="pl-12 pr-4 h-10 text-base bg-gray-50 focus:bg-white border border-gray-200 rounded-md focus:ring-4 focus:ring-blue-500/10"
                 />
+                {loading && searchTerm && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent" />
+                  </div>
+                )}
               </div>
-              <Button
-                onClick={handleSearch}
-                className="h-10 px-8
-                          bg-blue-600 hover:bg-blue-700
-                          text-white font-medium
-                          rounded-sm shadow-md hover:shadow
-                          transition-all duration-200
-                          flex items-center gap-2 cursor-pointer
-                        "
-              >
-                <Search className="h-4.5 w-4.5 text-white" />
-                <span className="hidden sm:inline text-white">Search</span>
-              </Button>
             </div>
-
             <div className="mt-5 pt-5 flex flex-wrap items-center gap-4 text-sm">
               <div className="flex items-center gap-2 text-gray-600">
                 <Filter className="h-4 w-4" />
@@ -301,7 +298,7 @@ export default function Courses() {
                 value={statusFilter}
                 onValueChange={(val: SubmissionStatus) => setStatusFilter(val)}
               >
-                <SelectTrigger className="w-[130px] h-10 bg-gray-50 border-gray-200">
+                <SelectTrigger className="w-[130px] h-10 bg-gray-50 border-gray-200 cursor-pointer">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -311,15 +308,34 @@ export default function Courses() {
                   <SelectItem value="Rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
-              {(levelFilter !== "all" || priceFilter !== "all") && (
+              <Select
+                value={sortBy}
+                onValueChange={(val: any) => setSortBy(val)}
+              >
+                <SelectTrigger className="w-[200px] h-10 bg-gray-50 cursor-pointer">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="atoz">Title: A → Z</SelectItem>
+                  <SelectItem value="ztoa">Title: Z → A</SelectItem>
+                  <SelectItem value="price-asc">Price: Low → High</SelectItem>
+                  <SelectItem value="price-desc">Price: High → Low</SelectItem>
+                </SelectContent>
+              </Select>
+              {(levelFilter !== "all" ||
+                priceFilter !== "all" ||
+                sortBy !== "newest") && (
                 <button
                   onClick={() => {
                     setLevelFilter("all");
                     setPriceFilter("all");
+                    setSortBy("newest");
                   }}
                   className="text-blue-600 font-medium hover:underline cursor-pointer"
                 >
-                  Clear filters
+                  Clear all filters
                 </button>
               )}
             </div>
@@ -340,12 +356,14 @@ export default function Courses() {
             <Button
               variant="link"
               onClick={() => {
+                setLevelFilter("all");
+                setPriceFilter("all");
+                setSortBy("newest");
                 setSearchTerm("");
-                setStatusFilter("all");
-                handleSearch();
               }}
+              className="cursor-pointer"
             >
-              Clear filters
+              Clear all filters & search
             </Button>
           </div>
         ) : (

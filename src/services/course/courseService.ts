@@ -15,8 +15,6 @@ export const courseService = {
 
     if (params.Page) query.Page = params.Page;
     if (params.PageSize) query.PageSize = params.PageSize;
-    if (params.SearchTerm) query.SearchTerm = params.SearchTerm;
-    if (params.SortBy) query.SortBy = params.SortBy;
     if (params.status) query.status = params.status;
 
     try {
