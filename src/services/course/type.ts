@@ -156,6 +156,7 @@ export interface CourseTemplateQuery {
 
 export interface Program {
   programId: string;
+  programAssignmentId: string;
   programName: string;
   levelId: string;
   levelName: string;
