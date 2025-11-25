@@ -88,6 +88,16 @@ export default function TeacherApplications() {
     setPage(1);
   }, [searchTerm, statusFilter, sortOption]);
 
+  const parseVietnameseDate = (dateString: string): number => {
+    const parts = dateString.split(" ");
+    const datePart = parts[0];
+    const timePart = parts[1] || "00:00";
+    const [day, month, year] = datePart.split("/").map(Number);
+    const [hour, minute] = timePart.split(":").map(Number);
+    const date = new Date(year, month - 1, day, hour, minute);
+    return date.getTime();
+  };
+
   // Client-side: Search + Sort + Filter (status đã filter ở server)
   const processedData = useMemo(() => {
     let filtered = [...applications];
@@ -105,17 +115,17 @@ export default function TeacherApplications() {
 
     // Sort
     filtered.sort((a, b) => {
+      const timeA = parseVietnameseDate(a.submittedAt);
+      const timeB = parseVietnameseDate(b.submittedAt);
+
+      if (isNaN(timeA)) return 1;
+      if (isNaN(timeB)) return -1;
+
       switch (sortOption) {
         case "newest":
-          return (
-            new Date(b.submittedAt).getTime() -
-            new Date(a.submittedAt).getTime()
-          );
+          return timeB - timeA;
         case "oldest":
-          return (
-            new Date(a.submittedAt).getTime() -
-            new Date(b.submittedAt).getTime()
-          );
+          return timeA - timeB;
         case "name-asc":
           return a.fullName.localeCompare(b.fullName);
         case "name-desc":
@@ -205,7 +215,7 @@ export default function TeacherApplications() {
                 value={statusFilter}
                 onValueChange={(v) => setStatusFilter(v as any)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
@@ -224,7 +234,7 @@ export default function TeacherApplications() {
                 value={sortOption}
                 onValueChange={(v) => setSortOption(v as any)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="cursor-pointer">
                   <ArrowUpDown className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -359,10 +369,12 @@ export default function TeacherApplications() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/dashboard/teachers/${app.applicationID}`);
+                          navigate(
+                            `/dashboard/applications/${app.applicationID}`
+                          );
                         }}
                       >
                         <Eye className="h-4 w-4 text-slate-500 hover:text-blue-600" />

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/dashboard/application/pending', icon: UserCheck, label: 'Applications' },
+  { to: '/dashboard/applications', icon: UserCheck, label: 'Applications' },
   { to: '/dashboard/courses', icon: BookOpen, label: 'Courses' },
   { to: '/dashboard/users', icon: Users, label: 'Users' },
   { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
