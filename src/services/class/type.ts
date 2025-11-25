@@ -24,4 +24,5 @@ export interface CreateClassRequest {
   durationMinutes: number;
   pricePerStudent: number;
   googleMeetLink: string;
+  programAssignmentId: string;
 }
