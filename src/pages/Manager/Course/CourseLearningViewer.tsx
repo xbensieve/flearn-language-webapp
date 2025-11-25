@@ -312,6 +312,7 @@ export default function CourseLearningViewer({
 
     switch (status) {
       case "Published":
+      case "Approved":
         classes += "bg-green-100 text-green-800";
         text = "Approved";
         break;
@@ -650,18 +651,17 @@ export default function CourseLearningViewer({
                       <span className="sm:hidden">Previous</span>
                     </Button>
 
-                    <Button
-                      size="lg"
-                      disabled={!hasNext}
-                      onClick={goNext}
-                      className="min-w-0 flex-1 sm:flex-initial max-w-xs sm:max-w-none bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center font-medium"
-                    >
-                      <span className="hidden sm:inline">
-                        {hasNext ? "Next Lesson" : "Complete"}
-                      </span>
-                      <span className="sm:hidden">Next</span>
-                      <ChevronRight className="w-5 h-5 ml-2" />
-                    </Button>
+                    {hasNext && (
+                      <Button
+                        size="lg"
+                        onClick={goNext}
+                        className="min-w-0 flex-1 sm:flex-initial max-w-xs sm:max-w-none bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center font-medium"
+                      >
+                        <span className="hidden sm:inline">Next Lesson</span>
+                        <span className="sm:hidden">Next</span>
+                        <ChevronRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="h-24 sm:hidden" />
