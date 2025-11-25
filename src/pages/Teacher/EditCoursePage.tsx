@@ -59,6 +59,7 @@ const EditCoursePage: React.FC = () => {
 
   const [selectedProgramId, setSelectedProgramId] = useState<string>('');
   const [selectedLevelId, setSelectedLevelId] = useState<string>('');
+  const [formValues, setFormValues] = useState<Partial<CourseFormValues>>({});
 
   const courseType = Form.useWatch('courseType', form);
 
@@ -118,10 +119,10 @@ const EditCoursePage: React.FC = () => {
   useEffect(() => {
     if (!course) return;
 
-    const programLevelKey = `${course.programId}|${course.LevelId}`;
+    const programLevelKey = `${course.program.name} | ${course.program.level.name}`;
 
-    setSelectedProgramId(course.programId);
-    setSelectedLevelId(course.LevelId);
+    setSelectedProgramId(course.program.programId);
+    setSelectedLevelId(course.program.levelId);
 
     const values: Partial<CourseFormValues> = {
       title: course.title,
@@ -188,9 +189,10 @@ const EditCoursePage: React.FC = () => {
 
   const next = async () => {
     try {
-      await form.validateFields();
+      const values = await form.validateFields();
+      setFormValues((prev) => ({ ...prev, ...values }));
       setCurrentStep((s) => {
-        if (courseType === 1 && s === 0) return 2;
+        if (values.courseType === 1 && s === 0) return 2;
         return s + 1;
       });
     } catch {
@@ -198,9 +200,11 @@ const EditCoursePage: React.FC = () => {
     }
   };
 
-  const prev = () => {
+  const prev = async () => {
+    const values = await form.getFieldsValue(true);
+    setFormValues((prev) => ({ ...prev, ...values }));
     setCurrentStep((s) => {
-      if (courseType === 1 && s === 2) return 0;
+      if (formValues.courseType === 1 && s === 2) return 0;
       return s - 1;
     });
   };
@@ -431,7 +435,7 @@ const EditCoursePage: React.FC = () => {
                 )}
 
                 {/* Step 2: Pricing */}
-                {currentStep === 1 && courseType === 2 && (
+                {currentStep === 1 && formValues.courseType === 2 && (
                   <div className="bg-blue-50 rounded-2xl p-10 text-center">
                     <DollarSign className="w-20 h-20 text-blue-600 mx-auto mb-6" />
                     <Title level={3}>Set Your Course Price</Title>

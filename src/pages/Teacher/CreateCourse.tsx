@@ -201,7 +201,7 @@ const CreateCourse: React.FC = () => {
       image: fileList[0] as unknown as File,
       learningOutcome: formValues.learningOutcome || values.learningOutcome,
       durationDays: formValues.durationDays || values.durationDays,
-      gradingType: formValues.gradingType || values.gradingType,
+      gradingType: formValues.gradingType || (values.courseType === 1 ? '1' : '2'),
     };
     createCourse(payload);
   };
@@ -496,7 +496,7 @@ const CreateCourse: React.FC = () => {
                           <Typography.Text
                             className="ml-4 !border-gray-100 !text-black"
                             type="secondary">
-                            {formValues.courseType === 1 ? 'AI' : 'AI and Teacher'}
+                            {formValues.courseType === 1 ? 'AI Only' : 'AI + Teacher Review'}
                           </Typography.Text>
                         </Form.Item>
                       </Col>
