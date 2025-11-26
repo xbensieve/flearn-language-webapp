@@ -202,7 +202,7 @@ const Login: React.FC = () => {
                     type="link"
                     onClick={() => navigate('/register')}
                     className="text-cyan-600 font-semibold hover:text-cyan-700">
-                    Create an account luxury{' '}
+                    Create an account{' '}
                   </Button>
                 </div>
               </Form>

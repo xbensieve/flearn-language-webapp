@@ -83,7 +83,7 @@ const LANGUAGES = [
     native: '379M',
     learners: '1.5B+',
     badge: 'Most Popular',
-    icon: <Globe className='w-4 h-4' />,
+    icon: <Globe className="w-4 h-4" />,
   },
   {
     code: 'ja',
@@ -95,7 +95,7 @@ const LANGUAGES = [
     native: '125M',
     learners: '3M+',
     badge: 'Unique Culture',
-    icon: <BookOpen className='w-4 h-4' />,
+    icon: <BookOpen className="w-4 h-4" />,
   },
   {
     code: 'zh',
@@ -107,7 +107,7 @@ const LANGUAGES = [
     native: '1.1B',
     learners: '40M+',
     badge: 'Business Power',
-    icon: <Users className='w-4 h-4' />,
+    icon: <Users className="w-4 h-4" />,
   },
 ] as const;
 
@@ -125,12 +125,11 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
     <motion.div
       whileHover={{ scale: loading ? 1 : 1.06 }}
       whileTap={{ scale: loading ? 1 : 0.96 }}
-      className='w-full'
-    >
+      className="w-full">
       <Card
         hoverable={!loading}
         onClick={loading ? undefined : onClick}
-        className='relative overflow-hidden rounded-3xl transition-all duration-300 cursor-pointer'
+        className="relative overflow-hidden rounded-3xl transition-all duration-300 cursor-pointer"
         style={{
           border: selected ? `2px solid ${info.color.replace('bg-', '#')}` : '1px solid #e5e7eb',
           background: selected
@@ -141,14 +140,13 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
             : '0 4px 12px rgba(0,0,0,0.08)',
           opacity: loading ? 0.6 : 1,
         }}
-        bodyStyle={{ padding: '24px' }}
-      >
+        bodyStyle={{ padding: '24px' }}>
         {/* Flag + Badge */}
-        <div className='flex justify-center mb-4 relative'>
-          <div className='relative'>
+        <div className="flex justify-center mb-4 relative">
+          <div className="relative">
             {/* Flag */}
             <div
-              className='w-16 h-16 rounded-full overflow-hidden shadow-lg ring-4 ring-white'
+              className="w-16 h-16 rounded-full overflow-hidden shadow-lg ring-4 ring-white"
               style={{
                 backgroundImage: `url(https://flagcdn.com/w160/${info.flag.toLowerCase()}.png)`,
                 backgroundSize: 'cover',
@@ -162,14 +160,16 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className='absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-xl'
-                style={{ backgroundColor: info.color.replace('bg-', '#') }}
-              >
-                <svg className='w-5 h-5 text-white' fill='currentColor' viewBox='0 0 20 20'>
+                className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-xl"
+                style={{ backgroundColor: info.color.replace('bg-', '#') }}>
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20">
                   <path
-                    fillRule='evenodd'
-                    d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                    clipRule='evenodd'
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
                   />
                 </svg>
               </motion.div>
@@ -180,12 +180,11 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
         {/* Language Name */}
         <Text
           strong
-          className='block text-center text-lg mb-3'
+          className="block text-center text-lg mb-3"
           style={{
             color: selected ? info.color.replace('bg-', '#') : '#1f2937',
             fontWeight: 700,
-          }}
-        >
+          }}>
           {info.name}
         </Text>
 
@@ -226,7 +225,7 @@ const LanguageCard: React.FC<LanguageCardProps> = ({ lang, selected, onClick, lo
         {/* Pulse Animation */}
         {selected && (
           <motion.div
-            className='absolute inset-0 rounded-3xl pointer-events-none'
+            className="absolute inset-0 rounded-3xl pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0.3, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -259,11 +258,14 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
   if (!levelInfo) return null;
 
   return (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className='w-full'>
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.97 }}
+      className="w-full">
       <Card
         hoverable
         onClick={onClick}
-        className='relative overflow-hidden rounded-2xl transition-all duration-300'
+        className="relative overflow-hidden rounded-2xl transition-all duration-300"
         style={{
           border: selected ? `2px solid ${levelInfo.color}` : '1px solid #e5e7eb',
           background: selected
@@ -274,17 +276,15 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
             : '0 2px 8px rgba(0,0,0,0.06)',
           cursor: 'pointer',
         }}
-        bodyStyle={{ padding: '18px' }}
-      >
+        bodyStyle={{ padding: '18px' }}>
         {/* Level Label */}
         <Text
           strong
-          className='block text-center text-lg mb-2'
+          className="block text-center text-lg mb-2"
           style={{
             color: selected ? levelInfo.color : '#1f2937',
             fontWeight: 700,
-          }}
-        >
+          }}>
           {level.label}
         </Text>
 
@@ -300,7 +300,7 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
         {/* Pulse when selected */}
         {selected && (
           <motion.div
-            className='absolute inset-0 rounded-2xl pointer-events-none'
+            className="absolute inset-0 rounded-2xl pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0.3, 0] }}
             transition={{ duration: 1.8, repeat: Infinity }}
@@ -452,22 +452,33 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Language',
       content: (
-        <Form form={form} layout='vertical' size='large'>
+        <Form
+          form={form}
+          layout="vertical"
+          size="large">
           <Form.Item
             label={<Text strong>Select Language</Text>}
-            name='LangCode'
-            rules={[{ required: true, message: 'Please select a language' }]}
-          >
+            name="LangCode"
+            rules={[{ required: true, message: 'Please select a language' }]}>
             <div>
               {loadingLanguages ? (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <Spin size='large' tip='Loading languages...' />
+                  <Spin
+                    size="large"
+                    tip="Loading languages..."
+                  />
                 </div>
               ) : (
-                <Flex gap={24} justify='space-between'>
+                <Flex
+                  gap={24}
+                  justify="space-between">
                   {languagesData?.data?.map((lang: Language) => (
-                    <div className='w-1/3' key={lang.langCode}>
-                      <Form.Item noStyle shouldUpdate>
+                    <div
+                      className="w-1/3"
+                      key={lang.langCode}>
+                      <Form.Item
+                        noStyle
+                        shouldUpdate>
                         {({ getFieldValue }) => {
                           const isSelected = getFieldValue('LangCode') === lang.langCode;
                           return (
@@ -488,22 +499,26 @@ const TeacherApplicationPage: React.FC = () => {
 
           <Form.Item
             label={<Text strong>Proficiency Level</Text>}
-            name='proficiencyCode'
-            rules={[{ required: true, message: 'Please select your proficiency level' }]}
-          >
+            name="proficiencyCode"
+            rules={[{ required: true, message: 'Please select your proficiency level' }]}>
             <div>
               {!selectedLang ? (
                 <Text
-                  type='secondary'
-                  style={{ display: 'block', textAlign: 'center', padding: '20px 0' }}
-                >
+                  type="secondary"
+                  style={{ display: 'block', textAlign: 'center', padding: '20px 0' }}>
                   Please select a language first
                 </Text>
               ) : (
                 <Row gutter={[12, 12]}>
                   {proficiencyByLanguage[selectedLang]?.map((level) => (
-                    <Col xs={12} sm={8} md={6} key={level.value}>
-                      <Form.Item noStyle shouldUpdate>
+                    <Col
+                      xs={12}
+                      sm={8}
+                      md={6}
+                      key={level.value}>
+                      <Form.Item
+                        noStyle
+                        shouldUpdate>
                         {({ getFieldValue }) => {
                           const isSelected = getFieldValue('proficiencyCode') === level.value;
                           return (
@@ -528,24 +543,36 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Information',
       content: (
-        <Form form={form} layout='vertical' className='!space-y-6' size='large'>
+        <Form
+          form={form}
+          layout="vertical"
+          className="!space-y-6"
+          size="large">
           {/* === 1. Personal Details === */}
-          <InfoSection title='Personal Details' icon={<User className='w-5 h-5' />}>
+          <InfoSection
+            title="Personal Details"
+            icon={<User className="w-5 h-5" />}>
             <Row gutter={16}>
-              <Col xs={24} md={12}>
+              <Col
+                xs={24}
+                md={12}>
                 <Form.Item
-                  name='FullName'
-                  label='Full Name'
+                  name="FullName"
+                  label="Full Name"
                   required
-                  rules={[{ required: true, message: 'Full name is required' }]}
-                >
-                  <Input placeholder='Nguyễn Văn A' className='h-11' />
+                  rules={[{ required: true, message: 'Full name is required' }]}>
+                  <Input
+                    placeholder="Nguyễn Văn A"
+                    className="h-11"
+                  />
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12}>
+              <Col
+                xs={24}
+                md={12}>
                 <Form.Item
-                  name='BirthDate'
-                  label='Date of Birth'
+                  name="BirthDate"
+                  label="Date of Birth"
                   rules={[
                     { required: true, message: 'Date of birth is required' },
                     {
@@ -559,12 +586,11 @@ const TeacherApplicationPage: React.FC = () => {
                         return Promise.resolve();
                       },
                     },
-                  ]}
-                >
+                  ]}>
                   <DatePicker
-                    placeholder='DD/MM/YYYY'
-                    format='DD/MM/YYYY'
-                    className='w-full h-11'
+                    placeholder="DD/MM/YYYY"
+                    format="DD/MM/YYYY"
+                    className="w-full h-11"
                   />
                 </Form.Item>
               </Col>
@@ -572,23 +598,21 @@ const TeacherApplicationPage: React.FC = () => {
           </InfoSection>
 
           {/* === 6. Profile Picture – italki style (no local state) === */}
-          <InfoSection title='Profile Picture' icon={<Camera className='w-5 h-5' />}>
-            <Form.Item noStyle shouldUpdate={(prev, next) => prev.Avatar !== next.Avatar}>
+          <InfoSection
+            title="Profile Picture"
+            icon={<Camera className="w-5 h-5" />}>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, next) => prev.Avatar !== next.Avatar}>
               {({ getFieldValue }) => {
                 const fileList: any[] = getFieldValue('Avatar') || [];
 
-                // --------------------------------------------------------------
-                //  No validation – just store the file the user picks
-                // --------------------------------------------------------------
                 const beforeUpload = (file: any) => {
                   // keep only the selected file (replace any previous one)
                   form.setFieldsValue({ Avatar: [file] });
                   return false; // prevent AntD from uploading
                 };
 
-                // --------------------------------------------------------------
-                //  Build a preview URL from the file object
-                // --------------------------------------------------------------
                 const previewFile = fileList[0];
                 const previewUrl = previewFile
                   ? previewFile.thumbUrl ||
@@ -598,27 +622,37 @@ const TeacherApplicationPage: React.FC = () => {
                   : undefined;
 
                 return (
-                  <Row gutter={32} align='middle'>
+                  <Row
+                    gutter={32}
+                    align="middle">
                     {/* ---------- LEFT – PREVIEW ---------- */}
-                    <Col xs={24} md={10} className='text-center'>
-                      <div className='mb-4 flex items-center justify-center'>
+                    <Col
+                      xs={24}
+                      md={10}
+                      className="text-center">
+                      <div className="mb-4 flex items-center justify-center">
                         {previewUrl ? (
                           <img
                             src={previewUrl}
-                            alt='Avatar preview'
-                            className='w-40 h-40 rounded-full object-cover shadow-lg ring-4 ring-white'
+                            alt="Avatar preview"
+                            className="w-40 h-40 rounded-full object-cover shadow-lg ring-4 ring-white"
                           />
                         ) : (
-                          <div className='w-40 h-40 mx-auto bg-gray-200 rounded-full flex items-center justify-center'>
-                            <Camera className='w-16 h-16 text-gray-400' />
+                          <div className="w-40 h-40 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
+                            <Camera className="w-16 h-16 text-gray-400" />
                           </div>
                         )}
                       </div>
 
-                      <Space direction='vertical' size='small' className='w-full'>
+                      <Space
+                        direction="vertical"
+                        size="small"
+                        className="w-full">
                         <Text strong>Edit Profile Photo</Text>
 
-                        <Text type='secondary' className='text-xs'>
+                        <Text
+                          type="secondary"
+                          className="text-xs">
                           • At least 250×250 pixels
                           <br />
                           • JPG, PNG and BMP formats only
@@ -627,24 +661,21 @@ const TeacherApplicationPage: React.FC = () => {
 
                         {/* ---- Upload button (no validation) ---- */}
                         <Form.Item
-                          name='Avatar'
-                          valuePropName='fileList'
+                          name="Avatar"
+                          valuePropName="fileList"
                           getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
                           rules={[{ required: true, message: 'Please upload a photo' }]}
-                          noStyle
-                        >
+                          noStyle>
                           <Upload
                             beforeUpload={beforeUpload}
                             fileList={fileList}
                             showUploadList={false}
-                            accept='image/jpeg,image/png,image/bmp'
-                          >
+                            accept="image/jpeg,image/png,image/bmp">
                             <Button
-                              type='primary'
+                              type="primary"
                               danger
-                              className='mt-3 w-full max-w-xs'
-                              icon={<UploadOutlined />}
-                            >
+                              className="mt-3 w-full max-w-xs"
+                              icon={<UploadOutlined />}>
                               CHOOSE A PHOTO
                             </Button>
                           </Upload>
@@ -653,46 +684,49 @@ const TeacherApplicationPage: React.FC = () => {
                     </Col>
 
                     {/* ---------- RIGHT – DO / DON’T ---------- */}
-                    <Col xs={24} md={14}>
-                      <Text className='block mb-4'>
+                    <Col
+                      xs={24}
+                      md={14}>
+                      <Text className="block mb-4">
                         Your photo has to respect the following characteristics:
                         <strong> Does your photo look like these? If so, that’s great!</strong>
                       </Text>
 
                       {/* GOOD examples – replace with your own assets */}
                       <Space
-                        size='large'
-                        className='mb-6 flex flex-wrap justify-center md:justify-start'
-                      >
+                        size="large"
+                        className="mb-6 flex flex-wrap justify-center md:justify-start">
                         {['/good1.jpg', '/good2.jpg', '/good3.jpg', '/good4.jpg'].map((src, i) => (
                           <Image
                             key={i}
                             src={src}
                             width={70}
                             height={70}
-                            className='rounded-full object-cover shadow'
+                            className="rounded-full object-cover shadow"
                             preview={false}
                           />
                         ))}
                       </Space>
 
-                      <Text type='danger' strong className='block mb-2'>
-                        Please <span className='underline'>DO NOT</span> use photos like the ones
+                      <Text
+                        type="danger"
+                        strong
+                        className="block mb-2">
+                        Please <span className="underline">DO NOT</span> use photos like the ones
                         shown below:
                       </Text>
 
                       {/* BAD examples */}
                       <Space
-                        size='large'
-                        className='flex flex-wrap justify-center md:justify-start'
-                      >
+                        size="large"
+                        className="flex flex-wrap justify-center md:justify-start">
                         {['/bad1.jpg', '/bad2.jpg', '/bad3.jpg', '/bad4.jpg'].map((src, i) => (
                           <Image
                             key={i}
                             src={src}
                             width={70}
                             height={70}
-                            className='rounded-full object-cover shadow ring-2 ring-red-500'
+                            className="rounded-full object-cover shadow ring-2 ring-red-500"
                             preview={false}
                           />
                         ))}
@@ -700,8 +734,8 @@ const TeacherApplicationPage: React.FC = () => {
 
                       {/* Warning checkbox */}
                       <Form.Item
-                        name='photoAgreement'
-                        valuePropName='checked'
+                        name="photoAgreement"
+                        valuePropName="checked"
                         rules={[
                           {
                             validator: (_, value) =>
@@ -712,8 +746,7 @@ const TeacherApplicationPage: React.FC = () => {
                                   ),
                           },
                         ]}
-                        className='mt-6'
-                      >
+                        className="mt-6">
                         <Checkbox>
                           I’m aware that if my profile photo does not respect the listed
                           characteristics, my application to become a teacher on italki could be
@@ -728,39 +761,48 @@ const TeacherApplicationPage: React.FC = () => {
           </InfoSection>
 
           {/* === 2. About You === */}
-          <InfoSection title='About You' icon={<Calendar className='w-5 h-5' />}>
+          <InfoSection
+            title="About You"
+            icon={<Calendar className="w-5 h-5" />}>
             <Form.Item
-              name='Bio'
-              label='Tell us about yourself'
-              rules={[{ required: true, message: 'Please tell us about yourself' }]}
-            >
+              name="Bio"
+              label="Tell us about yourself"
+              rules={[{ required: true, message: 'Please tell us about yourself' }]}>
               <Input.TextArea
                 rows={4}
-                placeholder='E.g., Passionate English teacher with 3 years of experience helping students achieve fluency...'
-                className='resize-none'
+                placeholder="E.g., Passionate English teacher with 3 years of experience helping students achieve fluency..."
+                className="resize-none"
               />
             </Form.Item>
           </InfoSection>
 
           {/* === 3. Contact Information === */}
-          <InfoSection title='Contact Information' icon={<Mail className='w-5 h-5' />}>
+          <InfoSection
+            title="Contact Information"
+            icon={<Mail className="w-5 h-5" />}>
             <Row gutter={16}>
-              <Col xs={24} md={12}>
+              <Col
+                xs={24}
+                md={12}>
                 <Form.Item
-                  label='Email'
-                  name='Email'
+                  label="Email"
+                  name="Email"
                   rules={[
                     { required: true, message: 'Email is required' },
                     { type: 'email', message: 'Invalid email format' },
-                  ]}
-                >
-                  <Input placeholder='you@example.com' className='h-11' />
+                  ]}>
+                  <Input
+                    placeholder="you@example.com"
+                    className="h-11"
+                  />
                 </Form.Item>
               </Col>
-              <Col xs={24} md={12}>
+              <Col
+                xs={24}
+                md={12}>
                 <Form.Item
-                  name='PhoneNumber'
-                  label='Phone number'
+                  name="PhoneNumber"
+                  label="Phone number"
                   rules={[
                     { required: true, message: 'Phone number is required' },
                     {
@@ -779,11 +821,10 @@ const TeacherApplicationPage: React.FC = () => {
                         return Promise.resolve();
                       },
                     },
-                  ]}
-                >
+                  ]}>
                   <Input
-                    placeholder='+84 901 234 567'
-                    className='h-11'
+                    placeholder="+84 901 234 567"
+                    className="h-11"
                     maxLength={14}
                     onChange={(e) => {
                       let val = e.target.value.replace(/\D/g, ''); // keep digits only
@@ -808,31 +849,36 @@ const TeacherApplicationPage: React.FC = () => {
           </InfoSection>
 
           {/* === 4. Teaching Experience === */}
-          <InfoSection title='Teaching Experience' icon={<BookOpen className='w-5 h-5' />}>
+          <InfoSection
+            title="Teaching Experience"
+            icon={<BookOpen className="w-5 h-5" />}>
             <Form.Item
-              label='Teaching experience'
-              name='TeachingExperience'
-              rules={[{ required: true, message: 'Please describe your teaching background' }]}
-            >
+              label="Teaching experience"
+              name="TeachingExperience"
+              rules={[{ required: true, message: 'Please describe your teaching background' }]}>
               <Input.TextArea
                 rows={4}
-                placeholder='E.g., Taught 200+ students online, specialized in conversational English, TOEIC prep...'
-                className='resize-none'
+                placeholder="E.g., Taught 200+ students online, specialized in conversational English, TOEIC prep..."
+                className="resize-none"
               />
             </Form.Item>
           </InfoSection>
 
           {/* === 5. Meeting Link === */}
-          <InfoSection title='Meeting Link' icon={<Link className='w-5 h-5' />}>
+          <InfoSection
+            title="Meeting Link"
+            icon={<Link className="w-5 h-5" />}>
             <Form.Item
-              name='MeetingUrl'
-              label='Meeting link'
+              name="MeetingUrl"
+              label="Meeting link"
               rules={[
                 { required: true, message: 'Meeting link is required' },
                 { type: 'url', message: 'Please enter a valid URL' },
-              ]}
-            >
-              <Input placeholder='https://zoom.us/j/123456789' className='h-11' />
+              ]}>
+              <Input
+                placeholder="https://zoom.us/j/123456789"
+                className="h-11"
+              />
             </Form.Item>
           </InfoSection>
         </Form>
@@ -841,40 +887,50 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Certificates',
       content: (
-        <Form form={form} layout='vertical' size='large'>
-          <Form.List name='Certificates'>
+        <Form
+          form={form}
+          layout="vertical"
+          size="large">
+          <Form.List name="Certificates">
             {(fields, { add, remove }) => (
               <>
                 {/* === Header === */}
-                <div className='flex items-center justify-between mb-6'>
-                  <div className='flex items-center gap-3'>
-                    <div className='w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg'>
-                      <GraduationCap className='w-5 h-5' />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                      <GraduationCap className="w-5 h-5" />
                     </div>
-                    <Text strong className='text-lg text-gray-800'>
+                    <Text
+                      strong
+                      className="text-lg text-gray-800">
                       Certificates
                     </Text>
                   </div>
                   <Button
-                    type='dashed'
+                    type="dashed"
                     onClick={() => add()}
                     disabled={!selectedLanguage}
                     icon={<UploadOutlined />}
-                    className='border-indigo-300 text-indigo-600 hover:border-indigo-500 hover:text-indigo-700'
-                  >
+                    className="border-indigo-300 text-indigo-600 hover:border-indigo-500 hover:text-indigo-700">
                     Add Certificate
                   </Button>
                 </div>
 
                 {/* === Loading === */}
                 {loadingCertificates && (
-                  <div className='flex justify-center py-8'>
-                    <Spin size='large' tip='Loading certificates...' />
+                  <div className="flex justify-center py-8">
+                    <Spin
+                      size="large"
+                      tip="Loading certificates..."
+                    />
                   </div>
                 )}
 
                 {/* === Certificate Cards === */}
-                <Space direction='vertical' size='middle' className='w-full'>
+                <Space
+                  direction="vertical"
+                  size="middle"
+                  className="w-full">
                   {fields.map(({ key, name, ...restField }) => (
                     <motion.div
                       key={key}
@@ -882,38 +938,39 @@ const TeacherApplicationPage: React.FC = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.3, type: 'spring', stiffness: 300 }}
-                      className='relative group'
-                    >
+                      className="relative group">
                       <Card
                         hoverable
-                        className='overflow-hidden rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-indigo-50'
-                        bodyStyle={{ padding: 0 }}
-                      >
-                        <div className='p-5'>
-                          <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
+                        className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-indigo-50"
+                        bodyStyle={{ padding: 0 }}>
+                        <div className="p-5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             {/* === Certificate Type === */}
                             <Form.Item
                               {...restField}
                               name={[name, 'CertificateTypeId']}
                               label={
-                                <span className='flex items-center gap-2 text-gray-700 font-medium'>
-                                  <Trophy className='w-4 h-4 text-yellow-500' />
+                                <span className="flex items-center gap-2 text-gray-700 font-medium">
+                                  <Trophy className="w-4 h-4 text-yellow-500" />
                                   Certificate Type
                                 </span>
                               }
-                              rules={[{ required: true, message: 'Select a certificate' }]}
-                            >
+                              rules={[{ required: true, message: 'Select a certificate' }]}>
                               <Select
-                                placeholder='Choose certificate'
+                                placeholder="Choose certificate"
                                 disabled={!selectedLanguage || loadingCertificates}
-                                className='w-full'
-                                dropdownClassName='z-50'
-                                size='large'
-                              >
+                                className="w-full"
+                                dropdownClassName="z-50"
+                                size="large">
                                 {certificatesData?.data?.map((cert: Certificate) => (
-                                  <Option key={cert.certificateId} value={cert.certificateId}>
-                                    <div className='flex items-center gap-2'>
-                                      <Badge color={cert.name ? 'gold' : 'blue'} dot />
+                                  <Option
+                                    key={cert.certificateId}
+                                    value={cert.certificateId}>
+                                    <div className="flex items-center gap-2">
+                                      <Badge
+                                        color={cert.name ? 'gold' : 'blue'}
+                                        dot
+                                      />
                                       {cert.name}
                                     </div>
                                   </Option>
@@ -924,16 +981,14 @@ const TeacherApplicationPage: React.FC = () => {
                             <Form.Item
                               {...restField}
                               name={[name, 'CertificateImage']}
-                              label=' Image'
-                              valuePropName='fileList'
+                              label=" Image"
+                              valuePropName="fileList"
                               getValueFromEvent={(e) => e.fileList}
-                              rules={[{ required: true, message: 'Please upload image' }]}
-                            >
+                              rules={[{ required: true, message: 'Please upload image' }]}>
                               <Upload
                                 beforeUpload={() => false}
-                                listType='picture-card'
-                                maxCount={1}
-                              >
+                                listType="picture-card"
+                                maxCount={1}>
                                 <div>
                                   <UploadOutlined />
                                   <div style={{ marginTop: 8 }}>Upload</div>
@@ -946,11 +1001,11 @@ const TeacherApplicationPage: React.FC = () => {
                         {/* === Remove Button (only if >1) === */}
                         {fields.length > 1 && (
                           <Button
-                            type='text'
+                            type="text"
                             danger
-                            size='small'
-                            className='!absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity'
-                            icon={<Trash2 className='w-4 h-4' />}
+                            size="small"
+                            className="!absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                            icon={<Trash2 className="w-4 h-4" />}
                             onClick={() => remove(name)}
                           />
                         )}
@@ -961,8 +1016,8 @@ const TeacherApplicationPage: React.FC = () => {
 
                 {/* === Empty State (never shown) === */}
                 {fields.length === 0 && !loadingCertificates && (
-                  <div className='text-center py-12 text-gray-500'>
-                    <Text type='secondary'>No certificates added yet.</Text>
+                  <div className="text-center py-12 text-gray-500">
+                    <Text type="secondary">No certificates added yet.</Text>
                   </div>
                 )}
               </>
@@ -974,74 +1029,73 @@ const TeacherApplicationPage: React.FC = () => {
     {
       title: 'Review & Submit',
       content: (
-        <div className='max-w-6xl mx-auto px-4 py-8 space-y-8 bg-gradient-to-b from-gray-50 to-white rounded-2xl shadow-xl'>
+        <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 bg-gradient-to-b from-gray-50 to-white rounded-2xl shadow-xl">
           <Title
             level={3} // Bumped to level 3 for more prominence
-            className='text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 mb-2 tracking-wide'
-          >
+            className="text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 mb-2 tracking-wide">
             Review Your Application
           </Title>
-          <Paragraph className='text-center text-gray-600 mb-8'>
+          <Paragraph className="text-center text-gray-600 mb-8">
             Double-check your details before submitting. Everything looks good? Hit submit!
           </Paragraph>
 
           {/* Language Card */}
-          <div className='bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300'>
-            <div className='flex items-center gap-3 mb-3'>
-              <div className='w-2 h-2 bg-blue-500 rounded-full'></div>
-              <Paragraph className='text-gray-700 font-semibold !mb-0'>
+          <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <Paragraph className="text-gray-700 font-semibold !mb-0">
                 Preferred Language
               </Paragraph>
             </div>
-            <p className='text-gray-800 text-lg font-medium'>
+            <p className="text-gray-800 text-lg font-medium">
               {languagesData?.data?.find((l: any) => l.langCode === formData.LangCode)?.langName ||
                 'Not selected'}{' '}
             </p>
           </div>
 
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Basic Info Card */}
-            <div className='bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300'>
-              <div className='flex items-center gap-3 mb-4'>
-                <div className='w-2 h-2 bg-indigo-500 rounded-full'></div>
-                <Paragraph className='text-gray-700 font-semibold !mb-0'>
+            <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                <Paragraph className="text-gray-700 font-semibold !mb-0">
                   Basic Information
                 </Paragraph>
               </div>
 
-              <div className='space-y-4 text-gray-800'>
+              <div className="space-y-4 text-gray-800">
                 {/* Avatar + Name - Full width hero section */}
-                <div className='flex items-center gap-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200'>
+                <div className="flex items-center gap-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
                   {formData.Avatar?.[0] ? (
                     <Avatar
                       src={URL.createObjectURL(formData.Avatar[0].originFileObj)}
-                      alt='Applicant Avatar Preview'
-                      className='!w-16 !h-16 border-2 border-indigo-300 object-cover rounded-full shadow-md ring-2 ring-indigo-100'
+                      alt="Applicant Avatar Preview"
+                      className="!w-16 !h-16 border-2 border-indigo-300 object-cover rounded-full shadow-md ring-2 ring-indigo-100"
                       icon={
-                        <div className='w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm'>
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
                           A
                         </div>
                       } // Fallback icon
                     />
                   ) : (
-                    <div className='w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center shadow-md ring-2 ring-indigo-100'>
-                      <span className='text-white font-bold text-sm'>
+                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center shadow-md ring-2 ring-indigo-100">
+                      <span className="text-white font-bold text-sm">
                         {formData.FullName?.charAt(0) || 'A'}
                       </span>
                     </div>
                   )}
                   <div>
-                    <h3 className='text-xl font-bold text-gray-900'>
+                    <h3 className="text-xl font-bold text-gray-900">
                       {formData.FullName || 'Unnamed Applicant'}
                     </h3>
-                    <p className='text-indigo-600 font-medium'>
+                    <p className="text-indigo-600 font-medium">
                       {formData.Email || 'No email provided'}
                     </p>
                   </div>
                 </div>
 
                 {/* Info Fields - Grid for better layout */}
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
                       label: 'Date of Birth',
@@ -1058,9 +1112,8 @@ const TeacherApplicationPage: React.FC = () => {
                       value: formData.MeetingUrl ? (
                         <a
                           href={formData.MeetingUrl}
-                          target='_blank'
-                          className='text-blue-600 hover:underline font-medium'
-                        >
+                          target="_blank"
+                          className="text-blue-600 hover:underline font-medium">
                           View Link
                         </a>
                       ) : (
@@ -1074,13 +1127,15 @@ const TeacherApplicationPage: React.FC = () => {
                       icon: <Languages />,
                     },
                   ].map((field, idx) => (
-                    <div key={idx} className='flex items-center gap-3 p-3 bg-gray-50 rounded-lg'>
-                      <span className='text-2xl'>{field.icon}</span>
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <span className="text-2xl">{field.icon}</span>
                       <div>
-                        <strong className='block text-sm font-medium text-gray-700'>
+                        <strong className="block text-sm font-medium text-gray-700">
                           {field.label}:
                         </strong>
-                        <span className='text-gray-900'>{field.value}</span>
+                        <span className="text-gray-900">{field.value}</span>
                       </div>
                     </div>
                   ))}
@@ -1099,12 +1154,14 @@ const TeacherApplicationPage: React.FC = () => {
                     icon: <GraduationCap />,
                   },
                 ].map((field, idx) => (
-                  <div key={idx} className='p-4 bg-blue-50 rounded-lg border border-blue-200'>
-                    <div className='flex items-start gap-3 mb-2'>
-                      <span className='text-2xl mt-0.5'>{field.icon}</span>
-                      <strong className='text-gray-700 font-semibold'>{field.label}:</strong>
+                  <div
+                    key={idx}
+                    className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-start gap-3 mb-2">
+                      <span className="text-2xl mt-0.5">{field.icon}</span>
+                      <strong className="text-gray-700 font-semibold">{field.label}:</strong>
                     </div>
-                    <p className='text-gray-800 leading-relaxed whitespace-pre-wrap'>
+                    <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
                       {field.value}
                     </p>
                   </div>
@@ -1113,14 +1170,14 @@ const TeacherApplicationPage: React.FC = () => {
             </div>
             {/* Certificates Card - Only if exists, otherwise hidden */}
             {formData.Certificates && formData.Certificates.length > 0 ? (
-              <div className='bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300'>
-                <div className='flex items-center gap-3 mb-4'>
-                  <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                  <Paragraph className='text-gray-700 font-semibold !mb-0'>
+              <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <Paragraph className="text-gray-700 font-semibold !mb-0">
                     Your Certificates
                   </Paragraph>
                 </div>
-                <div className='space-y-4 max-h-120 overflow-y-auto'>
+                <div className="space-y-4 max-h-120 overflow-y-auto">
                   {formData.Certificates.map((cert: any, idx: number) => {
                     const certInfo = certificatesData?.data?.find(
                       (c: Certificate) => c.certificateId === cert.CertificateTypeId
@@ -1128,28 +1185,27 @@ const TeacherApplicationPage: React.FC = () => {
                     return (
                       <div
                         key={idx}
-                        className='group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden'
-                      >
-                        <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                          <span className='bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium'>
+                        className="group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden">
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                             Verified
                           </span>
                         </div>
-                        <h4 className='font-bold text-gray-900 mb-2 text-center'>
+                        <h4 className="font-bold text-gray-900 mb-2 text-center">
                           {certInfo?.name || 'Certificate'}
                         </h4>
                         {cert.CertificateImage?.[0] ? (
                           <img
                             src={URL.createObjectURL(cert.CertificateImage[0].originFileObj)}
                             alt={`${certInfo?.name || 'Certificate'} Preview`}
-                            className='w-full max-w-sm mx-auto h-32 object-cover rounded-lg border border-gray-200 shadow-inner'
+                            className="w-full max-w-sm mx-auto h-32 object-cover rounded-lg border border-gray-200 shadow-inner"
                             onError={(e) => {
                               e.currentTarget.style.display = 'none';
                             }} // Hide on error
                           />
                         ) : (
-                          <div className='w-full max-w-sm mx-auto h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500'>
-                            <span className='text-sm'>No image uploaded</span>
+                          <div className="w-full max-w-sm mx-auto h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                            <span className="text-sm">No image uploaded</span>
                           </div>
                         )}
                       </div>
@@ -1157,24 +1213,26 @@ const TeacherApplicationPage: React.FC = () => {
                   })}
                 </div>
                 {formData.Certificates.length === 0 && (
-                  <div className='text-center py-8 text-gray-500'>
-                    <p className='text-lg'>No certificates added yet.</p>
-                    <Button type='dashed' className='mt-2'>
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-lg">No certificates added yet.</p>
+                    <Button
+                      type="dashed"
+                      className="mt-2">
                       Add More
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <div className='bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300'>
-                <div className='flex items-center gap-3 mb-4'>
-                  <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                  <Paragraph className='text-gray-700 font-semibold !mb-0'>
+              <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <Paragraph className="text-gray-700 font-semibold !mb-0">
                     Your Certificates
                   </Paragraph>
                 </div>
-                <div className='text-center py-8 text-gray-500'>
-                  <p className='text-lg'>No certificates added yet.</p>
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-lg">No certificates added yet.</p>
                 </div>
               </div>
             )}
@@ -1182,19 +1240,18 @@ const TeacherApplicationPage: React.FC = () => {
 
           {/* Submit Button - Enhanced with animation */}
           {!isSubmitted && (
-            <div className='flex flex-col items-center justify-center'>
+            <div className="flex flex-col items-center justify-center">
               <Button
-                type='primary'
+                type="primary"
                 onClick={() => handleSubmit()}
                 loading={isSubmitting || isUpdating}
-                className='w-full max-w-md h-14 text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 shadow-lg
-                 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-xl border-none'
-                size='large'
-              >
-                <span className='flex items-center gap-2'>
+                className="w-full max-w-md h-14 text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 shadow-lg
+                 hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 rounded-xl border-none"
+                size="large">
+                <span className="flex items-center gap-2">
                   {isSubmitting || isUpdating ? (
                     <>
-                      <span className='animate-spin rounded-full h-4 w-4 border-b-2 border-white'></span>
+                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
                       Submitting...
                     </>
                   ) : (
@@ -1203,7 +1260,7 @@ const TeacherApplicationPage: React.FC = () => {
                 </span>
               </Button>
 
-              <Paragraph className='text-xs text-gray-500 mt-2'>
+              <Paragraph className="text-xs text-gray-500 mt-2">
                 By submitting, you agree to our terms and privacy policy.
               </Paragraph>
             </div>
@@ -1214,33 +1271,36 @@ const TeacherApplicationPage: React.FC = () => {
   ];
 
   return isLoading ? (
-    <div className='flex justify-center items-center min-h-screen'>
-      <Spin size='large' />
+    <div className="flex justify-center items-center min-h-screen">
+      <Spin size="large" />
     </div>
   ) : (
-    <div className='min-h-screen flex flex-col'>
+    <div className="min-h-screen flex flex-col">
       <motion.div
         initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className='bg-white rounded-2xl shadow-xl p-10 my-12 max-w-5xl w-full mx-auto'
-      >
-        <Steps current={currentStep} items={steps.map((s) => ({ title: s.title }))} />
+        className="bg-white rounded-2xl p-10 my-12 max-w-5xl w-full mx-auto">
+        <Steps
+          current={currentStep}
+          items={steps.map((s) => ({ title: s.title }))}
+        />
 
-        <div className='mt-10'>{steps[currentStep].content}</div>
+        <div className="mt-10">{steps[currentStep].content}</div>
 
-        <div className='mt-8 flex justify-between'>
+        <div className="mt-8 flex justify-between">
           {currentStep > 0 && (
-            <Button onClick={prev} className='px-6'>
+            <Button
+              onClick={prev}
+              className="px-6">
               Previous
             </Button>
           )}
           {currentStep < steps.length - 1 && (
             <Button
-              type='primary'
+              type="primary"
               onClick={next}
-              className='px-6 bg-gradient-to-r from-indigo-600 to-blue-500'
-            >
+              className="px-6 bg-gradient-to-r from-indigo-600 to-blue-500">
               Next
             </Button>
           )}
