@@ -150,7 +150,7 @@ const PopularCourse: React.FC = () => {
                   </h3>
 
                   <p className="text-sm text-gray-600">
-                    Giảng viên:{' '}
+                    Giáo viên:{' '}
                     <span className="font-semibold text-gray-800">{course.teacherName}</span>
                   </p>
 

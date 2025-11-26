@@ -115,7 +115,7 @@ const LandingPage = () => {
                   <a
                     href="/learner/application"
                     className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
-                    Trở thành giảng viên
+                    Trở thành giáo viên
                   </a>
                 )}
               </>
@@ -198,7 +198,7 @@ const LandingPage = () => {
                     <a
                       href="/learner/application"
                       className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-full font-medium">
-                      Trở thành giảng viên
+                      Trở thành giáo viên
                     </a>
                   )}
                 </>
