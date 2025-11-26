@@ -1,5 +1,5 @@
 // src/pages/LandingPage.tsx
-import { MessageCircle, X } from 'lucide-react';
+import { ArrowUp, X } from 'lucide-react';
 import { useState } from 'react';
 import HeroSection from '../../components/HeroSection';
 import Features from '../../components/Features';
@@ -15,6 +15,8 @@ const LandingPage = () => {
   const token = localStorage.getItem('FLEARN_ACCESS_TOKEN');
   const roles = localStorage.getItem('FLEARN_USER_ROLES');
   const isTeacher = roles?.includes('Teacher') || false;
+  const isAdmin = roles?.includes('Admin') || false;
+  const isManager = roles?.includes('Manager') || false;
 
   // Cuộn mượt + đóng menu mobile
   const scrollToSection = (id: string) => {
@@ -46,59 +48,77 @@ const LandingPage = () => {
           </a>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-4">
+            {/* Navigation Links */}
             <button
               onClick={() => scrollToSection('features')}
-              className="text-gray-700 !hover:text-sky-600 cursor-pointer font-medium transition">
+              className="cursor-pointer text-gray-700 !hover:text-sky-600 font-medium transition">
               Tính năng
             </button>
             <button
               onClick={() => scrollToSection('popular-courses')}
-              className="text-gray-700 !hover:text-sky-600 cursor-pointer font-medium transition">
+              className="cursor-pointer text-gray-700 !hover:text-sky-600 font-medium transition">
               Khóa học nổi bật
             </button>
             <button
               onClick={() => scrollToSection('languages')}
-              className="text-gray-700 !hover:text-sky-600 cursor-pointer font-medium transition">
+              className="cursor-pointer text-gray-700 !hover:text-sky-600 font-medium transition">
               Ngôn ngữ
             </button>
             <button
               onClick={() => scrollToSection('testimonials')}
-              className="text-gray-700 !hover:text-sky-600 cursor-pointer font-medium transition">
+              className="cursor-pointer text-gray-700 !hover:text-sky-600 font-medium transition">
               Học viên nói gì
             </button>
             <button
               onClick={() => scrollToSection('cta')}
-              className="text-gray-700 !hover:text-sky-600 cursor-pointer font-medium transition">
+              className="cursor-pointer text-gray-700 !hover:text-sky-600 font-medium transition">
               Bắt đầu ngay
             </button>
 
-            {/* Nút đăng nhập / quản lý */}
+            {/* === AUTHENTICATION & ROLE-BASED BUTTONS === */}
             {!token ? (
               <>
                 <a
                   href="/login"
-                  className="text-gray-700 !hover:text-sky-600 cursor-pointer font-medium transition">
+                  className="cursor-pointer text-gray-700 !hover:text-sky-600 font-medium transition">
                   Đăng nhập
                 </a>
                 <a
-                  href="/login"
+                  href="/register"
                   className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
                   Đăng ký miễn phí
                 </a>
               </>
-            ) : !isTeacher ? (
-              <a
-                href="/teacher"
-                className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
-                Trở thành giảng viên
-              </a>
             ) : (
-              <a
-                href="/teacher"
-                className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
-                Quản lý khóa học
-              </a>
+              <>
+                {/* Priority: Admin > Manager > Teacher > Student */}
+                {isAdmin ? (
+                  <a
+                    href="/admin"
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2">
+                    <span>Admin Panel</span>
+                  </a>
+                ) : isManager ? (
+                  <a
+                    href="/dashboard"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105 flex items-center gap-2">
+                    <span>Quản lý hệ thống</span>
+                  </a>
+                ) : isTeacher ? (
+                  <a
+                    href="/teacher"
+                    className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
+                    Quản lý khóa học
+                  </a>
+                ) : (
+                  <a
+                    href="/teacher/onboarding"
+                    className="bg-gradient-to-r from-sky-600 to-blue-600 text-white px-6 py-2.5 rounded-full font-medium hover:shadow-lg transition-all hover:scale-105">
+                    Trở thành giảng viên
+                  </a>
+                )}
+              </>
             )}
           </div>
 
@@ -140,31 +160,48 @@ const LandingPage = () => {
                 Bắt đầu ngay
               </div>
 
+              {/* Mobile Menu - Auth Buttons */}
               {!token ? (
                 <>
                   <a
                     href="/login"
-                    className="text-gray-700 font-medium">
+                    className="text-gray-700 font-medium text-left py-2">
                     Đăng nhập
                   </a>
                   <a
-                    href="/login"
+                    href="/register"
                     className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-full font-medium">
                     Đăng ký miễn phí
                   </a>
                 </>
-              ) : !isTeacher ? (
-                <a
-                  href="/teacher"
-                  className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-full font-medium">
-                  Trở thành giảng viên
-                </a>
               ) : (
-                <a
-                  href="/teacher-dashboard"
-                  className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-full font-medium">
-                  Quản lý khóa học
-                </a>
+                <>
+                  {isAdmin ? (
+                    <a
+                      href="/admin"
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center py-3 rounded-full font-medium">
+                      Admin Panel
+                    </a>
+                  ) : isManager ? (
+                    <a
+                      href="/dashboard"
+                      className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-center py-3 rounded-full font-medium">
+                      Quản lý hệ thống
+                    </a>
+                  ) : isTeacher ? (
+                    <a
+                      href="/teacher"
+                      className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-full font-medium">
+                      Quản lý khóa học
+                    </a>
+                  ) : (
+                    <a
+                      href="/teacher/onboarding"
+                      className="bg-gradient-to-r from-sky-600 to-blue-600 text-white text-center py-3 rounded-full font-medium">
+                      Trở thành giảng viên
+                    </a>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -198,9 +235,11 @@ const LandingPage = () => {
         </section>
       </main>
 
-      {/* Nút chat nổi */}
-      <button className="fixed bottom-20 right-6 bg-sky-600 text-white p-4 rounded-full shadow-lg hover:bg-sky-700 transition z-40">
-        <MessageCircle className="w-6 h-6" />
+      <button
+        onClick={() => scrollToSection('hero')}
+        className="fixed bottom-20 right-6 bg-sky-600 text-white p-4 rounded-full shadow-lg hover:bg-sky-700 transition-all hover:scale-110 z-40 animate-bounce"
+        aria-label="Cuộn lên đầu trang">
+        <ArrowUp className="w-6 h-6 text-white" />
       </button>
 
       <Footer />
