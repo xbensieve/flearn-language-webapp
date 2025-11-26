@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Form, Input, Button, Typography, Checkbox, Card } from 'antd';
-import { UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Checkbox, ConfigProvider } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { login, loginWithGoogle } from '../../services/auth';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../utils/AuthContext';
 import type { AxiosError } from 'axios';
-
-const { Title, Text } = Typography;
 
 const ROLE_PATHS: Record<string, string> = {
   admin: '/admin/dashboard',
@@ -28,9 +26,9 @@ const rolesCase = (roles: string[], navigate: any) => {
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const { updateAuth } = useAuth();
 
+  // Redirect if already logged in
   useEffect(() => {
     const rolesString = localStorage.getItem('FLEARN_USER_ROLES');
     if (rolesString) {
@@ -43,27 +41,16 @@ const Login: React.FC = () => {
     }
   }, [navigate]);
 
-  // ===== LOGIN API =====
   const mutation = useMutation({
-    mutationFn: (values: { usernameOrEmail: string; password: string; rememberMe: boolean }) =>
-      login(values),
-    onMutate: () => setLoading(true),
-    onSettled: () => setLoading(false),
-    onSuccess: (data) => {
-      if (data.success) handleAuthSuccess(data.data);
-    },
+    mutationFn: login,
+    onSuccess: (data) => data.success && handleAuthSuccess(data.data),
     onError: (err: AxiosError<any>) => notifyError(err?.response?.data?.message || 'Login failed'),
   });
 
-  // ===== GOOGLE LOGIN =====
   const googleMutation = useMutation({
-    mutationFn: (idToken: string) => loginWithGoogle(idToken),
-    onSuccess: (data: any) => {
-      if (data.success) handleAuthSuccess(data.data);
-    },
-    onError: (err: AxiosError<any>) => {
-      notifyError(err?.response?.data?.message || 'Google login failed');
-    },
+    mutationFn: loginWithGoogle,
+    onSuccess: (data: any) => data.success && handleAuthSuccess(data.data),
+    onError: () => notifyError('Google login failed'),
   });
 
   const handleAuthSuccess = (data: any) => {
@@ -71,172 +58,186 @@ const Login: React.FC = () => {
     localStorage.setItem('FLEARN_REFRESH_TOKEN', data.refreshToken);
     localStorage.setItem('FLEARN_USER_ROLES', JSON.stringify(data.roles));
     updateAuth();
-    notifySuccess('Login successful!');
+    notifySuccess('Welcome back to Flearn!');
     rolesCase(data.roles, navigate);
   };
 
-  const handleSubmit = (values: any) => mutation.mutate(values);
+  const handleGoogleCallback = (response: any) => {
+    if (response?.credential) googleMutation.mutate(response.credential);
+    else notifyError('Google login failed');
+  };
 
-  // ===== GOOGLE BUTTON INIT =====
+  // Google Sign-In
   useEffect(() => {
-    // @ts-expect-error
-    if (window.google) {
-      // @ts-expect-error
+    if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      // @ts-ignore
       window.google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleGoogleCallback,
       });
-
       // @ts-ignore
       window.google.accounts.id.renderButton(document.getElementById('googleSignInDiv'), {
         theme: 'outline',
         size: 'large',
+        type: 'standard',
+        shape: 'pill',
+        text: 'continue_with',
         width: '100%',
       });
-    }
+    };
+
+    return () => script.remove();
   }, []);
 
-  const handleGoogleCallback = (response: any) => {
-    if (response.credential) googleMutation.mutate(response.credential);
-    else notifyError('Failed to get Google token');
-  };
-
-  // ===== CSS =====
-  const wrapper: React.CSSProperties = {
-    display: 'flex',
-    width: '100vw',
-    height: '100vh',
-  };
-
-  const left: React.CSSProperties = {
-    flex: 1,
-    backgroundImage: "url('10290108.jpg')",
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  };
-
-  const right: React.CSSProperties = {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(to bottom, #ffffff, #e0f2fe)',
-  };
-
-  const cardBox: React.CSSProperties = {
-    width: '100%',
-    maxWidth: 400,
-    padding: '40px 16px',
-    borderRadius: 16,
-    boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-    background: '#fff',
-  };
-
   return (
-    <div style={wrapper}>
-      {/* LEFT SIDE IMAGE */}
-      <div style={left}></div>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#06b6d4',
+          borderRadius: 16,
+          fontFamily: 'Inter, system-ui, sans-serif',
+        },
+      }}>
+      <div className="min-h-screen flex bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 relative overflow-hidden">
+        {/* Animated Background Blobs */}
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
 
-      {/* RIGHT SIDE - LOGIN BOX */}
-      <div style={right}>
-        <Card bordered={false} style={cardBox}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <Title level={3} style={{ margin: 0, color: '#06b6d4', fontWeight: 700 }}>
-              Flearn
-            </Title>
-            <Text type='secondary'>Login to your account</Text>
+        {/* Left Hero Section */}
+        <div className="hidden lg:flex flex-1 items-center justify-center px-12 relative z-10">
+          <div className="max-w-lg text-white">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              Welcome to <span className="text-cyan-200">Flearn</span>
+            </h1>
+            <p className="text-xl md:text-2xl opacity-90 leading-relaxed mb-8">
+              Master new skills, connect with expert teachers, and unlock your full learning
+              potential.
+            </p>
+            <p className="text-lg opacity-80">
+              Join thousands of learners already growing with Flearn
+            </p>
           </div>
+        </div>
 
-          <Form form={form} layout='vertical' onFinish={handleSubmit}>
-            <Form.Item
-              label='Username or Email'
-              name='usernameOrEmail'
-              rules={[{ required: true, message: 'Please enter your username or email!' }]}
-            >
-              <Input
-                size='large'
-                prefix={<UserOutlined style={{ opacity: 0.6 }} />}
-                placeholder='Enter your username or email'
-              />
-            </Form.Item>
+        {/* Right Login Card */}
+        <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-10">
+          <div className="w-full max-w-md">
+            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10">
+              {/* Logo */}
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
+                <p className="text-gray-600 mt-2">Welcome back! Please login to your account</p>
+              </div>
 
-            <Form.Item
-              label='Password'
-              name='password'
-              rules={[{ required: true, message: 'Please enter your password!' }]}
-            >
-              <Input.Password
-                size='large'
-                prefix={<LockOutlined style={{ opacity: 0.6 }} />}
-                placeholder='Enter your password'
-              />
-            </Form.Item>
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={mutation.mutate}>
+                <Form.Item
+                  name="usernameOrEmail"
+                  rules={[{ required: true, message: 'Please enter your username or email!' }]}>
+                  <Input
+                    prefix={<UserOutlined className="text-gray-400" />}
+                    placeholder="Username or Email"
+                    className="h-14 text-lg rounded-xl border-gray-300 hover:border-cyan-500 focus:border-cyan-500"
+                  />
+                </Form.Item>
 
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 16,
-              }}
-            >
-              <Form.Item name='rememberMe' valuePropName='checked' noStyle>
-                <Checkbox>Remember me</Checkbox>
-              </Form.Item>
-              <Button
-                type='link'
-                onClick={() => navigate('/forgot-password')}
-                style={{ padding: 0, color: '#06b6d4' }}
-              >
-                Forgot password?
-              </Button>
+                <Form.Item
+                  name="password"
+                  rules={[{ required: true, message: 'Please enter your password!' }]}>
+                  <Input.Password
+                    prefix={<LockOutlined className="text-gray-400" />}
+                    placeholder="Password"
+                    className="h-14 text-lg rounded-xl border-gray-300 hover:border-cyan-500 focus:border-cyan-500"
+                  />
+                </Form.Item>
+
+                <div className="flex justify-between items-center mb-6">
+                  <Form.Item
+                    name="rememberMe"
+                    valuePropName="checked"
+                    noStyle>
+                    <Checkbox>Remember me</Checkbox>
+                  </Form.Item>
+                  <Button
+                    type="link"
+                    onClick={() => navigate('/forgot-password')}
+                    className="text-cyan-600 font-medium hover:text-cyan-700">
+                    Forgot password?
+                  </Button>
+                </div>
+
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="large"
+                  loading={mutation.isPending || googleMutation.isPending}
+                  className="h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300">
+                  Sign In
+                </Button>
+
+                <div className="text-center my-6 text-gray-500 font-medium">
+                  — or continue with —
+                </div>
+
+                <div
+                  id="googleSignInDiv"
+                  className="flex justify-center"
+                />
+
+                <div className="text-center mt-8">
+                  <span className="text-gray-600">New to Flearn? </span>
+                  <Button
+                    type="link"
+                    onClick={() => navigate('/register')}
+                    className="text-cyan-600 font-semibold hover:text-cyan-700">
+                    Create an account luxury{' '}
+                  </Button>
+                </div>
+              </Form>
             </div>
-
-            <Button
-              type='primary'
-              htmlType='submit'
-              block
-              size='large'
-              loading={loading}
-              style={{
-                height: 44,
-                borderRadius: 999,
-                backgroundColor: '#06b6d4',
-                fontWeight: 600,
-              }}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <Text>Don't have an account? </Text>
-              <Button type='link' onClick={() => navigate('/register')} style={{ padding: 0 }}>
-                Register
-              </Button>
-            </div>
-
-            <div style={{ textAlign: 'center', color: '#9ca3af', margin: '12px 0' }}>
-              — or continue with —
-            </div>
-
-            <Button
-              icon={<GoogleOutlined />}
-              block
-              size='large'
-              style={{
-                borderRadius: 999,
-                border: '1px solid #d1d5db',
-                height: 44,
-              }}
-              onClick={() => notifyError('Google Sign-In not initialized yet')}
-            >
-              Sign in with Google
-            </Button>
-          </Form>
-        </Card>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Tailwind Animation Keyframes */}
+      <style>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, -30px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 20s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
+    </ConfigProvider>
   );
 };
 
