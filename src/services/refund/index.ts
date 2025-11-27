@@ -1,12 +1,18 @@
 import api from "../../config/axios";
-import type { NotifyStudentRequest, RefundResponse } from "./type";
+import type { NotifyStudentRequest, ProcessRefundRequest, RefundResponse } from "./type";
 
 export const notifyStudent = async (payload: NotifyStudentRequest) => {
   const response = await api.post('/Refund/admin/notify-student', payload);
   return response.data;
 };
 
-export const getRefundRequests = async (params: {
+export const getRefundRequestsClass = async ({ statusFilter }: { statusFilter: string }) => {
+  const params = statusFilter !== '' ? { status: Number(statusFilter) } : {};
+  const res = await api.get('/Refund/admin/list', { params });
+  return res.data.data || [];
+}
+
+export const getRefundRequestsCourse = async (params: {
   fromDate?: string;
   toDate?: string;
   page?: number;
@@ -32,8 +38,30 @@ export const getRefundRequests = async (params: {
   return response.data;
 };
 
-export const processRefund = async (payload: { refundRequestId: string; isApproved: boolean; note?: string }) => {
-  const response = await api.post('/purchases/refunds/process', payload);
+export const processRefundClass = async (payload: ProcessRefundRequest) => {
+  const formData = new FormData();
 
+  formData.append('RefundRequestId', payload.RefundRequestId);
+  formData.append('Action', payload.Action);
+
+  if (payload.AdminNote) {
+    formData.append('AdminNote', payload.AdminNote);
+  }
+
+  if (payload.ProofImage) {
+    formData.append('ProofImage', payload.ProofImage, payload.ProofImage.name);
+  }
+
+  const response = await api.post('/Refund/admin/process', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
+};
+
+export const processRefundCourse = async (payload: { refundRequestId: string; isApproved: boolean; note?: string }) => {
+  const response = await api.post('/purchases/refunds/process', payload);
   return response.data;
 };
