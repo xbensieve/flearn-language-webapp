@@ -312,7 +312,7 @@ const RefundAdminPage: React.FC = () => {
     selectedRefund?.status === 'Pending' || selectedRefund?.status === 'Under Review';
 
   return (
-    <div className="space-y-5">
+    <div className="!space-y-5">
       <Row gutter={[16, 16]}>
         <Col
           xs={24}
