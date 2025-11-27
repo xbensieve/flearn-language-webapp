@@ -16,22 +16,21 @@ export interface ProcessRefundRequest {
 }
 
 
-export type RefundStatus = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface RefundRequest {
  
-  refundRequestID: string;
-  enrollmentID: string;
-  studentID: string;
+  refundRequestId: string;
+  enrollmentId: string;
+  studentId: string;
   studentName: string;
-  classID: string;
+  classId: string;
   className: string;
   requestType: number;
   reason: string;
   bankName: string;
   bankAccountNumber: string;
   bankAccountHolderName: string;
-  status: RefundStatus;
+  status: string;
   adminNote?: string;
   refundAmount: number;
   requestedAt: string;
@@ -49,4 +48,21 @@ export interface NotifyStudentPayload {
   className: string;
   classStartDateTime: string; 
   reason: string;
+}
+
+export interface Meta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface RefundResponse {
+  meta: Meta;
+  status: string;
+  code: number;
+  message: string;
+  data: RefundRequest[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  errors: any[] | null;
 }
