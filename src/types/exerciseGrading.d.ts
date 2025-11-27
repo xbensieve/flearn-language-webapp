@@ -31,7 +31,16 @@ export interface AIFeedbackData {
   cefrLevel: string | null;
   overall: number;
   feedback: string;
-  transcript: string;
+  recognizedText: string;
+}
+
+export interface GradingStatusResponse {
+  exerciseSubmissionId: string;
+  status: string;
+  aiScore: number;
+  aiFeedback: string;
+  finalScore?: number;
+  isPassed?: boolean;
 }
 
 export interface Assignment {
@@ -70,6 +79,12 @@ export interface Assignment {
   isOverdue: boolean;
   hoursRemaining: number;
   feedback: string | null; // General feedback if any
+  isReassigned: boolean;
+  reassignedToAssignmentId?: string | null;
+  reassignedToTeacherId?: string | null;
+  reassignedToTeacherName?: string | null;
+  reassignedToTeacherAvatar?: string | null;
+  reassignedAt?: string | null;
 }
 
 export interface FilterOptions {
