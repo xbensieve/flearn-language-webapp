@@ -5,6 +5,19 @@ export interface GradingMeta {
   totalPages: number;
 }
 
+export interface EligibleTeacher {
+  teacherId: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+  proficiencyCode: string;
+  proficiencyOrder: number;
+  averageRating: number;
+  activeAssignmentsCount: number;
+  isRecommended: boolean;
+}
+
 export interface AIFeedbackData {
   scores: {
     pronunciation: number;

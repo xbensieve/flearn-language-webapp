@@ -5,6 +5,7 @@ import type {
   Assignment,
   AssignmentQueryParams,
   FilterOptions,
+  EligibleTeacher,
 } from "@/types/exerciseGrading";
 
 export const exerciseGradingService = {
@@ -14,7 +15,7 @@ export const exerciseGradingService = {
   getAssignments: async (
     params: AssignmentQueryParams
   ): Promise<APIListResponse<Assignment[]>> => {
-    const queryParams: Record<string, any> = { ...params };
+    const queryParams: Record<string, unknown> = { ...params };
     Object.keys(queryParams).forEach((key) => {
       if (queryParams[key] === undefined || queryParams[key] === "") {
         delete queryParams[key];
@@ -49,17 +50,49 @@ export const exerciseGradingService = {
   },
 
   /**
-   * Reassign an expired/overdue assignment to another teacher
-   * (Giả lập logic gọi API)
+   * Lấy danh sách giáo viên phù hợp để assign lại
    */
-  reassignTeacher: async (assignmentId: string): Promise<void> => {
+  getEligibleTeachers: async (
+    submissionId: string,
+    searchTerm: string = "",
+    page: number = 1,
+    pageSize: number = 10
+  ): Promise<APIListResponse<EligibleTeacher[]>> => {
     try {
-      // Ví dụ API: PUT /exercise-grading/reassign/{id}
-      // await axiosInstance.put(`/exercise-grading/reassign/${assignmentId}`);
-      console.log("Reassigning teacher for assignment:", assignmentId);
-      return Promise.resolve();
+      const response = await axiosInstance.get<
+        APIListResponse<EligibleTeacher[]>
+      >("/exercise-grading/manager/eligible-teachers", {
+        params: {
+          ExerciseSubmissionId: submissionId,
+          SearchTerm: searchTerm,
+          Page: page,
+          PageSize: pageSize,
+        },
+      });
+      return response.data;
     } catch (error) {
-      console.error("Failed to reassign teacher", error);
+      console.error("Failed to fetch eligible teachers", error);
+      throw error;
+    }
+  },
+  /**
+   * Thực hiện assign giáo viên mới cho bài tập
+   */
+  assignTeacher: async (
+    submissionId: string,
+    teacherId: string
+  ): Promise<boolean> => {
+    try {
+      const response = await axiosInstance.post(
+        "/exercise-grading/manager/assignments",
+        {
+          exerciseSubmissionId: submissionId,
+          teacherId: teacherId,
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to assign teacher", error);
       throw error;
     }
   },
