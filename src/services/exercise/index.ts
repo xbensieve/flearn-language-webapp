@@ -11,14 +11,14 @@ export const getTeacherAssignments = async (params: {
   lessonId?: string;
   courseId?: string;
 }) => {
-  const response = await api.get('exercise-grading/teacher-assignments', { params });
+  const response = await api.get('exercise-grading/teacher/assignments', { params });
   return response.data;
 };
 
 // POST: Grade a submission
 export const getGradeSubmission = async (exerciseSubmissionId: string, data: GradeRequestBody) => {
   const response = await api.post(
-    `exercise-grading/teacher-grade/${exerciseSubmissionId}`,
+    `exercise-grading/teacher/submissions/${exerciseSubmissionId}/grade`,
     data
   );
   return response.data;
