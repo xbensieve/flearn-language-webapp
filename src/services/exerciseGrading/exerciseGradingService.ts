@@ -6,6 +6,7 @@ import type {
   AssignmentQueryParams,
   FilterOptions,
   EligibleTeacher,
+  GradingStatusResponse,
 } from "@/types/exerciseGrading";
 
 export const exerciseGradingService = {
@@ -93,6 +94,30 @@ export const exerciseGradingService = {
       return response.data.data;
     } catch (error) {
       console.error("Failed to assign teacher", error);
+      throw error;
+    }
+  },
+  retryAIGrading: async (submissionId: string): Promise<boolean> => {
+    try {
+      const response = await axiosInstance.post(
+        `/exercise-grading/retry-ai-grading/${submissionId}`
+      );
+      return response.data.isSuccess;
+    } catch (error) {
+      console.error("Failed to retry AI grading", error);
+      throw error;
+    }
+  },
+  getGradingStatus: async (
+    submissionId: string
+  ): Promise<GradingStatusResponse> => {
+    try {
+      const response = await axiosInstance.get(
+        `/exercise-grading/status/${submissionId}`
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to get grading status", error);
       throw error;
     }
   },
