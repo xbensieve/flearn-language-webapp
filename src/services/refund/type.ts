@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 
 export interface NotifyStudentRequest {
@@ -15,27 +16,49 @@ export interface ProcessRefundRequest {
   ProofImage?: File;
 }
 
+export type RefundStatus = 0 | 1 | 2 | 3 | 4 | 5;
 
-
-export interface RefundRequest {
- 
-  refundRequestId: string;
-  enrollmentId: string;
-  studentId: string;
+export interface RefundRequestClass {
+  refundRequestID: number;
+  enrollmentID: string;
+  studentID: string;
   studentName: string;
-  classId: string;
+  classID: string;
   className: string;
   requestType: number;
   reason: string;
   bankName: string;
   bankAccountNumber: string;
   bankAccountHolderName: string;
-  status: string;
+  status: RefundStatus;
   adminNote?: string;
   refundAmount: number;
   requestedAt: string;
   processedAt?: string;
   proofImageUrl?: string;
+}
+
+export interface RefundRequest {
+  refundRequestId: string
+  purchaseId: string
+  studentId: string
+  studentName: string
+  studentEmail: string
+  studentAvatar: any
+  courseName: string
+  refundAmount: number
+  originalAmount: number
+  requestType: string
+  reason: string
+  bankName: string
+  bankAccountNumber: string
+  bankAccountHolderName: string
+  proofImageUrl: string
+  status: string
+  requestedAt: string
+  processedAt: any
+  adminNote: any
+  processedByAdminName: any
 }
 
 export interface RefundListResponse {

@@ -12,6 +12,7 @@ import {
   Form,
   Input,
   Radio,
+  message,
   Table,
   Image,
 } from 'antd';
@@ -24,68 +25,19 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
-import {
-  getRefundRequestsClass,
-  getRefundRequestsCourse,
-  processRefundClass,
-  processRefundCourse,
-} from '../../services/refund';
-import type {
-  RefundRequest as CourseRefundRequest,
-  RefundRequestClass as ClassRefundRequest,
-} from '../../services/refund/type';
-import { notifyError, notifySuccess } from '@/utils/toastConfig';
+import { getRefundRequestsClass, processRefundClass } from '../../services/refund';
+import type { RefundRequestClass } from '../../services/refund/type';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-interface CommonRefund {
-  refundRequestId: string;
-  studentName: string;
-  studentEmail: string;
-  studentAvatar: string | null;
-  itemName: string;
-  refundAmount: number;
-  originalAmount: number;
-  requestType: string;
-  reason: string;
-  bankName: string;
-  bankAccountNumber: string;
-  bankAccountHolderName: string;
-  proofImageUrl: string | null;
-  status: string;
-  requestedAt: string;
-  processedAt: string | null;
-  adminNote: string | null;
-  processedByAdminName: string | null;
-  type: 'class' | 'course';
-}
-
-const statusMap: Record<string, { label: string; color: string }> = {
-  Pending: { label: 'Pending', color: 'blue' },
-  'Under Review': { label: 'Under Review', color: 'orange' },
-  Approved: { label: 'Approved', color: 'green' },
-  Rejected: { label: 'Rejected', color: 'red' },
-  Completed: { label: 'Completed', color: 'green' },
-  Cancelled: { label: 'Cancelled', color: 'default' },
-};
-
-const classStatusNumberMap: Record<string, number> = {
-  Pending: 0,
-  'Under Review': 1,
-  Approved: 2,
-  Rejected: 3,
-  Completed: 4,
-  Cancelled: 5,
-};
-
-const classNumberToStatusMap: Record<number, string> = {
-  0: 'Pending',
-  1: 'Under Review',
-  2: 'Approved',
-  3: 'Rejected',
-  4: 'Completed',
-  5: 'Cancelled',
+const statusMap: Record<number, { label: string; color: string }> = {
+  0: { label: 'Pending', color: 'blue' },
+  1: { label: 'Under Review', color: 'orange' },
+  2: { label: 'Approved', color: 'green' },
+  3: { label: 'Rejected', color: 'red' },
+  4: { label: 'Completed', color: 'green' },
+  5: { label: 'Cancelled', color: 'default' },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
@@ -104,108 +56,26 @@ const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
   </div>
 );
 
-const parseAndFormatDate = (d: string): string => {
-  let date: Date;
-  if (d.match(/^\d{2}-\d{2}-\d{4}/)) {
-    const [datePart, timePart] = d.split(' ');
-    const [day, month, year] = datePart.split('-');
-    date = new Date(`${year}-${month}-${day}T${timePart ? timePart + ':00' : '00:00:00'}`);
-  } else {
-    date = new Date(d);
-  }
-  return date.toLocaleDateString();
-};
-
-const RefundAdminPage: React.FC = () => {
+const ClassRefundAdmin: React.FC = () => {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<string>('');
-  const [selectedRefund, setSelectedRefund] = useState<CommonRefund | null>(null);
+  const [selectedRefund, setSelectedRefund] = useState<RefundRequestClass | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const { data: classRefundsRaw = [], refetch: classRefundsRefresh } = useQuery<
-    ClassRefundRequest[]
-  >({
-    queryKey: ['refunds-class', statusFilter],
-    queryFn: () =>
-      getRefundRequestsClass({
-        statusFilter: statusFilter ? classStatusNumberMap[statusFilter].toString() : '',
-      }),
+  const { data: refunds = [] } = useQuery<RefundRequestClass[]>({
+    queryKey: ['class-refunds', statusFilter],
+    queryFn: () => getRefundRequestsClass({ statusFilter }),
   });
 
-  const classRefunds: CommonRefund[] = classRefundsRaw.map((r) => ({
-    refundRequestId: r.refundRequestID.toString(),
-    studentName: r.studentName,
-    studentEmail: '', // Placeholder, as not in type
-    studentAvatar: null, // Placeholder
-    itemName: r.className,
-    refundAmount: r.refundAmount,
-    originalAmount: 0, // Placeholder
-    requestType: r.requestType.toString(),
-    reason: r.reason,
-    bankName: r.bankName,
-    bankAccountNumber: r.bankAccountNumber,
-    bankAccountHolderName: r.bankAccountHolderName,
-    proofImageUrl: r.proofImageUrl || null,
-    status: classNumberToStatusMap[r.status] || 'Unknown',
-    requestedAt: r.requestedAt,
-    processedAt: r.processedAt || null,
-    adminNote: r.adminNote || null,
-    processedByAdminName: null, // Placeholder
-    type: 'class',
-  }));
-
-  const { data: courseRefundsRaw = [], refetch: courseRefundsRefetch } = useQuery<
-    CourseRefundRequest[]
-  >({
-    queryKey: ['refunds-course', statusFilter],
-    queryFn: () => getRefundRequestsCourse({ status: statusFilter }).then((res) => res.data),
-  });
-
-  const courseRefunds: CommonRefund[] = courseRefundsRaw.map((r) => ({
-    refundRequestId: r.refundRequestId,
-    studentName: r.studentName,
-    studentEmail: r.studentEmail,
-    studentAvatar: r.studentAvatar,
-    itemName: r.courseName,
-    refundAmount: r.refundAmount,
-    originalAmount: r.originalAmount,
-    requestType: r.requestType,
-    reason: r.reason,
-    bankName: r.bankName,
-    bankAccountNumber: r.bankAccountNumber,
-    bankAccountHolderName: r.bankAccountHolderName,
-    proofImageUrl: r.proofImageUrl,
-    status: r.status,
-    requestedAt: r.requestedAt,
-    processedAt: r.processedAt,
-    adminNote: r.adminNote,
-    processedByAdminName: r.processedByAdminName,
-    type: 'course',
-  }));
-
-  const processClassMutation = useMutation({
+  const processMutation = useMutation({
     mutationFn: processRefundClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds-class'] });
-      queryClient.invalidateQueries({ queryKey: ['refunds-course'] });
-      classRefundsRefresh();
+      queryClient.invalidateQueries({ queryKey: ['class-refunds'] });
       setIsModalVisible(false);
-      notifySuccess('Processed successfully');
+      message.success('Processed successfully');
     },
-    onError: () => notifyError('Failed to process'),
-  });
-
-  const processCourseMutation = useMutation({
-    mutationFn: processRefundCourse,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds-class'] });
-      queryClient.invalidateQueries({ queryKey: ['refunds-course'] });
-      courseRefundsRefetch();
-      setIsModalVisible(false);
-      notifySuccess('Processed successfully');
-    },
-    onError: () => notifyError('Failed to process'),
+    onError: () => message.error('Failed to process'),
   });
 
   useEffect(() => {
@@ -215,17 +85,11 @@ const RefundAdminPage: React.FC = () => {
     }
   }, [selectedRefund, isModalVisible, form]);
 
-  const pendingCount =
-    classRefunds.filter((r) => r.status === 'Pending').length +
-    courseRefunds.filter((r) => r.status === 'Pending').length;
-  const processingCount =
-    classRefunds.filter((r) => r.status === 'Under Review').length +
-    courseRefunds.filter((r) => r.status === 'Under Review').length;
-  const completedCount =
-    classRefunds.filter((r) => r.status === 'Approved' || r.status === 'Completed').length +
-    courseRefunds.filter((r) => r.status === 'Approved' || r.status === 'Completed').length;
+  const pendingCount = refunds.filter((r) => r.status === 0).length;
+  const processingCount = refunds.filter((r) => r.status === 1).length;
+  const completedCount = refunds.filter((r) => r.status === 2 || r.status === 4).length;
 
-  const commonColumns = [
+  const columns = [
     {
       title: 'Student',
       dataIndex: 'studentName',
@@ -238,8 +102,8 @@ const RefundAdminPage: React.FC = () => {
       ),
     },
     {
-      title: 'Item',
-      dataIndex: 'itemName',
+      title: 'Class',
+      dataIndex: 'className',
       ellipsis: true,
       render: (t: string) => <span className="text-xs text-gray-500">{t}</span>,
     },
@@ -260,7 +124,7 @@ const RefundAdminPage: React.FC = () => {
       title: 'Status',
       dataIndex: 'status',
       width: 120,
-      render: (s: string) => {
+      render: (s: number) => {
         const info = statusMap[s] || { label: 'Unknown', color: 'default' };
         return (
           <Tag
@@ -275,17 +139,19 @@ const RefundAdminPage: React.FC = () => {
       title: 'Date',
       dataIndex: 'requestedAt',
       width: 110,
-      render: (d: string) => <span className="text-xs text-gray-400">{parseAndFormatDate(d)}</span>,
+      render: (d: string) => (
+        <span className="text-xs text-gray-400">{new Date(d).toLocaleDateString()}</span>
+      ),
     },
     {
       title: '',
       width: 60,
-      render: (_: any, r: CommonRefund) => (
+      render: (_: any, r: RefundRequestClass) => (
         <Button
           size="small"
           type="text"
           icon={
-            r.status === 'Pending' || r.status === 'Under Review' ? (
+            r.status === 0 || r.status === 1 ? (
               <EyeOutlined className="text-blue-500" />
             ) : (
               <EyeOutlined className="text-gray-400" />
@@ -300,16 +166,7 @@ const RefundAdminPage: React.FC = () => {
     },
   ];
 
-  const courseColumns = commonColumns.map((col) =>
-    col.dataIndex === 'itemName' ? { ...col, title: 'Course' } : col
-  );
-
-  const classColumns = commonColumns.map((col) =>
-    col.dataIndex === 'itemName' ? { ...col, title: 'Class' } : col
-  );
-
-  const canProcess =
-    selectedRefund?.status === 'Pending' || selectedRefund?.status === 'Under Review';
+  const canProcess = selectedRefund?.status === 0 || selectedRefund?.status === 1;
 
   return (
     <div className="space-y-5">
@@ -349,42 +206,6 @@ const RefundAdminPage: React.FC = () => {
         </Col>
       </Row>
 
-      <div className="flex justify-end mb-4">
-        <Select
-          value={statusFilter}
-          onChange={setStatusFilter}
-          size="middle"
-          style={{ width: 160 }}
-          placeholder="Filter Status"
-          allowClear>
-          <Option value="">All Status</Option>
-          <Option value="Pending">Pending</Option>
-          <Option value="Under Review">Under Review</Option>
-          <Option value="Approved">Approved</Option>
-          <Option value="Rejected">Rejected</Option>
-        </Select>
-      </div>
-
-      <Card
-        bordered={false}
-        className="rounded-2xl shadow-sm border border-gray-100"
-        bodyStyle={{ padding: '16px' }}>
-        <div className="flex justify-between items-center mb-4 px-2">
-          <Title
-            level={5}
-            className="!mb-0 !font-semibold text-gray-700">
-            Course Refund Requests
-          </Title>
-        </div>
-        <Table
-          dataSource={courseRefunds}
-          columns={courseColumns}
-          rowKey="refundRequestId"
-          pagination={{ pageSize: 8, size: 'small' }}
-          size="small"
-        />
-      </Card>
-
       <Card
         bordered={false}
         className="rounded-2xl shadow-sm border border-gray-100"
@@ -395,11 +216,23 @@ const RefundAdminPage: React.FC = () => {
             className="!mb-0 !font-semibold text-gray-700">
             Class Refund Requests
           </Title>
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            size="middle"
+            style={{ width: 160 }}
+            placeholder="Filter Status"
+            allowClear>
+            <Option value="">All Status</Option>
+            <Option value="0">Pending</Option>
+            <Option value="2">Approved</Option>
+            <Option value="3">Rejected</Option>
+          </Select>
         </div>
         <Table
-          dataSource={classRefunds}
-          columns={classColumns}
-          rowKey="refundRequestId"
+          dataSource={refunds}
+          columns={columns}
+          rowKey="refundRequestID"
           pagination={{ pageSize: 8, size: 'small' }}
           size="small"
         />
@@ -415,27 +248,12 @@ const RefundAdminPage: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={(v) => {
-            const action = v.Action;
-            const adminNote = v.AdminNote;
-            if (selectedRefund?.type === 'class') {
-              const payload = {
-                RefundRequestId: selectedRefund.refundRequestId,
-                Action: action,
-                AdminNote: adminNote,
-                ProofImage: v.ProofImage,
-              };
-              processClassMutation.mutate(payload);
-            } else {
-              const isApproved = action === 'Approve';
-              const payload = {
-                refundRequestId: selectedRefund!.refundRequestId,
-                isApproved,
-                note: adminNote,
-              };
-              processCourseMutation.mutate(payload);
-            }
-          }}>
+          onFinish={(v) =>
+            processMutation.mutate({
+              RefundRequestId: selectedRefund!.refundRequestID.toString(),
+              ...v,
+            })
+          }>
           {selectedRefund && (
             <div className="mb-5 p-4 bg-gray-50 rounded-xl text-xs text-gray-600 space-y-2 border border-gray-100">
               <div className="flex justify-between">
@@ -502,7 +320,7 @@ const RefundAdminPage: React.FC = () => {
                 noStyle
                 shouldUpdate={(prev, current) => prev.Action !== current.Action}>
                 {({ getFieldValue }) =>
-                  selectedRefund?.type === 'class' && getFieldValue('Action') === 'Approve' ? (
+                  getFieldValue('Action') === 'Approve' ? (
                     <Form.Item
                       name="ProofImage"
                       label="Proof Image (Required)"
@@ -538,11 +356,7 @@ const RefundAdminPage: React.FC = () => {
                 type="primary"
                 htmlType="submit"
                 block
-                loading={
-                  selectedRefund?.type === 'class'
-                    ? processClassMutation.isPending
-                    : processCourseMutation.isPending
-                }
+                loading={processMutation.isPending}
                 size="large"
                 className="bg-blue-600 shadow-md h-10 font-medium">
                 Confirm Action
@@ -551,14 +365,14 @@ const RefundAdminPage: React.FC = () => {
           ) : (
             <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex flex-col items-center gap-2">
-                {selectedRefund?.status === 'Rejected' ? (
+                {selectedRefund?.status === 3 ? (
                   <CloseCircleOutlined className="text-3xl text-red-500" />
                 ) : (
                   <CheckCircleOutlined className="text-3xl text-green-500" />
                 )}
                 <div>
                   <div className="text-gray-800 font-semibold text-base">
-                    Request {statusMap[selectedRefund?.status || 'Pending'].label}
+                    Request {statusMap[selectedRefund?.status || 0].label}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     This request has been processed and is closed.
@@ -573,4 +387,4 @@ const RefundAdminPage: React.FC = () => {
   );
 };
 
-export default RefundAdminPage;
+export default ClassRefundAdmin;
