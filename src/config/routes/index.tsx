@@ -23,7 +23,7 @@ import CourseDetailView from '../../pages/Teacher/CourseDetailView';
 import UnitsManager from '../../pages/Teacher/UnitsManager';
 import EditCoursePage from '../../pages/Teacher/EditCoursePage';
 
-import CourseReviewDetail from '../../pages/Staff/CourseReviewDetail';
+
 import ConversationPromptPage from '../../pages/Admin/ConversationPromptPage';
 import MyClasses from '../../pages/Teacher/MyClasses';
 import ClassDetail from '../../pages/Teacher/ClassDetail';
@@ -47,6 +47,7 @@ import CoursesPage from '../../pages/Admin/CoursesPage';
 import Dashboard from '@/pages/Manager/Dashboard';
 import TeacherApplicationByManager from '@/pages/Manager/Teacher/TeacherApplications';
 import TeacherApplicationDetailByManager from '@/pages/Manager/Teacher/ApplicationDetail';
+import ExerciseGradingPageByManager from '@/pages/Manager/Exercise/ExerciseGradingPage';
 // Route configuration
 const routes: RouteObject[] = [
   {
@@ -162,8 +163,8 @@ const routes: RouteObject[] = [
         element: <CourseDetailByManager />,
       },
       {
-        path: 'courses/pending/:id/:courseSubmissionID',
-        element: <CourseReviewDetail />,
+        path: 'exercise-grading',
+        element: <ExerciseGradingPageByManager />,
       },
       {
         path: 'profile',
