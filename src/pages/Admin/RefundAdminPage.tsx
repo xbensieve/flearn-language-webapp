@@ -12,7 +12,6 @@ import {
   Form,
   Input,
   Radio,
-  message,
   Table,
   Image,
 } from 'antd';
@@ -25,20 +24,20 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
 } from '@ant-design/icons';
-import { processRefund } from '../../services/refund';
-import api from '../../config/axios';
+import { getRefundRequests, processRefund } from '../../services/refund';
 import type { RefundRequest } from '../../services/refund/type';
+import { notifyError, notifySuccess } from '@/utils/toastConfig';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const statusMap: Record<number, { label: string; color: string }> = {
-  0: { label: 'Pending', color: 'blue' },
-  1: { label: 'Under Review', color: 'orange' },
-  2: { label: 'Approved', color: 'green' },
-  3: { label: 'Rejected', color: 'red' },
-  4: { label: 'Completed', color: 'green' },
-  5: { label: 'Cancelled', color: 'default' },
+const statusMap: Record<string, { label: string; color: string }> = {
+  Pending: { label: 'Pending', color: 'blue' },
+  'Under Review': { label: 'Under Review', color: 'orange' },
+  Approved: { label: 'Approved', color: 'green' },
+  Rejected: { label: 'Rejected', color: 'red' },
+  Completed: { label: 'Completed', color: 'green' },
+  Cancelled: { label: 'Cancelled', color: 'default' },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
@@ -64,13 +63,9 @@ const RefundAdminPage: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const { data: refunds = [] } = useQuery<RefundRequest[]>({
+  const { data: refunds = [], refetch } = useQuery<RefundRequest[]>({
     queryKey: ['refunds', statusFilter],
-    queryFn: async () => {
-      const params = statusFilter !== '' ? { status: Number(statusFilter) } : {};
-      const res = await api.get('/Refund/admin/list', { params });
-      return res.data.data || [];
-    },
+    queryFn: () => getRefundRequests({ status: statusFilter }).then((res) => res.data),
   });
 
   const processMutation = useMutation({
@@ -78,9 +73,10 @@ const RefundAdminPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['refunds'] });
       setIsModalVisible(false);
-      message.success('Processed successfully');
+      notifySuccess('Processed successfully');
+      refetch();
     },
-    onError: () => message.error('Failed to process'),
+    onError: () => notifyError('Failed to process'),
   });
 
   useEffect(() => {
@@ -90,9 +86,11 @@ const RefundAdminPage: React.FC = () => {
     }
   }, [selectedRefund, isModalVisible, form]);
 
-  const pendingCount = refunds.filter((r) => r.status === 0).length;
-  const processingCount = refunds.filter((r) => r.status === 1).length;
-  const completedCount = refunds.filter((r) => r.status === 2 || r.status === 4).length;
+  const pendingCount = refunds.filter((r) => r.status === 'Pending').length;
+  const processingCount = refunds.filter((r) => r.status === 'Under Review').length;
+  const completedCount = refunds.filter(
+    (r) => r.status === 'Approved' || r.status === 'Completed'
+  ).length;
 
   const columns = [
     {
@@ -108,7 +106,7 @@ const RefundAdminPage: React.FC = () => {
     },
     {
       title: 'Class',
-      dataIndex: 'className',
+      dataIndex: 'courseName',
       ellipsis: true,
       render: (t: string) => <span className="text-xs text-gray-500">{t}</span>,
     },
@@ -129,7 +127,7 @@ const RefundAdminPage: React.FC = () => {
       title: 'Status',
       dataIndex: 'status',
       width: 120,
-      render: (s: number) => {
+      render: (s: string) => {
         const info = statusMap[s] || { label: 'Unknown', color: 'default' };
         return (
           <Tag
@@ -144,9 +142,12 @@ const RefundAdminPage: React.FC = () => {
       title: 'Date',
       dataIndex: 'requestedAt',
       width: 110,
-      render: (d: string) => (
-        <span className="text-xs text-gray-400">{new Date(d).toLocaleDateString()}</span>
-      ),
+      render: (d: string) => {
+        const [datePart] = d.split(' ');
+        const [day, month, year] = datePart.split('-');
+        const parsedDate = new Date(`${year}-${month}-${day}`);
+        return <span className="text-xs text-gray-400">{parsedDate.toLocaleDateString()}</span>;
+      },
     },
     {
       title: '',
@@ -156,7 +157,7 @@ const RefundAdminPage: React.FC = () => {
           size="small"
           type="text"
           icon={
-            r.status === 0 || r.status === 1 ? (
+            r.status === 'Pending' || r.status === 'Under Review' ? (
               <EyeOutlined className="text-blue-500" />
             ) : (
               <EyeOutlined className="text-gray-400" />
@@ -171,7 +172,8 @@ const RefundAdminPage: React.FC = () => {
     },
   ];
 
-  const canProcess = selectedRefund?.status === 0 || selectedRefund?.status === 1;
+  const canProcess =
+    selectedRefund?.status === 'Pending' || selectedRefund?.status === 'Under Review';
 
   return (
     <div className="space-y-5">
@@ -229,15 +231,15 @@ const RefundAdminPage: React.FC = () => {
             placeholder="Filter Status"
             allowClear>
             <Option value="">All Status</Option>
-            <Option value="0">Pending</Option>
-            <Option value="2">Approved</Option>
-            <Option value="3">Rejected</Option>
+            <Option value="Pending">Pending</Option>
+            <Option value="Approved">Approved</Option>
+            <Option value="Rejected">Rejected</Option>
           </Select>
         </div>
         <Table
           dataSource={refunds}
           columns={columns}
-          rowKey="refundRequestID"
+          rowKey="refundRequestId"
           pagination={{ pageSize: 8, size: 'small' }}
           size="small"
         />
@@ -253,9 +255,15 @@ const RefundAdminPage: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          onFinish={(v) =>
-            processMutation.mutate({ RefundRequestId: selectedRefund!.refundRequestID, ...v })
-          }>
+          onFinish={(v) => {
+            const isApproved = v.Action === 'Approve';
+            const note = v.AdminNote;
+            processMutation.mutate({
+              refundRequestId: selectedRefund!.refundRequestId,
+              isApproved,
+              note,
+            });
+          }}>
           {/* Phần hiển thị thông tin chung (Luôn hiện) */}
           {selectedRefund && (
             <div className="mb-5 p-4 bg-gray-50 rounded-xl text-xs text-gray-600 space-y-2 border border-gray-100">
@@ -305,45 +313,18 @@ const RefundAdminPage: React.FC = () => {
                 className="mb-4">
                 <Radio.Group
                   buttonStyle="solid"
-                  className="w-full flex text-center">
+                  className="!w-full flex text-center">
                   <Radio.Button
                     value="Approve"
-                    className="flex-1">
+                    className="!flex-1">
                     Approve
                   </Radio.Button>
                   <Radio.Button
                     value="Reject"
-                    className="flex-1">
+                    className="!flex-1">
                     Reject
                   </Radio.Button>
                 </Radio.Group>
-              </Form.Item>
-
-              <Form.Item
-                noStyle
-                shouldUpdate={(prev, current) => prev.Action !== current.Action}>
-                {({ getFieldValue }) =>
-                  getFieldValue('Action') === 'Approve' ? (
-                    <Form.Item
-                      name="ProofImage"
-                      label="Proof Image (Required)"
-                      valuePropName="file"
-                      getValueFromEvent={(e) => e && e.file}
-                      rules={[{ required: true, message: 'Please upload proof image' }]}>
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
-                        <input
-                          type="file"
-                          className="w-full text-xs"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            form.setFieldsValue({ ProofImage: file });
-                          }}
-                        />
-                      </div>
-                    </Form.Item>
-                  ) : null
-                }
               </Form.Item>
 
               <Form.Item
@@ -368,14 +349,14 @@ const RefundAdminPage: React.FC = () => {
           ) : (
             <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex flex-col items-center gap-2">
-                {selectedRefund?.status === 3 ? (
+                {selectedRefund?.status === 'Rejected' ? (
                   <CloseCircleOutlined className="text-3xl text-red-500" />
                 ) : (
                   <CheckCircleOutlined className="text-3xl text-green-500" />
                 )}
                 <div>
                   <div className="text-gray-800 font-semibold text-base">
-                    Request {statusMap[selectedRefund?.status || 0].label}
+                    Request {statusMap[selectedRefund?.status || 'Pending'].label}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     This request has been processed and is closed.
