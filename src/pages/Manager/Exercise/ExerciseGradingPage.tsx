@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import {
   Search,
@@ -10,11 +10,13 @@ import {
   AlertCircle,
   Award,
   CheckCircle2,
-  XCircle,
   ChevronRight,
   ChevronLeft,
   RotateCcw,
   UserCog,
+  UserCheck,
+  Loader2,
+  XCircle,
 } from "lucide-react";
 
 import { exerciseGradingService } from "@/services/exerciseGrading/exerciseGradingService";
@@ -23,6 +25,7 @@ import type {
   FilterOptions,
   AssignmentQueryParams,
   AIFeedbackData,
+  EligibleTeacher,
 } from "@/types/exerciseGrading";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
@@ -51,12 +54,35 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DateRangePicker from "./DateRangePicker";
+
+// Hook useDebounce đơn giản để tránh gọi API quá nhiều khi search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  return debouncedValue;
+}
 
 export default function ExerciseGradingPage() {
   const [loading, setLoading] = useState(false);
@@ -83,6 +109,20 @@ export default function ExerciseGradingPage() {
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
 
+  // --- States for Reassign Feature ---
+  const [isReassignDialogOpen, setIsReassignDialogOpen] = useState(false);
+  const [teacherSearchTerm, setTeacherSearchTerm] = useState("");
+  const debouncedTeacherSearch = useDebounce(teacherSearchTerm, 500);
+  const [eligibleTeachers, setEligibleTeachers] = useState<EligibleTeacher[]>(
+    []
+  );
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
+  const [selectedNewTeacher, setSelectedNewTeacher] = useState<string | null>(
+    null
+  );
+
+  // --- Initial Data Fetching ---
+
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -95,23 +135,22 @@ export default function ExerciseGradingPage() {
     fetchFilters();
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await exerciseGradingService.getAssignments(
-          queryParams
-        );
-        setAssignments(response.data);
-        setMeta(response.meta);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await exerciseGradingService.getAssignments(queryParams);
+      setAssignments(response.data);
+      setMeta(response.meta);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }, [queryParams]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     if (dateRange.from) {
@@ -129,8 +168,63 @@ export default function ExerciseGradingPage() {
     }
   }, [dateRange]);
 
-  // --- Handlers ---
+  // --- Reassign Logic ---
 
+  // Khi mở dialog hoặc thay đổi search term thì gọi API tìm giáo viên
+  useEffect(() => {
+    if (!isReassignDialogOpen || !selectedAssignment) return;
+
+    const fetchTeachers = async () => {
+      setLoadingTeachers(true);
+      try {
+        // Mặc định lấy page 1, size 10
+        const res = await exerciseGradingService.getEligibleTeachers(
+          selectedAssignment.exerciseSubmissionId, // exerciseSubmissionId (map tạm từ assignmentId)
+          debouncedTeacherSearch,
+          1,
+          10
+        );
+        setEligibleTeachers(res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch eligible teachers", error);
+        toast.error("Failed to load eligible teachers");
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
+
+    fetchTeachers();
+  }, [isReassignDialogOpen, debouncedTeacherSearch, selectedAssignment]);
+
+  const handleOpenReassignDialog = () => {
+    setTeacherSearchTerm("");
+    setSelectedNewTeacher(null);
+    setIsReassignDialogOpen(true);
+  };
+
+  const handleConfirmReassign = async () => {
+    if (!selectedAssignment || !selectedNewTeacher) return;
+
+    try {
+      setLoading(true);
+      await exerciseGradingService.assignTeacher(
+        selectedAssignment.exerciseSubmissionId,
+        selectedNewTeacher
+      );
+      toast.success("Reassigned successfully!");
+
+      setIsReassignDialogOpen(false);
+      setSelectedAssignment(null); // Đóng sheet chi tiết
+      fetchData(); // Refresh lại danh sách assignment
+    } catch (error) {
+      console.error("Failed to reassign teacher", error);
+      toast.error("Failed to reassign teacher");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- Handlers ---
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= meta.totalPages) {
       setQueryParams((prev) => ({ ...prev, Page: newPage }));
@@ -146,19 +240,6 @@ export default function ExerciseGradingPage() {
       [key]: value === "all" ? "" : value,
       Page: 1,
     }));
-  };
-
-  const handleReassign = async () => {
-    if (!selectedAssignment) return;
-    try {
-      await exerciseGradingService.reassignTeacher(
-        selectedAssignment.assignmentId
-      );
-      toast.success("Request to reassign teacher sent successfully!");
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to reassign teacher");
-    }
   };
 
   // --- Client-Side Logic ---
@@ -203,7 +284,6 @@ export default function ExerciseGradingPage() {
     }
   };
 
-  // Helper to parse AI Feedback JSON string
   const parseAIFeedback = (jsonString: string): AIFeedbackData | null => {
     try {
       return JSON.parse(jsonString);
@@ -246,7 +326,7 @@ export default function ExerciseGradingPage() {
         <Card>
           <CardContent className="p-4">
             <div className="space-y-4">
-              {/* Filters Row – tự động co giãn đẹp từ mobile → desktop */}
+              {/* Filters Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* Search */}
                 <div className="relative">
@@ -322,12 +402,10 @@ export default function ExerciseGradingPage() {
 
               {/* Date Range + Reset */}
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                {/* Date Picker */}
                 <DateRangePicker
                   dateRange={dateRange}
                   setDateRange={setDateRange}
                 />
-                {/* Reset Button – chỉ hiện khi có filter nào đang active */}
                 {(queryParams.courseId ||
                   queryParams.exerciseId ||
                   queryParams.Status ||
@@ -345,7 +423,7 @@ export default function ExerciseGradingPage() {
                         Page: 1,
                       }));
                       setClientSearch("");
-                      setDateRange({}); // giữ nguyên kiểu cũ của bạn
+                      setDateRange({});
                     }}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
@@ -492,7 +570,8 @@ export default function ExerciseGradingPage() {
             </Button>
           </div>
         </div>
-        {/* Detail Sheet */}
+
+        {/* --- Detail Sheet --- */}
         <Sheet
           open={!!selectedAssignment}
           onOpenChange={(open) => !open && setSelectedAssignment(null)}
@@ -547,17 +626,18 @@ export default function ExerciseGradingPage() {
                     selectedAssignment.isOverdue) && (
                     <div className="p-4 rounded-lg border border-orange-200 bg-orange-50">
                       <h4 className="font-semibold text-orange-800 mb-2">
-                        Teacher Re-assignment Needed?
+                        Teacher Re-assignment Needed
                       </h4>
                       <p className="text-sm text-orange-700 mb-3">
-                        This assignment has expired or is overdue. You can
-                        assign it to another teacher for grading.
+                        This assignment has expired or is overdue. Please select
+                        another teacher to grade this submission.
                       </p>
                       <Button
-                        onClick={handleReassign}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                        onClick={handleOpenReassignDialog}
+                        className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer"
                       >
-                        Assign to Another Teacher
+                        <UserCheck className="mr-2 h-4 w-4" />
+                        Find & Assign New Teacher
                       </Button>
                     </div>
                   )}
@@ -584,7 +664,7 @@ export default function ExerciseGradingPage() {
 
                   <Separator />
 
-                  {/* Scoring Summary */}
+                  {/* Scoring Summary (Existing Code) */}
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
                       <Award className="h-4 w-4" /> Scoring Results
@@ -676,8 +756,8 @@ export default function ExerciseGradingPage() {
                     </div>
                   </div>
 
+                  {/* ... Rest of existing sheet content (Audio, AI, Timeline) ... */}
                   <Separator />
-
                   {/* Audio Player */}
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
@@ -790,7 +870,6 @@ export default function ExerciseGradingPage() {
 
                   <Separator />
 
-                  {/* Timeline */}
                   <div className="space-y-3">
                     <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                       <Clock className="h-4 w-4" /> Timeline
@@ -813,6 +892,133 @@ export default function ExerciseGradingPage() {
             )}
           </SheetContent>
         </Sheet>
+
+        {/* --- Reassign Teacher Dialog --- */}
+        <Dialog
+          open={isReassignDialogOpen}
+          onOpenChange={setIsReassignDialogOpen}
+        >
+          <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col p-0 gap-0">
+            <DialogHeader className="px-6 py-4 border-b">
+              <DialogTitle>Assign New Teacher</DialogTitle>
+              <DialogDescription>
+                Search and select an eligible teacher to grade this submission.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {/* Search Bar */}
+              <div className="p-4 border-b bg-gray-50/50">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name or email..."
+                    className="pl-10"
+                    value={teacherSearchTerm}
+                    onChange={(e) => setTeacherSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+              </div>
+
+              {/* Teacher List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {loadingTeachers ? (
+                  <div className="flex flex-col items-center justify-center h-40 space-y-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                    <p className="text-sm text-muted-foreground">
+                      Finding teachers...
+                    </p>
+                  </div>
+                ) : eligibleTeachers.length === 0 ? (
+                  <div className="text-center py-10 text-muted-foreground">
+                    <UserCog className="h-10 w-10 mx-auto mb-2 opacity-20" />
+                    <p>No eligible teachers found.</p>
+                  </div>
+                ) : (
+                  eligibleTeachers.map((teacher) => (
+                    <div
+                      key={teacher.teacherId}
+                      onClick={() =>
+                        setSelectedNewTeacher((prev) =>
+                          prev === teacher.teacherId ? null : teacher.teacherId
+                        )
+                      }
+                      className={`
+                        flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
+                        ${
+                          selectedNewTeacher === teacher.teacherId
+                            ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
+                            : "hover:bg-slate-50 border-gray-200"
+                        }
+                      `}
+                    >
+                      <Avatar>
+                        <AvatarImage src={teacher.avatar} />
+                        <AvatarFallback>
+                          {teacher.fullName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <p className="font-medium truncate">
+                            {teacher.fullName}
+                          </p>
+                          {teacher.isRecommended && (
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] h-5 px-1 bg-green-100 text-green-700"
+                            >
+                              Recommended
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {teacher.email}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Award className="h-3 w-3" />{" "}
+                            {teacher.proficiencyCode}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> Active:{" "}
+                            {teacher.activeAssignmentsCount}
+                          </span>
+                        </div>
+                      </div>
+                      {selectedNewTeacher === teacher.teacherId && (
+                        <div className="text-blue-600">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3 rounded-b-md">
+              <Button
+                variant="outline"
+                onClick={() => setIsReassignDialogOpen(false)}
+                className="hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmReassign}
+                disabled={!selectedNewTeacher || loading}
+                className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-600 transition-colors flex items-center cursor-pointer"
+              >
+                {loading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
+                )}
+                Confirm Assignment
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
