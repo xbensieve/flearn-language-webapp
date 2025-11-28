@@ -64,7 +64,7 @@ export default function TeacherApplications() {
     try {
       const params: ApplicationQueryParams = {
         Page: 1,
-        PageSize: 500, // Lấy nhiều để làm client-side search & sort
+        PageSize: 50,
         status: statusFilter !== "all" ? statusFilter : undefined,
       };
 

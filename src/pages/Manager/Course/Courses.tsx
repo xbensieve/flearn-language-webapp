@@ -5,7 +5,6 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal,
   Clock,
   FileText,
 } from "lucide-react";
@@ -23,19 +22,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { courseService } from "@/services/course/courseService";
-import type {
-  CourseSubmission,
-  SubmissionStatus,
-  MetaData,
-} from "@/types/course";
+import type { CourseSubmission, SubmissionStatus } from "@/types/course";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 export default function Courses() {
   const navigate = useNavigate();
 
-  const [submissions, setSubmissions] = useState<CourseSubmission[]>([]);
+  const [allSubmissions, setAllSubmissions] = useState<CourseSubmission[]>([]);
   const [loading, setLoading] = useState(true);
-  const [meta, setMeta] = useState<MetaData | null>(null);
+
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
+
   const [sortBy, setSortBy] = useState<
     "newest" | "oldest" | "atoz" | "ztoa" | "price-asc" | "price-desc"
   >("newest");
@@ -43,7 +41,6 @@ export default function Courses() {
   const [statusFilter, setStatusFilter] = useState<SubmissionStatus | "all">(
     "all"
   );
-  const [page, setPage] = useState(1);
   const [levelFilter, setLevelFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
 
@@ -51,26 +48,30 @@ export default function Courses() {
     setLoading(true);
     try {
       const res = await courseService.getSubmissions({
-        Page: page,
-        PageSize: 10,
+        Page: 1,
+        PageSize: 500,
         status: statusFilter === "all" ? undefined : statusFilter,
       });
-      setSubmissions(res.data);
-      setMeta(res.meta || null);
+      setAllSubmissions(res.data);
     } catch (error) {
       console.error("Failed to load courses", error);
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter]);
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // --- LOGIC LỌC CLIENT ---
-  const filteredSubmissions = useMemo(() => {
-    const filtered = submissions.filter((item) => {
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, levelFilter, priceFilter, sortBy, statusFilter]);
+
+  const processedData = useMemo(() => {
+    let filtered = [...allSubmissions];
+
+    filtered = filtered.filter((item) => {
       const matchesSearch =
         searchTerm === "" ||
         item.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,8 +116,15 @@ export default function Courses() {
           return 0;
       }
     });
-  }, [submissions, searchTerm, levelFilter, priceFilter, sortBy]);
-  // ------------------------
+  }, [allSubmissions, searchTerm, levelFilter, priceFilter, sortBy]);
+
+  const paginatedData = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return processedData.slice(start, end);
+  }, [processedData, page, pageSize]);
+
+  const totalPages = Math.ceil(processedData.length / pageSize);
 
   const getTimeAgo = (submittedAt: string) => {
     if (!submittedAt) return "unknown";
@@ -144,64 +152,6 @@ export default function Courses() {
     }
   };
 
-  // --- PAGINATION LOGIC ---
-  const renderPaginationButtons = () => {
-    if (!meta || meta.totalPages <= 1) return null;
-
-    const buttons = [];
-    const totalPages = meta.totalPages;
-    const currentPage = page;
-
-    const renderButton = (pageNum: number) => (
-      <Button
-        key={pageNum}
-        variant={pageNum === currentPage ? "default" : "outline"}
-        size="icon"
-        className={`w-9 h-9 transition-all font-medium ${
-          pageNum === currentPage
-            ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm"
-            : "text-slate-600 border-slate-200 hover:bg-slate-50 hover:text-blue-600"
-        }`}
-        onClick={() => setPage(pageNum)}
-      >
-        {pageNum}
-      </Button>
-    );
-
-    const renderEllipsis = (key: string) => (
-      <div key={key} className="flex items-center justify-center w-9 h-9">
-        <MoreHorizontal className="h-4 w-4 text-slate-400" />
-      </div>
-    );
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) buttons.push(renderButton(i));
-    } else {
-      buttons.push(renderButton(1));
-
-      if (currentPage > 3) buttons.push(renderEllipsis("start-dot"));
-
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-
-      let adjustedStart = start;
-      let adjustedEnd = end;
-
-      if (currentPage < 3) adjustedEnd = 4;
-      if (currentPage > totalPages - 2) adjustedStart = totalPages - 3;
-
-      for (let i = adjustedStart; i <= adjustedEnd; i++) {
-        if (i > 1 && i < totalPages) buttons.push(renderButton(i));
-      }
-
-      if (currentPage < totalPages - 2) buttons.push(renderEllipsis("end-dot"));
-
-      buttons.push(renderButton(totalPages));
-    }
-
-    return buttons;
-  };
-
   return (
     <DashboardLayout>
       <div className="font-sans space-y-8 animate-in fade-in duration-500">
@@ -227,11 +177,6 @@ export default function Courses() {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-4 h-10 text-base bg-gray-50 focus:bg-white border border-gray-200 rounded-md focus:ring-4 focus:ring-blue-500/10"
                 />
-                {loading && searchTerm && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent" />
-                  </div>
-                )}
               </div>
             </div>
             <div className="mt-5 pt-5 flex flex-wrap items-center gap-4 text-sm">
@@ -239,17 +184,16 @@ export default function Courses() {
                 <Filter className="h-4 w-4" />
                 <span className="font-medium">Filter by</span>
               </div>
-              {/* Level Filter (Client-side) */}
+
               <Select value={levelFilter} onValueChange={setLevelFilter}>
                 <SelectTrigger className="w-[180px] h-10 bg-gray-50 cursor-pointer">
                   <SelectValue placeholder="Level" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
                   <SelectItem value="all">All Levels</SelectItem>
-
                   <SelectGroup>
                     <SelectLabel className="text-xs font-bold text-slate-500 mt-2 px-2">
-                      English (CEFR)
+                      English
                     </SelectLabel>
                     <SelectItem value="A1">A1 (Beginner)</SelectItem>
                     <SelectItem value="A2">A2 (Elementary)</SelectItem>
@@ -258,10 +202,9 @@ export default function Courses() {
                     <SelectItem value="C1">C1 (Advanced)</SelectItem>
                     <SelectItem value="C2">C2 (Proficiency)</SelectItem>
                   </SelectGroup>
-
                   <SelectGroup>
                     <SelectLabel className="text-xs font-bold text-slate-500 mt-2 px-2">
-                      Japanese (JLPT)
+                      Japanese
                     </SelectLabel>
                     <SelectItem value="N5">N5 (Basic)</SelectItem>
                     <SelectItem value="N4">N4 (Elementary)</SelectItem>
@@ -269,10 +212,9 @@ export default function Courses() {
                     <SelectItem value="N2">N2 (Pre-Advanced)</SelectItem>
                     <SelectItem value="N1">N1 (Advanced)</SelectItem>
                   </SelectGroup>
-
                   <SelectGroup>
                     <SelectLabel className="text-xs font-bold text-slate-500 mt-2 px-2">
-                      Chinese (HSK)
+                      Chinese
                     </SelectLabel>
                     <SelectItem value="HSK1">HSK 1</SelectItem>
                     <SelectItem value="HSK2">HSK 2</SelectItem>
@@ -294,6 +236,7 @@ export default function Courses() {
                   <SelectItem value="paid">Paid</SelectItem>
                 </SelectContent>
               </Select>
+
               <Select
                 value={statusFilter}
                 onValueChange={(val: SubmissionStatus) => setStatusFilter(val)}
@@ -308,8 +251,10 @@ export default function Courses() {
                   <SelectItem value="Rejected">Rejected</SelectItem>
                 </SelectContent>
               </Select>
+
               <Select
                 value={sortBy}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(val: any) => setSortBy(val)}
               >
                 <SelectTrigger className="w-[200px] h-10 bg-gray-50 cursor-pointer">
@@ -324,6 +269,7 @@ export default function Courses() {
                   <SelectItem value="price-desc">Price: High → Low</SelectItem>
                 </SelectContent>
               </Select>
+
               {(levelFilter !== "all" ||
                 priceFilter !== "all" ||
                 sortBy !== "newest") && (
@@ -339,6 +285,12 @@ export default function Courses() {
                 </button>
               )}
             </div>
+
+            <div className="mt-4 text-sm text-slate-500">
+              Found <strong>{processedData.length}</strong> course
+              {processedData.length !== 1 ? "s" : ""}
+              {searchTerm && ` matching "${searchTerm}"`}
+            </div>
           </div>
         </div>
 
@@ -348,17 +300,16 @@ export default function Courses() {
               <Skeleton key={i} className="h-[380px] rounded-lg" />
             ))}
           </div>
-        ) : filteredSubmissions.length === 0 ? (
+        ) : paginatedData.length === 0 ? (
           <div className="text-center py-20 bg-slate-50 rounded-sm border border-dashed">
-            <p className="text-slate-500">
-              No courses match your filters on this page.
-            </p>
+            <p className="text-slate-500">No courses match your filters.</p>
             <Button
               variant="link"
               onClick={() => {
                 setLevelFilter("all");
                 setPriceFilter("all");
                 setSortBy("newest");
+                setStatusFilter("all");
                 setSearchTerm("");
               }}
               className="cursor-pointer"
@@ -368,7 +319,7 @@ export default function Courses() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredSubmissions.map((item: CourseSubmission) => (
+            {paginatedData.map((item: CourseSubmission) => (
               <div
                 key={item.submissionId}
                 className="group flex flex-col bg-white rounded-sm border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
@@ -378,17 +329,13 @@ export default function Courses() {
                   })
                 }
               >
-                {/* 1. IMAGE SECTION */}
                 <div className="relative h-48 w-full overflow-hidden">
                   <img
                     src={item.course.imageUrl}
                     alt={item.course.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  {/* Overlay gradient nhẹ khi hover */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
-
-                  {/* Status Badge - Floating top right */}
                   <div className="absolute top-3 right-3">
                     <Badge
                       className={`${getStatusColor(
@@ -400,9 +347,7 @@ export default function Courses() {
                   </div>
                 </div>
 
-                {/* 2. CARD BODY */}
                 <div className="p-5 flex flex-col flex-grow">
-                  {/* Metadata Row: Level & Price */}
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <Badge
@@ -473,38 +418,32 @@ export default function Courses() {
           </div>
         )}
 
-        {meta && meta.totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row justify-between items-center pt-8 gap-4 border-t border-slate-100 mt-6">
-            <div className="text-sm text-slate-500 font-medium order-2 sm:order-1">
-              Showing page{" "}
-              <span className="text-slate-900 font-bold">{page}</span> of{" "}
-              <span className="text-slate-900 font-bold">
-                {meta.totalPages}
-                <br />
-              </span>
-              <span className="hidden sm:inline">
-                ({meta.totalItems} items total)
-              </span>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
+            <div className="text-sm text-slate-600">
+              Page <strong>{page}</strong> of <strong>{totalPages}</strong> (
+              {processedData.length} total)
             </div>
-            <div className="flex items-center gap-1 order-1 sm:order-2 bg-white p-1 rounded-lg">
+            <div className="flex gap-2">
               <Button
+                className="cursor-pointer"
                 variant="outline"
-                size="icon"
-                className="w-9 h-9 border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                size="sm"
                 disabled={page === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
               </Button>
-              <div className="flex gap-1 mx-1">{renderPaginationButtons()}</div>
               <Button
+                className="cursor-pointer"
                 variant="outline"
-                size="icon"
-                className="w-9 h-9 border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-                disabled={page === meta.totalPages}
+                size="sm"
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >
-                <ChevronRight className="h-4 w-4" />
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           </div>
