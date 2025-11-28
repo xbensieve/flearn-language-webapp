@@ -4,6 +4,8 @@ import type {
   CourseSubmission,
   CourseQueryParams,
   LessonDetail,
+  Exercise,
+  ExerciseQueryParams,
 } from "@/types/course";
 import axiosInstance from "@/lib/axiosInstance";
 
@@ -88,6 +90,24 @@ export const courseService = {
       });
     } catch (error) {
       console.error(`Failed to reject course ${submissionId}`, error);
+      throw error;
+    }
+  },
+  getExercisesByLesson: async ({
+    lessonId,
+    Page = 1,
+    PageSize = 10,
+  }: ExerciseQueryParams): Promise<APIResponse<Exercise[]>> => {
+    try {
+      const response = await axiosInstance.get<APIResponse<Exercise[]>>(
+        `/lessons/${lessonId}/exercises`,
+        {
+          params: { Page, PageSize },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch exercises", error);
       throw error;
     }
   },

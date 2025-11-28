@@ -41,6 +41,8 @@ import {
   applicationService,
   type TeacherApplication,
 } from "@/services/teacher/applicationService";
+import { Toaster } from "sonner";
+import { toast } from "react-toastify";
 
 export default function ApplicationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -51,11 +53,7 @@ export default function ApplicationDetail() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // States for Image Modal
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  // States for Actions (Approve/Reject)
   const [isApproveOpen, setIsApproveOpen] = useState(false);
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -70,6 +68,8 @@ export default function ApplicationDetail() {
         setApplication(data);
       } catch (err) {
         setError("Failed to load application details.");
+        console.error(err);
+        toast.error("Failed to load application details.");
       } finally {
         setLoading(false);
       }
@@ -97,9 +97,10 @@ export default function ApplicationDetail() {
         reviewedAt: new Date().toISOString(),
       });
       setIsApproveOpen(false);
+      toast.success("Application approved successfully.");
     } catch (err) {
       console.error(err);
-      alert("Failed to approve application. Please try again.");
+      toast.error("Failed to approve application. Please try again.");
     } finally {
       setActionLoading(false);
     }
@@ -125,9 +126,10 @@ export default function ApplicationDetail() {
         reviewedAt: new Date().toISOString(),
       });
       setIsRejectOpen(false);
+      toast.success("Application rejected successfully.");
     } catch (err) {
       console.error(err);
-      alert("Failed to reject application. Please try again.");
+      toast.error("Failed to reject application. Please try again.");
     } finally {
       setActionLoading(false);
     }
@@ -211,6 +213,7 @@ export default function ApplicationDetail() {
 
   return (
     <DashboardLayout>
+      <Toaster position="top-left" />
       <div className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12 space-y-8">
           <Button
