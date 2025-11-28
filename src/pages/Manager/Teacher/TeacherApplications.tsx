@@ -297,9 +297,10 @@ export default function TeacherApplications() {
                   <TableRow
                     key={app.applicationID}
                     className="hover:bg-slate-50/50 transition-colors cursor-pointer"
-                    onClick={() =>
-                      console.log("View detail:", app.applicationID)
-                    } // Thay bằng mở modal
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/dashboard/applications/${app.applicationID}`);
+                    }}
                   >
                     <TableCell className="font-medium text-slate-500">
                       {(page - 1) * pageSize + index + 1}

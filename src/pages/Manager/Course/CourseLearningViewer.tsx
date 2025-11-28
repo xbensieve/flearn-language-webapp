@@ -27,7 +27,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import RejectReasonModal from "./RejectReasonModal";
-
+import { Dumbbell } from "lucide-react";
+import LessonExerciseList from "./LessonExerciseList";
 interface Props {
   course: CourseDetail;
   submissionId: string;
@@ -92,7 +93,7 @@ export default function CourseLearningViewer({
     type: "success" | "error";
     text: string;
   } | null>(null);
-
+  const [isExerciseOpen, setIsExerciseOpen] = useState(false);
   const units = useMemo(() => {
     return [...(course.units || [])]
       .sort((a, b) => a.position - b.position)
@@ -483,6 +484,33 @@ export default function CourseLearningViewer({
         isProcessing={isProcessingAction}
       />
 
+      {/* --- Modal hiển thị danh sách bài tập --- */}
+      <Dialog open={isExerciseOpen} onOpenChange={setIsExerciseOpen}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-xl">
+          <DialogHeader className="p-6 pb-4 border-b bg-white flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Dumbbell className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  Practice Exercises
+                </DialogTitle>
+                <DialogDescription className="text-sm text-gray-500 mt-1">
+                  Lesson: {lessonData?.title}
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
+            {lessonData && (
+              <LessonExerciseList lessonId={lessonData.lessonID} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="h-screen flex flex-col bg-gray-50">
         <header className="h-16 border-b bg-white flex items-center justify-between px-4">
           <div className="flex items-center gap-3">
@@ -621,7 +649,7 @@ export default function CourseLearningViewer({
                       </div>
                       <Button
                         onClick={() => setPdfUrl(lessonData.documentUrl!)}
-                        className="bg-blue-500 hover:bg-blue-400 text-white cursor-pointer rounded-md"
+                        className="bg-blue-500 hover:bg-blue-400 !text-white cursor-pointer rounded-md"
                       >
                         View document
                       </Button>
@@ -636,7 +664,21 @@ export default function CourseLearningViewer({
                     </div>
                   </div>
                 )}
-
+                <div className="flex justify-end mb-8">
+                  <Button
+                    onClick={() => setIsExerciseOpen(true)}
+                    variant="outline"
+                    className="border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 font-medium cursor-pointer"
+                  >
+                    <Dumbbell className="w-4 h-4 mr-2" />
+                    Exercises
+                    {lessonData.totalExercises > 0 && (
+                      <span className="ml-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
+                        {lessonData.totalExercises}
+                      </span>
+                    )}
+                  </Button>
+                </div>
                 <div className="fixed sm:static bottom-0 left-0 right-0 border-t sm:border-0 p-4 sm:p-0 z-10">
                   <div className="max-w-4xl mx-auto flex justify-between items-center gap-4">
                     <Button
@@ -644,7 +686,13 @@ export default function CourseLearningViewer({
                       size="lg"
                       disabled={!hasPrev}
                       onClick={goPrev}
-                      className="min-w-0 flex-1 sm:flex-initial max-w-xs sm:max-w-none flex items-center justify-center"
+                      className={`
+                                group transition-all duration-300 hover:-translate-x-1
+                                ${
+                                  hasPrev
+                                    ? "hover:bg-gray-50 hover:border-gray-400 cursor-pointer"
+                                    : ""
+                                }`}
                     >
                       <ChevronLeft className="w-5 h-5 mr-2" />
                       <span className="hidden sm:inline">Previous</span>
@@ -655,7 +703,7 @@ export default function CourseLearningViewer({
                       <Button
                         size="lg"
                         onClick={goNext}
-                        className="min-w-0 flex-1 sm:flex-initial max-w-xs sm:max-w-none bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center font-medium"
+                        className="min-w-0 flex-1 sm:flex-initial max-w-xs sm:max-w-none bg-blue-600 hover:bg-blue-700 !text-white forced-color-adjust-none font-medium transition-all duration-300 hover:translate-x-1 active:scale-95 cursor-pointer"
                       >
                         <span className="hidden sm:inline">Next Lesson</span>
                         <span className="sm:hidden">Next</span>

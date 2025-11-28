@@ -117,3 +117,35 @@ export interface CourseQueryParams {
   SortBy?: string;
   status?: SubmissionStatus;
 }
+
+export interface Exercise {
+  exerciseID: string;
+  title: string;
+  prompt: string;
+  hints: string;
+  content: string | null;
+  expectedAnswer: string | null;
+  mediaUrls: string[];
+  mediaPublicIds: string[];
+  position: number;
+  exerciseType:
+    | "RepeatAfterMe"
+    | "PictureDescription"
+    | "StoryTelling"
+    | "Debate"
+    | string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  maxScore: number;
+  passScore: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  courseID: string;
+  unitID: string;
+  lessonID: string;
+}
+
+export interface ExerciseQueryParams {
+  lessonId: string;
+  Page?: number;
+  PageSize?: number;
+}

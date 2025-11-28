@@ -42,7 +42,10 @@ export const Header = () => {
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="relative cursor-pointer">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
+          <span className="absolute top-1 right-1 h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping"></span>
+            <span className="absolute inline-flex h-full w-full rounded-full bg-red-500"></span>
+          </span>
         </Button>
 
         <DropdownMenu>
