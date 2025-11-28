@@ -20,6 +20,7 @@ export interface ProfileResponse {
   email: string;
   createdAt: string;
   roles: string[];
+  avatar?: string;
 }
 
 export interface TeacherProfile {
