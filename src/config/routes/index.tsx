@@ -35,7 +35,6 @@ import RefundAdminPage from '../../pages/Admin/RefundAdminPage';
 import PayoutPage from '../../pages/Teacher/PayoutPage';
 import AdminPayoutsPage from '../../pages/Admin/AdminPayoutPage';
 import LandingPage from '../../pages/LandingPage';
-import TeacherGradingPage from '../../pages/Teacher/TeacherGradingPage';
 import TeacherPayoutPage from '../../pages/Teacher/TeacherPayoutPage';
 
 import Courses from '@/pages/Manager/Course/Courses';
@@ -48,6 +47,7 @@ import Dashboard from '@/pages/Manager/Dashboard';
 import TeacherApplicationByManager from '@/pages/Manager/Teacher/TeacherApplications';
 import TeacherApplicationDetailByManager from '@/pages/Manager/Teacher/ApplicationDetail';
 import ExerciseGradingPageByManager from '@/pages/Manager/Exercise/ExerciseGradingPage';
+import TeacherExerciseGradingPage from '@/pages/Teacher/ExerciseGrading/TeacherExerciseGradingPage';
 // Route configuration
 const routes: RouteObject[] = [
   {
@@ -206,7 +206,7 @@ const routes: RouteObject[] = [
       { path: 'course', element: <MyCourses /> },
       {
         path: 'course/exercise-grading/assignments',
-        element: <TeacherGradingPage />,
+        element: <TeacherExerciseGradingPage />,
       },
       { path: 'course/create', element: <CreateCourse /> },
       { path: 'course/:id', element: <CourseDetailView /> },

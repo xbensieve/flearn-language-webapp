@@ -34,6 +34,28 @@ export const exerciseGradingService = {
       throw error;
     }
   },
+  getTeacherAssignments: async (
+    params: AssignmentQueryParams
+  ): Promise<APIListResponse<Assignment[]>> => {
+    const queryParams: Record<string, unknown> = { ...params };
+    // Clean up empty params
+    Object.keys(queryParams).forEach((key) => {
+      if (queryParams[key] === undefined || queryParams[key] === "") {
+        delete queryParams[key];
+      }
+    });
+
+    try {
+      const response = await axiosInstance.get<APIListResponse<Assignment[]>>(
+        "/exercise-grading/teacher/assignments",
+        { params: queryParams }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch teacher assignments", error);
+      throw error;
+    }
+  },
 
   /**
    * Fetch available filter options (Courses, Exercises, Statuses)
@@ -118,6 +140,21 @@ export const exerciseGradingService = {
       return response.data.data;
     } catch (error) {
       console.error("Failed to get grading status", error);
+      throw error;
+    }
+  },
+  submitGrade: async (
+    submissionId: string,
+    data: { score: number; feedback: string }
+  ): Promise<boolean> => {
+    try {
+      const response = await axiosInstance.post(
+        `/exercise-grading/teacher/submissions/${submissionId}/grade`,
+        data
+      );
+      return response.data.status === "success" || response.status === 200;
+    } catch (error) {
+      console.error("Failed to submit grade", error);
       throw error;
     }
   },
