@@ -1,5 +1,4 @@
 import { createBrowserRouter, Outlet, type RouteObject } from 'react-router-dom';
-import LoginPage from '../../pages/Login';
 import UnauthorizedPage from '../../pages/UnauthorizedPage';
 import PrivateRoute from './PrivateRoute';
 import Admin from '../../pages/Admin';
@@ -22,7 +21,6 @@ import CourseDetail from '../../pages/Teacher/CourseDetail';
 import CourseDetailView from '../../pages/Teacher/CourseDetailView';
 import UnitsManager from '../../pages/Teacher/UnitsManager';
 import EditCoursePage from '../../pages/Teacher/EditCoursePage';
-
 
 import ConversationPromptPage from '../../pages/Admin/ConversationPromptPage';
 import MyClasses from '../../pages/Teacher/MyClasses';
@@ -48,11 +46,17 @@ import TeacherApplicationByManager from '@/pages/Manager/Teacher/TeacherApplicat
 import TeacherApplicationDetailByManager from '@/pages/Manager/Teacher/ApplicationDetail';
 import ExerciseGradingPageByManager from '@/pages/Manager/Exercise/ExerciseGradingPage';
 import TeacherExerciseGradingPage from '@/pages/Teacher/ExerciseGrading/TeacherExerciseGradingPage';
+import LoginLearner from '@/pages/Login/LoginLearner';
+import LoginDashboard from '../../pages/Login';
 // Route configuration
 const routes: RouteObject[] = [
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <LoginLearner />,
+  },
+  {
+    path: '/dashboard/login',
+    element: <LoginDashboard />,
   },
   {
     path: '/',
