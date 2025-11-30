@@ -1,12 +1,27 @@
 import api from '../../config/axios';
-import type { AuthResponse, IRefreshToken, ProfileResponse, ResetPasswordPayload, TeacherProfile } from './type';
+import type {
+  AuthResponse,
+  IRefreshToken,
+  ProfileResponse,
+  ResetPasswordPayload,
+  TeacherProfile,
+} from './type';
 
-export const login = async (payload: {
+export const loginLearner = async (payload: {
   usernameOrEmail: string;
   password: string;
   rememberMe: boolean;
 }) => {
-  const res = await api.post<API.Response<AuthResponse>>('/auth/login', payload);
+  const res = await api.post<API.Response<AuthResponse>>('/auth/login/learner', payload);
+  return res.data;
+};
+
+export const loginDashboard = async (payload: {
+  usernameOrEmail: string;
+  password: string;
+  rememberMe: boolean;
+}) => {
+  const res = await api.post<API.Response<AuthResponse>>('/auth/login/system', payload);
   return res.data;
 };
 
