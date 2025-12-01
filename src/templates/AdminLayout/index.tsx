@@ -26,6 +26,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
 import { toast } from "react-toastify";
+import { notifySuccess } from "@/utils/toastConfig";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -56,6 +57,24 @@ const DashboardLayout: React.FC = () => {
       toast.error(error.message);
     },
   });
+
+  const handleLogoutClick = () => {
+    const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
+    if (refreshToken) {
+      logout(refreshToken);
+    } else {
+      handleLogoutCleanup();
+    }
+  };
+
+  const handleLogoutCleanup = () => {
+    localStorage.removeItem("FLEARN_ACCESS_TOKEN");
+    localStorage.removeItem("FLEARN_REFRESH_TOKEN");
+    localStorage.removeItem("FLEARN_USER_ROLE");
+    localStorage.removeItem("FLEARN_USER_ROLES");
+    notifySuccess("Logout successful");
+    navigate("/login");
+  };
 
   const menuItems = [
     {
@@ -105,8 +124,7 @@ const DashboardLayout: React.FC = () => {
         label: "Logout",
         icon: <LogoutOutlined />,
         danger: true,
-        onClick: () =>
-          logout(localStorage.getItem("FLEARN_REFRESH_TOKEN") as string),
+        onClick: handleLogoutClick,
       },
     ],
   };
