@@ -1,12 +1,8 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogFooter,
-  DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Ban } from "lucide-react";
 
@@ -29,29 +25,38 @@ export default function RejectReasonModal({
 }: RejectReasonModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md w-[95vw] rounded-2xl p-6">
-        <DialogHeader className="text-left">
-          <DialogTitle className="text-2xl font-bold text-red-600 flex items-center gap-3">
-            <Ban className="w-8 h-8" /> Reject Course
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden gap-0 rounded-xl">
+        <div className="px-6 py-4 border-b bg-gray-50 flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+            <Ban className="w-5 h-5 text-red-600" />
+            Reject Submission
+          </h3>
+        </div>
 
-          <DialogDescription>
-            Please provide the rejection reason.
-          </DialogDescription>
-        </DialogHeader>
+        <div className="p-6 space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Reason for rejection <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              className="w-full min-h-[120px] p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none transition-all"
+              placeholder="Please explain why this submission is being rejected..."
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              disabled={isProcessing}
+            />
+            <p className="text-xs text-gray-500">
+              This feedback will be sent to the instructor.
+            </p>
+          </div>
+        </div>
 
-        <Textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={5}
-        />
-
-        <DialogFooter className="mt-6 flex flex-col sm:flex-row gap-3">
+        <DialogFooter className="p-4 bg-gray-50 border-t flex items-center justify-end gap-3">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => onOpenChange(false)}
             disabled={isProcessing}
-            className="cursor-pointer"
+            className="hover:bg-gray-200 text-gray-700 cursor-pointer"
           >
             Cancel
           </Button>
@@ -59,9 +64,9 @@ export default function RejectReasonModal({
           <Button
             onClick={onConfirm}
             disabled={!reason.trim() || isProcessing}
-            className="bg-red-600 hover:bg-red-500 text-white cursor-pointer"
+            className="bg-red-600 hover:bg-red-700 text-white shadow-sm transition-all cursor-pointer"
           >
-            Reject
+            {isProcessing ? "Rejecting..." : "Confirm Rejection"}
           </Button>
         </DialogFooter>
       </DialogContent>

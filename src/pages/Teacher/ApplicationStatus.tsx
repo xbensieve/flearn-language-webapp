@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Button,
   Card,
@@ -15,9 +15,9 @@ import {
   Collapse,
   Input,
   Select,
-} from 'antd';
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+} from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   ClockCircleOutlined,
   UserOutlined,
@@ -26,22 +26,37 @@ import {
   ExclamationCircleOutlined,
   EyeOutlined,
   SearchOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 import type {
   ApplicationData,
   GetMyApplicationsParams,
-} from '../../services/teacherApplication/types';
-import { getMyApplication } from '../../services/teacherApplication';
-import { useDebounce } from '../../utils/useDebound';
+} from "../../services/teacherApplication/types";
+import { getMyApplication } from "../../services/teacherApplication";
+import { useDebounce } from "../../utils/useDebound";
 
 const { Title, Paragraph, Text } = Typography;
 
-const statusMap: Record<string, { text: string; color: string; icon: React.ReactNode }> = {
-  Pending: { text: 'Pending', color: 'processing', icon: <ClockCircleOutlined /> },
-  Submitted: { text: 'Submitted', color: 'warning', icon: <ClockCircleOutlined /> },
-  Reviewed: { text: 'Reviewed', color: 'success', icon: <TrophyOutlined /> },
-  Rejected: { text: 'Rejected', color: 'error', icon: <ExclamationCircleOutlined /> },
-  Approved: { text: 'Approved', color: 'success', icon: <TrophyOutlined /> },
+const statusMap: Record<
+  string,
+  { text: string; color: string; icon: React.ReactNode }
+> = {
+  Pending: {
+    text: "Pending",
+    color: "processing",
+    icon: <ClockCircleOutlined />,
+  },
+  Submitted: {
+    text: "Submitted",
+    color: "warning",
+    icon: <ClockCircleOutlined />,
+  },
+  Reviewed: { text: "Reviewed", color: "success", icon: <TrophyOutlined /> },
+  Rejected: {
+    text: "Rejected",
+    color: "error",
+    icon: <ExclamationCircleOutlined />,
+  },
+  Approved: { text: "Approved", color: "success", icon: <TrophyOutlined /> },
 };
 
 const ApplicationStatus: React.FC = () => {
@@ -50,8 +65,10 @@ const ApplicationStatus: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   // Filters
-  const [searchInput, setSearchInput] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [searchInput, setSearchInput] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    undefined
+  );
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -71,7 +88,7 @@ const ApplicationStatus: React.FC = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['myApplications', queryParams],
+    queryKey: ["myApplications", queryParams],
     queryFn: () => getMyApplication(queryParams),
     retry: 1,
   });
@@ -80,14 +97,9 @@ const ApplicationStatus: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <Space
-          direction="vertical"
-          size="large"
-          className="text-center">
+        <Space direction="vertical" size="large" className="text-center">
           <Spin size="large" />
-          <Title
-            level={4}
-            type="secondary">
+          <Title level={4} type="secondary">
             Loading applications...
           </Title>
         </Space>
@@ -102,18 +114,23 @@ const ApplicationStatus: React.FC = () => {
         <Space
           direction="vertical"
           size="middle"
-          className="text-center max-w-md">
+          className="text-center max-w-md"
+        >
           <Alert
             message="Error"
-            description={(error as any)?.response?.data?.message || 'Failed to load applications.'}
+            description={
+              (error as any)?.response?.data?.message ||
+              "Failed to load applications."
+            }
             type="error"
             showIcon
           />
           <Button
             type="primary"
             size="large"
-            onClick={() => navigate('/learner/application')}
-            icon={<UserOutlined />}>
+            onClick={() => navigate("/learner/application")}
+            icon={<UserOutlined />}
+          >
             Apply to Teach
           </Button>
         </Space>
@@ -123,8 +140,8 @@ const ApplicationStatus: React.FC = () => {
 
   const columns = [
     {
-      title: 'Applicant',
-      key: 'name',
+      title: "Applicant",
+      key: "name",
       render: (_: any, record: ApplicationData) => (
         <Space>
           <Image
@@ -138,9 +155,7 @@ const ApplicationStatus: React.FC = () => {
           <div>
             <Text strong>{record.fullName}</Text>
             <br />
-            <Text
-              type="secondary"
-              className="text-xs">
+            <Text type="secondary" className="text-xs">
               ID: {record.applicationID.slice(0, 8)}...
             </Text>
           </div>
@@ -148,35 +163,34 @@ const ApplicationStatus: React.FC = () => {
       ),
     },
     {
-      title: 'Language',
+      title: "Language",
       render: (_: any, record: ApplicationData) => (
         <Text strong>
-          {record.language} <span className="text-sky-600">({record.proficiencyCode})</span>
+          {record.language}{" "}
+          <span className="text-sky-600">({record.proficiencyCode})</span>
         </Text>
       ),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
+      title: "Status",
+      dataIndex: "status",
       render: (status: string) => {
         const s = statusMap[status] || statusMap.Pending;
         return (
-          <Tag
-            color={s.color}
-            className="font-medium">
+          <Tag color={s.color} className="font-medium">
             {s.icon} {s.text}
           </Tag>
         );
       },
     },
     {
-      title: 'Submitted',
-      dataIndex: 'submittedAt',
+      title: "Submitted",
+      dataIndex: "submittedAt",
       render: (date: string) => <Text>{date}</Text>,
     },
     {
-      title: 'Action',
-      key: 'action',
+      title: "Action",
+      key: "action",
       render: (_: any, record: ApplicationData) => (
         <Button
           type="link"
@@ -185,7 +199,8 @@ const ApplicationStatus: React.FC = () => {
             setSelectedApp(record);
             setModalOpen(true);
           }}
-          className="text-sky-600 hover:text-sky-700">
+          className="text-sky-600 hover:text-sky-700"
+        >
           View Details
         </Button>
       ),
@@ -197,9 +212,7 @@ const ApplicationStatus: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
-          <Title
-            level={1}
-            className="text-4xl font-bold text-gray-900 mb-3">
+          <Title level={1} className="text-4xl font-bold text-gray-900 mb-3">
             Your Teacher Applications
           </Title>
           <Paragraph className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -209,10 +222,7 @@ const ApplicationStatus: React.FC = () => {
 
         {/* Filters */}
         <Card className="!mb-2 shadow-md rounded-xl">
-          <Space
-            wrap
-            className="w-full"
-            size="middle">
+          <Space wrap className="w-full" size="middle">
             <Input
               placeholder="Search by name or language..."
               prefix={<SearchOutlined />}
@@ -237,9 +247,9 @@ const ApplicationStatus: React.FC = () => {
               allowClear
               onChange={(v) => setStatusFilter(v)}
               options={[
-                { label: 'Pending', value: 'Pending' },
-                { label: 'Approved', value: 'Approved' },
-                { label: 'Rejected', value: 'Rejected' },
+                { label: "Pending", value: "Pending" },
+                { label: "Approved", value: "Approved" },
+                { label: "Rejected", value: "Rejected" },
               ]}
             />
           </Space>
@@ -257,7 +267,8 @@ const ApplicationStatus: React.FC = () => {
               total: response?.meta.totalItems,
               showSizeChanger: true,
               showQuickJumper: true,
-              showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} applications`,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} applications`,
               onChange: (p, ps) => {
                 setPage(p);
                 setPageSize(ps || 10);
@@ -279,7 +290,8 @@ const ApplicationStatus: React.FC = () => {
               <UserOutlined className="text-sky-600" />
               <span className="font-bold">Application Details</span>
             </Space>
-          }>
+          }
+        >
           {selectedApp && (
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b pb-4">
@@ -291,48 +303,57 @@ const ApplicationStatus: React.FC = () => {
                     className="rounded-full border-4 border-white shadow-md"
                   />
                   <div>
-                    <Title
-                      level={4}
-                      className="m-0">
+                    <Title level={4} className="m-0">
                       {selectedApp.fullName}
                     </Title>
                     <Text type="secondary">
-                      Submitted: {new Date(selectedApp.submittedAt).toLocaleString('en-GB')}
+                      Submitted:{" "}
+                      {new Date(selectedApp.submittedAt).toLocaleString(
+                        "en-GB"
+                      )}
                     </Text>
                   </div>
                 </Space>
                 <Tag
                   color={statusMap[selectedApp.status]?.color}
-                  className="text-lg px-4 py-1">
-                  {statusMap[selectedApp.status]?.icon} {statusMap[selectedApp.status]?.text}
+                  className="text-lg px-4 py-1"
+                >
+                  {statusMap[selectedApp.status]?.icon}{" "}
+                  {statusMap[selectedApp.status]?.text}
                 </Tag>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <strong>Email:</strong> {selectedApp.email}
+                  <span className="font-semibold">Email:</span>{" "}
+                  {selectedApp.email}
                 </div>
                 <div>
-                  <strong>Phone:</strong> {selectedApp.phoneNumber}
+                  <span className="font-semibold">Phone:</span>{" "}
+                  {selectedApp.phoneNumber}
                 </div>
                 <div>
-                  <strong>Language:</strong> {selectedApp.language} ({selectedApp.proficiencyCode})
+                  <span className="font-semibold">Language:</span>{" "}
+                  {selectedApp.language} ({selectedApp.proficiencyCode})
                 </div>
                 <div>
-                  <strong>DOB:</strong> {selectedApp.dateOfBirth}
+                  <span className="font-semibold">DOB:</span>{" "}
+                  {selectedApp.dateOfBirth}
                 </div>
                 <div>
-                  <strong>Experience:</strong> {selectedApp.teachingExperience || '—'}
+                  <span className="font-semibold">Experience:</span>{" "}
+                  {selectedApp.teachingExperience || "—"}
                 </div>
                 {selectedApp.meetingUrl && (
                   <div>
-                    <strong>Demo:</strong>{' '}
+                    <span className="font-semibold">Google Meet: </span>
                     <a
                       href={selectedApp.meetingUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sky-600 hover:underline">
-                      Open Link
+                      className="text-blue-600 underline break-all"
+                    >
+                      {selectedApp.meetingUrl}
                     </a>
                   </div>
                 )}
@@ -343,7 +364,7 @@ const ApplicationStatus: React.FC = () => {
               <Collapse
                 items={[
                   {
-                    key: 'bio',
+                    key: "bio",
                     label: (
                       <span className="font-medium">
                         <FileTextOutlined /> Bio
@@ -351,7 +372,7 @@ const ApplicationStatus: React.FC = () => {
                     ),
                     children: (
                       <Paragraph className="whitespace-pre-wrap">
-                        {selectedApp.bio || 'No bio.'}
+                        {selectedApp.bio || "No bio."}
                       </Paragraph>
                     ),
                   },
@@ -360,9 +381,7 @@ const ApplicationStatus: React.FC = () => {
 
               {selectedApp.certificates?.length ? (
                 <div className="mt-4">
-                  <Title
-                    level={5}
-                    className="flex items-center gap-2">
+                  <Title level={5} className="flex items-center gap-2">
                     <TrophyOutlined className="text-yellow-500" />
                     Certificates ({selectedApp.certificates.length})
                   </Title>
@@ -378,18 +397,15 @@ const ApplicationStatus: React.FC = () => {
                             className="h-40 object-contain"
                             preview={{ src: cert.certificateImageUrl }}
                           />
-                        }>
+                        }
+                      >
                         <Card.Meta title={cert.certificateName} />
                       </Card>
                     ))}
                   </div>
                 </div>
               ) : (
-                <Alert
-                  message="No certificates"
-                  type="info"
-                  showIcon
-                />
+                <Alert message="No certificates" type="info" showIcon />
               )}
 
               {selectedApp.rejectionReason && (

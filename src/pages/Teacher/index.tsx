@@ -21,7 +21,7 @@ import {
   Badge,
   Modal,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import {
   getLanguages,
   getMyApplication,
@@ -340,7 +340,7 @@ const TeacherApplicationPage: React.FC = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
-  // ✅ Get my application
+
   const { data: response, isLoading } = useQuery<{ data: ApplicationData[] }>({
     queryKey: ["myApplication"],
     queryFn: () => getMyApplication(),
@@ -348,13 +348,11 @@ const TeacherApplicationPage: React.FC = () => {
     retryDelay: 500,
   });
 
-  // ✅ Languages
   const { data: languagesData, isLoading: loadingLanguages } = useQuery({
     queryKey: ["languages"],
     queryFn: getLanguages,
   });
 
-  // ✅ Certificates (after language is selected)
   const { data: certificatesData, isLoading: loadingCertificates } = useQuery({
     queryKey: ["certificates", selectedLanguage],
     queryFn: () =>
@@ -362,7 +360,6 @@ const TeacherApplicationPage: React.FC = () => {
     enabled: !!selectedLanguage,
   });
 
-  // ✅ Submit / Update
   const { mutate, isPending: isSubmitting } = useMutation({
     mutationFn: submitTeacherApplication,
     onSuccess: () => {
@@ -1273,11 +1270,47 @@ const TeacherApplicationPage: React.FC = () => {
     },
   ];
 
-  return isLoading ? (
-    <div className="flex justify-center items-center min-h-screen">
-      <LoadingScreen />
-    </div>
-  ) : (
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingScreen />
+      </div>
+    );
+  }
+  const pendingApplication = response?.data?.find(
+    (app) => app.status === "Pending"
+  );
+  if (pendingApplication) {
+    return (
+      <div className="mt-15 flex items-center justify-center bg-gray-50 px-4">
+        <div className="bg-white p-10 rounded-md shadow-xl max-w-lg w-full text-center border border-gray-100">
+          <div className="mb-6 flex justify-center">
+            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center animate-pulse">
+              <ClockCircleOutlined className="text-5xl text-blue-500" />
+            </div>
+          </div>
+          <Title level={2} className="mb-3 text-gray-800">
+            Application Under Review
+          </Title>
+          <Paragraph className="text-gray-500 text-lg mb-8 leading-relaxed">
+            You have already submitted an application that is currently being
+            reviewed by our admins. You cannot submit a new application until
+            the process is complete.
+          </Paragraph>
+          <Button
+            type="primary"
+            size="large"
+            onClick={() => navigate("/learner/status")}
+            className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium rounded-xl shadow-lg shadow-blue-200"
+          >
+            Check Application Status
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="min-h-screen flex flex-col py-7">
       <motion.div
         initial={{ opacity: 0, y: 25 }}
