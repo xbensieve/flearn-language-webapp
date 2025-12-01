@@ -25,7 +25,6 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
-import { toast } from "react-toastify";
 import { notifyError, notifySuccess } from "@/utils/toastConfig";
 
 const { Header, Sider, Content } = Layout;
