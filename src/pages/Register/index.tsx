@@ -1,73 +1,118 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { Form, Input, Button, Steps, ConfigProvider } from 'antd';
-import { register, verifyOtp, resendOtp } from '../../services/auth';
-import { notifySuccess, notifyError } from '../../utils/toastConfig';
-import { useNavigate } from 'react-router-dom';
-import type { AxiosError } from 'axios';
+import React, { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import {
+  register as registerService,
+  verifyOtp,
+  resendOtp,
+} from "../../services/auth";
+import { notifySuccess, notifyError } from "../../utils/toastConfig";
+import type { AxiosError } from "axios";
+import {
+  Loader2,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  Mail,
+  GraduationCap,
+} from "lucide-react";
 
+// Shadcn Components
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import BackgroundImage from "@/assets/background-image.avif";
+import LoadingScreen from "@/components/Loading/LoadingScreen";
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const [form] = Form.useForm();
-  const [otpForm] = Form.useForm();
-  const [step, setStep] = useState<'register' | 'verify'>('register');
-  const [userEmail, setUserEmail] = useState('');
+  const [step, setStep] = useState<"register" | "verify">("register");
+  const [userEmail, setUserEmail] = useState("");
   const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRestoringState, setIsRestoringState] = useState(true);
+  // Form 1: Registration Details
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      userName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
+  // Form 2: OTP (Managed via simple state or separate form, here simple state for OTP input)
+  const [otpValue, setOtpValue] = useState("");
+
+  // --- LOGIC & EFFECTS (Giữ nguyên logic gốc) ---
   const registerMutation = useMutation({
-    mutationFn: register,
+    mutationFn: registerService,
     onSuccess: (data, variables) => {
       if (data.success) {
-        notifySuccess(data.message || 'OTP sent to your email!');
+        notifySuccess(data.message || "OTP sent to your email!");
         setUserEmail(variables.email);
-        setStep('verify');
-        localStorage.setItem('registerStep', 'verify');
-        localStorage.setItem('userEmail', variables.email);
+        setStep("verify");
+        localStorage.setItem("registerStep", "verify");
+        localStorage.setItem("userEmail", variables.email);
         const expiry = Date.now() + 5 * 60 * 1000;
-        localStorage.setItem('otpExpiry', expiry.toString());
+        localStorage.setItem("otpExpiry", expiry.toString());
         setTimeLeft(300);
       }
     },
     onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || 'Registration failed'),
+      notifyError(err?.response?.data?.message || "Registration failed"),
   });
 
   const verifyMutation = useMutation({
-    mutationFn: (values: { email: string; otpCode: string }) => verifyOtp(values),
+    mutationFn: (values: { email: string; otpCode: string }) =>
+      verifyOtp(values),
     onSuccess: (data) => {
       if (data.success) {
-        notifySuccess('Account verified successfully!');
-        localStorage.removeItem('otpExpiry');
-        localStorage.removeItem('registerStep');
-        localStorage.removeItem('userEmail');
-        navigate('/login');
+        notifySuccess("Account verified successfully!");
+        localStorage.removeItem("otpExpiry");
+        localStorage.removeItem("registerStep");
+        localStorage.removeItem("userEmail");
+        navigate("/login");
       }
     },
-    onError: (err: AxiosError<any>) => notifyError(err?.response?.data?.message || 'Invalid OTP'),
+    onError: (err: AxiosError<any>) =>
+      notifyError(err?.response?.data?.message || "Invalid OTP"),
   });
 
   const resendMutation = useMutation({
     mutationFn: () => resendOtp({ email: userEmail }),
     onSuccess: (data) => {
       if (data.success) {
-        notifySuccess('New OTP sent!');
+        notifySuccess("New OTP sent!");
         const expiry = Date.now() + 5 * 60 * 1000;
-        localStorage.setItem('otpExpiry', expiry.toString());
+        localStorage.setItem("otpExpiry", expiry.toString());
         setTimeLeft(300);
       }
     },
   });
 
   useEffect(() => {
-    const savedStep = localStorage.getItem('registerStep');
-    const savedEmail = localStorage.getItem('userEmail');
-    if (savedStep === 'verify' && savedEmail) {
-      setStep('verify');
+    const savedStep = localStorage.getItem("registerStep");
+    const savedEmail = localStorage.getItem("userEmail");
+    if (savedStep === "verify" && savedEmail) {
+      setStep("verify");
       setUserEmail(savedEmail);
     }
 
-    const expiryStr = localStorage.getItem('otpExpiry');
+    const expiryStr = localStorage.getItem("otpExpiry");
     if (expiryStr) {
       const diff = Math.floor((parseInt(expiryStr) - Date.now()) / 1000);
       if (diff > 0) setTimeLeft(diff);
@@ -76,249 +121,334 @@ const Register: React.FC = () => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
-
+    setIsRestoringState(false);
     return () => clearInterval(timer);
   }, []);
 
   const resetRegistration = () => {
-    localStorage.removeItem('otpExpiry');
-    localStorage.removeItem('registerStep');
-    localStorage.removeItem('userEmail');
-    setStep('register');
-    setUserEmail('');
+    localStorage.removeItem("otpExpiry");
+    localStorage.removeItem("registerStep");
+    localStorage.removeItem("userEmail");
+    setStep("register");
+    setUserEmail("");
     setTimeLeft(0);
-    form.resetFields();
-    otpForm.resetFields();
+    setOtpValue("");
   };
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#06b6d4',
-          borderRadius: 16,
-          fontFamily: 'Inter, system-ui, sans-serif',
-        },
-      }}>
-      {/* Full Blue Gradient Background */}
-      <div className="min-h-screen flex bg-gradient-to-br from-blue-500 via-cyan-500 to-sky-600 relative overflow-hidden">
-        {/* Animated Blue Blobs */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob"></div>
-        <div className="absolute top-20 left-1/3 w-80 h-80 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-sky-400 rounded-full mix-blend-multiply filter blur-3xl opacity-60 animate-blob animation-delay-4000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-3000"></div>
+  // --- HANDLERS ---
+  const onRegisterSubmit = (data: any) => {
+    registerMutation.mutate(data);
+  };
 
-        {/* Left Hero Section */}
-        <div className="hidden lg:flex flex-1 items-center justify-center px-12 relative z-10">
-          <div className="max-w-lg text-white">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Welcome to <span className="text-cyan-200">Flearn</span>
-            </h1>
-            <p className="text-xl md:text-2xl opacity-95 leading-relaxed mb-8">
-              Learn from the best teachers. Grow without limits.
-            </p>
-            <p className="text-lg opacity-90">
-              Join thousands of learners already mastering new skills with Flearn.
-            </p>
-          </div>
+  const onVerifySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpValue.length === 6) {
+      verifyMutation.mutate({ email: userEmail, otpCode: otpValue });
+    }
+  };
+
+  if (isRestoringState || verifyMutation.isSuccess) {
+    return (
+      <LoadingScreen
+        message={
+          verifyMutation.isSuccess
+            ? "Setup complete. Redirecting..."
+            : "Initializing registration..."
+        }
+      />
+    );
+  }
+  return (
+    <div className="w-full h-screen lg:grid lg:grid-cols-2 overflow-hidden bg-background">
+      <div className="hidden bg-muted lg:block relative">
+        <div className="absolute inset-0 bg-zinc-900">
+          <img
+            src={BackgroundImage}
+            alt="Students collaborating"
+            className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+          />
         </div>
 
-        {/* Right Form Card */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-10">
-          <div className="w-full max-w-md">
-            <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 p-8 md:p-10">
-              {/* Logo + Title */}
-              <div className="text-center mb-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl font-bold text-white shadow-xl">
-                  F
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900">
-                  {step === 'register' ? 'Create Account' : 'Verify Your Email'}
-                </h2>
-                <p className="text-gray-600 mt-2">
-                  {step === 'register'
-                    ? 'Start your learning journey today'
-                    : `Enter the code sent to ${userEmail}`}
-                </p>
-              </div>
+        <div className="relative z-20 flex h-full flex-col justify-between p-10 text-white">
+          <div className="flex items-center gap-2 font-medium text-lg">
+            <GraduationCap className="h-6 w-6" /> FLearn Team.
+          </div>
 
-              {/* Progress Steps */}
-              <Steps
-                current={step === 'register' ? 0 : 1}
-                size="small"
-                className="!mb-10"
-                items={[{ title: 'Register' }, { title: 'Verify OTP' }]}
-              />
-
-              {/* Register Form */}
-              {step === 'register' ? (
-                <Form
-                  form={form}
-                  layout="vertical"
-                  onFinish={registerMutation.mutate}>
-                  <Form.Item
-                    name="userName"
-                    rules={[{ required: true, message: 'Username is required' }]}>
-                    <Input
-                      placeholder="Choose a username"
-                      className="h-14 text-lg rounded-xl border-gray-300 focus:border-cyan-500"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="email"
-                    rules={[
-                      { required: true, message: 'Email is required' },
-                      { type: 'email', message: 'Enter a valid email' },
-                    ]}>
-                    <Input
-                      placeholder="your@email.com"
-                      className="h-14 text-lg rounded-xl border-gray-300 focus:border-cyan-500"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="password"
-                    rules={[{ required: true, message: 'Password is required' }]}>
-                    <Input.Password
-                      placeholder="Create a strong password"
-                      className="h-14 text-lg rounded-xl"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="confirmPassword"
-                    dependencies={['password']}
-                    rules={[
-                      { required: true },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue('password') === value)
-                            return Promise.resolve();
-                          return Promise.reject(new Error('Passwords do not match'));
-                        },
-                      }),
-                    ]}>
-                    <Input.Password
-                      placeholder="Confirm your password"
-                      className="h-14 text-lg rounded-xl"
-                    />
-                  </Form.Item>
-
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    block
-                    size="large"
-                    loading={registerMutation.isPending}
-                    className="h-14 text-lg font-semibold rounded-xl shadow-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 border-0">
-                    Create Account
-                  </Button>
-
-                  <div className="text-center mt-6">
-                    <span className="text-gray-600">Already have an account? </span>
-                    <Button
-                      type="link"
-                      onClick={() => navigate('/login')}
-                      className="text-cyan-600 font-semibold hover:text-cyan-700">
-                      Sign In
-                    </Button>
-                  </div>
-                </Form>
-              ) : (
-                /* OTP Verification */
-                <Form
-                  form={otpForm}
-                  layout="vertical"
-                  onFinish={(v) => verifyMutation.mutate({ email: userEmail, otpCode: v.otpCode })}>
-                  <div className="text-center mb-6">
-                    <div className="text-3xl font-bold text-cyan-600 mb-2">Check your email</div>
-                    <p className="text-gray-600">We've sent a 6-digit code to</p>
-                    <p className="font-semibold text-gray-800">{userEmail}</p>
-                  </div>
-
-                  <Form.Item
-                    style={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
-                    name="otpCode"
-                    rules={[{ required: true, message: 'Enter the 6-digit code' }]}>
-                    <Input.OTP
-                      length={6}
-                      formatter={(str) => str.replace(/\D/g, '')}
-                      className="text-3xl tracking-widest text-center letter-spacing-8"
-                      style={{ letterSpacing: '0.5rem' }}
-                    />
-                  </Form.Item>
-
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    block
-                    size="large"
-                    loading={verifyMutation.isPending}
-                    className="h-14 text-lg font-semibold rounded-xl shadow-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
-                    Verify & Continue
-                  </Button>
-
-                  <div className="text-center mt-6 space-y-3">
-                    <Button
-                      type="link"
-                      danger
-                      onClick={resetRegistration}
-                      className="text-sm">
-                      Not you? Start over
-                    </Button>
-
-                    <div>
-                      <Button
-                        type="link"
-                        onClick={() => resendMutation.mutate()}
-                        disabled={timeLeft > 0 || resendMutation.isPending}
-                        className="text-cyan-600 font-medium hover:text-cyan-700">
-                        {timeLeft > 0 ? `Resend in ${formatTime(timeLeft)}` : 'Resend OTP'}
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
-              )}
-            </div>
+          <div className="mb-10">
+            <blockquote className="space-y-2">
+              <p className="text-lg">
+                &ldquo;The beautiful thing about learning is that no one can
+                take it away from you.&rdquo;
+              </p>
+              <footer className="text-sm text-zinc-300">B.B. King</footer>
+            </blockquote>
           </div>
         </div>
       </div>
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+        {/* Back Button (Mobile/Desktop) */}
+        <Button
+          variant="ghost"
+          className="absolute top-4 left-4 md:top-8 md:left-8 cursor-pointer"
+          onClick={() => navigate("/login")}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4 " /> Back to Login
+        </Button>
 
-      {/* Blob Animation */}
-      <style>{`
-        @keyframes blob {
-          0%,
-          100% {
-            transform: translate(0px, 0px) scale(1);
-          }
-          33% {
-            transform: translate(40px, -60px) scale(1.15);
-          }
-          66% {
-            transform: translate(-30px, 40px) scale(0.95);
-          }
-        }
-        .animate-blob {
-          animation: blob 22s infinite;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
-    </ConfigProvider>
+        <div className="mx-auto grid w-full max-w-[450px] gap-6">
+          {/* Header */}
+          <div className="flex flex-col space-y-2 text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              {step === "register" ? "Create an account" : "Verify your email"}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              {step === "register"
+                ? "Enter your details below to create your account"
+                : `We have sent a code to ${userEmail}`}
+            </p>
+          </div>
+
+          {/* PROGRESS INDICATOR */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div
+              className={`h-2 w-16 rounded-full transition-colors ${
+                step === "register" ? "bg-primary" : "bg-primary/20"
+              }`}
+            />
+            <div
+              className={`h-2 w-16 rounded-full transition-colors ${
+                step === "verify" ? "bg-primary" : "bg-muted"
+              }`}
+            />
+          </div>
+
+          {/* STEP 1: REGISTER FORM */}
+          {step === "register" && (
+            <form
+              onSubmit={handleSubmit(onRegisterSubmit)}
+              className="grid gap-4 animate-in fade-in slide-in-from-right-4 duration-300"
+            >
+              <div className="grid gap-2">
+                <Label htmlFor="userName">Username</Label>
+                <Input
+                  id="userName"
+                  placeholder="johndoe"
+                  {...register("userName", {
+                    required: "Username is required",
+                  })}
+                  className={errors.userName ? "border-red-500" : ""}
+                />
+                {errors.userName && (
+                  <span className="text-xs text-red-500">
+                    {errors.userName.message as string}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^\S+@\S+$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
+                  className={errors.email ? "border-red-500" : ""}
+                />
+                {errors.email && (
+                  <span className="text-xs text-red-500">
+                    {errors.email.message as string}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a password"
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
+                      },
+                    })}
+                    className={
+                      errors.password ? "border-red-500 pr-10" : "pr-10"
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <span className="text-xs text-red-500">
+                    {errors.password.message as string}
+                  </span>
+                )}
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    {...register("confirmPassword", {
+                      validate: (val: string) => {
+                        if (watch("password") != val) {
+                          return "Your passwords do not match";
+                        }
+                      },
+                    })}
+                    className={
+                      errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <span className="text-xs text-red-500">
+                    {errors.confirmPassword.message as string}
+                  </span>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-black !text-white hover:bg-gray-800 disabled:opacity-50 cursor-pointer"
+                disabled={registerMutation.isPending}
+              >
+                {registerMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Continue
+              </Button>
+            </form>
+          )}
+
+          {/* STEP 2: VERIFY FORM */}
+          {step === "verify" && (
+            <form
+              onSubmit={onVerifySubmit}
+              className="grid gap-6 animate-in fade-in slide-in-from-right-4 duration-300"
+            >
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="bg-primary/5 p-4 rounded-full">
+                  <Mail className="h-8 w-8 text-primary" />
+                </div>
+
+                <div className="flex justify-center w-full">
+                  <InputOTP
+                    maxLength={6}
+                    value={otpValue}
+                    onChange={(value) => setOtpValue(value)}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={1} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={2} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={4} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={5} className="w-12 h-12 text-lg" />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Enter the 6-digit code sent to your email.
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-black !text-white hover:bg-gray-800 disabled:opacity-50 cursor-pointer"
+                disabled={otpValue.length < 6 || verifyMutation.isPending}
+              >
+                {verifyMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Verify Account
+              </Button>
+
+              <Separator />
+
+              <div className="flex flex-col items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">
+                    Didn't receive code?
+                  </span>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="p-0 h-auto font-semibold"
+                    onClick={() => resendMutation.mutate()}
+                    disabled={timeLeft > 0 || resendMutation.isPending}
+                  >
+                    {timeLeft > 0
+                      ? `Resend in ${formatTime(timeLeft)}`
+                      : "Resend OTP"}
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetRegistration}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Entered wrong email? Change it
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Footer */}
+          <div className="text-center text-sm mt-2">
+            Already have an account?{" "}
+            <span
+              onClick={() => navigate("/login")}
+              className="font-medium text-primary hover:underline cursor-pointer"
+            >
+              Sign In
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
