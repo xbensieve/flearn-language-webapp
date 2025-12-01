@@ -26,7 +26,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
 import { toast } from "react-toastify";
-import { notifySuccess } from "@/utils/toastConfig";
+import { notifyError, notifySuccess } from "@/utils/toastConfig";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -50,11 +50,11 @@ const DashboardLayout: React.FC = () => {
     onSuccess: () => {
       localStorage.removeItem("FLEARN_ACCESS_TOKEN");
       localStorage.removeItem("FLEARN_REFRESH_TOKEN");
-      toast.success("Đăng xuất thành công!");
-      window.location.href = "/login";
+      notifySuccess("Logout successful");
+      navigate("/login");
     },
     onError: (error: any) => {
-      toast.error(error.message);
+      notifyError(error.message);
     },
   });
 
