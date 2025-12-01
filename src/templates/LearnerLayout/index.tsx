@@ -181,7 +181,7 @@ export default function LearnerLayout() {
                   disabled={isLoggingOut}
                 >
                   <LogOut className="mr-3 h-4 w-4" />
-                  Đăng xuất
+                  Logout
                   {isLoggingOut && (
                     <Loader2 className="ml-auto h-4 w-4 animate-spin" />
                   )}

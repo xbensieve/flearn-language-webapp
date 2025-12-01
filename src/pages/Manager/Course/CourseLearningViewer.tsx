@@ -329,128 +329,38 @@ export default function CourseLearningViewer({
     return <span className={classes}>{text}</span>;
   };
 
-  const SubmissionActionBar = () => {
-    const [open, setOpen] = useState(false);
-
-    if (!isSubmissionReview || currentStatus !== "PendingApproval") {
-      return null;
-    }
-
-    return (
-      <>
-        <div className="fixed bottom-6 right-6 z-50 group">
-          <Button
-            onClick={() => setOpen(true)}
-            size="icon"
-            className={cn(
-              "rounded-full w-14 h-14 shadow-2xl",
-              "bg-blue-500 hover:bg-blue-400",
-              "text-white transition-all transform hover:scale-110",
-              "cursor-pointer"
-            )}
-          >
-            <Check className="w-7 h-7" />
-            <span className="sr-only">Review actions</span>
-          </Button>
-
-          <span
-            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 
-                   bg-gray-800 text-white text-xs px-2 py-1 rounded 
-                   opacity-0 pointer-events-none transition-opacity duration-200
-                   group-hover:opacity-100"
-          >
-            Finish Review
-          </span>
-        </div>
-
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent
-            side="right"
-            className={cn(
-              "w-full sm:max-w-md rounded-l-3xl sm:rounded-l-3xl p-6",
-              "border-l-4 border-l-blue-500"
-            )}
-          >
-            <div className="absolute left-1/2 top-3 -translate-x-1/2 w-12 h-1.5 bg-gray-300 rounded-full sm:hidden" />
-
-            <div className="mt-8 sm:mt-0 space-y-6">
-              <h3 className="text-xl font-semibold text-center sm:text-left">
-                Review Submission
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => {
-                    handleReject();
-                    setOpen(false);
-                  }}
-                  disabled={isProcessingAction}
-                  className="justify-center border-red-300 text-red-600 hover:bg-red-50 font-medium cursor-pointer"
-                >
-                  <Ban className="w-5 h-5 mr-2" />
-                  Reject
-                </Button>
-
-                <Button
-                  size="lg"
-                  onClick={() => {
-                    handleApprove();
-                    setOpen(false);
-                  }}
-                  disabled={isProcessingAction}
-                  className="justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-lg cursor-pointer"
-                >
-                  <Check className="w-5 h-5 mr-2" />
-                  Approve
-                </Button>
-              </div>
-
-              {isProcessingAction && (
-                <p className="text-center text-sm text-muted-foreground">
-                  Processing…
-                </p>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
-      </>
-    );
-  };
-
   // Approve Confirmation Modal
   const ApproveConfirmModal = () => (
     <Dialog open={isApproveConfirmOpen} onOpenChange={setIsApproveConfirmOpen}>
-      <DialogContent className="sm:max-w-md w-[95vw] rounded-2xl p-6">
-        <DialogHeader className="text-left">
-          <DialogTitle className="text-2xl font-bold text-green-600 flex items-center gap-3">
-            <Check className="w-8 h-8" />
+      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden gap-0 rounded-xl">
+        <div className="bg-green-50 p-6 flex flex-col items-center justify-center text-center border-b border-green-100">
+          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <Check className="w-6 h-6 text-green-600" />
+          </div>
+          <DialogTitle className="text-xl font-bold text-gray-900">
             Approve Course
           </DialogTitle>
-          <DialogDescription className="text-base text-gray-600 mt-3 leading-relaxed">
-            Are you sure you want to <strong>approve</strong> this course?
-            <br />
-            Once approved, the course will be published publicly and this action{" "}
-            <strong>cannot be undone</strong>.
+          <DialogDescription className="text-gray-600 mt-2 max-w-xs mx-auto">
+            Are you sure you want to approve this course for publication?
           </DialogDescription>
-        </DialogHeader>
+        </div>
 
-        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-3 mt-6">
+        <DialogFooter className="p-4 gap-3 sm:justify-center bg-white">
           <Button
             variant="outline"
             onClick={() => setIsApproveConfirmOpen(false)}
             disabled={isProcessingAction}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto min-w-[100px] border-gray-300 text-gray-700 cursor-pointer"
           >
             Cancel
           </Button>
           <Button
             onClick={confirmApprove}
             disabled={isProcessingAction}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-medium"
+            className="w-full sm:w-auto min-w-[100px] bg-green-600 hover:bg-green-700 
+          !text-white font-medium shadow-sm cursor-pointer"
           >
-            {isProcessingAction ? "Processing..." : "Yes, Approve Course"}
+            {isProcessingAction ? "Processing..." : "Yes, Approve"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -512,31 +422,69 @@ export default function CourseLearningViewer({
       </Dialog>
 
       <div className="h-screen flex flex-col bg-gray-50">
-        <header className="h-16 border-b bg-white flex items-center justify-between px-4">
-          <div className="flex items-center gap-3">
+        <header className="h-16 border-b bg-white flex items-center justify-between px-4 sticky top-0 z-20">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="icon"
               onClick={onExit}
-              className="cursor-pointer"
+              className="cursor-pointer flex-shrink-0 text-gray-500 hover:text-gray-900"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-              <div className="font-sans font-medium text-lg truncate max-w-xs sm:max-w-none">
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-0 sm:gap-3 min-w-0">
+              <div
+                className="font-semibold text-gray-900 truncate text-base sm:text-lg max-w-[150px] sm:max-w-md"
+                title={course.title}
+              >
                 {course.title}
               </div>
-              {isSubmissionReview && <StatusBadge status={currentStatus} />}
+              {isSubmissionReview && (
+                <div className="hidden sm:block transform scale-90 origin-left">
+                  <StatusBadge status={currentStatus} />
+                </div>
+              )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="sm:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {isSubmissionReview && currentStatus === "PendingApproval" && (
+              <div className="flex items-center gap-2 mr-1 sm:mr-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleReject}
+                  disabled={isProcessingAction}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 font-medium px-2 sm:px-4 h-9 cursor-pointer border-2 border-red-200"
+                >
+                  <Ban className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Reject</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleApprove}
+                  disabled={isProcessingAction}
+                  className="bg-blue-600 hover:bg-blue-700 !text-white font-medium px-2 sm:px-4 h-9 shadow-sm cursor-pointer"
+                >
+                  {isProcessingAction ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin sm:mr-2" />
+                  ) : (
+                    <Check className="w-4 h-4 sm:mr-2" />
+                  )}
+                  <span className="hidden sm:inline">Approve</span>
+                </Button>
+                <div className="h-6 w-px bg-gray-200 mx-1 sm:hidden"></div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden text-gray-500"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+          </div>
         </header>
 
         {message && (
@@ -721,7 +669,6 @@ export default function CourseLearningViewer({
             )}
           </main>
         </div>
-        <SubmissionActionBar />
       </div>
     </>
   );
