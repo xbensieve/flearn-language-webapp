@@ -1,10 +1,10 @@
 import {
   createBrowserRouter,
-  Navigate,
   Outlet,
   type RouteObject,
 } from "react-router-dom";
-
+import { Navigate } from "react-router-dom";
+import { PublicRoute, RootRedirect } from "@/routes/AuthGuard";
 // Import Pages (Common)
 import UnauthorizedPage from "../../pages/UnauthorizedPage";
 import NotFoundPage from "../../pages/NotFoundPage";
@@ -74,15 +74,14 @@ const commonRoutes: RouteObject[] = [
 const learnerRoutes: RouteObject[] = [
   {
     path: "/",
-    element: <LoginLearner />,
+    element: <RootRedirect />,
   },
   {
-    path: "/login",
-    element: <LoginLearner />,
-  },
-  {
-    path: "/register",
-    element: <Register />,
+    element: <PublicRoute />,
+    children: [
+      { path: "/login", element: <LoginLearner /> },
+      { path: "/register", element: <Register /> },
+    ],
   },
   {
     path: "/learner",
@@ -109,11 +108,11 @@ const systemRoutes: RouteObject[] = [
   // Redirect trang chủ về Login
   {
     path: "/",
-    element: <Navigate to="/login" replace />,
+    element: <RootRedirect />,
   },
   {
-    path: "/login",
-    element: <LoginDashboard />,
+    element: <PublicRoute />,
+    children: [{ path: "/login", element: <LoginDashboard /> }],
   },
   // --- ADMIN ROUTES ---
   {
@@ -124,6 +123,7 @@ const systemRoutes: RouteObject[] = [
       </PrivateRoute>
     ),
     children: [
+      { index: true, element: <Navigate to="dashboard" replace /> },
       { index: true, path: "dashboard", element: <Admin /> },
       { path: "profile", element: <Profile /> },
       { path: "course-templates", element: <CourseTemplatesPage /> },
@@ -168,14 +168,11 @@ const systemRoutes: RouteObject[] = [
       </PrivateRoute>
     ),
     children: [
-      { index: true, path: "", element: <BrowseCourses /> },
-      { path: "application", element: <TeacherApplicationPage /> },
+      { index: true, element: <BrowseCourses /> },
       { path: "profile", element: <Profile /> },
-      { path: "status", element: <ApplicationStatus /> },
-      { path: "survey/create", element: <CreateSurvey /> },
       { path: "course", element: <MyCourses /> },
       {
-        path: "course/exercise-grading/assignments",
+        path: "assignments",
         element: <TeacherExerciseGradingPage />,
       },
       { path: "course/create", element: <CreateCourse /> },

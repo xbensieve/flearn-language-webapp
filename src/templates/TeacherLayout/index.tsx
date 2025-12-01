@@ -40,7 +40,7 @@ const TeacherLayout: React.FC = () => {
     { to: "/classes", icon: Users, label: "Classes & Students" },
     { to: "/course/create", icon: FilePlus2, label: "Create Course" },
     {
-      to: "/course/exercise-grading/assignments",
+      to: "/assignments",
       icon: ClipboardCheck,
       label: "Grading & Review",
     },
