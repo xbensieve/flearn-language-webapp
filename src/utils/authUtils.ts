@@ -1,6 +1,18 @@
 import type { NavigateFunction } from "react-router-dom";
 import { notifyError } from "./toastConfig";
 
+export const getRedirectPathByRole = (roles: string[]): string => {
+  const userRole =
+    roles.find((r) => r.toLowerCase() === "admin") ||
+    roles.find((r) => r.toLowerCase() === "manager") ||
+    roles.find((r) => r.toLowerCase() === "teacher") ||
+    roles.find((r) => r.toLowerCase() === "learner");
+
+  const normalizedRole = userRole?.toLowerCase();
+  return normalizedRole ? ROLE_REDIRECTS[normalizedRole] || "/" : "/";
+};
+
+
 // Định nghĩa đích đến cho từng Role
 export const ROLE_REDIRECTS: Record<string, string> = {
   admin: "/admin/dashboard",
