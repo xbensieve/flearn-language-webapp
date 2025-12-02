@@ -58,7 +58,7 @@ import {
 import { PROFICIENCY_LEVELS } from "../../utils/constants";
 import InfoSection from "./components/InfoSection";
 import LoadingScreen from "@/components/Loading/LoadingScreen";
-
+import BackgroundImage from "@/assets/background-image-05.jpg";
 const { Option } = Select;
 const { Title, Paragraph, Text } = Typography;
 
@@ -132,7 +132,7 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
       <Card
         hoverable={!loading}
         onClick={loading ? undefined : onClick}
-        className="relative overflow-hidden rounded-3xl transition-all duration-300 cursor-pointer"
+        className="relative overflow-hidden rounded-md transition-all duration-300 cursor-pointer"
         style={{
           border: selected
             ? `2px solid ${info.color.replace("bg-", "#")}`
@@ -155,7 +155,7 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
           <div className="relative">
             {/* Flag */}
             <div
-              className="w-16 h-16 rounded-full overflow-hidden shadow-lg ring-4 ring-white"
+              className="w-16 h-16 rounded-md overflow-hidden shadow-lg ring-4 ring-white"
               style={{
                 backgroundImage: `url(https://flagcdn.com/w160/${info.flag.toLowerCase()}.png)`,
                 backgroundSize: "cover",
@@ -166,10 +166,9 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
             {/* Selected Indicator */}
             {selected && (
               <motion.div
-                initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-xl"
+                className="absolute -top-2 -right-2 w-8 h-8 rounded-md flex items-center justify-center shadow-xl"
                 style={{ backgroundColor: info.color.replace("bg-", "#") }}
               >
                 <svg
@@ -237,7 +236,7 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
         {/* Pulse Animation */}
         {selected && (
           <motion.div
-            className="absolute inset-0 rounded-3xl pointer-events-none"
+            className="absolute inset-0 rounded-md pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0.3, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
@@ -276,7 +275,7 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
       <Card
         hoverable
         onClick={onClick}
-        className="relative overflow-hidden rounded-2xl transition-all duration-300"
+        className="relative overflow-hidden rounded-md transition-all duration-300"
         style={{
           border: selected
             ? `2px solid ${levelInfo.color}`
@@ -315,7 +314,7 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
         {/* Pulse when selected */}
         {selected && (
           <motion.div
-            className="absolute inset-0 rounded-2xl pointer-events-none"
+            className="absolute inset-0 rounded-md pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0.3, 0] }}
             transition={{ duration: 1.8, repeat: Infinity }}
@@ -670,10 +669,10 @@ const TeacherApplicationPage: React.FC = () => {
                         <img
                           src={previewUrl}
                           alt="Avatar preview"
-                          className="w-40 h-40 rounded-full object-cover shadow-lg ring-4 ring-white"
+                          className="w-40 h-40 rounded-md object-cover shadow-lg ring-4 ring-white"
                         />
                       ) : (
-                        <div className="w-40 h-40 bg-gray-200 rounded-full flex items-center justify-center">
+                        <div className="w-40 h-40 bg-gray-200 rounded-md flex items-center justify-center">
                           <Camera className="w-16 h-16 text-gray-400" />
                         </div>
                       )}
@@ -885,7 +884,7 @@ const TeacherApplicationPage: React.FC = () => {
                   {fields.map(({ key, name, ...restField }) => (
                     <motion.div key={key} className="relative group">
                       <Card
-                        className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm transition-all duration-300 bg-gradient-to-br from-white to-indigo-50"
+                        className="overflow-hidden rounded-md border border-gray-200 shadow-sm transition-all duration-300 bg-gradient-to-br from-white to-indigo-50"
                         bodyStyle={{ padding: 0 }}
                       >
                         <div className="p-5">
@@ -1041,7 +1040,7 @@ const TeacherApplicationPage: React.FC = () => {
           {/* Language Card */}
           <div className="bg-white border p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-md"></div>
               <Paragraph className="text-gray-700 font-semibold !mb-0">
                 Preferred Language
               </Paragraph>
@@ -1057,7 +1056,7 @@ const TeacherApplicationPage: React.FC = () => {
             {/* Basic Info Card */}
             <div className="bg-white border p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-indigo-500 rounded-md"></div>
                 <Paragraph className="text-gray-700 font-semibold !mb-0">
                   Basic Information
                 </Paragraph>
@@ -1072,15 +1071,15 @@ const TeacherApplicationPage: React.FC = () => {
                         formData.Avatar[0].originFileObj
                       )}
                       alt="Applicant Avatar Preview"
-                      className="!w-16 !h-16 border-2 border-indigo-300 object-cover rounded-full shadow-md ring-2 ring-indigo-100"
+                      className="!w-16 !h-16 border-2 border-indigo-300 object-cover rounded-md shadow-md ring-2 ring-indigo-100"
                       icon={
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 rounded-md flex items-center justify-center text-white font-bold text-sm">
                           A
                         </div>
                       } // Fallback icon
                     />
                   ) : (
-                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center shadow-md ring-2 ring-indigo-100">
+                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-md flex items-center justify-center shadow-md ring-2 ring-indigo-100">
                       <span className="text-white font-bold text-sm">
                         {formData.FullName?.charAt(0) || "A"}
                       </span>
@@ -1136,7 +1135,7 @@ const TeacherApplicationPage: React.FC = () => {
                   ].map((field, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-md"
                     >
                       <span className="text-2xl">{field.icon}</span>
                       <div>
@@ -1165,7 +1164,7 @@ const TeacherApplicationPage: React.FC = () => {
                 ].map((field, idx) => (
                   <div
                     key={idx}
-                    className="p-4 bg-blue-50 rounded-lg border border-blue-200"
+                    className="p-4 bg-blue-50 rounded-md border border-blue-200"
                   >
                     <div className="flex items-start gap-3 mb-2">
                       <span className="text-2xl mt-0.5">{field.icon}</span>
@@ -1184,7 +1183,7 @@ const TeacherApplicationPage: React.FC = () => {
             {formData.Certificates && formData.Certificates.length > 0 ? (
               <div className="bg-white border  p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-green-500 rounded-md"></div>
                   <Paragraph className="text-gray-700 font-semibold !mb-0">
                     Your Certificates
                   </Paragraph>
@@ -1198,7 +1197,7 @@ const TeacherApplicationPage: React.FC = () => {
                     return (
                       <div
                         key={idx}
-                        className="group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-xl p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden"
+                        className="group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-md p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden"
                       >
                         <h4 className="font-bold text-gray-900 mb-2 text-center">
                           {certInfo?.name || "Certificate"}
@@ -1209,13 +1208,13 @@ const TeacherApplicationPage: React.FC = () => {
                               cert.CertificateImage[0].originFileObj
                             )}
                             alt={`${certInfo?.name || "Certificate"} Preview`}
-                            className="w-full max-w-sm mx-auto h-32 object-cover rounded-lg border border-gray-200 shadow-inner"
+                            className="w-full max-w-sm mx-auto h-32 object-cover rounded-md border border-gray-200 shadow-inner"
                             onError={(e) => {
                               e.currentTarget.style.display = "none";
                             }}
                           />
                         ) : (
-                          <div className="w-full max-w-sm mx-auto h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500">
+                          <div className="w-full max-w-sm mx-auto h-32 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
                             <span className="text-sm">No image uploaded</span>
                           </div>
                         )}
@@ -1233,9 +1232,9 @@ const TeacherApplicationPage: React.FC = () => {
                 )}
               </div>
             ) : (
-              <div className="bg-white border border-blue-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="bg-white border border-blue-200 rounded-md p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-green-500 rounded-md"></div>
                   <Paragraph className="text-gray-700 font-semibold !mb-0">
                     Your Certificates
                   </Paragraph>
@@ -1285,7 +1284,7 @@ const TeacherApplicationPage: React.FC = () => {
       <div className="mt-15 flex items-center justify-center bg-gray-50 px-4">
         <div className="bg-white p-10 rounded-md shadow-xl max-w-lg w-full text-center border border-gray-100">
           <div className="mb-6 flex justify-center">
-            <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center animate-pulse">
+            <div className="w-24 h-24 bg-blue-50 rounded-md flex items-center justify-center animate-pulse">
               <ClockCircleOutlined className="text-5xl text-blue-500" />
             </div>
           </div>
@@ -1301,7 +1300,7 @@ const TeacherApplicationPage: React.FC = () => {
             type="primary"
             size="large"
             onClick={() => navigate("/learner/status")}
-            className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium rounded-xl shadow-lg shadow-blue-200"
+            className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium rounded-md shadow-lg shadow-blue-200"
           >
             Check Application Status
           </Button>
@@ -1311,44 +1310,91 @@ const TeacherApplicationPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col py-7">
-      <motion.div
-        initial={{ opacity: 0, y: 25 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="bg-white rounded-2xl p-10 my-12 max-w-5xl w-full mx-auto"
+    <div className="min-h-screen flex flex-col bg-gray-50 pb-12">
+      <div
+        className="relative w-full h-[600px] bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${BackgroundImage})`,
+        }}
       >
-        <Steps
-          current={currentStep}
-          items={steps.map((s) => ({ title: s.title }))}
-        />
+        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-start pt-20 max-w-5xl">
+          <Title
+            level={1}
+            style={{
+              color: "white",
+              fontSize: "3.5rem",
+              fontWeight: 800,
+              marginBottom: "1.5rem",
+              lineHeight: 1.2,
+            }}
+          >
+            Get paid to help <br />
+            others learn a <br />
+            language
+          </Title>
 
-        <div className="mt-10">{steps[currentStep].content}</div>
-
-        <div className="mt-8 flex justify-between">
-          {/* Previous luôn bên trái, ẩn nếu step đầu */}
-          <div>
-            {currentStep > 0 && (
-              <Button onClick={prev} className="px-6">
-                Previous
-              </Button>
-            )}
-          </div>
-
-          {/* Next luôn bên phải, ẩn nếu step cuối */}
-          <div>
-            {currentStep < steps.length - 1 && (
-              <Button
-                type="primary"
-                onClick={next}
-                className="px-6 bg-gradient-to-r from-indigo-600 to-blue-500"
-              >
-                Next
-              </Button>
-            )}
-          </div>
+          <Text
+            style={{
+              color: "rgba(255,255,255,0.9)",
+              fontSize: "1.25rem",
+              fontWeight: 500,
+              maxWidth: "1000px",
+            }}
+          >
+            FLearn is an online platform that connects learners with English,
+            Chinese, and Japanese language teachers. Join our community of
+            passionate educators and start making a difference today!
+          </Text>
         </div>
-      </motion.div>
+      </div>
+      <div className="px-4 relative z-20 -mt-24">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="bg-white rounded-md shadow-2xl p-10 max-w-5xl w-full mx-auto border border-gray-100"
+        >
+          {/* Steps Indicator */}
+          <div className="mb-8">
+            <Steps
+              current={currentStep}
+              items={steps.map((s) => ({ title: s.title }))}
+            />
+          </div>
+
+          {/* Form Content */}
+          <div className="mt-6 min-h-[400px]">{steps[currentStep].content}</div>
+
+          {/* Navigation Buttons */}
+          <div className="mt-10 flex justify-between pt-6 border-t border-gray-100">
+            <div>
+              {currentStep > 0 && (
+                <Button
+                  onClick={prev}
+                  className="px-8 h-10 text-gray-600 hover:text-gray-900 border-gray-300"
+                  size="large"
+                >
+                  Previous
+                </Button>
+              )}
+            </div>
+
+            <div>
+              {currentStep < steps.length - 1 && (
+                <Button
+                  type="primary"
+                  onClick={next}
+                  size="large"
+                  className="px-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none shadow-lg shadow-blue-200"
+                >
+                  Next
+                </Button>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
