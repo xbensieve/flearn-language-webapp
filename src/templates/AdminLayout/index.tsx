@@ -26,6 +26,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
 import { notifyError, notifySuccess } from "@/utils/toastConfig";
+import { ArrowLeftRight } from "lucide-react";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -112,6 +113,11 @@ const DashboardLayout: React.FC = () => {
       children: [
         { key: "/admin/refund", icon: <WalletOutlined />, label: "Refunds" },
         { key: "/admin/payouts", icon: <WalletOutlined />, label: "Payouts" },
+        {
+          key: "/admin/wallet-transactions",
+          icon: <ArrowLeftRight />,
+          label: "Wallet Transactions",
+        },
       ],
     },
   ];

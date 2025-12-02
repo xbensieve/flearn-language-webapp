@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Menu,
   GraduationCap,
+  ArrowLeftRight,
 } from "lucide-react";
 import { UserOutlined } from "@ant-design/icons";
 
@@ -46,6 +47,11 @@ const TeacherLayout: React.FC = () => {
     },
     { to: "/payout-request", icon: Landmark, label: "Bank Account" },
     { to: "/payouts", icon: Wallet, label: "Payout History" },
+    {
+      to: "/wallet-transactions",
+      icon: ArrowLeftRight,
+      label: "Wallet Transactions",
+    },
   ];
 
   return (
