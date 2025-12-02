@@ -587,12 +587,35 @@ export default function ExerciseGradingPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        className={getStatusColor(item.status)}
-                        variant="outline"
-                      >
-                        {item.status}
-                      </Badge>
+                      {item.isReassigned ? (
+                        <div className="flex flex-col gap-1 items-start">
+                          {/* Badge mới để báo hiệu đã Reassign */}
+                          <Badge
+                            variant="outline"
+                            className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                          >
+                            Reassigned
+                          </Badge>
+
+                          {/* Status cũ (thường là Expired) bị gạch ngang và làm mờ */}
+                          <Badge
+                            className={`${getStatusColor(
+                              item.status
+                            )} opacity-50 line-through decoration-slate-400`}
+                            variant="outline"
+                          >
+                            {item.status}
+                          </Badge>
+                        </div>
+                      ) : (
+                        /* Hiển thị bình thường nếu chưa Reassign */
+                        <Badge
+                          className={getStatusColor(item.status)}
+                          variant="outline"
+                        >
+                          {item.status}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
