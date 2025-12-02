@@ -3,7 +3,14 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { GraduationCap, LogOut, Menu } from "lucide-react";
 import { toast } from "react-toastify";
-
+import {
+  MapPin,
+  Mail,
+  ChevronRight,
+  Download,
+  Users,
+  UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -130,7 +137,7 @@ export default function LearnerLayout() {
                   size="sm"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-600 hover:!text-red-700 hover:!bg-red-50 cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
@@ -197,10 +204,123 @@ export default function LearnerLayout() {
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t bg-background py-8 text-center text-sm text-muted-foreground">
-        <div className="container mx-auto px-4">
-          © {new Date().getFullYear()} FLearn. All rights reserved.
+      {/* Footer Minimal & Static */}
+      <footer className="bg-white pt-16 pb-8 border-t border-gray-200 mt-auto">
+        <div className="container mx-auto px-8 md:px-16 lg:px-32">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12 text-center lg:text-left">
+            {/* COLUMN 1: BRAND INFO */}
+            <div className="lg:col-span-2 space-y-6 flex flex-col items-center lg:items-start">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <span className="text-2xl font-bold text-gray-900">
+                  FLearn Team.
+                </span>
+              </div>
+
+              <p className="text-gray-500 text-sm leading-7 max-w-md mx-auto lg:mx-0">
+                FLearn is an AI-powered multilingual speaking platform. We
+                connect learners with professional teachers and provide advanced
+                voice recognition technology for English, Japanese, and Chinese.
+              </p>
+
+              <div className="space-y-4 pt-2 w-full">
+                <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-600">
+                  <MapPin className="w-4 h-4 text-blue-600" />
+                  <span>High Tech Park, Thu Duc City, HCMC</span>
+                </div>
+
+                <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-600">
+                  <Mail className="w-4 h-4 text-blue-600" />
+                  <a href="mailto:tri10ngon@gmail.com">tri10ngon@gmail.com</a>
+                </div>
+              </div>
+            </div>
+
+            {/* COLUMN 2: PROGRAMS */}
+            <div className="lg:col-span-1">
+              <h3 className="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">
+                Programs
+              </h3>
+              <ul className="space-y-4">
+                {["English", "Japanese", "Chinese"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href="#"
+                      className="text-gray-500 text-sm flex items-center justify-center lg:justify-start gap-2"
+                    >
+                      <ChevronRight className="w-3 h-3 text-gray-400" />
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* COLUMN 3: ABOUT US */}
+            <div className="lg:col-span-1">
+              <h3 className="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">
+                About Us
+              </h3>
+              <ul className="space-y-4">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-500 text-sm flex items-center justify-center lg:justify-start gap-2"
+                  >
+                    <Users className="w-4 h-4 text-gray-400" />
+                    Project & Team
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-500 text-sm flex items-center justify-center lg:justify-start gap-2"
+                  >
+                    <UserPlus className="w-4 h-4 text-gray-400" />
+                    Become a Teacher
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* COLUMN 4: GET THE APP */}
+            <div className="lg:col-span-1 flex flex-col items-center lg:items-start">
+              <h3 className="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">
+                Get the App
+              </h3>
+
+              <button className="bg-white border border-gray-300 rounded-xl p-4 flex items-center gap-4 w-full max-w-[240px] mx-auto lg:mx-0">
+                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Download className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">
+                    Download Now
+                  </div>
+                  <div className="font-bold text-gray-900 text-sm">
+                    APK Version
+                  </div>
+                </div>
+              </button>
+
+              <p className="mt-4 text-xs text-gray-400">
+                Compatible with Android devices
+              </p>
+            </div>
+          </div>
+
+          {/* COPYRIGHT */}
+          <div className="border-t border-gray-200 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-500">
+              © {new Date().getFullYear()} FLearn. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-sm text-gray-400">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
