@@ -48,6 +48,7 @@ import Courses from "@/pages/Manager/Course/Courses";
 import CourseDetailByManager from "@/pages/Manager/Course/CourseDetail";
 import ExerciseGradingPageByManager from "@/pages/Manager/Exercise/ExerciseGradingPage";
 import ProfileByManager from "@/pages/Manager/Profile/Profile";
+import CancellationRequests from "@/pages/Manager/CancellationRequests";
 import TeacherLayout from "../../templates/TeacherLayout";
 import TeacherExerciseGradingPage from "@/pages/Teacher/ExerciseGrading/TeacherExerciseGradingPage";
 import CourseDetailView from "../../pages/Teacher/CourseDetailView";
@@ -160,6 +161,7 @@ const systemRoutes: RouteObject[] = [
       { path: "courses/:id", element: <CourseDetailByManager /> },
       { path: "exercise-grading", element: <ExerciseGradingPageByManager /> },
       { path: "profile", element: <ProfileByManager /> },
+      { path: "cancellation-requests", element: <CancellationRequests /> },
     ],
   },
   // --- TEACHER ROUTES ---
