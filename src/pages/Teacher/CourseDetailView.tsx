@@ -1,221 +1,246 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  Card,
-  Collapse,
-  Tag,
-  Typography,
-  Row,
-  Col,
-  Spin,
-  Empty,
-  Button,
-  message,
-  Alert,
-  Tooltip,
-  Avatar,
-} from 'antd';
-import {
-  EditOutlined,
-  SaveOutlined,
-  CloseOutlined,
-  FileOutlined,
-  PlayCircleOutlined,
-  DownOutlined,
-} from '@ant-design/icons';
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+
+// Services
 import {
   getCourseDetailService,
   getCourseUnitsService,
   getLessonsByUnits,
   submitCourseService,
   updateCourseVisibilityService,
-} from '../../services/course';
-import type { Unit } from '../../services/course/type';
+} from "../../services/course";
+import type { Unit } from "../../services/course/type";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
+import { formatStatusLabel } from "../../utils/mapping";
+import type { AxiosError } from "axios";
+import ExercisesList from "./components/ExercisesList";
+
+// Icons (Lucide React - Standard for Shadcn)
 import {
   ArrowLeft,
   Check,
-  Lightbulb,
   BookOpen,
   Target,
   GraduationCap,
-  DollarSign,
   Users,
   Calendar,
   Sparkles,
   Play,
   FileText,
   Star,
-  MessageSquare,
   Box,
-  Timer,
   Clock,
   Eye,
   Archive,
-} from 'lucide-react';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { formatStatusLabel } from '../../utils/mapping';
-import type { AxiosError } from 'axios';
-import ExercisesList from './components/ExercisesList';
+  Pencil,
+  Save,
+  X,
+  Loader2,
+  Video,
+  ChevronDown,
+  AlertTriangle,
+} from "lucide-react";
 
-const { Title, Paragraph, Text } = Typography;
-const { Panel } = Collapse;
+// UI Components (Shadcn/Tailwind wrapper)
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 
-/** Subcomponent: handles fetching + rendering lessons for a specific unit */
+// --- Subcomponent: Lesson Item ---
+const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
+  lesson,
+  isEditMode,
+}) => {
+  const navigate = useNavigate();
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border rounded-lg mb-3 overflow-hidden bg-card transition-all hover:border-primary/50">
+      <div
+        className="flex items-center justify-between p-3 cursor-pointer bg-muted/30 hover:bg-muted/50"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Play className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="font-medium text-sm truncate">
+              {lesson.title ?? "Untitled Lesson"}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Lesson {lesson.position ?? "-"}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {isEditMode && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/teacher/lesson/${lesson.lessonID}/edit`);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
+          <ChevronDown
+            className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+      </div>
+
+      {/* Expanded Content */}
+      {isOpen && (
+        <div className="p-4 border-t bg-white dark:bg-slate-950 animate-in slide-in-from-top-2 duration-200">
+          {/* Description */}
+          <p className="text-sm text-muted-foreground mb-4">
+            {lesson.description ?? "No description provided."}
+          </p>
+
+          {/* HTML Content */}
+          {lesson.content && (
+            <div
+              className="prose prose-sm prose-slate max-w-none p-4 rounded-md bg-slate-50 border mb-4 dark:bg-slate-900"
+              dangerouslySetInnerHTML={{ __html: lesson.content }}
+            />
+          )}
+
+          {/* Video Player */}
+          {lesson.videoUrl && (
+            <div className="relative aspect-video rounded-lg overflow-hidden border bg-black mb-4">
+              <video
+                controls
+                src={lesson.videoUrl}
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <Video className="w-12 h-12 text-white/20" />
+              </div>
+            </div>
+          )}
+
+          {/* Resources */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {lesson.documentUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="gap-2 text-green-600 border-green-200 hover:bg-green-50"
+              >
+                <a
+                  href={lesson.documentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FileText className="h-4 w-4" />
+                  View Document
+                </a>
+              </Button>
+            )}
+          </div>
+
+          <Separator className="my-4" />
+
+          {/* Exercises */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" />
+              Exercises
+            </h4>
+            <ExercisesList
+              lessonId={lesson.lessonID ?? ""}
+              readonly={!isEditMode}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Subcomponent: Unit Lessons Loader ---
 export const UnitLessons: React.FC<{ unit: Unit; isEditMode?: boolean }> = ({
   unit,
   isEditMode,
 }) => {
-  const navigate = useNavigate();
-
   const {
     data: lessonsResponse,
-    isLoading: lessonsLoading,
+    isLoading,
     isError,
   } = useQuery({
-    queryKey: ['lessons', unit?.courseUnitID],
+    queryKey: ["lessons", unit?.courseUnitID],
     queryFn: () => getLessonsByUnits({ unitId: unit?.courseUnitID }),
     enabled: !!unit?.courseUnitID,
     retry: 1,
   });
 
-  if (lessonsLoading) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center py-6">
-        <Spin />
+      <div className="space-y-3 py-2">
+        <Skeleton className="h-12 w-full rounded-lg" />
+        <Skeleton className="h-12 w-full rounded-lg" />
       </div>
     );
   }
 
   if (isError || !lessonsResponse?.data || lessonsResponse.data.length === 0) {
-    return <Empty description="No lessons found for this unit" />;
+    return (
+      <div className="flex flex-col items-center justify-center py-6 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
+        <Box className="h-8 w-8 mb-2 opacity-50" />
+        <span className="text-sm">No lessons in this unit</span>
+      </div>
+    );
   }
 
-  const lessons = [...lessonsResponse.data].sort((a, b) => a.position - b.position);
+  const lessons = [...lessonsResponse.data].sort(
+    (a, b) => a.position - b.position
+  );
 
   return (
-    <div className="!space-y-4">
+    <div className="pt-2">
       {lessons.map((lesson) => (
-        <div
+        <LessonItem
           key={lesson.lessonID}
-          className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br from-white to-blue-50">
-          <Collapse
-            bordered={false}
-            expandIconPosition="end"
-            expandIcon={({ isActive }) => (
-              <DownOutlined
-                rotate={isActive ? 180 : 0}
-                className="text-gray-500 transition-transform duration-300"
-              />
-            )}
-            className="custom-collapse">
-            <Collapse.Panel
-              key="1"
-              header={
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                      <Play className="w-5 h-5 text-indigo-600" />
-                    </div>
-                    <div>
-                      <Text
-                        strong
-                        className="text-gray-800 block">
-                        {lesson.title ?? 'Untitled Lesson'}
-                      </Text>
-                      <Tag
-                        color="blue"
-                        className="mt-1 px-2 py-1 text-xs">
-                        Lesson {lesson.position ?? '-'}
-                      </Tag>
-                    </div>
-                  </div>
-
-                  {isEditMode && (
-                    <Button
-                      size="small"
-                      icon={<EditOutlined />}
-                      className="text-gray-600 border-gray-300 hover:border-gray-400 rounded-lg flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/teacher/lesson/${lesson.lessonID}/edit`);
-                      }}>
-                      Edit
-                    </Button>
-                  )}
-                </div>
-              }>
-              {/* Expanded Content */}
-              <div className="px-2 pb-3">
-                {/* Description */}
-                <Paragraph className="text-gray-600 text-sm mb-3 leading-relaxed">
-                  {lesson.description ?? 'No description provided'}
-                </Paragraph>
-
-                {/* Lesson Content */}
-                {lesson.content && (
-                  <div
-                    className="prose prose-sm max-w-none text-gray-800 bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4"
-                    dangerouslySetInnerHTML={{ __html: lesson.content }}
-                  />
-                )}
-
-                {/* Video */}
-                {lesson.videoUrl && (
-                  <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-black mb-4">
-                    <video
-                      controls
-                      src={lesson.videoUrl}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none rounded-xl">
-                      <PlayCircleOutlined className="text-white text-4xl opacity-80" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {lesson.documentUrl && (
-                    <Tooltip title="Open in new tab">
-                      <Button
-                        type="default"
-                        size="small"
-                        icon={<FileOutlined />}
-                        href={lesson.documentUrl}
-                        target="_blank"
-                        className="text-green-600 border-green-200 hover:border-green-400 rounded-lg flex items-center gap-1">
-                        <FileText className="w-3 h-3" />
-                        Document
-                      </Button>
-                    </Tooltip>
-                  )}
-                  {/* <Button
-                    size="small"
-                    icon={<PlayCircleOutlined />}
-                    onClick={() => navigate(`/teacher/lesson/${lesson.lessonID}`)}
-                    className="rounded-lg flex items-center gap-1">
-                    <Play className="w-3 h-3" />
-                    Preview
-                  </Button> */}
-                </div>
-
-                {/* Exercises */}
-                <ExercisesList
-                  lessonId={lesson.lessonID ?? ''}
-                  readonly={!isEditMode}
-                />
-              </div>
-            </Collapse.Panel>
-          </Collapse>
-        </div>
+          lesson={lesson}
+          isEditMode={isEditMode}
+        />
       ))}
     </div>
   );
 };
 
-/** Main Component */
+// --- Main Component ---
 const CourseDetailView: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -226,7 +251,7 @@ const CourseDetailView: React.FC = () => {
     isLoading: courseLoading,
     refetch,
   } = useQuery({
-    queryKey: ['course', courseId],
+    queryKey: ["course", courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
   });
@@ -239,17 +264,21 @@ const CourseDetailView: React.FC = () => {
       }),
     onSuccess: (data) => {
       notifySuccess(
-        data.isHidden ? 'Course archived successfully' : 'Course restored successfully'
+        data.isHidden
+          ? "Course archived successfully"
+          : "Course restored successfully"
       );
       refetch();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || 'Failed to update course visibility');
+      notifyError(
+        error.response?.data?.message || "Failed to update visibility"
+      );
     },
   });
 
   const { data: unitsData, isLoading: unitsLoading } = useQuery({
-    queryKey: ['units', courseId],
+    queryKey: ["units", courseId],
     queryFn: async () => {
       const res = await getCourseUnitsService({ id: courseId! });
       return Array.isArray(res) ? res : res?.data ?? [];
@@ -258,46 +287,31 @@ const CourseDetailView: React.FC = () => {
   });
 
   const { mutate: submitCourse } = useMutation({
-    mutationFn: (courseId: string) => submitCourseService(courseId),
+    mutationFn: (cId: string) => submitCourseService(cId),
     onSuccess: () => {
-      notifySuccess('Course submitted successfully');
+      notifySuccess("Course submitted successfully");
+      refetch(); // Refresh status
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || 'Error submitting course');
+      notifyError(error.response?.data?.message || "Error submitting course");
     },
   });
 
   const handleToggleEdit = () => {
-    if (isEditMode) {
-      message.success('Changes saved (mock)');
-    }
+    if (isEditMode) notifySuccess("Changes saved (mock)");
     setIsEditMode((prev) => !prev);
   };
 
-  const handleSubmitCourse = () => {
-    if (courseId) submitCourse(courseId);
-  };
-
-  const handleArchiveCourse = (status: boolean) => {
-    console.log(status);
-    if (courseId) {
-      updateVisibility(!status);
-    }
-  };
+  const isArchived = course?.courseStatus?.toLowerCase() === "archived";
 
   if (courseLoading || unitsLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[70vh] bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <Spin
-            size="large"
-            className="mb-4"
-          />
-          <Title
-            level={4}
-            className="text-gray-600">
-            Loading course details...
-          </Title>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+          <p className="text-muted-foreground font-medium">
+            Loading course data...
+          </p>
         </div>
       </div>
     );
@@ -305,432 +319,335 @@ const CourseDetailView: React.FC = () => {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white">
-        <Empty description="Course not found" />
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
+        <h2 className="text-2xl font-bold text-gray-800">Course not found</h2>
+        <Button onClick={() => navigate(-1)} variant="outline">
+          Go Back
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-transparent py-10 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center bg-white rounded-t-2xl p-6 border-gray-100">
-          <div className="flex justify-between items-center flex-1">
-            <div className="flex items-center gap-3">
-              <Tooltip title="Back to courses">
-                <Button
-                  onClick={() => navigate(-1)}
-                  type="default"
-                  className="rounded-xl shadow-sm border-gray-200 hover:border-indigo-300 transition-colors">
-                  <ArrowLeft size={16} />
-                </Button>
+    <div className="min-h-screen bg-slate-50/50 pb-20">
+      <div className="container max-w-6xl mx-auto px-4 py-8 space-y-8">
+        {/* --- Header Section --- */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border shadow-sm sticky top-4 z-30">
+          <div className="flex items-center gap-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => navigate(-1)}
+                    className="rounded-full h-8 w-8"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Back to list</TooltipContent>
               </Tooltip>
-              <div className="flex items-center gap-2">
-                <Title
-                  level={2}
-                  className="!mb-0 text-gray-800">
-                  Course Overview
-                </Title>
-              </div>
+            </TooltipProvider>
+
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 leading-none">
+                Course Details
+              </h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Manage content and settings
+              </p>
             </div>
-            <Button
-              style={{ marginRight: '6px' }}
-              onClick={() => handleArchiveCourse(course.courseStatus.toLowerCase() === 'archived')}>
-              {course?.courseStatus?.toLowerCase() === 'archived' ? (
-                <Tooltip title="Restore course">
-                  <Eye size={16} />
-                </Tooltip>
-              ) : (
-                <Tooltip title="Archive course">
-                  <Archive size={16} />
-                </Tooltip>
-              )}
-            </Button>
           </div>
-          <div className="space-x-2 flex items-center">
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (courseId) updateVisibility(!isArchived);
+                    }}
+                  >
+                    {isArchived ? (
+                      <Eye className="h-5 w-5 text-emerald-600" />
+                    ) : (
+                      <Archive className="h-5 w-5 text-amber-600" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isArchived ? "Restore Course" : "Archive Course"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <Separator orientation="vertical" className="h-6" />
+
             {isEditMode ? (
               <>
-                <Tooltip title="Save changes">
-                  <Button
-                    type="primary"
-                    icon={<SaveOutlined />}
-                    onClick={handleToggleEdit}
-                    className="rounded-xl shadow-md hover:shadow-lg transition-all">
-                    Save Changes
-                  </Button>
-                </Tooltip>
-                <Tooltip title="Cancel editing">
-                  <Button
-                    danger
-                    icon={<CloseOutlined />}
-                    onClick={() => setIsEditMode(false)}
-                    className="rounded-xl">
-                    Cancel
-                  </Button>
-                </Tooltip>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleToggleEdit}
+                  className="gap-2"
+                >
+                  <Save className="h-4 w-4" /> Save
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsEditMode(false)}
+                  className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+                >
+                  <X className="h-4 w-4" /> Cancel
+                </Button>
               </>
             ) : (
-              <div className="flex items-center gap-2">
-                {course?.courseStatus?.toLowerCase() === 'draft' && (
-                  <Tooltip title="Submit for review">
-                    <Button
-                      type="primary"
-                      onClick={handleSubmitCourse}
-                      icon={<Check size={16} />}
-                      className="rounded-xl shadow-md hover:shadow-lg transition-all">
-                      Submit Course
-                    </Button>
-                  </Tooltip>
+              <>
+                {course?.courseStatus?.toLowerCase() === "draft" && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={() => courseId && submitCourse(courseId)}
+                    className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Check className="h-4 w-4" /> Submit
+                  </Button>
                 )}
-                {(course?.courseStatus?.toLowerCase() === 'draft' ||
-                  course?.courseStatus?.toLowerCase() === 'rejected') && (
-                  <Tooltip title="Edit course details">
-                    <Button
-                      icon={<EditOutlined />}
-                      onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
-                      className="rounded-xl border-gray-300 hover:border-indigo-400 transition-colors">
-                      Edit
-                    </Button>
-                  </Tooltip>
-                )}
-              </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
+                  className="gap-2"
+                >
+                  <Pencil className="h-4 w-4" /> Edit Details
+                </Button>
+              </>
             )}
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="overflow-hidden shadow-xl border-0 relative bg-gradient-to-r from-indigo-600 to-purple-700">
-          <img
-            src={course?.imageUrl ?? '/default-course.jpg'}
-            alt={course?.title ?? 'Course Image'}
-            className="w-full h-72 object-cover brightness-75"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-          <div className="absolute top-6 right-6">
-            <Tag
-              color="gold"
-              className="px-3 py-2 text-sm font-medium shadow-lg">
-              <Sparkles className="w-3 h-3 inline mr-1" />
-              {formatStatusLabel(course?.courseStatus ?? 'unknown')}
-            </Tag>
-          </div>
-          <div className="absolute bottom-6 left-6 text-white max-w-2xl">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Title
-                  level={1}
-                  className="!text-white !mb-1">
-                  {course?.title ?? 'Untitled Course'}
-                </Title>
-                <Text className="!text-indigo-100 text-sm">
-                  <Avatar
-                    src={course?.teacher?.avatar}
-                    className="!mr-2"
-                  />
-                  By {course?.teacher?.name ?? 'Unknown Teacher'}
-                </Text>
-              </div>
-            </div>
-            <Paragraph className="!text-gray-200 leading-relaxed">
-              {course?.description ?? 'No description available'}
-            </Paragraph>
-            <div className="flex items-center gap-4 mt-4">
-              <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
-                <Target className="w-4 h-4 text-white" />
-                <Text className="!text-white text-sm">
-                  {course?.language ?? 'Unknown Language'}
-                </Text>
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-full backdrop-blur-sm">
-                <GraduationCap className="w-4 h-4 text-white" />
-                <Text className="!text-white text-sm">{course?.program.level.name ?? 'N/A'}</Text>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Course Info */}
-        <Card
-          style={{ borderRadius: 0 }}
-          className="shadow-sm border-0 bg-white">
-          <div className="p-6">
-            <div className="flex items-center gap-4 mb-6">
-              <Lightbulb className="w-6 h-6 text-yellow-500" />
-              <Text
-                strong
-                className="text-xl text-gray-800">
-                Quick Stats
-              </Text>
-            </div>
-            <Row
-              gutter={[16, 16]}
-              className="mb-6">
-              <Col
-                xs={24}
-                sm={12}
-                md={8}>
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Users className="w-5 h-5 text-blue-600" />
-                    <Text
-                      strong
-                      className="text-blue-800">
-                      Language
-                    </Text>
-                  </div>
-                  <Text className="text-gray-900 font-medium">{course?.language ?? 'N/A'}</Text>
-                </div>
-              </Col>
-              <Col
-                xs={24}
-                sm={12}
-                md={8}>
-                <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <GraduationCap className="w-5 h-5 text-green-600" />
-                    <Text
-                      strong
-                      className="text-green-800">
-                      Level
-                    </Text>
-                  </div>
-                  <Text className="text-gray-900 font-medium">
-                    {course?.program.level.name ?? 'N/A'}
-                  </Text>
-                </div>
-              </Col>
-              <Col
-                xs={24}
-                sm={12}
-                md={8}>
-                <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="w-5 h-5 text-purple-600" />
-                    <Text
-                      strong
-                      className="text-purple-800">
-                      Status
-                    </Text>
-                  </div>
-                  <Tag
-                    color={course?.courseStatus === 'published' ? 'success' : 'default'}
-                    className="px-3 py-1">
-                    {formatStatusLabel(course?.courseStatus ?? 'unknown')}
-                  </Tag>
-                </div>
-              </Col>
-            </Row>
-
-            <div className="space-y-4">
-              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-5 h-5 text-indigo-600" />
-                  <Text
-                    strong
-                    className="text-indigo-800">
-                    Program Description
-                  </Text>
-                </div>
-                {/* <Paragraph className="text-gray-700 leading-relaxed">
-                  {course?.?.description ?? 'No goal description provided'}
-                </Paragraph> */}
-                <Paragraph className="text-gray-700 leading-relaxed">
-                  {course?.program?.description ?? 'No goal description provided'}
-                </Paragraph>
-              </div>
-
-              <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-5 h-5 text-green-600" />
-                  <Text
-                    strong
-                    className="text-green-800">
-                    Pricing
-                  </Text>
-                </div>
-                <div className="flex items-center gap-2">
-                  {course?.discountPrice ? (
-                    <>
-                      <Text
-                        delete
-                        className="text-gray-500 text-lg">
-                        {Number(course?.price ?? 0).toLocaleString('vi-VN')} VNĐ
-                      </Text>
-                      <Text
-                        type="success"
-                        strong
-                        className="text-2xl">
-                        {Number(course?.discountPrice ?? 0).toLocaleString('vi-VN')} VNĐ
-                      </Text>
-                    </>
-                  ) : (
-                    <Text className="text-gray-800 font-bold text-2xl">
-                      {Number(course?.price ?? 0).toLocaleString('vi-VN')} VNĐ
-                    </Text>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* ⭐ Rating */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 group-hover:bg-yellow-200 transition-all duration-300">
-                      <Star className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.averageRating ?? '—'}{' '}
-                      <span className="text-gray-500 font-normal">rating</span>
-                    </span>
-                  </div>
-
-                  {/* 👥 Learners */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-all duration-300">
-                      <Users className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.learnerCount ?? 0}{' '}
-                      <span className="text-gray-500 font-normal">learners</span>
-                    </span>
-                  </div>
-
-                  {/* 💬 Reviews */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-green-100 text-green-600 group-hover:bg-green-200 transition-all duration-300">
-                      <MessageSquare className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.reviewCount ?? 0}{' '}
-                      <span className="text-gray-500 font-normal">reviews</span>
-                    </span>
-                  </div>
-
-                  {/* 📦 Units */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-all duration-300">
-                      <Box className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.numUnits ?? '—'}{' '}
-                      <span className="text-gray-500 font-normal">units</span>
-                    </span>
-                  </div>
-
-                  {/* 📚 Lessons */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-all duration-300">
-                      <BookOpen className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.numLessons ?? '—'}{' '}
-                      <span className="text-gray-500 font-normal">lessons</span>
-                    </span>
-                  </div>
-
-                  {/* ⏳ Duration Days */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-all duration-300">
-                      <Timer className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.durationDays ?? '—'}{' '}
-                      <span className="text-gray-500 font-normal">days</span>
-                    </span>
-                  </div>
-
-                  {/* ⏱ Estimated Hours */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="p-2 rounded-full bg-rose-100 text-rose-600 group-hover:bg-rose-200 transition-all duration-300">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <span className="text-gray-800 font-medium">
-                      {course.estimatedHours ?? '—'}{' '}
-                      <span className="text-gray-500 font-normal">hours</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Units + Lessons */}
-        <Card
-          style={{ borderRadius: 0 }}
-          className="shadow-sm border-0 bg-white">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <BookOpen className="w-6 h-6 text-blue-600" />
-              <Title
-                level={3}
-                className="!mb-0 text-gray-800">
-                Course Content
-              </Title>
-            </div>
-
-            {!Array.isArray(unitsData) || unitsData.length === 0 ? (
-              <Empty description="No units found" />
-            ) : (
-              <Collapse
-                bordered={false}
-                expandIconPosition="end"
-                defaultActiveKey={unitsData.map((_, idx) => idx.toString())}
-                className="!space-y-3">
-                {unitsData.map((unit: Unit, index: number) => (
-                  <Panel
-                    key={unit?.courseUnitID ?? index}
-                    header={
-                      <div className="flex items-center !mb-4 !gap-3 p-2 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50">
-                        <div className="w-8 h-8 bg-indigo-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <BookOpen className="w-4 h-4 text-indigo-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-gray-800 font-semibold truncate">
-                            {unit?.title ?? 'Untitled Unit'}
-                          </h4>
-                          <Text className="text-gray-500 text-sm block truncate mt-1">
-                            {unit?.description ?? 'No description provided'}
-                          </Text>
-                        </div>
-                        <Tag
-                          color="blue"
-                          className="px-2 py-1 text-xs flex-shrink-0">
-                          Unit {index + 1}
-                        </Tag>
-                      </div>
-                    }
-                    className="rounded-2xl border border-gray-200 bg-white hover:shadow-md transition-all">
-                    <UnitLessons
-                      unit={unit}
-                      isEditMode={isEditMode}
-                    />
-                  </Panel>
-                ))}
-              </Collapse>
-            )}
-          </div>
-        </Card>
-
-        {course?.courseStatus?.toLowerCase() === 'rejected' && (
-          <Alert
-            message="Course Feedback"
-            description="Your course was rejected. Review the notes and edit to resubmit."
-            type="warning"
-            className="rounded-2xl"
-            action={
+        {/* --- Alerts --- */}
+        {course?.courseStatus?.toLowerCase() === "rejected" && (
+          <Alert variant="destructive" className="bg-red-50 border-red-200">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Action Required: Course Rejected</AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              <span>
+                This course was rejected by the admin. Please review feedback
+                and update.
+              </span>
               <Button
-                size="small"
-                onClick={() => navigate(`/teacher/course/${courseId}/edit`)}>
-                Edit Now
+                size="sm"
+                variant="outline"
+                className="ml-4 border-red-300 text-red-700 hover:bg-red-100"
+                onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
+              >
+                Fix Now
               </Button>
-            }
-          />
+            </AlertDescription>
+          </Alert>
         )}
+
+        {/* --- Hero Banner --- */}
+        <div className="group relative rounded-2xl overflow-hidden border shadow-sm aspect-[3/1] bg-slate-900">
+          <img
+            src={course.imageUrl ?? "/default-course.jpg"}
+            alt="Course Cover"
+            className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent p-6 sm:p-8 flex flex-col justify-end">
+            <div className="flex justify-between items-end">
+              <div className="max-w-3xl space-y-2">
+                <div className="flex gap-2 mb-2">
+                  <Badge
+                    variant="secondary"
+                    className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-md"
+                  >
+                    <Sparkles className="w-3 h-3 mr-1 text-yellow-400" />
+                    {formatStatusLabel(course.courseStatus ?? "unknown")}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="text-slate-200 border-slate-600 bg-slate-950/30 backdrop-blur-md"
+                  >
+                    {course.program?.level?.name ?? "Level N/A"}
+                  </Badge>
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  {course.title}
+                </h1>
+                <p className="text-slate-200 line-clamp-2 max-w-2xl text-lg">
+                  {course.description}
+                </p>
+              </div>
+
+              <div className="hidden sm:block text-right">
+                {course.discountPrice ? (
+                  <div className="flex flex-col items-end">
+                    <span className="text-slate-400 line-through text-sm">
+                      {Number(course.price).toLocaleString("vi-VN")} đ
+                    </span>
+                    <span className="text-2xl font-bold text-emerald-400">
+                      {Number(course.discountPrice).toLocaleString("vi-VN")} đ
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-2xl font-bold text-white">
+                    {Number(course.price ?? 0).toLocaleString("vi-VN")} đ
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* --- Main Content Grid --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Stats & Metadata */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" /> At a Glance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+                    <div className="text-xs text-blue-600 font-semibold mb-1 flex items-center gap-1">
+                      <Users className="w-3 h-3" /> Learners
+                    </div>
+                    <div className="text-xl font-bold text-gray-800">
+                      {course.learnerCount ?? 0}
+                    </div>
+                  </div>
+                  <div className="p-3 bg-yellow-50/50 rounded-lg border border-yellow-100">
+                    <div className="text-xs text-yellow-600 font-semibold mb-1 flex items-center gap-1">
+                      <Star className="w-3 h-3" /> Rating
+                    </div>
+                    <div className="text-xl font-bold text-gray-800">
+                      {course.averageRating ?? "N/A"}
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" /> Language
+                    </span>
+                    <span className="font-medium">{course.language}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Calendar className="w-4 h-4" /> Duration
+                    </span>
+                    <span className="font-medium">
+                      {course.durationDays} days
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Clock className="w-4 h-4" /> Est. Hours
+                    </span>
+                    <span className="font-medium">
+                      {course.estimatedHours} hrs
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-primary" /> Program
+                  Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {course.program?.description ??
+                    "No specific program details available."}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Badge variant="secondary">
+                    Total Units: {course.numUnits}
+                  </Badge>
+                  <Badge variant="secondary">
+                    Total Lessons: {course.numLessons}
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column: Curriculum (Takes up 2/3 width on large screens) */}
+          <div className="lg:col-span-2">
+            <Card className="h-full border-t-4 border-t-primary shadow-md">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Box className="w-6 h-6 text-primary" /> Curriculum
+                  </div>
+                </CardTitle>
+                <CardDescription>
+                  {unitsData?.length || 0} Units • Structured learning path
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!Array.isArray(unitsData) || unitsData.length === 0 ? (
+                  <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-xl border border-dashed">
+                    <Box className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p>No curriculum content available yet.</p>
+                    <Button variant="link" className="mt-2 text-primary">
+                      Create First Unit
+                    </Button>
+                  </div>
+                ) : (
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="w-full space-y-4"
+                  >
+                    {unitsData.map((unit: Unit, index: number) => (
+                      <AccordionItem
+                        key={unit?.courseUnitID ?? index}
+                        value={`item-${index}`}
+                        className="border rounded-lg px-4 bg-white data-[state=open]:bg-slate-50 data-[state=open]:border-primary/20 transition-colors"
+                      >
+                        <AccordionTrigger className="hover:no-underline py-4">
+                          <div className="flex items-center gap-4 text-left w-full">
+                            <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900">
+                                {unit?.title ?? "Untitled Unit"}
+                              </h4>
+                              <p className="text-xs text-muted-foreground mt-0.5 font-normal line-clamp-1">
+                                {unit?.description ?? "Unit description"}
+                              </p>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-4 pt-1 px-1">
+                          <UnitLessons unit={unit} isEditMode={isEditMode} />
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

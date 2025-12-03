@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from "react";
 import {
   Form,
   Input,
@@ -7,30 +7,18 @@ import {
   Button,
   Upload,
   InputNumber,
-  Row,
-  Col,
-  Collapse,
-  Card,
-  Tooltip,
-  Typography,
-} from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import type { ExerciseData, ExercisePayload } from '../../services/course/type';
-import { useCreateExercise } from './helpers';
+  Divider,
+  message,
+} from "antd";
+import { InboxOutlined } from "@ant-design/icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { ExerciseData, ExercisePayload } from "../../services/course/type";
 import {
-  Lightbulb,
-  BookOpen,
-  FileText,
-  Check,
-  Target,
-  TrendingUp,
-  Sparkles,
-  AlertCircle,
-  ImageIcon,
-} from 'lucide-react';
-
-const { Text, Title } = Typography;
-const { Panel } = Collapse;
+  createExerciseService,
+  updateExerciseService,
+} from "../../services/course";
+import { Type, HelpCircle, Save, Plus } from "lucide-react";
+import { notifySuccess } from "@/utils/toastConfig";
 
 interface Props {
   lessonId: string;
@@ -40,12 +28,38 @@ interface Props {
 
 const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
   const [form] = Form.useForm();
-  const [mediaPreview, setMediaPreview] = useState<
-    { url: string; type: 'image' | 'audio'; name: string }[] | null
-  >(null);
-  const createExercise = useCreateExercise(lessonId);
+  const queryClient = useQueryClient();
 
-  // Pre-fill form for editing
+  // --- 1. Mutation Create ---
+  const createMutation = useMutation({
+    mutationFn: (payload: ExercisePayload) =>
+      createExerciseService(lessonId, payload),
+    onSuccess: () => {
+      notifySuccess("Created exercise successfully!");
+      queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
+      form.resetFields();
+      form.setFieldsValue({ maxScore: 100, passScore: 40 });
+      onCreated?.();
+    },
+    onError: () => message.error("Failed to create exercise"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: ExercisePayload) =>
+      updateExerciseService({
+        lessonId: lessonId,
+        exerciseId: exercise!.exerciseID,
+        payload,
+      }),
+    onSuccess: () => {
+      notifySuccess("Updated exercise successfully!");
+      queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
+      onCreated?.();
+    },
+    onError: () => message.error("Failed to update exercise"),
+  });
+
+  // --- 3. Set Default / Load Data ---
   useEffect(() => {
     if (exercise) {
       form.setFieldsValue({
@@ -56,492 +70,251 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         expectedAnswer: exercise.expectedAnswer,
         type: exercise.exerciseType,
         difficulty: exercise.difficulty,
-        maxScore: exercise.maxScore,
-        passScore: exercise.passScore,
+        maxScore: exercise.maxScore ?? 100,
+        passScore: exercise.passScore ?? 40,
         feedbackCorrect: exercise.feedbackCorrect,
         feedbackIncorrect: exercise.feedbackIncorrect,
         media: exercise.mediaUrls
           ? exercise.mediaUrls.map((url: string) => ({
               url,
-              name: url.split('/').pop() || 'audio.mp3',
-              status: 'done',
-              uid: '-1',
+              name: url.split("/").pop() || "media",
+              status: "done",
+              uid: url,
             }))
           : undefined,
       });
-
-      if (exercise?.mediaUrls && exercise.mediaUrls.length > 0) {
-        const previews = exercise.mediaUrls.map((url: string, idx: number) => {
-          const name = url.split('/').pop()?.split('?')[0] || `media-${idx + 1}`;
-          const type = /\.(mp3|mpeg|wav|ogg)$/i.test(name) ? 'audio' : 'image';
-          return { url, type, name };
-        });
-
-        setMediaPreview(previews as any);
-
-        const fileList = exercise.mediaUrls.map((url: string, idx: number) => ({
-          uid: `-${idx + 1}`,
-          name: url.split('/').pop()?.split('?')[0] || `media-${idx + 1}`,
-          status: 'done',
-          url,
-        }));
-
-        form.setFieldsValue({ media: fileList });
-      }
     } else {
-      form.resetFields();
-      setMediaPreview(null);
+      form.setFieldsValue({
+        maxScore: 100,
+        passScore: 40,
+        type: 1,
+        difficulty: 1,
+      });
     }
   }, [exercise, form]);
 
-  useEffect(() => {
-    return () => {
-      if (mediaPreview) {
-        mediaPreview.forEach((item) => {
-          if (item.url.startsWith('blob:')) {
-            URL.revokeObjectURL(item.url);
-          }
-        });
-      }
-    };
-  }, [mediaPreview]);
-
   const handleSubmit = (values: any) => {
-    console.log(values);
     const payload: ExercisePayload = {
       FeedbackIncorrect: values.feedbackIncorrect,
-      PassScore: Number(values.passScore) || 0,
+      PassScore: Number(values.passScore) || 40,
       Prompt: values.prompt,
       FeedbackCorrect: values.feedbackCorrect,
       Hints: values.hints,
-      MaxScore: Number(values.maxScore) || 0,
+      MaxScore: 100,
       MediaFiles: values.media
         ? values.media
-            .filter((f: any) => f.originFileObj) // only new files
+            .filter((f: any) => f.originFileObj)
             .map((f: any) => f.originFileObj)
         : undefined,
       ExpectedAnswer: values.expectedAnswer,
       Title: values.title,
       Content: values.content,
-      Type: 1,
+      Type: values.type || 1,
       Difficulty: values.difficulty,
     };
 
-    createExercise.mutate(payload, {
-      onSuccess: () => {
-        form.resetFields();
-        setMediaPreview(null);
-        onCreated?.();
-      },
-    });
+    if (exercise) {
+      updateMutation.mutate(payload);
+    } else {
+      createMutation.mutate(payload);
+    }
   };
 
-  const handleMediaChange = ({ fileList }: any) => {
-    const previews: { url: string; type: 'image' | 'audio'; name: string }[] = [];
-
-    fileList.forEach((file: any) => {
-      let url = '';
-      let type: 'image' | 'audio' = 'image';
-      let name = file.name || 'unknown';
-
-      if (file.originFileObj) {
-        url = URL.createObjectURL(file.originFileObj);
-        if (file.originFileObj.type.startsWith('image/')) {
-          type = 'image';
-        } else if (file.originFileObj.type.startsWith('audio/')) {
-          type = 'audio';
-        }
-      } else if (file.url) {
-        url = file.url;
-        name = file.name || url.split('/').pop()?.split('?')[0] || 'media';
-
-        // Fallback: detect from file extension in name
-        if (/\.(mp3|mpeg|wav|ogg)$/i.test(name)) {
-          type = 'audio';
-        } else if (/\.(jpe?g|png|webp|gif)$/i.test(name)) {
-          type = 'image';
-        }
-      }
-
-      previews.push({ url, type, name });
-    });
-
-    setMediaPreview(previews.length > 0 ? previews : null);
-  };
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className='min-h-screen py-8 px-4'>
-      <div className='max-w-4xl mx-auto'>
-        <Card
-          className='shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden'
-          title={
-            <div className='flex items-center gap-3'>
-              <Lightbulb size={20} className='text-sky-600' />
-              <Title level={3} className='!mb-0 text-gray-800'>
-                Create Exercise
-              </Title>
-              <Text type='secondary' className='text-sm ml-auto'>
-                Make it engaging!
-              </Text>
+    <div className="py-2">
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        requiredMark={false}
+        className="space-y-6"
+        initialValues={{ maxScore: 100, passScore: 40 }}
+      >
+        {/* Core Info */}
+        <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Type size={18} className="text-blue-600" /> Question Setup
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item
+              name="title"
+              label="Internal Title"
+              rules={[{ required: true, message: "Please enter a title" }]}
+              className="md:col-span-2"
+            >
+              <Input placeholder="e.g. Grammar Check #1" />
+            </Form.Item>
+            <Form.Item
+              name="type"
+              label="Interaction Type"
+              rules={[{ required: true }]}
+            >
+              <Select
+                options={[
+                  { label: "Repeat After Me", value: 1 },
+                  { label: "Picture Description", value: 2 },
+                  { label: "Story Telling", value: 3 },
+                  { label: "Debate", value: 4 },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item
+              name="difficulty"
+              label="Difficulty Level"
+              rules={[{ required: true }]}
+            >
+              <Select
+                options={[
+                  { label: "Beginner", value: 1 },
+                  { label: "Intermediate", value: 2 },
+                  { label: "Advanced", value: 3 },
+                  { label: "Expert", value: 4 },
+                ]}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-4">
+          <Form.Item
+            name="prompt"
+            label="Student Instruction (Prompt)"
+            rules={[{ required: true, message: "Instruction is required" }]}
+          >
+            <Input.TextArea
+              rows={2}
+              placeholder="What should the student do?"
+              className="bg-white"
+            />
+          </Form.Item>
+          <Form.Item
+            name="content"
+            label="Exercise Content (Context)"
+            rules={[{ required: true, message: "Content is required" }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="The main text or context for the exercise..."
+            />
+          </Form.Item>
+          <Form.Item
+            name="expectedAnswer"
+            label="Expected Answer / Key"
+            rules={[{ required: true, message: "Answer is required" }]}
+          >
+            <Input.TextArea rows={2} className="font-mono text-sm bg-gray-50" />
+          </Form.Item>
+        </div>
+
+        <Divider />
+
+        {/* Scoring */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Scoring</h4>
+            <div className="flex gap-4">
+              <Form.Item
+                name="maxScore"
+                label="Max Score"
+                className="flex-1"
+                help="Fixed at 100 points"
+              >
+                <InputNumber
+                  disabled
+                  className="w-full !text-gray-700 !bg-gray-100"
+                />
+              </Form.Item>
+              <Form.Item
+                name="passScore"
+                label="Pass Threshold"
+                className="flex-1"
+                rules={[
+                  { required: true, message: "Required" },
+                  { type: "number", min: 40, message: "Min 40" },
+                  { type: "number", max: 100, message: "Max 100" },
+                ]}
+              >
+                <InputNumber min={40} max={100} className="w-full" />
+              </Form.Item>
             </div>
-          }
-        >
-          <Form layout='vertical' form={form} onFinish={handleSubmit} className='space-y-6 pt-4'>
-            <Collapse defaultActiveKey={['basic', 'scores', 'feedback']} accordion>
-              {/* Basic Information */}
-              <Panel
-                header={
-                  <div className='flex items-center gap-2 p-2 bg-sky-50 rounded-xl'>
-                    <BookOpen size={18} className='text-sky-600' />
-                    <Text strong className='text-sky-800'>
-                      Basic Information
-                    </Text>
-                  </div>
-                }
-                key='basic'
-                className='rounded-2xl border border-sky-200 bg-sky-50'
-              >
-                <Row gutter={16}>
-                  <Col span={24}>
-                    <Form.Item
-                      name='title'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <BookOpen size={16} className='text-gray-600' />
-                          Title
-                        </span>
-                      }
-                      rules={[{ required: true, message: 'Please enter a title' }]}
-                    >
-                      <Input placeholder='e.g., Verb Conjugation Quiz' />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item
-                      name='prompt'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <FileText size={16} className='text-gray-600' />
-                          Prompt
-                        </span>
-                      }
-                      rules={[{ required: true, message: 'Please input prompt' }]}
-                    >
-                      <Input.TextArea
-                        rows={3}
-                        placeholder="Clear instructions: 'Choose the correct translation...'"
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item
-                      name='hints'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <Lightbulb size={16} className='text-gray-600' />
-                          Hints
-                        </span>
-                      }
-                      required
-                      rules={[{ required: true, message: 'Please input hints' }]}
-                    >
-                      <Input.TextArea
-                        rows={2}
-                        placeholder='e.g., Remember subject-verb agreement!'
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item
-                      name='content'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <FileText size={16} className='text-gray-600' />
-                          Content
-                        </span>
-                      }
-                      required
-                      rules={[{ required: true, message: 'Please input content' }]}
-                    >
-                      <Input.TextArea rows={4} placeholder='Detailed exercise body...' />
-                    </Form.Item>
-                  </Col>
-                  <Col span={24}>
-                    <Form.Item
-                      name='expectedAnswer'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <Check size={16} className='text-green-600' />
-                          Expected Answer
-                        </span>
-                      }
-                      required
-                      rules={[{ required: true, message: 'Expected Answer is required' }]}
-                    >
-                      <Input.TextArea rows={2} placeholder="e.g., 'Hola, ¿cómo estás?'" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Panel>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">Assistive Text</h4>
+            <Form.Item name="hints" label="Hint for Student">
+              <Input
+                prefix={<HelpCircle size={14} className="text-gray-400" />}
+              />
+            </Form.Item>
+          </div>
+        </div>
 
-              {/* Scores & Type */}
-              <Panel
-                header={
-                  <div className='flex items-center gap-2 p-2 bg-blue-50 rounded-xl'>
-                    <Target size={18} className='text-blue-600' />
-                    <Text strong className='text-blue-800'>
-                      Scores & Type
-                    </Text>
-                  </div>
-                }
-                key='scores'
-                className='border border-blue-200 bg-blue-50'
-              >
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name='type'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <Target size={16} className='text-gray-600' />
-                          Type
-                        </span>
-                      }
-                      required
-                      rules={[{ required: true, message: 'Please select a type' }]}
-                    >
-                      <Select
-                        placeholder='Choose exercise type'
-                        suffixIcon={<Target size={16} className='text-gray-400' />}
-                        options={[
-                          { label: 'RepeatAfterMe', value: 1 },
-                          { label: 'PictureDescription', value: 2 },
-                          { label: 'StoryTelling', value: 3 },
-                          { label: 'Debate', value: 4 },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name='difficulty'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <TrendingUp size={16} className='text-gray-600' />
-                          Difficulty
-                        </span>
-                      }
-                      rules={[
-                        {
-                          required: true,
-                          message: 'Please select a difficulty',
-                        },
-                      ]}
-                    >
-                      <Select
-                        placeholder='Select difficulty level'
-                        suffixIcon={<TrendingUp size={16} className='text-gray-400' />}
-                        options={[
-                          { label: 'Easy', value: 1 },
-                          { label: 'Medium', value: 2 },
-                          { label: 'Hard', value: 3 },
-                          { label: 'Advanced', value: 4 },
-                        ]}
-                      />
-                    </Form.Item>
-                  </Col>
-                </Row>
+        {/* Feedback */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Form.Item name="feedbackCorrect" label="Success Message">
+            <Input.TextArea
+              rows={2}
+              className="border-green-200 focus:border-green-500"
+              placeholder="Well done!"
+            />
+          </Form.Item>
+          <Form.Item name="feedbackIncorrect" label="Failure Message">
+            <Input.TextArea
+              rows={2}
+              className="border-red-200 focus:border-red-500"
+              placeholder="Try again. Remember..."
+            />
+          </Form.Item>
+        </div>
 
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name='maxScore'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <TrendingUp size={16} className='text-gray-600' />
-                          Max Score
-                        </span>
-                      }
-                      rules={[{ required: true, message: 'Please enter max score' }]}
-                    >
-                      <InputNumber min={0} style={{ width: '100%' }} placeholder='e.g. 10' />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name='passScore'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <Check size={16} className='text-green-600' />
-                          Pass Score
-                        </span>
-                      }
-                      rules={[{ required: true, message: 'Please enter pass score' }]}
-                    >
-                      <InputNumber min={0} style={{ width: '100%' }} placeholder='e.g. 7' />
-                    </Form.Item>
-                  </Col>
-                </Row>
-              </Panel>
+        {/* Media */}
+        <div className="border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50/30">
+          <Form.Item
+            name="media"
+            label="Attached Media (Images or Audio)"
+            valuePropName="fileList"
+            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+          >
+            <Upload.Dragger
+              multiple
+              accept="image/*,audio/*"
+              beforeUpload={() => false}
+              listType="picture"
+              className="bg-white"
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">
+                Click or drag files here to upload
+              </p>
+              <p className="ant-upload-hint">
+                Support for Images (PNG, JPG) and Audio (MP3)
+              </p>
+            </Upload.Dragger>
+          </Form.Item>
+        </div>
 
-              {/* Feedback & Media */}
-              <Panel
-                header={
-                  <div className='flex items-center gap-2 p-2 bg-indigo-50 rounded-xl'>
-                    <Sparkles size={18} className='text-indigo-600' />
-                    <Text strong className='text-indigo-800'>
-                      Feedback & Media
-                    </Text>
-                  </div>
-                }
-                key='feedback'
-                className='rounded-2xl border border-indigo-200 bg-indigo-50'
-              >
-                <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item
-                      name='feedbackCorrect'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <Check size={16} className='text-green-600' />
-                          Feedback (Correct)
-                        </span>
-                      }
-                      rules={[{ required: true, message: 'Feedback Correct is required' }]}
-                    >
-                      <Input.TextArea
-                        rows={4}
-                        placeholder="Great job! You've nailed the concept."
-                      />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      name='feedbackIncorrect'
-                      label={
-                        <span className='flex items-center gap-2'>
-                          <AlertCircle size={16} className='text-red-600' />
-                          Feedback (Incorrect)
-                        </span>
-                      }
-                      rules={[{ required: true, message: 'Feedback Incorrect is required' }]}
-                    >
-                      <Input.TextArea rows={4} placeholder='Keep trying! Review the hint above.' />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name='media'
-                  label={
-                    <span className='flex items-center gap-2'>
-                      <ImageIcon size={16} className='text-gray-600' />
-                      Media Files (Images & Audio - Multiple)
-                    </span>
-                  }
-                  rules={[{ required: true, message: 'Please upload at least one media file' }]}
-                  valuePropName='fileList'
-                  getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-                >
-                  <Upload
-                    beforeUpload={() => false}
-                    multiple
-                    accept='image/jpeg,image/png,image/webp,image/gif,audio/mp3,audio/mpeg'
-                    onChange={handleMediaChange}
-                    listType='picture-card'
-                    className='upload-list-inline'
-                    showUploadList={{
-                      showRemoveIcon: true,
-                    }}
-                  >
-                    <div className='flex flex-col items-center justify-center p-4'>
-                      <UploadOutlined className='text-xl' />
-                      <div className='text-xs text-gray-500'>Images & MP3</div>
-                    </div>
-                  </Upload>
-                </Form.Item>
-
-                {mediaPreview && mediaPreview.length > 0 && (
-                  <div className='mt-8 space-y-6'>
-                    <Text strong className='block text-lg text-gray-800'>
-                      Media Preview ({mediaPreview.length} file{mediaPreview.length > 1 ? 's' : ''})
-                    </Text>
-
-                    <div className='space-y-8'>
-                      {mediaPreview.map((item, index) => (
-                        <div
-                          key={index}
-                          className='bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden'
-                        >
-                          <div className='bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-3 border-b border-gray-200'>
-                            <div className='flex items-center justify-between'>
-                              <Text strong className='text-gray-800 flex items-center gap-2'>
-                                {item.type === 'image' ? (
-                                  <ImageIcon size={16} className='text-blue-600' />
-                                ) : (
-                                  <FileText size={16} className='text-purple-600' />
-                                )}
-                                {item.name}
-                              </Text>
-                              <span className='text-xs px-3 py-1 rounded-full bg-gray-200 text-gray-600'>
-                                {item.type === 'image' ? 'Image' : 'Audio'}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className='p-6 bg-gray-50'>
-                            {item.type === 'image' ? (
-                              <div className='flex justify-center'>
-                                <div className='relative max-w-2xl w-full'>
-                                  <img
-                                    src={item.url}
-                                    alt={item.name}
-                                    className='rounded-xl shadow-xl max-h-screen object-contain mx-auto border-4 border-white'
-                                    style={{ maxHeight: '65vh' }}
-                                  />
-                                </div>
-                              </div>
-                            ) : (
-                              <div className='max-w-2xl mx-auto'>
-                                <div className='bg-white rounded-2xl shadow-inner p-6 border border-gray-200'>
-                                  <audio
-                                    src={item.url}
-                                    controls
-                                    controlsList='nodownload noremoteplayback'
-                                    className='w-full h-12'
-                                    style={{ borderRadius: '12px', background: '#f9fafb' }}
-                                  />
-                                </div>
-                                <Text type='secondary' className='block text-center mt-4 text-sm'>
-                                  Click play to listen
-                                </Text>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </Panel>
-            </Collapse>
-
-            <div className='flex justify-end pt-6 border-t border-gray-200'>
-              <Tooltip title='Launch this exercise!'>
-                <Button
-                  type='primary'
-                  htmlType='submit'
-                  loading={createExercise.isPending}
-                  className='rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 px-8 py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold'
-                  icon={<Check size={16} />}
-                >
-                  Create
-                </Button>
-              </Tooltip>
-            </div>
-          </Form>
-        </Card>
-      </div>
+        {/* Submit Button */}
+        <div className="flex justify-end pt-4 gap-3">
+          {onCreated && (
+            <Button onClick={onCreated} className="h-10 px-6 rounded-lg">
+              Cancel
+            </Button>
+          )}
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isPending}
+            icon={exercise ? <Save size={16} /> : <Plus size={16} />}
+            className="h-10 px-8 bg-gray-900 hover:bg-gray-800 rounded-lg flex items-center gap-2"
+          >
+            {exercise ? "Save Changes" : "Create Exercise"}
+          </Button>
+        </div>
+      </Form>
     </div>
   );
 };

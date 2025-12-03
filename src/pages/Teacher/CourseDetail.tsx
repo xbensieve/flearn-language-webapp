@@ -1,11 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Card,
-  Row,
-  Col,
   Tag,
   Avatar,
   Typography,
@@ -15,53 +12,47 @@ import {
   Form,
   Input,
   message,
-  Collapse,
   Tooltip,
-} from 'antd';
+  Divider,
+} from "antd";
 import {
   createCourseUnitsService,
   deleteUnitsService,
   getCourseDetailService,
   getCourseUnitsService,
   getLessonsByUnits,
-} from '../../services/course';
-import type { Unit, Lesson } from '../../services/course/type';
-import { CloseOutlined, FileOutlined, PlusOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import type { AxiosError } from 'axios';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
+} from "../../services/course";
+import type { Unit, Lesson } from "../../services/course/type";
+import {
+  CloseOutlined,
+  FileOutlined,
+  PlusOutlined,
+  VideoCameraOutlined,
+} from "@ant-design/icons";
+import type { AxiosError } from "axios";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
 import {
   ArrowLeft,
   BookOpen,
-  Box,
   Clock,
-  DollarSign,
   Edit,
-  FileText,
-  GraduationCap,
-  Info,
-  Lightbulb,
-  MessageSquare,
-  Play,
-  Plus,
-  Sparkles,
-  Star,
-  Timer,
-  Trash,
+  Trash2,
   Users,
-} from 'lucide-react';
+  LayoutDashboard,
+  GraduationCap,
+} from "lucide-react";
 
 const { Title, Paragraph, Text } = Typography;
-const { Panel } = Collapse;
 
 const CourseDetail: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [activeKey, setActiveKey] = useState<string | string[]>('');
+  const [activeKey, setActiveKey] = useState<string | string[]>("");
 
   // --- Fetch Course Info ---
   const { data: course, isLoading: loadingCourse } = useQuery({
-    queryKey: ['course', courseId],
+    queryKey: ["course", courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
   });
@@ -70,11 +61,11 @@ const CourseDetail: React.FC = () => {
   const deleteUnitMutation = useMutation({
     mutationFn: (unitId: string) => deleteUnitsService({ id: unitId }),
     onSuccess: () => {
-      notifySuccess('Unit deleted successfully');
+      notifySuccess("Unit deleted successfully");
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || 'Failed to delete unit');
+      notifyError(error.response?.data?.message || "Failed to delete unit");
     },
   });
 
@@ -84,28 +75,33 @@ const CourseDetail: React.FC = () => {
     isLoading: loadingUnits,
     refetch: refetchUnits,
   } = useQuery<Unit[]>({
-    queryKey: ['units', courseId],
+    queryKey: ["units", courseId],
     queryFn: () => getCourseUnitsService({ id: courseId! }),
     enabled: !!courseId,
   });
 
   // --- Create Unit Mutation ---
   const createUnitMutation = useMutation({
-    mutationFn: (values: { id: string; title: string; description: string; isPreview: boolean }) =>
+    mutationFn: (values: {
+      id: string;
+      title: string;
+      description: string;
+      isPreview: boolean;
+    }) =>
       createCourseUnitsService({
-        courseId: values.id || '',
+        courseId: values.id || "",
         title: values.title,
         description: values.description,
         isPreview: values.isPreview,
       }),
     onSuccess: () => {
-      message.success('Unit created successfully');
-      setActiveKey('');
-      queryClient.invalidateQueries({ queryKey: ['course', courseId] });
+      message.success("Unit created successfully");
+      setActiveKey("");
+      queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || 'Failed to create unit');
+      notifyError(error.response?.data?.message || "Failed to create unit");
     },
   });
 
@@ -122,7 +118,6 @@ const CourseDetail: React.FC = () => {
     deleteUnitMutation.mutate(unitId);
   };
 
-  // --- Loading + Empty State ---
   if (loadingCourse || loadingUnits)
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -130,395 +125,223 @@ const CourseDetail: React.FC = () => {
       </div>
     );
 
-  if (!course) return <Empty description="Course not found" />;
+  if (!course)
+    return <Empty description="Course not found" className="mt-20" />;
 
-  // --- Render ---
   return (
-    <div className="min-h-screen bg-transparent py-10 px-4">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between bg-white rounded-t-2xl p-6 shadow-sm border border-gray-100">
-          <Tooltip title="Back to courses">
+    <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Top Navigation */}
+        <div className="flex items-center justify-between">
+          <Button
+            type="text"
+            onClick={() => navigate(-1)}
+            className="text-gray-500 hover:text-gray-900 flex items-center gap-2 pl-0"
+          >
+            <ArrowLeft size={18} />
+            <span className="font-medium">Back to Courses</span>
+          </Button>
+          <div className="flex gap-2">
             <Button
-              onClick={() => navigate(-1)}
-              type="default"
-              className="rounded-xl shadow-sm border-gray-200 hover:border-indigo-300 transition-all flex items-center gap-2">
-              <ArrowLeft size={16} />
-              Back
-            </Button>
-          </Tooltip>
-          <div className="flex items-center gap-3">
-            <Title
-              level={2}
-              className="!mb-0 !text-gray-800 flex items-center gap-2">
-              Course
-            </Title>
-          </div>
-          <Tooltip title="Edit course overview">
-            <Button
-              type="primary"
-              onClick={() => navigate(`/teacher/course/${course?.courseId}/edit-course`)}
-              className="rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+              onClick={() =>
+                navigate(`/teacher/course/${course?.courseId}/edit-course`)
+              }
+              className="flex items-center gap-2 border-gray-300 shadow-sm"
+            >
               <Edit size={16} />
-              Edit Course
+              Edit Details
             </Button>
-          </Tooltip>
+          </div>
         </div>
 
-        <Row gutter={[24, 24]}>
-          {/* LEFT: Course Info */}
-          <Col
-            xs={24}
-            md={10}>
-            <Card className="rounded-3xl shadow-lg border-0 overflow-hidden bg-gradient-to-br from-white to-blue-50">
-              <div className="relative">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* LEFT COLUMN: Course Meta (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="aspect-video w-full bg-gray-100 relative">
                 <img
-                  src={course?.imageUrl || '/default-course.jpg'}
-                  alt={course?.title || 'Course Image'}
-                  className="w-full h-64 object-cover rounded-3xl"
+                  src={course?.imageUrl || "/default-course.jpg"}
+                  alt={course?.title}
+                  className="w-full h-full object-cover"
                 />
-                <div className="absolute top-4 right-4">
-                  <Tag
-                    color="gold"
-                    className="!px-3 !py-2 !shadow-md !flex !items-center !gap-1">
-                    <Sparkles size={12} />
+                <div className="absolute top-3 right-3">
+                  <Tag color="gold" className="m-0 shadow-sm font-medium">
                     Draft
                   </Tag>
                 </div>
-                <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-black/60 via-black/40 to-transparent rounded-b-3xl flex items-end p-6">
-                  <div className="w-full max-w-4xl mx-4">
-                    <Title
-                      level={3}
-                      className="!mb-2 !text-white">
-                      {course?.title || 'Untitled Course'}
-                    </Title>
-                    <Paragraph className="!text-indigo-100 mb-4 max-w-md !leading-relaxed">
-                      {course?.description || 'No description provided'}
-                    </Paragraph>
-                    <div className="flex items-center gap-3">
-                      <Avatar
-                        src={course?.teacher?.avatar}
-                        size={32}
-                        className="border-2 !border-white"
-                      />
-                      <Text className="!text-white font-medium">
-                        {course?.teacher?.name || 'Unknown Teacher'}
-                      </Text>
-                    </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div>
+                  <Title level={4} className="!mb-2 !text-gray-900 !font-bold">
+                    {course?.title}
+                  </Title>
+                  <Paragraph className="text-gray-500 text-sm leading-relaxed">
+                    {course?.description || "No description provided."}
+                  </Paragraph>
+                </div>
+
+                <div className="flex items-center gap-3 py-3 border-t border-b border-gray-100">
+                  <Avatar
+                    src={course?.teacher?.avatar}
+                    size="large"
+                    className="bg-blue-600"
+                  >
+                    {course?.teacher?.name?.[0]}
+                  </Avatar>
+                  <div>
+                    <Text className="block text-sm font-medium text-gray-900">
+                      {course?.teacher?.name || "Instructor"}
+                    </Text>
+                    <Text className="block text-xs text-gray-500">Author</Text>
                   </div>
                 </div>
-              </div>
-              <div className="!space-y-4 my-2">
-                <div className="flex flex-wrap gap-2">
-                  <div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <Users size={14} /> Learners
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {course.learnerCount ?? 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <Clock size={14} /> Duration
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {course.durationDays ?? 0} days
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <BookOpen size={14} /> Lessons
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {course.numLessons ?? 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <GraduationCap size={14} /> Level
+                    </span>
                     <Tag
-                      color="blue"
-                      className="!px-3 !py-2 !flex items-center !gap-1">
-                      <Users size={12} />
-                      {course?.language || 'No Language'}
+                      bordered={false}
+                      className="m-0 bg-gray-100 text-gray-700 font-medium"
+                    >
+                      {course?.program.level.name || "N/A"}
                     </Tag>
                   </div>
-                  <Tag
-                    color="green"
-                    className="!px-3 !py-2 !flex items-center !gap-1">
-                    <GraduationCap size={12} />
-                    {course?.program.level.name || 'N/A'}
-                  </Tag>
                 </div>
 
-                <div className="p-6 bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* ⭐ Rating */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 group-hover:bg-yellow-200 transition-all duration-300">
-                        <Star className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.averageRating ?? '—'}{' '}
-                        <span className="text-gray-500 font-normal">rating</span>
-                      </span>
-                    </div>
-
-                    {/* 👥 Learners */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-all duration-300">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.learnerCount ?? 0}{' '}
-                        <span className="text-gray-500 font-normal">learners</span>
-                      </span>
-                    </div>
-
-                    {/* 💬 Reviews */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-green-100 text-green-600 group-hover:bg-green-200 transition-all duration-300">
-                        <MessageSquare className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.reviewCount ?? 0}{' '}
-                        <span className="text-gray-500 font-normal">reviews</span>
-                      </span>
-                    </div>
-
-                    {/* 📦 Units */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-all duration-300">
-                        <Box className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.numUnits ?? '—'}{' '}
-                        <span className="text-gray-500 font-normal">units</span>
-                      </span>
-                    </div>
-
-                    {/* 📚 Lessons */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-indigo-100 text-indigo-600 group-hover:bg-indigo-200 transition-all duration-300">
-                        <BookOpen className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.numLessons ?? '—'}{' '}
-                        <span className="text-gray-500 font-normal">lessons</span>
-                      </span>
-                    </div>
-
-                    {/* ⏳ Duration Days */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-all duration-300">
-                        <Timer className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.durationDays ?? '—'}{' '}
-                        <span className="text-gray-500 font-normal">days</span>
-                      </span>
-                    </div>
-
-                    {/* ⏱ Estimated Hours */}
-                    <div className="flex items-center gap-3 group">
-                      <div className="p-2 rounded-full bg-rose-100 text-rose-600 group-hover:bg-rose-200 transition-all duration-300">
-                        <Clock className="w-4 h-4" />
-                      </div>
-                      <span className="text-gray-800 font-medium">
-                        {course.estimatedHours ?? '—'}{' '}
-                        <span className="text-gray-500 font-normal">hours</span>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-green-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <DollarSign
-                      size={16}
-                      className="text-green-600"
-                    />
-                    <Text
-                      strong
-                      className="text-green-800">
-                      Pricing
-                    </Text>
-                  </div>
-                  {course.price ? (
-                    <div>
-                      <Text className="text-2xl font-bold text-green-700">
+                <div className="pt-2">
+                  <div className="text-sm text-gray-500 mb-1">Price</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {course.price ? (
+                      <>
                         {course?.discountPrice
-                          ? `${course?.discountPrice} VNĐ`
-                          : `${course?.price || 'N/A'} VNĐ`}
-                      </Text>
-                      {course?.discountPrice && (
-                        <Text
-                          delete
-                          className="text-gray-500 ml-2">
-                          {course?.price} VNĐ
-                        </Text>
-                      )}
-                    </div>
-                  ) : (
-                    <Text className="text-2xl font-bold text-green-700">Free</Text>
-                  )}
-                </div>
-
-                <div className="p-4 bg-blue-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb
-                      size={16}
-                      className="text-blue-600"
-                    />
-                    <Text
-                      strong
-                      className="text-blue-800">
-                      Topics
-                    </Text>
-                  </div>
-                  <Paragraph className="text-gray-700">
-                    {course?.topics.map((topic) => topic.topicName).join(', ')}
-                  </Paragraph>
-                </div>
-
-                <div className="p-4 bg-indigo-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb
-                      size={16}
-                      className="text-indigo-600"
-                    />
-                    <Text
-                      strong
-                      className="text-indigo-800">
-                      Learning Outcome
-                    </Text>
-                  </div>
-                  <Paragraph className="text-gray-700">
-                    {course?.learningOutcome || 'No goal description'}
-                  </Paragraph>
-                </div>
-
-                <div className="p-4 bg-indigo-50 rounded-2xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb
-                      size={16}
-                      className="text-indigo-600"
-                    />
-                    <Text
-                      strong
-                      className="text-indigo-800">
-                      {course?.program.name}
-                    </Text>
-                  </div>
-                  <Paragraph className="text-gray-700">
-                    {course?.program.description || 'No goal description'}
-                  </Paragraph>
-                </div>
-              </div>
-            </Card>
-          </Col>
-
-          {/* RIGHT: Units + Lessons */}
-          <Col
-            xs={24}
-            md={14}>
-            <Card className="!mb-6">
-              <div className="flex !items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Info
-                      size={16}
-                      className="text-blue-600"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Text
-                      strong
-                      className="text-blue-800">
-                      Start to create units for your course
-                    </Text>
-                    <Paragraph className="text-gray-500 text-sm !mb-0">
-                      Create units and lessons to make your course interactive and engaging.
-                    </Paragraph>
+                          ? `${course?.discountPrice.toLocaleString()} VNĐ`
+                          : `${course?.price.toLocaleString()} VNĐ`}
+                      </>
+                    ) : (
+                      "Free"
+                    )}
                   </div>
                 </div>
               </div>
-            </Card>
-            <Card
-              className="rounded-3xl shadow-lg border-0 bg-white"
-              title={
-                <div className="flex items-center gap-2">
-                  <BookOpen
-                    size={20}
-                    className="text-blue-600"
-                  />
-                  Units Overview
-                </div>
-              }
-              extra={
-                <Tooltip title={activeKey === 'create' ? 'Cancel adding unit' : 'Add a new unit'}>
-                  <Button
-                    type="primary"
-                    icon={activeKey === 'create' ? <CloseOutlined /> : <PlusOutlined />}
-                    onClick={() => setActiveKey(activeKey === 'create' ? '' : 'create')}
-                    className="rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-1">
-                    {activeKey === 'create' ? 'Cancel' : 'Add Unit'}
-                  </Button>
-                </Tooltip>
-              }>
-              <Collapse
-                style={{ marginBottom: 12 }}
-                activeKey={activeKey}
-                onChange={(key) => setActiveKey(key)}
-                className="mb-4">
-                <Panel
-                  header={
-                    <div className="flex items-center gap-3 p-3 rounded-2xl">
-                      <Plus
-                        size={20}
-                        className="text-green-600"
-                      />
-                      <div>
-                        <Text
-                          strong
-                          className="text-green-800">
-                          Create New Unit
-                        </Text>
-                        <Text className="text-green-600 block text-sm mt-1">
-                          Start building your module
-                        </Text>
-                      </div>
-                    </div>
-                  }
-                  key="create">
-                  <div className="p-4 bg-white rounded-2xl shadow-inner">
-                    <Form
-                      layout="vertical"
-                      onFinish={handleAddUnit}>
-                      <Form.Item
-                        name="title"
-                        label={
-                          <span className="flex items-center gap-2">
-                            <BookOpen
-                              size={16}
-                              className="text-blue-600"
-                            />
-                            Unit Title
-                          </span>
-                        }
-                        rules={[{ required: true, message: 'Please enter unit title' }]}>
-                        <Input placeholder="e.g., Introduction to Basics" />
-                      </Form.Item>
-                      <Form.Item
-                        name="description"
-                        label={
-                          <span className="flex items-center gap-2">
-                            <FileText
-                              size={16}
-                              className="text-gray-600"
-                            />
-                            Description
-                          </span>
-                        }>
-                        <Input.TextArea
-                          rows={2}
-                          placeholder="Short description for this unit"
-                        />
-                      </Form.Item>
-                      <div className="flex justify-end gap-2 pt-4">
-                        <Button
-                          type="default"
-                          onClick={() => setActiveKey('')}>
-                          Cancel
-                        </Button>
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          loading={createUnitMutation.isPending}
-                          icon={<Plus size={16} />}>
-                          Create Unit
-                        </Button>
-                      </div>
-                    </Form>
-                  </div>
-                </Panel>
-              </Collapse>
+            </div>
 
+            {/* Additional Meta Info */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                <LayoutDashboard size={16} /> Learning Outcomes
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {course?.learningOutcome || "No specific outcomes defined."}
+              </p>
+              <Divider className="my-4" />
+              <h4 className="font-semibold text-gray-900">Topics</h4>
+              <div className="flex flex-wrap gap-2">
+                {course?.topics.map((topic: any) => (
+                  <Tag
+                    key={topic.topicId}
+                    className="m-0 text-gray-600 bg-gray-50 border-gray-200"
+                  >
+                    {topic.topicName}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Curriculum Management (8 cols) */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <Title level={3} className="!mb-1 text-gray-900">
+                  Curriculum
+                </Title>
+                <Text className="text-gray-500">
+                  Manage units, lessons, and exercises.
+                </Text>
+              </div>
+              <Button
+                type="primary"
+                icon={
+                  activeKey === "create" ? <CloseOutlined /> : <PlusOutlined />
+                }
+                onClick={() =>
+                  setActiveKey(activeKey === "create" ? "" : "create")
+                }
+                className="bg-gray-900 hover:bg-gray-800 border-none h-10 px-5 shadow-md"
+              >
+                {activeKey === "create" ? "Cancel" : "Add Unit"}
+              </Button>
+            </div>
+
+            {/* Quick Create Unit Panel */}
+            {activeKey === "create" && (
+              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg animate-in fade-in slide-in-from-top-2">
+                <h4 className="font-semibold text-gray-900 mb-4">
+                  Create New Unit
+                </h4>
+                <Form layout="vertical" onFinish={handleAddUnit}>
+                  <Form.Item
+                    name="title"
+                    label="Unit Title"
+                    rules={[
+                      { required: true, message: "Please enter unit title" },
+                    ]}
+                  >
+                    <Input
+                      placeholder="e.g. Introduction to React"
+                      size="large"
+                    />
+                  </Form.Item>
+                  <Form.Item name="description" label="Description">
+                    <Input.TextArea
+                      rows={3}
+                      placeholder="What will students learn in this unit?"
+                    />
+                  </Form.Item>
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button onClick={() => setActiveKey("")}>Cancel</Button>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      loading={createUnitMutation.isPending}
+                      className="bg-blue-600"
+                    >
+                      Create Unit
+                    </Button>
+                  </div>
+                </Form>
+              </div>
+            )}
+
+            {/* Units List */}
+            <div className="space-y-4">
               {Array.isArray(units) && units.length > 0 ? (
                 units.map((unit) => (
                   <UnitWithLessons
@@ -528,40 +351,39 @@ const CourseDetail: React.FC = () => {
                   />
                 ))
               ) : (
-                <div className="text-center py-12 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl">
-                  <Empty
-                    description={
-                      <div>
-                        <BookOpen
-                          size={48}
-                          className="mx-auto mb-2 text-gray-400"
-                        />
-                        <Text className="text-gray-500">No units yet</Text>
-                        <Text
-                          type="secondary"
-                          className="block text-sm mt-1">
-                          Get started by adding your first unit!
-                        </Text>
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={
+                    <div className="text-center">
+                      <Text className="text-gray-500">No content yet.</Text>
+                      <div className="mt-2">
+                        <Button
+                          type="dashed"
+                          onClick={() => setActiveKey("create")}
+                        >
+                          Create First Unit
+                        </Button>
                       </div>
-                    }
-                  />
-                </div>
+                    </div>
+                  }
+                  className="bg-white rounded-xl border border-gray-200 border-dashed py-12 m-0"
+                />
               )}
-            </Card>
-          </Col>
-        </Row>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-// ---- Subcomponent: Unit + Lessons preview ----
-const UnitWithLessons: React.FC<{ unit: Unit; deleteUnit: (id: string) => void }> = ({
-  unit,
-  deleteUnit,
-}) => {
+// ---- Subcomponent: Unit Item ----
+const UnitWithLessons: React.FC<{
+  unit: Unit;
+  deleteUnit: (id: string) => void;
+}> = ({ unit, deleteUnit }) => {
   const { data: lessonsResponse, isLoading } = useQuery({
-    queryKey: ['lessons', unit?.courseUnitID],
+    queryKey: ["lessons", unit?.courseUnitID],
     queryFn: () => getLessonsByUnits({ unitId: unit?.courseUnitID }),
     enabled: !!unit?.courseUnitID,
     retry: 1,
@@ -570,134 +392,83 @@ const UnitWithLessons: React.FC<{ unit: Unit; deleteUnit: (id: string) => void }
   const lessons: Lesson[] = lessonsResponse?.data || [];
 
   return (
-    <Card className="rounded-2xl border-0 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-r from-indigo-50 to-blue-50 !mb-4">
-      <div className="flex items-start justify-between mb-4 p-2 rounded-xl bg-white -mx-4 -mt-4">
-        <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <BookOpen
-              size={20}
-              className="text-blue-600"
-            />
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
+      {/* Unit Header */}
+      <div className="p-4 flex items-start justify-between bg-white border-b border-gray-100">
+        <div className="flex gap-4 items-start">
+          <div className="mt-1 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+            <BookOpen size={16} />
           </div>
-          <div className="flex-1 min-w-0">
-            <Text
-              strong
-              className="text-gray-800 block text-lg">
-              {unit?.title || 'Untitled Unit'}
-            </Text>
-            <Paragraph className="text-gray-500 text-sm mb-1 truncate">
-              {unit?.description || 'No description provided'}
-            </Paragraph>
+          <div>
+            <h4 className="font-semibold text-gray-900 text-lg leading-tight mb-1">
+              {unit?.title || "Untitled Unit"}
+            </h4>
+            <p className="text-sm text-gray-500 line-clamp-2 max-w-xl">
+              {unit?.description || "No description provided"}
+            </p>
           </div>
         </div>
 
-        <Tag
-          color="blue"
-          className="px-2 py-1 text-xs">
-          <Users
-            size={12}
-            className="inline mr-1"
+        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Tooltip title="Manage Lessons">
+            <Link to={`unit/${unit?.courseUnitID}`}>
+              <Button
+                size="small"
+                icon={<Edit size={14} />}
+                className="flex items-center gap-1"
+              >
+                Manage Content
+              </Button>
+            </Link>
+          </Tooltip>
+          <Button
+            danger
+            type="text"
+            size="small"
+            icon={<Trash2 size={14} />}
+            onClick={() => deleteUnit(unit?.courseUnitID)}
           />
-          Lessons: {unit?.totalLessons ?? 0}
-        </Tag>
-        <Tooltip title="Manage lessons">
-          <Link to={`unit/${unit?.courseUnitID}`}>
-            <Button
-              size="small"
-              type="link"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700">
-              <Edit size={16} />
-              Edit Lessons
-            </Button>
-          </Link>
-        </Tooltip>
-        <Button onClick={() => deleteUnit(unit?.courseUnitID)}>
-          <Trash size={16} />
-        </Button>
+        </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-4">
-          <Spin size="small" />
-        </div>
-      ) : lessons.length === 0 ? (
-        <div className="text-center py-6 bg-white rounded-xl">
-          <Empty
-            description={
-              <div className="space-y-2">
-                <Text
-                  type="secondary"
-                  className="text-sm">
-                  Add lessons to bring this unit to life!
-                </Text>
-              </div>
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        </div>
-      ) : (
-        <div className="flex gap-2.5 flex-col space-y-3 p-2">
-          {lessons.map((lesson) => (
-            <Card
-              key={lesson?.lessonID || Math.random()}
-              size="small"
-              className="rounded-xl border-0 shadow-sm bg-white hover:shadow-md transition-all">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Play
-                      size={16}
-                      className="text-green-600"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Text className="text-gray-800 font-medium block">
-                      {lesson?.title || 'Untitled Lesson'}
-                    </Text>
-                    <Text className="text-gray-500 text-xs">
-                      {lesson?.description || 'No description available'}
-                    </Text>
-                  </div>
-                </div>
-                <Tag
-                  color="blue-inverse"
-                  className="px-2 py-1 text-xs">
-                  #{lesson?.position ?? '-'}
-                </Tag>
-              </div>
-              <div className="flex space-x-2 mt-2">
-                {lesson?.videoUrl && (
-                  <Tooltip title="Watch video">
-                    <Button
-                      size="small"
-                      type="link"
-                      href={lesson.videoUrl}
-                      target="_blank"
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700">
-                      <VideoCameraOutlined />
-                      Video
-                    </Button>
-                  </Tooltip>
+      {/* Quick Lesson Preview (Read Only) */}
+      <div className="bg-gray-50/50 p-3 space-y-1">
+        {isLoading ? (
+          <div className="py-2 text-center text-gray-400 text-xs">
+            Loading lessons...
+          </div>
+        ) : lessons.length === 0 ? (
+          <div className="py-2 pl-12 text-gray-400 text-sm italic">
+            No lessons in this unit yet.
+          </div>
+        ) : (
+          lessons.map((lesson, idx) => (
+            <div
+              key={lesson.lessonID}
+              className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white hover:border-gray-200 border border-transparent transition-all group/lesson"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-mono text-gray-400 w-4">
+                  {idx + 1}
+                </span>
+                <span className="text-sm font-medium text-gray-700">
+                  {lesson.title}
+                </span>
+                {lesson.videoUrl && (
+                  <VideoCameraOutlined className="text-gray-400 text-xs" />
                 )}
-                {lesson?.documentUrl && (
-                  <Tooltip title="Download document">
-                    <Button
-                      size="small"
-                      type="link"
-                      href={lesson.documentUrl}
-                      target="_blank"
-                      className="flex items-center gap-1 text-green-600 hover:text-green-700">
-                      <FileOutlined />
-                      Document
-                    </Button>
-                  </Tooltip>
+                {lesson.documentUrl && (
+                  <FileOutlined className="text-gray-400 text-xs" />
                 )}
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </Card>
+              <Tag className="m-0 text-xs bg-white border-gray-200 text-gray-500">
+                {lesson.position}
+              </Tag>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 };
 

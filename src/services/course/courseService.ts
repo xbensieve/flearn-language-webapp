@@ -8,6 +8,8 @@ import type {
   ExerciseQueryParams,
 } from "@/types/course";
 import axiosInstance from "@/lib/axiosInstance";
+import type { CourseTemplate, CreateCourseRequest } from "@/types/createCourse";
+import type { Course } from "./type";
 
 export const courseService = {
   getSubmissions: async (
@@ -108,6 +110,67 @@ export const courseService = {
       return response.data;
     } catch (error) {
       console.error("Failed to fetch exercises", error);
+      throw error;
+    }
+  },
+  getCourseTemplate: async (
+    params: CourseQueryParams
+  ): Promise<APIResponse<CourseTemplate[]>> => {
+    const query: Record<string, unknown> = {};
+    if (params.Page) query.Page = params.Page;
+    if (params.PageSize) query.PageSize = params.PageSize;
+
+    try {
+      const response = await axiosInstance.get<APIResponse<CourseTemplate[]>>(
+        "/templates",
+        { params: query }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch course templates", error);
+      throw error;
+    }
+  },
+
+  createCourse: async (
+    data: CreateCourseRequest
+  ): Promise<APIResponse<Course>> => {
+    const formData = new FormData();
+
+    // Mapping đúng với key trong CourseRequest.cs của Backend
+    formData.append("Title", data.Title);
+    formData.append("Description", data.Description);
+    formData.append("LevelId", data.LevelId);
+    formData.append("LearningOutcome", data.LearningOutcome);
+    formData.append("DurationDays", data.DurationDays.toString());
+    formData.append("Price", data.Price.toString());
+    formData.append("CourseType", data.CourseType.toString());
+    formData.append("GradingType", data.GradingType.toString());
+
+    if (data.TopicIds) {
+      // Backend nhận string "id1,id2", logic mapping đã làm ở CreateCoursePage
+      formData.append("TopicIds", data.TopicIds);
+    }
+
+    if (data.TemplateId) {
+      formData.append("TemplateId", data.TemplateId);
+    }
+
+    if (data.Image) {
+      formData.append("Image", data.Image);
+    }
+
+    try {
+      const response = await axiosInstance.post<APIResponse<Course>>(
+        "/courses",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to create course", error);
       throw error;
     }
   },

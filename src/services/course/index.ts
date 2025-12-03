@@ -367,3 +367,41 @@ export const deleteExercisesByLesson = async (lessonId: string) => {
   const res = await api.delete(`/exercises/${lessonId}`);
   return res.data.data;
 };
+
+
+export const updateExerciseService = async ({
+  lessonId, // <--- Thêm tham số này
+  exerciseId,
+  payload,
+}: {
+  lessonId: string; // <--- Định nghĩa type
+  exerciseId: string;
+  payload: ExercisePayload;
+}) => {
+  const formData = new FormData();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined || value === null || key === "MediaFiles") return;
+    if (Array.isArray(value)) {
+      value.forEach((v) => formData.append(key, String(v)));
+    } else {
+      formData.append(key, String(value));
+    }
+  });
+
+  if (payload.MediaFiles && Array.isArray(payload.MediaFiles)) {
+    payload.MediaFiles.forEach((file: File) => {
+      formData.append("MediaFiles", file, file.name);
+    });
+  }
+
+  const { data } = await api.put(
+    `/lessons/${lessonId}/exercises/${exerciseId}`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    }
+  );
+
+  return data;
+};

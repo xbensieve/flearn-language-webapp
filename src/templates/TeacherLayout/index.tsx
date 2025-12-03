@@ -1,5 +1,5 @@
 import { Avatar, Spin, Tooltip, Typography } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { getProfile } from "../../services/auth";
 import { useQuery } from "@tanstack/react-query";
@@ -19,17 +19,28 @@ import {
   ArrowLeftRight,
 } from "lucide-react";
 import { UserOutlined } from "@ant-design/icons";
+import { useAuth } from "@/utils/AuthContext";
 
 const TeacherLayout: React.FC = () => {
   const location = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-
+  const { updateAuth } = useAuth();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
+    staleTime: 1000 * 60 * 10, // (10 phút) Dữ liệu profile được coi là mới trong 10 phút, không cần fetch lại
+    gcTime: 1000 * 60 * 30, // (30 phút) Giữ trong cache 30 phút (tên cũ là cacheTime ở v4)
+    refetchOnWindowFocus: false, // Không fetch lại khi click chuột vào lại tab
+    retry: false,
   });
-
+  useEffect(() => {
+    if (isError) {
+      localStorage.removeItem("FLEARN_ACCESS_TOKEN"); // Xóa token
+      localStorage.removeItem("FLEARN_USER_ROLES");
+      updateAuth(); // Cập nhật lại context để đẩy user ra trang login
+    }
+  }, [isError, updateAuth]);
   const isActive = (path: string) => location.pathname === `/teacher${path}`;
 
   if (isError) return <Typography.Text>Error loading profile</Typography.Text>;
