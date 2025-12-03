@@ -7,6 +7,7 @@ import {
   GraduationCap,
   ClipboardCheck,
   UserCircle,
+  XCircle,
 } from "lucide-react";
 import { useSidebarStore } from "@/hooks/useSidebar";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,11 @@ const navItems = [
     to: "/dashboard/exercise-grading",
     icon: ClipboardCheck,
     label: "Exercise Grading",
+  },
+  {
+    to: "/dashboard/cancellation-requests",
+    icon: XCircle,
+    label: "Cancellation Requests",
   },
   { to: "/dashboard/profile", icon: UserCircle, label: "Profile" },
 ];

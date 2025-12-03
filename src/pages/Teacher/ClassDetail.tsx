@@ -13,10 +13,17 @@ import {
   Badge,
   message,
   Alert,
+  Modal,
+  Input,
 } from 'antd';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getClassByIdService, publishClassService } from '../../services/class';
+import {
+  getClassByIdService,
+  publishClassService,
+  requestCancelClassService,
+  deleteClassService,
+} from '../../services/class';
 import {
   LoadingOutlined,
   ArrowLeftOutlined,
@@ -30,20 +37,28 @@ import {
   VideoCameraOutlined,
   CheckCircleOutlined,
   GlobalOutlined,
+  DeleteOutlined,
+  StopOutlined,
+  ExclamationCircleOutlined,
 } from '@ant-design/icons';
 import { formatStatusLabel } from '../../utils/mapping';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const statusColors: Record<string, string> = {
   Draft: 'cyan',
   Published: 'blue',
+  PendingCancel: 'orange',
+  Cancelled: 'red',
 };
 
 const statusGradients: Record<string, string> = {
   Draft: 'from-cyan-500 to-blue-600',
   Published: 'from-blue-600 to-indigo-700',
+  PendingCancel: 'from-orange-500 to-red-600',
+  Cancelled: 'from-red-500 to-red-700',
 };
 
 const ClassDetail: React.FC = () => {
@@ -53,6 +68,16 @@ const ClassDetail: React.FC = () => {
   const [isEditingStatus, setIsEditingStatus] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<string | undefined>(undefined);
+
+  // Cancel request modal state
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isSubmittingCancel, setIsSubmittingCancel] = useState(false);
+
+  // Delete modal state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['class', id],
@@ -122,6 +147,72 @@ const ClassDetail: React.FC = () => {
     }
   };
 
+  // Handle request cancel class
+  const handleRequestCancel = async () => {
+    if (!cancelReason.trim()) {
+      message.warning('Please enter a reason for cancellation.');
+      return;
+    }
+
+    setIsSubmittingCancel(true);
+    try {
+      const res = await requestCancelClassService(id!, cancelReason);
+      message.success({
+        content: res.message || 'Cancellation request submitted successfully!',
+        duration: 3,
+        icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+      });
+      setIsCancelModalOpen(false);
+      setCancelReason('');
+      await refetch();
+      queryClient.invalidateQueries({ queryKey: ['class', id] });
+    } catch (error: any) {
+      message.error({
+        content: error.response?.data?.message || 'Failed to submit cancellation request.',
+        duration: 4,
+      });
+    } finally {
+      setIsSubmittingCancel(false);
+    }
+  };
+
+  // Handle delete class
+  const handleDeleteClass = async () => {
+    if (!deleteReason.trim()) {
+      message.warning('Please enter a reason for deletion.');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const res = await deleteClassService(id!, deleteReason);
+      message.success({
+        content: res.message || 'Class deleted successfully!',
+        duration: 3,
+        icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
+      });
+      setIsDeleteModalOpen(false);
+      navigate('/teacher/classes');
+    } catch (error: any) {
+      message.error({
+        content: error.response?.data?.message || 'Failed to delete class.',
+        duration: 4,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Calculate if class is more than 3 days away
+  const isMoreThan3DaysAway = () => {
+    if (!classData?.startDateTime) return false;
+    const startDate = new Date(classData.startDateTime);
+    const now = new Date();
+    const diffTime = startDate.getTime() - now.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays > 3;
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-[60vh] bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100">
@@ -178,12 +269,18 @@ const ClassDetail: React.FC = () => {
     (classData.currentEnrollments / classData.capacity) * 100
   );
   const isPublished = classData.status === 'Published';
+  const isDraft = classData.status === 'Draft';
+  const isCancelled = classData.status === 'Cancelled';
+  const isPendingCancel = classData.status === 'PendingCancel';
+  const canEditStatus = isDraft && !isCancelled && !isPendingCancel;
+  const canDelete = (isDraft || isMoreThan3DaysAway()) && !isCancelled && !isPendingCancel;
+  const canRequestCancel = isPublished && !isMoreThan3DaysAway() && !isCancelled && !isPendingCancel;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8 px-4">
       <div className="max-w-5xl mx-auto">
-        {/* Back Button */}
-        <div className="mb-6">
+        {/* Back Button and Action Buttons */}
+        <div className="mb-6 flex justify-between items-center">
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate('/teacher/classes')}
@@ -191,6 +288,29 @@ const ClassDetail: React.FC = () => {
             className="bg-white shadow-md hover:shadow-lg transition-all duration-300 rounded-xl border-blue-200 hover:border-blue-400 hover:text-blue-600 font-medium">
             Back
           </Button>
+
+          {/* Action Buttons */}
+          <Space>
+            {canRequestCancel && (
+              <Button
+                icon={<StopOutlined />}
+                onClick={() => setIsCancelModalOpen(true)}
+                size="large"
+                className="bg-orange-500 hover:bg-orange-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl font-medium">
+                Request Cancellation
+              </Button>
+            )}
+            {canDelete && (
+              <Button
+                icon={<DeleteOutlined />}
+                onClick={() => setIsDeleteModalOpen(true)}
+                size="large"
+                danger
+                className="shadow-md hover:shadow-lg transition-all duration-300 rounded-xl font-medium">
+                Delete Class
+              </Button>
+            )}
+          </Space>
         </div>
 
         {/* Published Success Alert */}
@@ -233,7 +353,7 @@ const ClassDetail: React.FC = () => {
                         className="px-4 py-2 rounded-xl text-sm font-semibold border-0 shadow-lg">
                         {formatStatusLabel(currentStatus || classData.status)}
                       </Tag>
-                      {!isPublished && (
+                      {canEditStatus && (
                         <Button
                           icon={<EditOutlined />}
                           onClick={handleStatusEdit}
@@ -486,6 +606,110 @@ const ClassDetail: React.FC = () => {
           </Col>
         </Row>
       </div>
+
+      {/* Request Cancel Modal */}
+      <Modal
+        title={
+          <div className="flex items-center">
+            <ExclamationCircleOutlined className="text-orange-500 mr-2 text-xl" />
+            <span>Request Class Cancellation</span>
+          </div>
+        }
+        open={isCancelModalOpen}
+        onCancel={() => {
+          setIsCancelModalOpen(false);
+          setCancelReason('');
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsCancelModalOpen(false);
+              setCancelReason('');
+            }}
+            disabled={isSubmittingCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={isSubmittingCancel}
+            onClick={handleRequestCancel}
+            className="bg-orange-500 hover:bg-orange-600 border-0">
+            Submit Request
+          </Button>,
+        ]}>
+        <div className="py-4">
+          <Alert
+            message="Class starts within 3 days"
+            description="Since this class starts soon, your cancellation request will be reviewed by admin before being processed."
+            type="warning"
+            showIcon
+            className="mb-4"
+          />
+          <Text className="block mb-2 font-medium">Reason for cancellation:</Text>
+          <TextArea
+            rows={4}
+            placeholder="Please provide a detailed reason for cancelling this class..."
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            maxLength={500}
+            showCount
+          />
+        </div>
+      </Modal>
+
+      {/* Delete Class Modal */}
+      <Modal
+        title={
+          <div className="flex items-center">
+            <DeleteOutlined className="text-red-500 mr-2 text-xl" />
+            <span>Delete Class</span>
+          </div>
+        }
+        open={isDeleteModalOpen}
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteReason('');
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsDeleteModalOpen(false);
+              setDeleteReason('');
+            }}
+            disabled={isDeleting}>
+            Cancel
+          </Button>,
+          <Button
+            key="delete"
+            type="primary"
+            danger
+            loading={isDeleting}
+            onClick={handleDeleteClass}>
+            Delete Class
+          </Button>,
+        ]}>
+        <div className="py-4">
+          <Alert
+            message="This action cannot be undone"
+            description="Deleting this class will permanently remove it from the system. All enrolled students will be notified."
+            type="error"
+            showIcon
+            className="mb-4"
+          />
+          <Text className="block mb-2 font-medium">Reason for deletion:</Text>
+          <TextArea
+            rows={4}
+            placeholder="Please provide a reason for deleting this class..."
+            value={deleteReason}
+            onChange={(e) => setDeleteReason(e.target.value)}
+            maxLength={500}
+            showCount
+          />
+        </div>
+      </Modal>
     </div>
   );
 };
