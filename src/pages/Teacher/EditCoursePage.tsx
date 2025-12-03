@@ -1,605 +1,376 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState, useMemo } from "react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import {
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Upload,
-  Button,
-  Row,
-  Col,
-  Steps,
-  message,
-  Typography,
-  Card,
-  Progress,
-  Space,
-  Tag,
-  Spin,
-  Switch,
-} from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+  Sparkles,
+  ArrowLeft,
+  Loader2,
+  Trash2,
+  AlertTriangle,
+} from "lucide-react";
+
+// Components
+import { CourseForm } from "@/pages/Teacher/components/course/CourseForm";
+import { CoursePreview } from "@/pages/Teacher/components/course/CoursePreview";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+// Schemas & Types
+import { courseSchema } from "@/schemas/courseSchema";
+import type {
+  CourseFormValues,
+  CreateCourseRequest,
+  Topic,
+  ProgramAssignment,
+  CourseTemplate,
+} from "@/types/createCourse";
+
+// Services
 import {
   getCourseDetailService,
-  getCourseTemplatesByProgramService,
-  getTeachingProgramService,
   updateCourseService,
-} from '../../services/course';
-import { getTopicsService } from '../../services/topics';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { UploadCloud, Sparkles, DollarSign, Calendar, ArrowLeft, ChevronRight } from 'lucide-react';
+  deleteCourseService,
+  getCourseTemplatesService,
+} from "@/services/course";
+import { getTeachingProgramService } from "@/services/teacher/teacherService";
+import { getTopicsService } from "@/services/topics/topicService";
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+const HERO_IMAGE_URL =
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop";
 
-interface CourseFormValues {
-  title: string;
-  description: string;
-  programLevelCombo: string;
-  topicIds: string[];
-  templateId?: string;
-  courseType: number;
-  price?: number;
-  learningOutcome: string;
-  durationDays: number;
-  gradingType: string;
-}
+// --- HELPER FUNCTIONS ĐỂ CHUẨN HÓA DỮ LIỆU ---
+const normalizeCourseType = (type: string | number | undefined): number => {
+  if (!type) return 1; // Default Free
+  const t = String(type).toLowerCase();
+  // Nếu là "paid" hoặc "2" hoặc số 2 -> trả về 2 (Paid)
+  if (t === "paid" || t === "2") return 2;
+  return 1; // Còn lại là Free
+};
+
+const normalizeGradingType = (
+  type: string | number | undefined,
+  courseTypeVal: number
+): string => {
+  // Logic cứng: Nếu CourseType là Paid (2) -> Grading phải là AIAndTeacher ("2")
+  if (courseTypeVal === 2) return "2";
+  // Logic cứng: Nếu CourseType là Free (1) -> Grading phải là AIOnly ("1")
+  if (courseTypeVal === 1) return "1";
+
+  // Fallback (dự phòng)
+  if (!type) return "1";
+  const t = String(type).toLowerCase();
+  if (t === "aiandteacher" || t === "2") return "2";
+  return "1";
+};
 
 const EditCoursePage: React.FC = () => {
-  const { id: courseId } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [form] = Form.useForm<CourseFormValues>();
+  const queryClient = useQueryClient();
 
-  const [fileList, setFileList] = useState<any[]>([]);
-  const [removeImage, setRemoveImage] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [currentLevelId, setCurrentLevelId] = useState<string | null>(null);
 
-  const [selectedProgramId, setSelectedProgramId] = useState<string>('');
-  const [selectedLevelId, setSelectedLevelId] = useState<string>('');
-  const [formValues, setFormValues] = useState<Partial<CourseFormValues>>({});
-
-  const courseType = Form.useWatch('courseType', form);
-
-  // Fetch course detail
-  const { data: course, isLoading: loadingCourse } = useQuery({
-    queryKey: ['course-detail', courseId],
-    queryFn: () => getCourseDetailService(courseId!),
-    enabled: !!courseId,
+  // 1. Setup Form
+  const methods = useForm<CourseFormValues>({
+    resolver: zodResolver(courseSchema) as any,
+    defaultValues: {
+      courseType: 1,
+      topicIds: [],
+      price: 0,
+      description: "",
+      title: "",
+      learningOutcome: "",
+      durationDays: 30,
+      gradingType: "1",
+      image: null,
+      templateId: undefined,
+      levelId: "",
+    },
+    mode: "onChange",
   });
 
-  // Program + Level
-  const { data: programLevels = [], isLoading: programLevelsLoading } = useQuery({
-    queryKey: ['programLevels'],
-    queryFn: () => getTeachingProgramService({ pageSize: 1000 }),
-    select: (data) => data.data || [],
+  const { watch, reset, setValue } = methods;
+  const formValues = watch();
+
+  const { data: courseData, isLoading: isLoadingCourse } = useQuery({
+    queryKey: ["course", id],
+    queryFn: () => getCourseDetailService(id!),
+    enabled: !!id,
+    refetchOnWindowFocus: false,
   });
 
-  const programOptions = useMemo(
-    () =>
-      programLevels.map((pl: any) => ({
-        label: `${pl.programName} - ${pl.levelName}`,
-        value: `${pl.programId}|${pl.levelId}`,
-      })),
-    [programLevels]
-  );
-
-  // Templates
-  const { data: templates = [], isLoading: templatesLoading } = useQuery({
-    queryKey: ['courseTemplates', selectedProgramId, selectedLevelId],
-    queryFn: () =>
-      getCourseTemplatesByProgramService({
-        programId: selectedProgramId,
-        levelId: selectedLevelId,
-      }),
-    enabled: !!selectedProgramId && !!selectedLevelId,
-    select: (data) => data.data || [],
+  const { data: programData = [], isLoading: isLoadingPrograms } = useQuery({
+    queryKey: ["programLevels"],
+    queryFn: () => getTeachingProgramService({ pageSize: 100 }),
+    select: (res) => (res.data as ProgramAssignment[]) || [],
   });
 
-  // Topics
-  const { data: topics, isLoading: topicsLoading } = useQuery({
-    queryKey: ['topics'],
+  const { data: templates = [] } = useQuery({
+    queryKey: ["courseTemplates"],
+    queryFn: () => getCourseTemplatesService({ page: 1, pageSize: 100 }),
+    select: (res) => (res.data as CourseTemplate[]) || [],
+  });
+
+  const { data: topics = [], isLoading: isLoadingTopics } = useQuery({
+    queryKey: ["topics"],
     queryFn: getTopicsService,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select: (res: any) => (res.data as Topic[]) || [],
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (payload: any) => updateCourseService({ id: courseId!, payload }),
-    onSuccess: () => {
-      notifySuccess('Course updated successfully!');
-      navigate(`/teacher/course/${courseId}`);
-    },
-    onError: (err: any) => {
-      notifyError(err.response?.data?.message || 'Failed to update course');
-    },
-  });
-
-  // Prefill form on course load
+  // 3. POPULATE DATA
   useEffect(() => {
-    if (!course) return;
+    if (courseData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const existingTopics =
+        courseData.topics?.map((t: any) =>
+          typeof t === "object" ? t.topicId?.toString() : t.toString()
+        ) || [];
 
-    const programLevelKey = `${course.program.name} | ${course.program.level.name}`;
-
-    setSelectedProgramId(course.program.programId);
-    setSelectedLevelId(course.program.levelId);
-
-    const values: Partial<CourseFormValues> = {
-      title: course.title,
-      description: course.description,
-      programLevelCombo: programLevelKey,
-      topicIds: course.topics?.map((t: any) => t.topicId.toString()) || [],
-      templateId: course.templateId || undefined,
-      courseType: Number(course.courseType) || 1,
-      price: course.price ? Number(course.price) : undefined,
-      learningOutcome: course.learningOutcome || '',
-      durationDays: course.durationDays || 30,
-      gradingType: course.gradingType?.toString() || '1',
-    };
-
-    form.setFieldsValue(values);
-
-    // Set existing image
-    if (course.imageUrl) {
-      setFileList([
-        {
-          uid: '-1',
-          name: 'current-image.jpg',
-          status: 'done',
-          url: course.imageUrl,
-          thumbUrl: course.imageUrl,
-        },
-      ]);
-    }
-  }, [course, form]);
-
-  const handleProgramLevelChange = (value: string) => {
-    if (value) {
-      const [programId, levelId] = value.split('|');
-      setSelectedProgramId(programId);
-      setSelectedLevelId(levelId);
-    } else {
-      setSelectedProgramId('');
-      setSelectedLevelId('');
-    }
-  };
-
-  const uploadProps = {
-    fileList,
-    onRemove: () => {
-      setFileList([]);
-      setRemoveImage(true);
-      return true;
-    },
-    beforeUpload: (file: any) => {
-      const isImage = file.type.startsWith('image/');
-      if (!isImage) {
-        message.error('Only image files allowed!');
-        return Upload.LIST_IGNORE;
+      if (courseData.imageUrl) {
+        setCurrentImageUrl(courseData.imageUrl);
       }
-      if (file.size / 1024 / 1024 > 10) {
-        message.error('Image must be smaller than 10MB!');
-        return Upload.LIST_IGNORE;
-      }
-      setFileList([file]);
-      setRemoveImage(false);
-      return false;
-    },
-  };
 
-  const next = async () => {
-    try {
-      const values = await form.validateFields();
-      setFormValues((prev) => ({ ...prev, ...values }));
-      setCurrentStep((s) => {
-        if (values.courseType === 1 && s === 0) return 2;
-        return s + 1;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fetchedLevelId =
+        (courseData as any).program?.level.levelId || courseData.LevelId || "";
+      setCurrentLevelId(fetchedLevelId);
+
+      // --- XỬ LÝ CONVERT DỮ LIỆU TẠI ĐÂY ---
+      const normalizedCourseType = normalizeCourseType(courseData.courseType);
+      const normalizedGradingType = normalizeGradingType(
+        courseData.gradingType,
+        normalizedCourseType
+      );
+      const normalizedPrice =
+        normalizedCourseType === 1 ? 0 : Number(courseData.price) || 0;
+
+      // 3.4 Reset Form với dữ liệu đã được chuẩn hóa
+      reset({
+        title: courseData.title || "",
+        description: courseData.description || "",
+        learningOutcome: courseData.learningOutcome || "",
+        price: normalizedPrice,
+        courseType: normalizedCourseType, // Đã convert sang 1 hoặc 2
+        durationDays: courseData.durationDays || 30,
+        gradingType: normalizedGradingType, // Đã convert sang "1" hoặc "2"
+        levelId: fetchedLevelId,
+        topicIds: existingTopics,
+        templateId: courseData.templateId || undefined,
+        image: null,
       });
-    } catch {
-      // Validation failed
+
+      if (courseData.templateId) {
+        setValue("templateId", courseData.templateId);
+      }
     }
-  };
+  }, [courseData, programData, reset, setValue]);
 
-  const prev = async () => {
-    const values = await form.getFieldsValue(true);
-    setFormValues((prev) => ({ ...prev, ...values }));
-    setCurrentStep((s) => {
-      if (formValues.courseType === 1 && s === 2) return 0;
-      return s - 1;
-    });
-  };
+  const previewImage = useMemo(() => {
+    if (formValues.image instanceof File) {
+      return URL.createObjectURL(formValues.image);
+    }
+    return currentImageUrl;
+  }, [formValues.image, currentImageUrl]);
 
-  const onFinish = (values: CourseFormValues) => {
-    const newImageFile = fileList[0]?.originFileObj;
+  const { mutate: updateCourse, isPending: isUpdating } = useMutation({
+    mutationFn: (payload: CreateCourseRequest) =>
+      updateCourseService({ id: id!, payload: payload as any }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["course", id] });
+      toast.success("Saved successfully!", {
+        description: "Course details have been updated.",
+      });
+      navigate("/teacher/course");
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || "Failed to update course";
+      toast.error("Update failed", { description: msg });
+    },
+  });
 
-    const payload: any = {
-      title: values.title,
-      description: values.description,
-      LevelId: selectedLevelId,
-      topicIds: values.topicIds,
-      templateId: values.templateId || null,
-      courseType: (values.courseType || 1).toString(),
-      price: values.courseType === 2 ? (values.price || 0).toString() : '0',
-      learningOutcome: values.learningOutcome,
-      durationDays: values.durationDays,
-      gradingType: values.gradingType,
-      image: removeImage ? null : newImageFile || undefined,
+  const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
+    mutationFn: () => deleteCourseService(id!),
+    onSuccess: () => {
+      toast.success("Course deleted!", {
+        description: "The course has been permanently removed.",
+      });
+      navigate("/teacher/course");
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || "Cannot delete this course";
+      toast.error("Delete failed", { description: msg });
+    },
+  });
+
+  // Handle Submit
+  const onSubmit = (data: CourseFormValues) => {
+    // Đảm bảo logic trước khi gửi đi lần cuối
+    const finalCourseType = data.courseType; // 1 hoặc 2
+    const finalGradingType = finalCourseType === 2 ? 2 : 1; // Paid->2, Free->1
+    const finalPrice = finalCourseType === 1 ? 0 : data.price;
+
+    const payload: CreateCourseRequest = {
+      Title: data.title,
+      Description: data.description,
+      LevelId: data.levelId,
+      TopicIds: data.topicIds.join(","),
+      CourseType: finalCourseType,
+      Price: finalPrice,
+      Image: data.image as File,
+      LearningOutcome: data.learningOutcome,
+      DurationDays: data.durationDays,
+      GradingType: finalGradingType, // Gửi lên server dạng số (1 hoặc 2)
+      TemplateId: data.templateId || undefined,
     };
-    console.log(values);
-
-    updateMutation.mutate(payload);
+    updateCourse(payload);
   };
 
-  if (loadingCourse) {
+  if (isLoadingCourse || isLoadingPrograms || isLoadingTopics) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Spin size="large" />
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <p className="text-gray-500 font-medium">Loading course data...</p>
+        </div>
       </div>
     );
   }
 
-  console.log(courseType);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-6 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      {/* HEADER & HERO SECTION */}
+      <div className="relative h-[280px] overflow-hidden rounded-b-3xl shadow-sm border-b border-white/10">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${HERO_IMAGE_URL})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-slate-900/20" />
+
+        <div className="absolute top-4 left-4 z-20">
           <Button
+            variant="ghost"
+            className="!text-white hover:text-white hover:bg-white/10 p-2 md:p-3 cursor-pointer backdrop-blur-sm"
             onClick={() => navigate(-1)}
-            type="text"
-            icon={<ArrowLeft size={20} />}
-          />
-          <Title
-            level={3}
-            className="!mb-0 text-gray-900">
-            Edit Course
-          </Title>
+          >
+            <ArrowLeft className="w-10 h-10 md:w-5 md:h-5" />
+          </Button>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-10">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-blue-200 mb-2">
+                <Sparkles className="w-5 h-5" />
+                <span className="text-sm font-medium uppercase tracking-wider">
+                  Edit Mode
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                {courseData?.title || "Edit Course"}
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Dialog
+                open={isDeleteModalOpen}
+                onOpenChange={setIsDeleteModalOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className="bg-red-500/20 hover:bg-red-600 border border-red-500/50 !text-white backdrop-blur-md cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Delete Course
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-red-600">
+                      <AlertTriangle className="w-5 h-5" /> Confirm Deletion
+                    </DialogTitle>
+                    <DialogDescription className="pt-2">
+                      Are you sure you want to delete the course{" "}
+                      <strong>{courseData?.title}</strong>?
+                      <br />
+                      This action cannot be undone and all related student data
+                      will be lost.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="mt-4 gap-2 sm:gap-0">
+                    <DialogClose asChild>
+                      <Button className="cursor-pointer" variant="outline">
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <div></div>
+                    <Button
+                      className="!text-white cursor-pointer"
+                      variant="destructive"
+                      onClick={() => deleteCourse()}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : null}
+                      Delete Permanently
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Form */}
-          <div className="xl:col-span-2">
-            <Card className="bg-white rounded-2xl shadow-lg border-0">
-              <div className="p-8 border-b border-gray-100">
-                <Steps
-                  current={currentStep}
-                  items={
-                    courseType === 1
-                      ? [{ title: 'Basic Info' }, { title: 'Settings' }]
-                      : [{ title: 'Basic Info' }, { title: 'Pricing' }, { title: 'Settings' }]
-                  }
-                />
-                <Progress
-                  percent={((currentStep + 1) / courseType === 1 ? 2 : 3) * 100}
-                  showInfo={false}
-                  strokeColor="#2563eb"
-                  className="mt-4"
-                />
-              </div>
-
-              <Form
-                form={form}
-                onFinish={onFinish}
-                layout="vertical"
-                className="p-8">
-                {/* Step 1: Basic Info */}
-                {currentStep === 0 && (
-                  <div className="space-y-8">
-                    <Title
-                      level={2}
-                      className="!mb-6">
-                      <Form.Item
-                        name="title"
-                        noStyle
-                        rules={[{ required: true, message: 'Title is required' }]}>
-                        <Input
-                          bordered={false}
-                          placeholder="Enter your course title..."
-                          className="text-4xl font-bold !p-0 hover:bg-gray-50 rounded-xl"
-                          style={{ fontSize: '2.5rem', fontWeight: 700 }}
-                        />
-                      </Form.Item>
-                    </Title>
-
-                    <Row gutter={16}>
-                      <Col span={24}>
-                        <Form.Item
-                          name="programLevelCombo"
-                          label="Program & Level"
-                          rules={[{ required: true, message: 'Please select program and level' }]}>
-                          <Select
-                            placeholder="Select program and level"
-                            loading={programLevelsLoading}
-                            options={programOptions}
-                            onChange={handleProgramLevelChange}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <Form.Item
-                          name="topicIds"
-                          label="Topics"
-                          rules={[{ required: true }]}>
-                          <Select
-                            mode="multiple"
-                            placeholder="Select topics"
-                            loading={topicsLoading}>
-                            {topics?.data?.map((t: any) => (
-                              <Select.Option
-                                key={t.topicId}
-                                value={t.topicId.toString()}>
-                                {t.topicName}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="templateId"
-                          label="Template">
-                          <Select
-                            placeholder="Select template (optional)"
-                            loading={templatesLoading}
-                            disabled={!selectedProgramId || !selectedLevelId}
-                            allowClear>
-                            {templates.map((t: any) => (
-                              <Select.Option
-                                key={t.templateId}
-                                value={t.templateId}>
-                                <div>
-                                  <div className="font-medium">{t.name}</div>
-                                  <div className="text-xs text-gray-500">
-                                    {t.unitCount} units • {t.lessonsPerUnit} lessons/unit •{' '}
-                                    {t.exercisesPerLesson} exercises
-                                  </div>
-                                </div>
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <Form.Item
-                          name="courseType"
-                          label="Type"
-                          rules={[{ required: true }]}>
-                          <Select>
-                            <Select.Option value={1}>
-                              <Space>
-                                <Sparkles className="w-4 h-4 text-green-500" />
-                                Free Course
-                              </Space>
-                            </Select.Option>
-                            <Select.Option value={2}>
-                              <Space>
-                                <DollarSign className="w-4 h-4 text-blue-500" />
-                                Paid Course
-                              </Space>
-                            </Select.Option>
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-
-                    <Form.Item
-                      name="description"
-                      label="Description"
-                      rules={[{ required: true }]}>
-                      <TextArea
-                        rows={6}
-                        placeholder="Write a compelling description..."
-                        className="rounded-xl"
-                      />
-                    </Form.Item>
-
-                    <Form.Item label="Course Image">
-                      <Upload.Dragger
-                        {...uploadProps}
-                        className="bg-gray-50 border-2 border-dashed rounded-2xl">
-                        {fileList.length > 0 ? (
-                          <img
-                            src={fileList[0].url || URL.createObjectURL(fileList[0])}
-                            alt="course"
-                            className="w-full h-64 object-cover rounded-xl"
-                          />
-                        ) : (
-                          <div className="py-16 text-center">
-                            <UploadCloud className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-                            <Text className="text-lg">Drop image or click to upload</Text>
-                            <Text type="secondary">JPG/PNG • Max 10MB</Text>
-                          </div>
-                        )}
-                      </Upload.Dragger>
-                      {fileList[0]?.url && (
-                        <div className="mt-3 flex items-center gap-2">
-                          <Switch
-                            checked={removeImage}
-                            onChange={setRemoveImage}
-                            size="small"
-                          />
-                          <Text type="secondary">Remove current image</Text>
-                        </div>
-                      )}
-                    </Form.Item>
-                  </div>
+      <div className="max-w-7xl mx-auto px-6 -mt-8 relative z-20">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start relative">
+          <div className="xl:col-span-8 space-y-8">
+            <FormProvider {...methods}>
+              <CourseForm
+                onSubmit={onSubmit}
+                isLoading={isUpdating}
+                programLevels={programData}
+                templates={templates}
+                topics={topics}
+                isEditMode={true}
+                initialImageUrl={courseData?.imageUrl}
+                initialLevelId={currentLevelId}
+                initialCourseType={normalizeCourseType(
+                  courseData?.courseType
+                ).toString()}
+                initialPrice={Number(courseData?.price || 0)}
+                initialGradingType={normalizeGradingType(
+                  courseData?.gradingType,
+                  normalizeCourseType(courseData?.courseType)
                 )}
-
-                {/* Step 2: Pricing */}
-                {currentStep === 1 && formValues.courseType === 2 && (
-                  <div className="bg-blue-50 rounded-2xl p-10 text-center">
-                    <DollarSign className="w-20 h-20 text-blue-600 mx-auto mb-6" />
-                    <Title level={3}>Set Your Course Price</Title>
-                    <Form.Item
-                      name="price"
-                      rules={[{ required: true, message: 'Price is required' }]}>
-                      <InputNumber
-                        size="large"
-                        min={0}
-                        formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                        className="!w-full max-w-xs mx-auto"
-                        placeholder="1,500,000"
-                        prefix="₫"
-                        style={{ fontSize: '2rem' }}
-                      />
-                    </Form.Item>
-                  </div>
-                )}
-
-                {/* Step 3: Settings */}
-                {currentStep === (courseType === 1 ? 1 : 2) && (
-                  <div className="space-y-8">
-                    <Form.Item
-                      name="learningOutcome"
-                      label="What Students Will Learn"
-                      rules={[{ required: true }]}>
-                      <TextArea
-                        rows={5}
-                        placeholder="Students will be able to..."
-                        className="rounded-xl"
-                      />
-                    </Form.Item>
-
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <Form.Item
-                          name="durationDays"
-                          label="Duration (days)"
-                          rules={[{ required: true }]}>
-                          <InputNumber
-                            min={1}
-                            className="w-full"
-                            prefix={<Calendar className="text-blue-500" />}
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          name="gradingType"
-                          label="Grading Type"
-                          rules={[{ required: true }]}>
-                          <Select>
-                            <Select.Option value="1">AI Only</Select.Option>
-                            <Select.Option value="2">AI + Teacher Review</Select.Option>
-                          </Select>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </div>
-                )}
-
-                {/* Navigation */}
-                <div className="flex justify-between pt-8 border-t border-gray-200">
-                  <Button
-                    size="large"
-                    onClick={prev}
-                    disabled={currentStep === 0}>
-                    Previous
-                  </Button>
-
-                  <Space>
-                    {!(currentStep === (courseType === 1 ? 2 : 3) - 1) && (
-                      <Button
-                        type="primary"
-                        size="large"
-                        onClick={next}>
-                        Next <ChevronRight className="ml-2" />
-                      </Button>
-                    )}
-                    {currentStep === (courseType === 1 ? 2 : 3) - 1 && (
-                      <Button
-                        type="primary"
-                        size="large"
-                        htmlType="submit"
-                        loading={updateMutation.isPending}
-                        icon={<Sparkles className="mr-2" />}
-                        className="bg-gradient-to-r from-blue-600 to-indigo-600">
-                        Save Changes
-                      </Button>
-                    )}
-                  </Space>
-                </div>
-              </Form>
-            </Card>
+              />
+            </FormProvider>
           </div>
 
-          {/* Live Preview */}
-          <div className="xl:col-span-1">
-            <div className="sticky top-8">
-              <Card className="bg-white !rounded-2xl shadow-lg border-0 overflow-hidden">
-                <div className="bg-gradient-to-br from-blue-400 to-indigo-500 p-6 text-white">
-                  <div className="flex items-center gap-3 mb-2">
-                    <EyeOutlined className="text-2xl" />
-                    <Title
-                      level={4}
-                      className="!text-white !m-0">
-                      Live Preview
-                    </Title>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="relative h-48 bg-gray-200 rounded-xl overflow-hidden mb-6">
-                    {fileList.length > 0 ? (
-                      <img
-                        src={fileList[0].url || URL.createObjectURL(fileList[0])}
-                        alt="preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full bg-gray-100">
-                        <UploadCloud className="w-16 h-16 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-
-                  <Title
-                    level={4}
-                    className="line-clamp-2">
-                    {form.getFieldValue('title') || course?.title || 'Untitled Course'}
-                  </Title>
-                  <Text
-                    type="secondary"
-                    className="line-clamp-2 block mt-2">
-                    {form.getFieldValue('description') ||
-                      course?.description ||
-                      'No description yet...'}
-                  </Text>
-
-                  <div className="mt-6">
-                    <Tag color={courseType === 1 ? 'green' : 'blue'}>
-                      {courseType === 1 ? 'FREE' : 'PAID'}
-                    </Tag>
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(form.getFieldValue('topicIds') || course?.topics || [])
-                      .slice(0, 3)
-                      .map((t: any) => {
-                        const topicName =
-                          typeof t === 'object'
-                            ? t.topicName
-                            : topics?.data?.find((x: any) => x.topicId === t)?.topicName;
-                        return topicName ? (
-                          <Tag
-                            key={t.topicId || t}
-                            color="blue"
-                            className="rounded-full">
-                            {topicName}
-                          </Tag>
-                        ) : null;
-                      })}
-                  </div>
-                </div>
-              </Card>
+          <div className="hidden xl:block xl:col-span-4 sticky top-6 z-10">
+            <div className="mt-2">
+              <CoursePreview
+                values={formValues}
+                imagePreview={previewImage}
+                topicsList={topics}
+              />
             </div>
           </div>
         </div>

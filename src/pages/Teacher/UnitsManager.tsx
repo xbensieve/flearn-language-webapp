@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Typography, Tag, Empty, Spin, Divider, Drawer } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { deleteLessonService, getUnitByIdService } from '../../services/course';
-import type { Unit } from '../../services/course/type';
-import { ArrowLeft } from 'lucide-react';
-import LessonForm from './components/LessonForm';
-import LessonsList from './components/LessonList';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import type { AxiosError } from 'axios';
+import React, { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Button, Typography, Tag, Empty, Spin, Divider, Drawer } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+// 1. Import useQueryClient
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteLessonService, getUnitByIdService } from "../../services/course";
+import type { Unit } from "../../services/course/type";
+import { ArrowLeft } from "lucide-react";
+import LessonForm from "./components/LessonForm";
+import LessonsList from "./components/LessonList";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
+import type { AxiosError } from "axios";
 
 const { Title, Paragraph } = Typography;
 
@@ -18,13 +19,13 @@ const UnitsManager: React.FC = () => {
   const { id: unitId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [drawerVisible, setDrawerVisible] = useState(false);
-
+  const queryClient = useQueryClient();
   const {
     data: unit,
     isLoading,
-    refetch,
+    refetch: refetchUnit,
   } = useQuery<Unit>({
-    queryKey: ['unit-detail', unitId],
+    queryKey: ["unit-detail", unitId],
     queryFn: () => getUnitByIdService({ id: unitId! }),
     enabled: !!unitId,
     retry: 1,
@@ -33,11 +34,12 @@ const UnitsManager: React.FC = () => {
   const deleteLessonMutation = useMutation({
     mutationFn: (lessonId: string) => deleteLessonService({ id: lessonId }),
     onSuccess: () => {
-      notifySuccess('Lesson deleted successfully');
-      refetch();
+      notifySuccess("Lesson deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["lessons", unitId] });
+      refetchUnit();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || 'Failed to delete unit');
+      notifyError(error.response?.data?.message || "Failed to delete lesson");
     },
   });
 
@@ -48,13 +50,7 @@ const UnitsManager: React.FC = () => {
       </div>
     );
 
-  if (!unit)
-    return (
-      <Empty
-        description="Unit not found"
-        className="mt-10"
-      />
-    );
+  if (!unit) return <Empty description="Unit not found" className="mt-10" />;
 
   const handleOpenDrawer = () => {
     setDrawerVisible(true);
@@ -74,36 +70,32 @@ const UnitsManager: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <div className="flex gap-2.5">
-            <Button
-              onClick={() => navigate(-1)}
-              type="default">
+            <Button onClick={() => navigate(-1)} type="default">
               <ArrowLeft size={14} />
             </Button>
-            <Title
-              level={3}
-              className="!mb-1">
+            <Title level={3} className="!mb-1">
               {unit.title}
             </Title>
           </div>
-          <Paragraph className="text-gray-500 mb-1">{unit.description}</Paragraph>
+          <Paragraph className="text-gray-500 mb-1">
+            {unit.description}
+          </Paragraph>
           <Tag color="blue">Lessons: {unit.totalLessons}</Tag>
         </div>
 
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={handleOpenDrawer}>
-          {drawerVisible ? 'Close Form' : 'Add Lesson'}
+          onClick={handleOpenDrawer}
+        >
+          {drawerVisible ? "Close Form" : "Add Lesson"}
         </Button>
       </div>
 
       <Divider />
 
       {/* Lessons List */}
-      <LessonsList
-        unit={unit}
-        onDeleted={handleDelete}
-      />
+      <LessonsList unit={unit} onDeleted={handleDelete} />
 
       {/* Drawer for LessonForm */}
       <Drawer
@@ -113,18 +105,19 @@ const UnitsManager: React.FC = () => {
         onClose={handleCloseDrawer}
         footer={
           <div className="text-right">
-            <Button
-              onClick={handleCloseDrawer}
-              className="mr-2">
+            <Button onClick={handleCloseDrawer} className="mr-2">
               Cancel
             </Button>
           </div>
-        }>
+        }
+      >
         <LessonForm
           unit={unit}
           onSuccess={() => {
             setDrawerVisible(false);
-            refetch();
+
+            queryClient.invalidateQueries({ queryKey: ["lessons", unitId] });
+            refetchUnit();
           }}
         />
       </Drawer>

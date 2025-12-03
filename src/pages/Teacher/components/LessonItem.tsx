@@ -1,46 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  Collapse,
-  Typography,
   Button,
-  Space,
-  Tooltip,
-  Form,
-  Input,
-  Upload,
-  Tag,
-  Card,
   Tabs,
   Drawer,
   message,
   Modal,
-  Col,
-  Row,
-} from 'antd';
-import { EditOutlined, DeleteOutlined, FileOutlined, EyeOutlined } from '@ant-design/icons';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
-import { useUpdateLesson } from '../helpers';
-import type { Lesson } from '../../../services/course/type';
-import ExerciseForm from '../ExerciseForm';
-import ExercisesList from './ExercisesList';
+  Badge,
+  Tooltip,
+  Form,
+  Input,
+  Upload,
+} from "antd";
+import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import { useUpdateLesson } from "../helpers";
+import type { Lesson } from "../../../services/course/type";
+import ExerciseForm from "../ExerciseForm";
+import ExercisesList from "./ExercisesList";
 import {
-  Sparkles,
-  BookOpen,
-  Play,
   FileText,
   Video,
-  Target,
   Trash2,
-  Edit as EditIcon,
-  Check,
-  Lightbulb,
-} from 'lucide-react';
-
-const { Panel } = Collapse;
-const { Text, Paragraph, Title } = Typography;
-const { TabPane } = Tabs;
+  Eye,
+  Settings,
+  Dumbbell,
+  Download,
+  PlayCircle,
+  AlertCircle,
+} from "lucide-react";
 
 interface Props {
   lesson: Lesson;
@@ -53,677 +42,472 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
   const [exerciseDrawerVisible, setExerciseDrawerVisible] = useState(false);
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
+
   const [form] = Form.useForm();
   const updateLesson = useUpdateLesson(lesson.courseUnitID, () => {
-    message.success('Lesson updated successfully');
+    message.success("Lesson updated successfully");
     onUpdated();
     setEditDrawerVisible(false);
   });
 
+  // --- Logic xử lý Form (Giữ nguyên) ---
   const handleOpenEditDrawer = () => {
     form.setFieldsValue({
       title: lesson.title,
       description: lesson.description,
       content: lesson.content,
       video: lesson.videoUrl
-        ? [{ uid: '-1', name: 'video', status: 'done', url: lesson.videoUrl }]
+        ? [{ uid: "-1", name: "video", status: "done", url: lesson.videoUrl }]
         : undefined,
       document: lesson.documentUrl
-        ? [{ uid: '-1', name: 'document', status: 'done', url: lesson.documentUrl }]
+        ? [
+            {
+              uid: "-1",
+              name: "document",
+              status: "done",
+              url: lesson.documentUrl,
+            },
+          ]
         : undefined,
     });
     setEditDrawerVisible(true);
   };
 
-  const handleCloseEditDrawer = () => {
-    setEditDrawerVisible(false);
-  };
-
-  const handleOpenExerciseDrawer = () => {
-    setExerciseDrawerVisible(true);
-  };
-
-  const handleCloseExerciseDrawer = () => {
-    setExerciseDrawerVisible(false);
-  };
-
   const handleSave = (values: any) => {
     const formData = new FormData();
-    formData.append('Title', values.title);
-    formData.append('Description', values.description || '');
-    formData.append('Content', values.content || '');
-    if (values.video?.file) formData.append('VideoFile', values.video.file);
-    if (values.document?.file) formData.append('DocumentFile', values.document.file);
+    formData.append("Title", values.title);
+    formData.append("Description", values.description || "");
+    formData.append("Content", values.content || "");
+    if (values.video?.file) formData.append("VideoFile", values.video.file);
+    if (values.document?.file)
+      formData.append("DocumentFile", values.document.file);
     updateLesson.mutate({ id: lesson.lessonID, formData });
   };
 
-  const handleDelete = () => {
-    setConfirmDeleteVisible(true);
-  };
-
-  const handleConfirmDelete = (id: string) => {
-    // Implement delete API call (assumed useDeleteLesson hook)
-    onDeleted(id);
-    onUpdated();
-    setConfirmDeleteVisible(false);
-  };
-
-  const handleCancelDelete = () => {
-    setConfirmDeleteVisible(false);
-  };
-
-  const handlePreview = () => {
-    setPreviewVisible(true);
-  };
-
-  const handleClosePreview = () => {
-    setPreviewVisible(false);
-  };
-
+  // --- Render Helpers ---
   const renderVideo = (url?: string) => {
     if (!url) return null;
-    const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/);
-    if (yt) {
-      return (
-        <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-lg">
+    const yt = url.match(
+      /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/
+    );
+
+    return (
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 shadow-sm border border-slate-200 mb-6 group">
+        {yt ? (
           <iframe
             src={`https://www.youtube.com/embed/${yt[1]}`}
             title="Lesson Video"
             allowFullScreen
-            className="w-full h-full rounded-2xl"
+            className="w-full h-full"
           />
-        </div>
-      );
-    }
+        ) : (
+          <video controls className="w-full h-full" src={url} />
+        )}
+      </div>
+    );
+  };
+
+  const renderDocument = (url?: string) => {
+    if (!url) return null;
     return (
-      <video
-        controls
-        className="w-full rounded-2xl shadow-lg"
-        src={url}
-      />
+      <div className="mt-6 pt-6 border-t border-gray-100">
+        <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+          <Download size={16} className="text-blue-600" /> Attached Resources
+        </h4>
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md transition-all group/doc max-w-md"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-lg bg-red-50 text-red-500 flex items-center justify-center shadow-sm group-hover/doc:scale-110 transition-transform">
+              <FileText size={20} />
+            </div>
+            <div>
+              <p className="font-medium text-gray-900 text-sm group-hover/doc:text-blue-700 transition-colors">
+                Lesson Document
+              </p>
+              <p className="text-xs text-gray-500 group-hover/doc:text-blue-500">
+                Click to view or download
+              </p>
+            </div>
+          </div>
+          <Download
+            size={16}
+            className="text-gray-400 group-hover/doc:text-blue-600"
+          />
+        </a>
+      </div>
     );
   };
 
   return (
-    <div className="bg-transparent py-8 px-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Add Exercise Button */}
-        {
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-sky-100">
-            <div className="flex justify-end items-center">
-              <Tooltip title="Add an interactive exercise to this lesson">
-                <Button
-                  type="primary"
-                  icon={<Sparkles size={16} />}
-                  onClick={handleOpenExerciseDrawer}
-                  className="rounded-xl shadow-md hover:shadow-lg transition-all bg-sky-600 hover:bg-sky-700 flex items-center gap-2 px-6 py-3 text-white font-semibold">
-                  Add New Exercise
-                </Button>
-              </Tooltip>
+    <div className="group bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 mb-6 overflow-hidden">
+      {/* --- HEADER --- */}
+      <div className="px-6 py-5 flex items-start justify-between border-b border-gray-100 bg-white">
+        <div className="flex gap-4">
+          <div className="flex-shrink-0 mt-1">
+            <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-200">
+              {lesson.position}
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+              {lesson.title}
+            </h3>
+            <p className="text-gray-500 text-sm line-clamp-1 max-w-xl">
+              {lesson.description || "No description provided."}
+            </p>
+            <div className="flex items-center gap-4 pt-1">
+              {lesson.videoUrl && (
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                  <PlayCircle size={12} className="text-blue-500" /> Video
+                </div>
+              )}
+              {lesson.totalExercises > 0 && (
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                  <Dumbbell size={12} className="text-orange-500" />{" "}
+                  {lesson.totalExercises} Exercises
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Tooltip title="Preview Lesson">
+            <Button
+              type="text"
+              shape="circle"
+              icon={
+                <Eye size={18} className="text-gray-500 hover:text-blue-600" />
+              }
+              onClick={() => setPreviewVisible(true)}
+            />
+          </Tooltip>
+          <Tooltip title="Edit Lesson">
+            <Button
+              type="text"
+              shape="circle"
+              icon={
+                <Settings
+                  size={18}
+                  className="text-gray-500 hover:text-gray-900"
+                />
+              }
+              onClick={handleOpenEditDrawer}
+            />
+          </Tooltip>
+          <div className="w-px h-4 bg-gray-200 mx-1"></div>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              danger
+              shape="circle"
+              icon={<Trash2 size={18} />}
+              onClick={() => setConfirmDeleteVisible(true)}
+              className="hover:bg-red-50"
+            />
+          </Tooltip>
+        </div>
+      </div>
+
+      {/* --- CONTENT TABS --- */}
+      <div className="bg-gray-50/50">
+        <Tabs
+          defaultActiveKey="content"
+          className="custom-tabs"
+          tabBarStyle={{
+            padding: "0 24px",
+            marginBottom: 0,
+            borderBottom: "1px solid #e5e7eb",
+            background: "white",
+          }}
+          items={[
+            {
+              key: "content",
+              label: (
+                <span className="flex items-center gap-2 py-2 text-sm font-medium">
+                  <FileText size={16} /> Learning Content
+                </span>
+              ),
+              children: (
+                <div className="p-8 bg-white min-h-[200px]">
+                  {lesson.videoUrl && (
+                    <div className="max-w-3xl mb-8">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md">
+                          <Video size={16} />
+                        </div>
+                        <span className="font-semibold text-gray-900">
+                          Video Lecture
+                        </span>
+                      </div>
+                      {renderVideo(lesson.videoUrl)}
+                    </div>
+                  )}
+
+                  <div
+                    className="prose prose-slate prose-sm md:prose-base max-w-none 
+                            prose-headings:font-bold prose-headings:text-gray-900 
+                            prose-p:text-gray-600 prose-p:leading-relaxed
+                            prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                            prose-img:rounded-xl prose-img:shadow-md
+                            prose-strong:text-gray-900 prose-strong:font-bold"
+                  >
+                    {lesson.content ? (
+                      <div
+                        dangerouslySetInnerHTML={{ __html: lesson.content }}
+                      />
+                    ) : (
+                      <div className="text-center py-8 text-gray-400 italic">
+                        No content added yet.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Document Section */}
+                  {renderDocument(lesson.documentUrl)}
+                </div>
+              ),
+            },
+            {
+              key: "exercises",
+              label: (
+                <span className="flex items-center gap-2 py-2 text-sm font-medium">
+                  <Dumbbell size={16} /> Exercises
+                  {lesson.totalExercises > 0 && (
+                    <Badge
+                      count={lesson.totalExercises}
+                      style={{
+                        backgroundColor: "#f1f5f9",
+                        color: "#475569",
+                        boxShadow: "none",
+                        fontWeight: 600,
+                      }}
+                    />
+                  )}
+                </span>
+              ),
+              children: (
+                <div className="p-6 bg-gray-50/50 min-h-[200px]">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h4 className="font-bold text-gray-900">
+                        Practice Exercises
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        Quizzes and assignments.
+                      </p>
+                    </div>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => setExerciseDrawerVisible(true)}
+                      className="bg-gray-900 hover:bg-gray-800 border-none shadow-lg shadow-gray-200"
+                    >
+                      Add Exercise
+                    </Button>
+                  </div>
+                  <ExercisesList lessonId={lesson.lessonID} />
+                </div>
+              ),
+            },
+          ]}
+        />
+      </div>
+
+      {/* --- 1. EDIT DRAWER --- */}
+      <Drawer
+        title={
+          <div className="flex items-center gap-2 text-gray-900">
+            <Settings className="w-5 h-5 text-blue-600" /> Edit Lesson
           </div>
         }
+        width={720}
+        open={editDrawerVisible}
+        onClose={() => setEditDrawerVisible(false)}
+        footer={
+          <div className="flex justify-end gap-3 px-4 py-2">
+            <Button
+              onClick={() => setEditDrawerVisible(false)}
+              className="rounded-lg h-10 px-6"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              onClick={() => handleSave(form.getFieldsValue())}
+              loading={updateLesson.isPending}
+              className="rounded-lg h-10 px-6 bg-blue-600"
+            >
+              Save Changes
+            </Button>
+          </div>
+        }
+      >
+        <Form form={form} layout="vertical" className="space-y-6">
+          <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+            <Form.Item
+              name="title"
+              label="Lesson Title"
+              rules={[{ required: true }]}
+            >
+              <Input size="large" className="rounded-lg" />
+            </Form.Item>
+            <Form.Item
+              name="description"
+              label="Short Description"
+              className="mb-0"
+            >
+              <Input.TextArea rows={2} className="rounded-lg" />
+            </Form.Item>
+          </div>
 
-        {/* Lesson Card */}
-        <Card
-          className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden"
-          bodyStyle={{ padding: 0 }}>
-          <Collapse
-            ghost
-            bordered={false}
-            expandIconPosition="end"
-            className="rounded-3xl"
-            defaultActiveKey={['1']}>
-            <Panel
-              key="1"
-              header={
-                <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 rounded-2xl">
-                  <Row
-                    align="middle"
-                    gutter={16}>
-                    <Col flex="auto">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-sky-100 rounded-2xl flex items-center justify-center shadow-md">
-                          <BookOpen
-                            size={24}
-                            className="text-sky-600"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <Text
-                            strong
-                            className="text-xl text-gray-800 block">
-                            {lesson.title}
-                          </Text>
-                          <Paragraph className="text-gray-500 text-sm mb-0 truncate">
-                            {lesson.description}
-                          </Paragraph>
-                        </div>
-                      </div>
-                    </Col>
-                    <Col>
-                      <Tag
-                        color="blue"
-                        className="px-3 py-2 rounded-full text-xs font-medium shadow-sm">
-                        <Play
-                          size={12}
-                          className="inline mr-1"
-                        />
-                        #{lesson.position}
-                      </Tag>
-                    </Col>
-                    <Col>
-                      <Space size="small">
-                        <Tooltip title="Preview Lesson">
-                          <Button
-                            size="small"
-                            shape="circle"
-                            icon={<EyeOutlined />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handlePreview();
-                            }}
-                            className="border-sky-300 hover:border-sky-400 text-sky-600 hover:bg-sky-50 transition-all shadow-sm"
-                          />
-                        </Tooltip>
-                        <Tooltip title="Edit Lesson">
-                          <Button
-                            size="small"
-                            shape="circle"
-                            icon={<EditOutlined />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenEditDrawer();
-                            }}
-                            className="border-gray-300 hover:border-sky-400 text-sky-600 hover:bg-sky-50 transition-all shadow-sm"
-                          />
-                        </Tooltip>
-                        <Tooltip title="Delete Lesson">
-                          <Button
-                            danger
-                            size="small"
-                            shape="circle"
-                            icon={<DeleteOutlined />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete();
-                            }}
-                            className="hover:bg-red-50 transition-all shadow-sm"
-                          />
-                        </Tooltip>
-                      </Space>
-                    </Col>
-                  </Row>
-                </div>
-              }
-              className="bg-white">
-              <div className="p-6 bg-gradient-to-b from-sky-50 to-white rounded-2xl">
-                <Tabs
-                  defaultActiveKey="content"
-                  className="mt-4"
-                  tabBarStyle={{
-                    background: '#f8fafc',
-                    borderRadius: '12px 12px 0 0',
-                    margin: 0,
-                    padding: '8px 16px',
-                  }}>
-                  <TabPane
-                    tab={
-                      <div className="flex items-center gap-2">
-                        <FileText
-                          size={16}
-                          className="text-sky-600"
-                        />
-                        Content
-                      </div>
-                    }
-                    key="content">
-                    <div className="!space-y-6">
-                      {lesson.content && (
-                        <Card className="border-0 shadow-sm rounded-2xl bg-white">
-                          <div className="prose prose-sm max-w-none p-6">
-                            <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
-                          </div>
-                        </Card>
-                      )}
-                      {lesson.videoUrl && (
-                        <Card className="border-0 shadow-sm rounded-2xl">
-                          <div className="flex items-center gap-3 mb-4">
-                            <Video
-                              size={20}
-                              className="text-sky-600"
-                            />
-                            <Text
-                              strong
-                              className="text-gray-800">
-                              Video Resource
-                            </Text>
-                          </div>
-                          {renderVideo(lesson.videoUrl)}
-                        </Card>
-                      )}
-                      {lesson.documentUrl && (
-                        <Card className="border-0 shadow-sm rounded-2xl">
-                          <div className="flex items-center gap-3 mb-4">
-                            <Text
-                              strong
-                              className="text-gray-800">
-                              Document Resource
-                            </Text>
-                          </div>
-                          <Tooltip title="Open in new tab">
-                            <Button
-                              type="primary"
-                              icon={<FileOutlined />}
-                              href={lesson.documentUrl}
-                              target="_blank"
-                              className="!text-green-600 !border-green-200 !bg-green-50 hover:!bg-green-100 rounded-xl flex items-center gap-2 px-4 py-2 shadow-sm">
-                              View Document
-                            </Button>
-                          </Tooltip>
-                        </Card>
-                      )}
-                    </div>
-                  </TabPane>
-                  <TabPane
-                    tab={
-                      <div className="flex items-center gap-2">
-                        <Target
-                          size={16}
-                          className="text-sky-600"
-                        />
-                        Exercises ({lesson.totalExercises || 0})
-                      </div>
-                    }
-                    key="exercises">
-                    <div className="space-y-4 p-4 bg-white rounded-2xl shadow-sm">
-                      <ExercisesList lessonId={lesson.lessonID} />
-                    </div>
-                  </TabPane>
-                </Tabs>
-              </div>
-            </Panel>
-          </Collapse>
-        </Card>
-
-        {/* Custom Delete Confirmation Modal */}
-        {confirmDeleteVisible && (
-          <Modal
-            open={confirmDeleteVisible}
-            onOk={() => handleConfirmDelete(lesson.lessonID)}
-            onCancel={handleCancelDelete}
-            okText="Delete"
-            cancelText="Cancel"
-            okButtonProps={{
-              danger: true,
-              className: 'rounded-xl bg-red-600 hover:bg-red-700 px-6 py-2',
-            }}
-            cancelButtonProps={{ className: 'rounded-xl px-6 py-2' }}
-            className="rounded-2xl"
-            width={450}>
-            <div className="flex items-center gap-3 mb-4">
-              <Trash2
-                size={32}
-                className="text-red-500"
-              />
-              <Title
-                level={4}
-                className="!mb-0 text-gray-800">
-                Delete Lesson
-              </Title>
+          <Form.Item
+            name="content"
+            label="Rich Content"
+            rules={[{ required: true }]}
+          >
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <ReactQuill theme="snow" className="h-64 mb-12" />
             </div>
-            <Paragraph className="text-gray-600">
-              Are you sure you want to delete "<strong>{lesson.title}</strong>"? This action cannot
-              be undone and will remove all associated exercises.
-            </Paragraph>
-          </Modal>
-        )}
+          </Form.Item>
 
-        {/* Custom Preview Modal */}
-        {previewVisible && (
-          <Modal
-            open={previewVisible}
-            onOk={handleClosePreview}
-            onCancel={handleClosePreview}
-            footer={[
-              <Button
-                key="back"
-                onClick={handleClosePreview}
-                className="rounded-xl px-6 py-2">
-                Close
-              </Button>,
-            ]}
-            className="rounded-2xl"
-            width={1000}>
-            <div className="space-y-6">
-              <Row
-                align="middle"
-                gutter={16}>
-                <Col>
-                  <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center shadow-md">
-                    <BookOpen
-                      size={20}
-                      className="text-sky-600"
-                    />
-                  </div>
-                </Col>
-                <Col flex="auto">
-                  <Title
-                    level={3}
-                    className="!mb-1">
-                    {lesson.title}
-                  </Title>
-                  <Paragraph className="text-gray-600 mb-0">{lesson.description}</Paragraph>
-                </Col>
-              </Row>
-              <div className="prose prose-sm max-w-none bg-gray-50 p-6 rounded-2xl shadow-sm">
-                <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
-              </div>
-              {lesson.videoUrl && (
-                <Card className="border-0 shadow-sm rounded-2xl">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Video
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Text
-                      strong
-                      className="text-gray-800">
-                      Video Preview
-                    </Text>
-                  </div>
-                  {renderVideo(lesson.videoUrl)}
-                </Card>
-              )}
-              {lesson.documentUrl && (
-                <Card className="border-0 shadow-sm rounded-2xl">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Text
-                      strong
-                      className="text-gray-800">
-                      Document
-                    </Text>
-                  </div>
-                  <Button
-                    type="primary"
-                    icon={<FileOutlined />}
-                    href={lesson.documentUrl}
-                    target="_blank"
-                    className="!text-green-600 !border-green-200 !bg-green-50 hover:!bg-green-100 rounded-xl flex items-center gap-2 px-4 py-2 shadow-sm">
-                    Open Document
-                  </Button>
-                </Card>
-              )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Form.Item name="video" label="Video Resource" valuePropName="file">
+              <Upload beforeUpload={() => false} maxCount={1} accept="video/*">
+                <Button
+                  block
+                  icon={<UploadOutlined />}
+                  className="h-10 rounded-lg"
+                >
+                  Upload Video
+                </Button>
+              </Upload>
+            </Form.Item>
+            <Form.Item
+              name="document"
+              label="Document Resource"
+              valuePropName="file"
+            >
+              <Upload
+                beforeUpload={() => false}
+                maxCount={1}
+                accept=".pdf,.doc,.docx"
+              >
+                <Button
+                  block
+                  icon={<UploadOutlined />}
+                  className="h-10 rounded-lg"
+                >
+                  Upload Document
+                </Button>
+              </Upload>
+            </Form.Item>
+          </div>
+        </Form>
+      </Drawer>
+
+      {/* --- 2. PREVIEW MODAL (ĐÃ CÓ DOCUMENT) --- */}
+      <Modal
+        title={null}
+        open={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+        footer={
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={() => setPreviewVisible(false)}
+              className="rounded-lg"
+            >
+              Close Preview
+            </Button>
+          </div>
+        }
+        width={900}
+        centered
+        className="rounded-xl overflow-hidden"
+      >
+        <div className="p-2">
+          <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+              {lesson.position}
             </div>
-          </Modal>
-        )}
-
-        {/* Edit Drawer */}
-        <Drawer
-          title={
-            <div className="flex items-center gap-3">
-              <EditIcon
-                size={20}
-                className="text-sky-600"
-              />
-              <Text
-                strong
-                className="text-sky-800">
-                Edit Lesson
-              </Text>
-            </div>
-          }
-          width={800}
-          open={editDrawerVisible}
-          onClose={handleCloseEditDrawer}
-          footer={
-            <div className="flex justify-end gap-3">
-              <Button
-                onClick={handleCloseEditDrawer}
-                className="rounded-xl px-6 py-2">
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                form="lesson-edit-form"
-                loading={updateLesson.isPending}
-                className="rounded-xl bg-sky-600 hover:bg-sky-700 flex items-center gap-2 px-6 py-2"
-                onClick={() => handleSave(form.getFieldsValue())}
-                icon={<Check size={16} />}>
-                Save Changes
-              </Button>
-            </div>
-          }
-          className="rounded-2xl"
-          placement="right">
-          <div className="bg-gradient-to-br from-sky-50 via-blue-50 to-sky-100 py-8 px-4">
-            <div className="max-w-3xl mx-auto">
-              <Card
-                className="shadow-xl rounded-3xl border-0 bg-white/80 backdrop-blur-sm overflow-hidden"
-                title={
-                  <div className="flex items-center gap-3">
-                    <Lightbulb
-                      size={20}
-                      className="text-sky-600"
-                    />
-                    <Title
-                      level={3}
-                      className="!mb-0 text-gray-800">
-                      Edit New Lesson
-                    </Title>
-                  </div>
-                }>
-                <Form
-                  form={form}
-                  layout="vertical"
-                  onFinish={handleSave}
-                  className="space-y-6 pt-4">
-                  {/* Basic Info Section */}
-                  <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <BookOpen
-                        size={20}
-                        className="text-sky-600"
-                      />
-                      <Text
-                        strong
-                        className="text-sky-800">
-                        Lesson Basics
-                      </Text>
-                    </div>
-                    <Row gutter={16}>
-                      <Col span={24}>
-                        <Form.Item
-                          label={
-                            <span className="flex items-center gap-2">
-                              <BookOpen
-                                size={16}
-                                className="text-gray-600"
-                              />
-                              Title
-                            </span>
-                          }
-                          name="title"
-                          rules={[{ required: true, message: 'Lesson title is required' }]}>
-                          <Input
-                            placeholder="e.g., Basic Greetings in Spanish"
-                            prefix={
-                              <BookOpen
-                                size={16}
-                                className="text-gray-400"
-                              />
-                            }
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col span={24}>
-                        <Form.Item
-                          label={
-                            <span className="flex items-center gap-2">
-                              <FileText
-                                size={16}
-                                className="text-gray-600"
-                              />
-                              Short Description
-                            </span>
-                          }
-                          name="description">
-                          <Input.TextArea
-                            rows={6}
-                            placeholder="A quick overview of what this lesson covers..."
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Sparkles
-                        size={20}
-                        className="text-indigo-600"
-                      />
-                      <Text
-                        strong
-                        className="text-indigo-800">
-                        Lesson Content
-                      </Text>
-                    </div>
-                    <Form.Item
-                      label={
-                        <span className="flex items-center gap-2">
-                          <FileText
-                            size={16}
-                            className="text-gray-600"
-                          />
-                          Rich Content
-                        </span>
-                      }
-                      name="content"
-                      rules={[{ required: true, message: 'Lesson content is required' }]}>
-                      <div className="bg-white rounded-xl border border-gray-200 overflow-auto">
-                        <ReactQuill
-                          theme="snow"
-                          value={form.getFieldValue('content')}
-                          placeholder="Dive in! Add text, images, lists, or embeds to engage your learners..."
-                          className="!h-64"
-                          onChange={(e) => {
-                            form.setFieldValue('content', e);
-                          }}
-                        />
-                      </div>
-                    </Form.Item>
-                  </div>
-
-                  {/* Media Uploads */}
-                  <div className="p-4 bg-sky-50 rounded-2xl border border-sky-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Video
-                        size={20}
-                        className="text-sky-600"
-                      />
-                      <Text
-                        strong
-                        className="text-sky-800">
-                        Media Resources
-                      </Text>
-                    </div>
-                    <Row gutter={16}>
-                      <Col span={12}>
-                        <Form.Item
-                          label={
-                            <span className="flex items-center gap-2">
-                              <Video
-                                size={16}
-                                className="text-gray-600"
-                              />
-                              Video (Optional)
-                            </span>
-                          }
-                          name="video"
-                          valuePropName="file">
-                          <Upload
-                            beforeUpload={() => false}
-                            maxCount={1}
-                            accept="video/*"
-                            className="hover:border-sky-400 transition-colors">
-                            <Button
-                              block
-                              className="rounded-xl flex items-center gap-2 justify-center">
-                              Upload Video
-                            </Button>
-                          </Upload>
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                          label={
-                            <span className="flex items-center gap-2">Document (Optional)</span>
-                          }
-                          name="document"
-                          valuePropName="file">
-                          <Upload
-                            beforeUpload={() => false}
-                            maxCount={1}
-                            accept=".pdf,.doc,.docx"
-                            className="hover:border-sky-400 transition-colors">
-                            <Button
-                              block
-                              className="rounded-xl flex items-center gap-2 justify-center">
-                              Upload Document
-                            </Button>
-                          </Upload>
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                  </div>
-                </Form>
-              </Card>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 m-0">
+                {lesson.title}
+              </h2>
+              <p className="text-gray-500 m-0 text-sm">{lesson.description}</p>
             </div>
           </div>
-        </Drawer>
 
-        {/* Create Exercise Drawer */}
-        <Drawer
-          title={
-            <div className="flex items-center gap-3">
-              <Sparkles
-                size={20}
-                className="text-sky-600"
-              />
-              <Text
-                strong
-                className="text-sky-800">
-                Create New Exercise
-              </Text>
+          <div className="space-y-6">
+            {/* Video in Preview */}
+            {lesson.videoUrl && (
+              <div className="bg-black rounded-xl overflow-hidden shadow-lg">
+                {renderVideo(lesson.videoUrl)}
+              </div>
+            )}
+
+            {/* Content in Preview */}
+            <div className="prose prose-slate max-w-none bg-gray-50/50 p-6 rounded-xl border border-gray-100">
+              <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
             </div>
-          }
-          width={700}
-          open={exerciseDrawerVisible}
-          onClose={handleCloseExerciseDrawer}
-          footer={
-            <div className="flex justify-end gap-3">
-              <Button
-                onClick={handleCloseExerciseDrawer}
-                className="rounded-xl">
-                Cancel
-              </Button>
-            </div>
-          }
-          className="rounded-2xl"
-          placement="right">
-          <ExerciseForm
-            lessonId={lesson.lessonID}
-            onCreated={() => {
-              message.success('Exercise created successfully');
-              onUpdated();
-              handleCloseExerciseDrawer();
-            }}
-          />
-        </Drawer>
-      </div>
+
+            {/* Document in Preview (NEW ADDITION) */}
+            {lesson.documentUrl && renderDocument(lesson.documentUrl)}
+
+            {!lesson.documentUrl && !lesson.videoUrl && !lesson.content && (
+              <div className="text-center py-10 text-gray-400">
+                <AlertCircle className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                <p>This lesson is currently empty.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* --- 3. EXERCISE DRAWER --- */}
+      <Drawer
+        title="Create Exercise"
+        width={800}
+        open={exerciseDrawerVisible}
+        onClose={() => setExerciseDrawerVisible(false)}
+      >
+        <ExerciseForm
+          lessonId={lesson.lessonID}
+          onCreated={() => {
+            message.success("Exercise added");
+            onUpdated();
+            setExerciseDrawerVisible(false);
+          }}
+        />
+      </Drawer>
+
+      {/* --- 4. DELETE MODAL --- */}
+      <Modal
+        title={
+          <span className="flex items-center gap-2 text-red-600">
+            <AlertCircle size={20} /> Confirm Delete
+          </span>
+        }
+        open={confirmDeleteVisible}
+        onOk={() => {
+          onDeleted(lesson.lessonID);
+          setConfirmDeleteVisible(false);
+        }}
+        onCancel={() => setConfirmDeleteVisible(false)}
+        okButtonProps={{ danger: true, className: "bg-red-600" }}
+        okText="Delete Lesson"
+      >
+        <p className="text-gray-600 mt-2">
+          Are you sure you want to delete <strong>{lesson.title}</strong>?
+          <br />
+          This action cannot be undone and will remove all associated exercises.
+        </p>
+      </Modal>
     </div>
   );
 };

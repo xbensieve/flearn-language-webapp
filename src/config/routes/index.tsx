@@ -19,10 +19,7 @@ import BrowseCourses from "../../pages/Learner";
 import TeacherApplicationPage from "../../pages/Teacher";
 import Profile from "../../pages/Profile";
 import ApplicationStatus from "../../pages/Teacher/ApplicationStatus";
-import CreateSurvey from "../../pages/Teacher/CreateSurvey";
-import MySurvey from "../../pages/Teacher/MySurvey";
 import MyCourses from "../../pages/Teacher/MyCourse";
-import CreateCourse from "../../pages/Teacher/CreateCourse";
 
 // Import Pages (System - Admin/Manager/Teacher)
 import LoginDashboard from "../../pages/Login/LoginSystem";
@@ -60,6 +57,7 @@ import ClassDetail from "../../pages/Teacher/ClassDetail";
 import PayoutPage from "../../pages/Teacher/PayoutPage";
 import TeacherPayoutPage from "../../pages/Teacher/TeacherPayoutPage";
 import WalletHistoryPage from "@/pages/Wallet/WalletHistory";
+import CreateCoursePage from "@/pages/Teacher/Course/CreateCoursePage";
 
 // Lấy biến môi trường (Mặc định là learner nếu không set)
 const APP_MODE = import.meta.env.VITE_APP_MODE || "learner";
@@ -94,13 +92,8 @@ const learnerRoutes: RouteObject[] = [
     ),
     children: [
       { index: true, path: "/learner", element: <ApplicationStatus /> },
-      { path: "survey", element: <MySurvey /> },
       { path: "application", element: <TeacherApplicationPage /> },
-      { path: "profile", element: <Profile /> },
       { path: "status", element: <ApplicationStatus /> },
-      { path: "survey/create", element: <CreateSurvey /> },
-      { path: "course", element: <MyCourses /> },
-      { path: "course/create", element: <CreateCourse /> },
     ],
   },
 ];
@@ -179,7 +172,7 @@ const systemRoutes: RouteObject[] = [
         path: "assignments",
         element: <TeacherExerciseGradingPage />,
       },
-      { path: "course/create", element: <CreateCourse /> },
+      { path: "course/create", element: <CreateCoursePage /> },
       { path: "course/:id", element: <CourseDetailView /> },
       { path: "course/:id/edit", element: <CourseDetail /> },
       { path: "course/:id/edit-course", element: <EditCoursePage /> },
