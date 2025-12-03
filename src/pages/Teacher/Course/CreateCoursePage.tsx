@@ -19,7 +19,15 @@ import type {
   ProgramAssignment,
   CourseTemplate,
 } from "@/types/createCourse";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const STORAGE_KEY = "flearn_course_draft_v1";
 
@@ -107,28 +115,33 @@ const CreateCoursePage: React.FC = () => {
     select: (res: any) => (res.data as Topic[]) || [],
   });
 
-const { mutate: createCourse, isPending } = useMutation({
-  mutationFn: courseService.createCourse,
-  onSuccess: () => {
-    isClearingRef.current = true;
-    localStorage.removeItem(STORAGE_KEY);
-    reset(defaultValues);
-    isClearingRef.current = false;
+  const { mutate: createCourse, isPending } = useMutation({
+    mutationFn: courseService.createCourse,
+    onSuccess: () => {
+      isClearingRef.current = true;
+      localStorage.removeItem(STORAGE_KEY);
+      reset(defaultValues);
 
-    toast.success("Course Created Successfully!", {
-      description: "Your course is created.",
-      duration: 4000,
-    });
-    navigate("/teacher/course");
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onError: (err: any) => {
-    const msg = err.response?.data?.message || "Failed to create course";
-    toast.error("Submission Failed", {
-      description: msg,
-    });
-  },
-});
+      setTimeout(() => {
+        isClearingRef.current = false;
+      }, 100);
+
+      isClearingRef.current = false;
+
+      toast.success("Course Created Successfully!", {
+        description: "Your course is created.",
+        duration: 4000,
+      });
+      navigate("/teacher/course");
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || "Failed to create course";
+      toast.error("Submission Failed", {
+        description: msg,
+      });
+    },
+  });
   // 4. Submit Handler
   const onSubmit = (data: CourseFormValues) => {
     if (!data.image) {
@@ -239,13 +252,15 @@ const { mutate: createCourse, isPending } = useMutation({
 
                   <div className="flex justify-end gap-2 mt-4">
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button className="cursor-pointer" variant="outline">
+                        Cancel
+                      </Button>
                     </DialogClose>
 
                     <DialogClose asChild>
                       <Button
                         onClick={handleClearForm}
-                        className="bg-red-600 hover:bg-red-700 text-white"
+                        className="bg-red-600 hover:bg-red-700 !text-white cursor-pointer"
                       >
                         Yes, Discard
                       </Button>

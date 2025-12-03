@@ -10,6 +10,7 @@ import {
   getLessonsByUnits,
   submitCourseService,
   updateCourseVisibilityService,
+  createCourseUnitsService,
 } from "../../services/course";
 import type { Unit } from "../../services/course/type";
 import { notifyError, notifySuccess } from "../../utils/toastConfig";
@@ -17,7 +18,7 @@ import { formatStatusLabel } from "../../utils/mapping";
 import type { AxiosError } from "axios";
 import ExercisesList from "./components/ExercisesList";
 
-// Icons (Lucide React - Standard for Shadcn)
+// Icons
 import {
   ArrowLeft,
   Check,
@@ -38,12 +39,14 @@ import {
   Save,
   X,
   Loader2,
-  Video,
   ChevronDown,
   AlertTriangle,
+  AlertCircle,
+  XCircle,
+  Tags,
+  Hash,
 } from "lucide-react";
 
-// UI Components (Shadcn/Tailwind wrapper)
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -68,8 +71,36 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-// --- Subcomponent: Lesson Item ---
+// --- Types for Validation Error Response ---
+interface ValidationSummary {
+  canBeSubmitted: boolean;
+  totalErrors: number;
+  totalWarnings: number;
+}
+
+interface ValidationData {
+  templateName: string;
+  templateVersion: string;
+  requiredUnits: number;
+  currentCourse: {
+    actualUnits: number;
+    actualLessons: number;
+    actualExercises: number;
+  };
+  summary: ValidationSummary;
+  validationErrors: string[];
+  validationWarnings: string[];
+}
+
 const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
   lesson,
   isEditMode,
@@ -119,23 +150,17 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
         </div>
       </div>
 
-      {/* Expanded Content */}
       {isOpen && (
         <div className="p-4 border-t bg-white dark:bg-slate-950 animate-in slide-in-from-top-2 duration-200">
-          {/* Description */}
           <p className="text-sm text-muted-foreground mb-4">
             {lesson.description ?? "No description provided."}
           </p>
-
-          {/* HTML Content */}
           {lesson.content && (
             <div
               className="prose prose-sm prose-slate max-w-none p-4 rounded-md bg-slate-50 border mb-4 dark:bg-slate-900"
               dangerouslySetInnerHTML={{ __html: lesson.content }}
             />
           )}
-
-          {/* Video Player */}
           {lesson.videoUrl && (
             <div className="relative aspect-video rounded-lg overflow-hidden border bg-black mb-4">
               <video
@@ -143,13 +168,8 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
                 src={lesson.videoUrl}
                 className="w-full h-full object-contain"
               />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Video className="w-12 h-12 text-white/20" />
-              </div>
             </div>
           )}
-
-          {/* Resources */}
           <div className="flex flex-wrap gap-2 mb-4">
             {lesson.documentUrl && (
               <Button
@@ -169,10 +189,7 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
               </Button>
             )}
           </div>
-
           <Separator className="my-4" />
-
-          {/* Exercises */}
           <div>
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" />
@@ -246,15 +263,66 @@ const CourseDetailView: React.FC = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const navigate = useNavigate();
 
+  // --- State for Validation Modal ---
+  const [isValidationOpen, setIsValidationOpen] = useState(false);
+  const [validationData, setValidationData] = useState<ValidationData | null>(
+    null
+  );
+  const [isCreateUnitOpen, setIsCreateUnitOpen] = useState(false);
+  const [newUnitTitle, setNewUnitTitle] = useState("");
+  const [newUnitDesc, setNewUnitDesc] = useState("");
   const {
     data: course,
     isLoading: courseLoading,
-    refetch,
+    refetch: refetchCourse,
   } = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
   });
+
+  const {
+    data: unitsData,
+    isLoading: unitsLoading,
+    refetch: refetchUnits,
+  } = useQuery({
+    queryKey: ["units", courseId],
+    queryFn: async () => {
+      const res = await getCourseUnitsService({ id: courseId! });
+      return Array.isArray(res) ? res : res?.data ?? [];
+    },
+    enabled: !!courseId,
+  });
+
+  const { mutate: createUnit, isPending: isCreatingUnit } = useMutation({
+    mutationFn: () =>
+      createCourseUnitsService({
+        courseId: courseId!,
+        title: newUnitTitle,
+        description: newUnitDesc,
+        isPreview: false,
+      }),
+    onSuccess: () => {
+      notifySuccess("Unit created successfully!");
+      setIsCreateUnitOpen(false);
+      setNewUnitTitle("");
+      setNewUnitDesc("");
+      refetchUnits();
+      refetchCourse();
+    },
+    onError: (error: AxiosError<any>) => {
+      notifyError(error.response?.data?.message || "Failed to create unit");
+    },
+  });
+
+  const handleCreateUnitSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUnitTitle.trim()) {
+      notifyError("Unit title is required");
+      return;
+    }
+    createUnit();
+  };
 
   const { mutate: updateVisibility } = useMutation({
     mutationFn: (isHidden: boolean) =>
@@ -268,7 +336,7 @@ const CourseDetailView: React.FC = () => {
           ? "Course archived successfully"
           : "Course restored successfully"
       );
-      refetch();
+      refetchCourse();
     },
     onError: (error: AxiosError<any>) => {
       notifyError(
@@ -277,23 +345,24 @@ const CourseDetailView: React.FC = () => {
     },
   });
 
-  const { data: unitsData, isLoading: unitsLoading } = useQuery({
-    queryKey: ["units", courseId],
-    queryFn: async () => {
-      const res = await getCourseUnitsService({ id: courseId! });
-      return Array.isArray(res) ? res : res?.data ?? [];
-    },
-    enabled: !!courseId,
-  });
-
-  const { mutate: submitCourse } = useMutation({
+  const { mutate: submitCourse, isPending: isSubmitting } = useMutation({
     mutationFn: (cId: string) => submitCourseService(cId),
     onSuccess: () => {
-      notifySuccess("Course submitted successfully");
-      refetch(); // Refresh status
+      notifySuccess("Course submitted successfully for review!");
+      refetchCourse();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Error submitting course");
+      const errorResponse = error.response?.data;
+      if (
+        error.response?.status === 400 &&
+        errorResponse?.errors &&
+        errorResponse?.errors?.templateName
+      ) {
+        setValidationData(errorResponse.errors);
+        setIsValidationOpen(true);
+      } else {
+        notifyError(errorResponse?.message || "Error submitting course");
+      }
     },
   });
 
@@ -341,7 +410,7 @@ const CourseDetailView: React.FC = () => {
                     variant="outline"
                     size="icon"
                     onClick={() => navigate(-1)}
-                    className="rounded-full h-8 w-8"
+                    className="rounded-full h-8 w-8 cursor-pointer"
                   >
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
@@ -411,17 +480,23 @@ const CourseDetailView: React.FC = () => {
                   <Button
                     variant="default"
                     size="sm"
+                    disabled={isSubmitting}
                     onClick={() => courseId && submitCourse(courseId)}
-                    className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                    className="gap-2 bg-emerald-600 hover:bg-emerald-700 !text-white cursor-pointer"
                   >
-                    <Check className="h-4 w-4" /> Submit
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                    Submit
                   </Button>
                 )}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
-                  className="gap-2"
+                  className="gap-2 cursor-pointer"
                 >
                   <Pencil className="h-4 w-4" /> Edit Details
                 </Button>
@@ -586,9 +661,36 @@ const CourseDetailView: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Tags className="w-5 h-5 text-primary" /> Topics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {course?.topics && course.topics.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {course.topics.map((topic: any) => (
+                      <Badge
+                        key={topic.topicId}
+                        variant="secondary"
+                        className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 px-3 py-1 text-xs font-medium"
+                      >
+                        <Hash className="w-3 h-3 mr-1 text-slate-400" />
+                        {topic.topicName}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground italic">
+                    No topics assigned to this course.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Right Column: Curriculum (Takes up 2/3 width on large screens) */}
+          {/* Right Column: Curriculum */}
           <div className="lg:col-span-2">
             <Card className="h-full border-t-4 border-t-primary shadow-md">
               <CardHeader>
@@ -606,7 +708,11 @@ const CourseDetailView: React.FC = () => {
                   <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-xl border border-dashed">
                     <Box className="w-10 h-10 mx-auto mb-3 opacity-20" />
                     <p>No curriculum content available yet.</p>
-                    <Button variant="link" className="mt-2 text-primary">
+                    <Button
+                      variant="link"
+                      className="mt-2 text-primary cursor-pointer"
+                      onClick={() => setIsCreateUnitOpen(true)}
+                    >
                       Create First Unit
                     </Button>
                   </div>
@@ -649,6 +755,182 @@ const CourseDetailView: React.FC = () => {
           </div>
         </div>
       </div>
+      <Dialog open={isCreateUnitOpen} onOpenChange={setIsCreateUnitOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create New Unit</DialogTitle>
+            <DialogDescription>
+              Add a new unit to organize your course lessons.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateUnitSubmit} className="space-y-4 mt-2">
+            <div className="space-y-2">
+              <label
+                htmlFor="title"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Unit Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="title"
+                className="flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="e.g. Unit 1"
+                value={newUnitTitle}
+                onChange={(e) => setNewUnitTitle(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <label
+                htmlFor="desc"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Description
+              </label>
+              <textarea
+                id="desc"
+                rows={3}
+                className="flex w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="What will students learn in this unit?"
+                value={newUnitDesc}
+                onChange={(e) => setNewUnitDesc(e.target.value)}
+              />
+            </div>
+
+            <DialogFooter className="pt-2">
+              <Button
+                className=" cursor-pointer"
+                type="button"
+                variant="outline"
+                onClick={() => setIsCreateUnitOpen(false)}
+              >
+                Cancel
+              </Button>
+              <div></div>
+              <Button
+                className="!text-white cursor-pointer"
+                type="submit"
+                disabled={isCreatingUnit || !newUnitTitle.trim()}
+              >
+                {isCreatingUnit && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin " />
+                )}
+                Create Unit
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      {/* --- Template Validation Error Modal --- */}
+      <Dialog open={isValidationOpen} onOpenChange={setIsValidationOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-2 text-red-600 mb-2">
+              <AlertCircle className="w-6 h-6" />
+              <DialogTitle className="text-xl">Submission Failed</DialogTitle>
+            </div>
+            <DialogDescription>
+              This course does not meet the requirements for the template:
+              <span className="block font-semibold text-gray-900 mt-1">
+                {validationData?.templateName} (v
+                {validationData?.templateVersion})
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Stats Check */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-slate-50 p-3 rounded-lg border text-center">
+                <span className="text-xs text-muted-foreground uppercase font-bold">
+                  Units
+                </span>
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <span
+                    className={`text-lg font-bold ${
+                      (validationData?.currentCourse?.actualUnits || 0) >=
+                      (validationData?.requiredUnits || 0)
+                        ? "text-emerald-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {validationData?.currentCourse?.actualUnits}
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    / {validationData?.requiredUnits} units
+                  </span>
+                </div>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-lg border text-center">
+                <span className="text-xs text-muted-foreground uppercase font-bold">
+                  Lessons
+                </span>
+                <div className="text-lg font-bold text-gray-800 mt-1">
+                  {validationData?.currentCourse?.actualLessons}
+                </div>
+              </div>
+              <div className="bg-slate-50 p-3 rounded-lg border text-center">
+                <span className="text-xs text-muted-foreground uppercase font-bold">
+                  Exercises
+                </span>
+                <div className="text-lg font-bold text-gray-800 mt-1">
+                  {validationData?.currentCourse?.actualExercises}
+                </div>
+              </div>
+            </div>
+
+            {/* Errors List */}
+            {validationData?.validationErrors &&
+              validationData.validationErrors.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-semibold flex items-center gap-2 text-red-600">
+                    <XCircle className="w-4 h-4" /> Errors (
+                    {validationData.validationErrors.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {validationData.validationErrors.map((err, idx) => (
+                      <Alert key={idx} variant="destructive" className="py-2">
+                        <AlertDescription>{err}</AlertDescription>
+                      </Alert>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {/* Warnings List */}
+            {validationData?.validationWarnings &&
+              validationData.validationWarnings.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="font-semibold flex items-center gap-2 text-amber-600">
+                    <AlertTriangle className="w-4 h-4" /> Warnings (
+                    {validationData.validationWarnings.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {validationData.validationWarnings.map((warn, idx) => (
+                      <div
+                        key={idx}
+                        className="flex gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-sm"
+                      >
+                        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                        <span>{warn}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              className="!text-white cursor-pointer"
+              onClick={() => setIsValidationOpen(false)}
+            >
+              Close and Fix
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -65,21 +65,13 @@ interface CourseFormProps {
 }
 
 const convertCourseTypeToNumber = (type: string | undefined): number => {
-  if (!type) return 1; // Mặc định là Free
+  if (!type) return 1;
   return type.toLowerCase() === "paid" ? 2 : 1;
 };
 
-const convertCourseTypeToString = (type: number): string => {
-  return type === 2 ? "Paid" : "Free";
-};
-
 const convertGradingTypeToNumber = (type: string | undefined): string => {
-  if (!type) return "1"; // Mặc định là AI Only
+  if (!type) return "1";
   return type.toLowerCase() === "aiandteacher" ? "2" : "1";
-};
-
-const convertGradingTypeToString = (type: string): string => {
-  return type === "2" ? "AIAndTeacher" : "AIOnly";
 };
 
 const RequiredMark = () => <span className="text-destructive ml-1">*</span>;
@@ -144,7 +136,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
         updates.push("gradingType");
       }
 
-      // Trigger validation sau khi set tất cả giá trị
       if (updates.length > 0) {
         trigger(updates as any);
       }
@@ -729,27 +720,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                         )}
                       </div>
                     </div>
-                    {isEditMode && initialCourseType && (
-                      <FormDescription className="text-blue-600">
-                        {convertCourseTypeToNumber(initialCourseType) !==
-                        field.value ? (
-                          <span>
-                            Course type changed from
-                            <span className="font-bold mx-1">
-                              {initialCourseType}
-                            </span>
-                            to
-                            <span className="font-bold mx-1">
-                              {convertCourseTypeToString(field.value ?? 0)}
-                            </span>
-                            . Grading method and price will be updated
-                            accordingly.
-                          </span>
-                        ) : (
-                          `Current course type: ${initialCourseType}`
-                        )}
-                      </FormDescription>
-                    )}
                     <FormMessage />
                   </FormItem>
                 );
@@ -848,27 +818,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                     </div>
                   </div>
 
-                  {/* Hiển thị thông báo nếu đang edit và giá trị thay đổi */}
-                  {isEditMode &&
-                    initialGradingType &&
-                    initialGrading !== gradingTypeValue && (
-                      <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                        <span className="font-medium">Note:</span> Grading
-                        method was updated from
-                        <Badge variant="outline" className="mx-1">
-                          {initialGradingType}
-                        </Badge>
-                        to
-                        <Badge variant="outline" className="mx-1">
-                          {convertGradingTypeToString(gradingTypeValue)}
-                        </Badge>
-                        {currentCourseType === 1
-                          ? " because course is Free."
-                          : " because course is Paid."}
-                      </div>
-                    )}
-
-                  {/* Thông báo đặc biệt cho Free course */}
                   {currentCourseType === 1 && gradingTypeValue !== "1" && (
                     <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
                       <span className="font-medium">Warning:</span> Free courses
@@ -876,22 +825,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       automatically set to "Auto (AI)".
                     </div>
                   )}
-
-                  {/* Hidden Select */}
-                  <div className="hidden">
-                    <Select
-                      value={gradingTypeValue}
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">AI Only</SelectItem>
-                        <SelectItem value="2">AI + Teacher Review</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </FormItem>
               );
             }}
@@ -899,7 +832,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
         </CardContent>
       </Card>
 
-      {/* FINAL ACTION BAR */}
       <div className="flex items-center justify-end gap-4 py-4 sticky bottom-0 bg-white/80 backdrop-blur-md border-t p-4 z-20 rounded-xl shadow-lg mt-8">
         <span className="text-sm text-muted-foreground mr-auto hidden md:inline-block">
           {isLoading

@@ -19,10 +19,7 @@ import BrowseCourses from "../../pages/Learner";
 import TeacherApplicationPage from "../../pages/Teacher";
 import Profile from "../../pages/Profile";
 import ApplicationStatus from "../../pages/Teacher/ApplicationStatus";
-import CreateSurvey from "../../pages/Teacher/CreateSurvey";
-import MySurvey from "../../pages/Teacher/MySurvey";
 import MyCourses from "../../pages/Teacher/MyCourse";
-import CreateCourse from "../../pages/Teacher/CreateCourse";
 
 // Import Pages (System - Admin/Manager/Teacher)
 import LoginDashboard from "../../pages/Login/LoginSystem";
@@ -95,13 +92,8 @@ const learnerRoutes: RouteObject[] = [
     ),
     children: [
       { index: true, path: "/learner", element: <ApplicationStatus /> },
-      { path: "survey", element: <MySurvey /> },
       { path: "application", element: <TeacherApplicationPage /> },
-      { path: "profile", element: <Profile /> },
       { path: "status", element: <ApplicationStatus /> },
-      { path: "survey/create", element: <CreateSurvey /> },
-      { path: "course", element: <MyCourses /> },
-      { path: "course/create", element: <CreateCourse /> },
     ],
   },
 ];

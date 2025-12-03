@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Form,
   Input,
@@ -18,7 +18,8 @@ import {
   updateExerciseService,
 } from "../../services/course";
 import { Type, HelpCircle, Save, Plus } from "lucide-react";
-import { notifySuccess } from "@/utils/toastConfig";
+import { notifySuccess } from "../../utils/toastConfig";
+import type { UploadFile } from "antd/es/upload/interface";
 
 interface Props {
   lessonId: string;
@@ -29,8 +30,62 @@ interface Props {
 const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+  const exerciseType = Form.useWatch("type", form);
 
-  // --- 1. Mutation Create ---
+  const isAudioFile = (file: UploadFile) => {
+    const type = file.type || "";
+    const name = file.name || "";
+    return type.startsWith("audio/") || /\.(mp3|wav|ogg)$/i.test(name);
+  };
+
+  const isImageFile = (file: UploadFile) => {
+    const type = file.type || "";
+    const name = file.name || "";
+    return (
+      type.startsWith("image/") || /\.(jpg|jpeg|png|gif|webp)$/i.test(name)
+    );
+  };
+
+
+  const config = useMemo(() => {
+    switch (exerciseType) {
+      case 1: // Repeat After Me
+        return {
+          accept: "audio/*",
+          label: "Attached Audio",
+          isRequired: false,
+          typeError: "Only audio files (MP3, WAV) are allowed!",
+          requiredError: "",
+        };
+      case 2: // Picture Description
+      case 3: // Story Telling
+        return {
+          accept: "image/*",
+          label: "Attached Images",
+          isRequired: true,
+          typeError: "Only image files (JPG, PNG) are allowed!",
+          requiredError: "You must upload at least one image!",
+        };
+      case 4: // Debate
+        return {
+          accept: "image/*",
+          label: "Attached Images",
+          isRequired: false,
+          typeError: "Only image files are allowed for Debate!",
+          requiredError: "",
+        };
+      default:
+        return {
+          accept: "image/*,audio/*",
+          label: "Attached Media",
+          isRequired: false,
+          typeError: "Invalid file type",
+          requiredError: "",
+        };
+    }
+  }, [exerciseType]);
+
+  // --- 2. Mutations ---
   const createMutation = useMutation({
     mutationFn: (payload: ExercisePayload) =>
       createExerciseService(lessonId, payload),
@@ -38,7 +93,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       notifySuccess("Created exercise successfully!");
       queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
       form.resetFields();
-      form.setFieldsValue({ maxScore: 100, passScore: 40 });
+      form.setFieldsValue({ maxScore: 100, passScore: 40, type: 1 });
       onCreated?.();
     },
     onError: () => message.error("Failed to create exercise"),
@@ -59,9 +114,24 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     onError: () => message.error("Failed to update exercise"),
   });
 
-  // --- 3. Set Default / Load Data ---
+  // --- 3. Initial Data Loading ---
   useEffect(() => {
     if (exercise) {
+      const existingMedia = exercise.mediaUrls
+        ? exercise.mediaUrls.map((url: string, index: number) => {
+            const fileName = url.split("/").pop() || `File-${index}`;
+            return {
+              uid: `existing-${index}`,
+              name: fileName,
+              status: "done",
+              url: url,
+              type: /\.(mp3|wav|ogg)$/i.test(fileName)
+                ? "audio/mpeg"
+                : "image/jpeg",
+            } as UploadFile;
+          })
+        : [];
+
       form.setFieldsValue({
         title: exercise.title,
         prompt: exercise.prompt,
@@ -74,14 +144,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         passScore: exercise.passScore ?? 40,
         feedbackCorrect: exercise.feedbackCorrect,
         feedbackIncorrect: exercise.feedbackIncorrect,
-        media: exercise.mediaUrls
-          ? exercise.mediaUrls.map((url: string) => ({
-              url,
-              name: url.split("/").pop() || "media",
-              status: "done",
-              uid: url,
-            }))
-          : undefined,
+        media: existingMedia,
       });
     } else {
       form.setFieldsValue({
@@ -89,11 +152,48 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         passScore: 40,
         type: 1,
         difficulty: 1,
+        media: [],
       });
     }
   }, [exercise, form]);
 
+  const handleTypeChange = (newType: number) => {
+    const currentFiles: UploadFile[] = form.getFieldValue("media") || [];
+
+    if (currentFiles.length === 0) return;
+
+    let shouldClear = false;
+    let reason = "";
+
+    if (newType === 1) {
+      const hasImage = currentFiles.some((f) => isImageFile(f));
+      if (hasImage) {
+        shouldClear = true;
+        reason = "Switched to Audio mode. Images were removed.";
+      }
+    } else {
+      const hasAudio = currentFiles.some((f) => isAudioFile(f));
+      if (hasAudio) {
+        shouldClear = true;
+        reason = "Switched to Image mode. Audio files were removed.";
+      }
+    }
+
+    if (shouldClear) {
+      form.setFieldsValue({ media: [] });
+      message.warning(reason); 
+    } else {
+      form.validateFields(["media"]);
+    }
+  };
+
+  // --- 5. Submit Handler ---
   const handleSubmit = (values: any) => {
+    const currentFileList = values.media || [];
+    const newFiles = currentFileList
+      .filter((f: UploadFile) => f.originFileObj)
+      .map((f: UploadFile) => f.originFileObj);
+
     const payload: ExercisePayload = {
       FeedbackIncorrect: values.feedbackIncorrect,
       PassScore: Number(values.passScore) || 40,
@@ -101,15 +201,11 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       FeedbackCorrect: values.feedbackCorrect,
       Hints: values.hints,
       MaxScore: 100,
-      MediaFiles: values.media
-        ? values.media
-            .filter((f: any) => f.originFileObj)
-            .map((f: any) => f.originFileObj)
-        : undefined,
+      MediaFiles: newFiles.length > 0 ? newFiles : undefined,
       ExpectedAnswer: values.expectedAnswer,
       Title: values.title,
       Content: values.content,
-      Type: values.type || 1,
+      Type: values.type,
       Difficulty: values.difficulty,
     };
 
@@ -120,7 +216,33 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const normFile = (e: any) => {
+    if (Array.isArray(e)) return e;
+    return e?.fileList;
+  };
+
+  const validateFileList = async (_: any, fileList: UploadFile[]) => {
+    // 1. Check Required
+    if (config.isRequired) {
+      if (!fileList || fileList.length === 0) {
+        return Promise.reject(new Error(config.requiredError));
+      }
+    }
+
+    // 2. Check Valid Type (Phòng trường hợp user cố tình upload sai lúc chưa chuyển tab)
+    if (fileList && fileList.length > 0) {
+      const isInvalid = fileList.some((file) => {
+        if (config.accept === "audio/*") return !isAudioFile(file);
+        if (config.accept === "image/*") return !isImageFile(file);
+        return false;
+      });
+
+      if (isInvalid) {
+        return Promise.reject(new Error(config.typeError));
+      }
+    }
+    return Promise.resolve();
+  };
 
   return (
     <div className="py-2">
@@ -132,7 +254,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         className="space-y-6"
         initialValues={{ maxScore: 100, passScore: 40 }}
       >
-        {/* Core Info */}
         <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Type size={18} className="text-blue-600" /> Question Setup
@@ -151,12 +272,14 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
               label="Interaction Type"
               rules={[{ required: true }]}
             >
+              {/* Thêm onChange vào đây để xử lý logic xóa file */}
               <Select
+                onChange={handleTypeChange}
                 options={[
-                  { label: "Repeat After Me", value: 1 },
-                  { label: "Picture Description", value: 2 },
-                  { label: "Story Telling", value: 3 },
-                  { label: "Debate", value: 4 },
+                  { label: "Repeat After Me (Audio Only)", value: 1 },
+                  { label: "Picture Description (Image Required)", value: 2 },
+                  { label: "Story Telling (Image Required)", value: 3 },
+                  { label: "Debate (Image Only)", value: 4 },
                 ]}
               />
             </Form.Item>
@@ -167,17 +290,16 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             >
               <Select
                 options={[
-                  { label: "Beginner", value: 1 },
-                  { label: "Intermediate", value: 2 },
-                  { label: "Advanced", value: 3 },
-                  { label: "Expert", value: 4 },
+                  { label: "Easy", value: 1 },
+                  { label: "Medium", value: 2 },
+                  { label: "Hard", value: 3 },
+                  { label: "Advanced", value: 4 },
                 ]}
               />
             </Form.Item>
           </div>
         </div>
 
-        {/* Content */}
         <div className="space-y-4">
           <Form.Item
             name="prompt"
@@ -211,8 +333,47 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
         <Divider />
 
-        {/* Scoring */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50/30">
+          <Form.Item
+            name="media"
+            label={
+              <span>
+                {config.label}
+                {config.isRequired && (
+                  <span className="text-red-500 ml-1">*</span>
+                )}
+                <span className="text-gray-400 font-normal text-xs ml-2">
+                  ({config.accept === "image/*" ? "JPG, PNG" : "MP3, WAV"})
+                </span>
+              </span>
+            }
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[{ validator: validateFileList }]}
+          >
+            <Upload.Dragger
+              multiple
+              accept={config.accept}
+              beforeUpload={() => false}
+              listType={config.accept === "audio/*" ? "text" : "picture"}
+              className="bg-white"
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">
+                Click or drag files here to upload
+              </p>
+              <p className="ant-upload-hint">
+                {exerciseType === 1
+                  ? "Upload Audio Files"
+                  : "Upload Image Files"}
+              </p>
+            </Upload.Dragger>
+          </Form.Item>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
             <h4 className="font-medium text-gray-900 mb-3">Scoring</h4>
             <div className="flex gap-4">
@@ -251,7 +412,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
           </div>
         </div>
 
-        {/* Feedback */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item name="feedbackCorrect" label="Success Message">
             <Input.TextArea
@@ -269,35 +429,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
           </Form.Item>
         </div>
 
-        {/* Media */}
-        <div className="border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50/30">
-          <Form.Item
-            name="media"
-            label="Attached Media (Images or Audio)"
-            valuePropName="fileList"
-            getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-          >
-            <Upload.Dragger
-              multiple
-              accept="image/*,audio/*"
-              beforeUpload={() => false}
-              listType="picture"
-              className="bg-white"
-            >
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">
-                Click or drag files here to upload
-              </p>
-              <p className="ant-upload-hint">
-                Support for Images (PNG, JPG) and Audio (MP3)
-              </p>
-            </Upload.Dragger>
-          </Form.Item>
-        </div>
-
-        {/* Submit Button */}
         <div className="flex justify-end pt-4 gap-3">
           {onCreated && (
             <Button onClick={onCreated} className="h-10 px-6 rounded-lg">
@@ -307,7 +438,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
           <Button
             type="primary"
             htmlType="submit"
-            loading={isPending}
+            loading={createMutation.isPending || updateMutation.isPending}
             icon={exercise ? <Save size={16} /> : <Plus size={16} />}
             className="h-10 px-8 bg-gray-900 hover:bg-gray-800 rounded-lg flex items-center gap-2"
           >

@@ -14,6 +14,7 @@ import {
   message,
   Tooltip,
   Divider,
+  Modal,
 } from "antd";
 import {
   createCourseUnitsService,
@@ -21,6 +22,7 @@ import {
   getCourseDetailService,
   getCourseUnitsService,
   getLessonsByUnits,
+  updateCourseUnitsService,
 } from "../../services/course";
 import type { Unit, Lesson } from "../../services/course/type";
 import {
@@ -40,6 +42,8 @@ import {
   Users,
   LayoutDashboard,
   GraduationCap,
+  Pencil,
+  AlertTriangle,
 } from "lucide-react";
 
 const { Title, Paragraph, Text } = Typography;
@@ -49,24 +53,22 @@ const CourseDetail: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeKey, setActiveKey] = useState<string | string[]>("");
+  const [form] = Form.useForm();
+
+  // --- State for Edit & Delete ---
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
+
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    unitId: string | null;
+  }>({ isOpen: false, unitId: null });
 
   // --- Fetch Course Info ---
   const { data: course, isLoading: loadingCourse } = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
-  });
-
-  // --- Delete Unit Mutation ---
-  const deleteUnitMutation = useMutation({
-    mutationFn: (unitId: string) => deleteUnitsService({ id: unitId }),
-    onSuccess: () => {
-      notifySuccess("Unit deleted successfully");
-      refetchUnits();
-    },
-    onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to delete unit");
-    },
   });
 
   // --- Fetch Units ---
@@ -78,6 +80,19 @@ const CourseDetail: React.FC = () => {
     queryKey: ["units", courseId],
     queryFn: () => getCourseUnitsService({ id: courseId! }),
     enabled: !!courseId,
+  });
+
+  // --- Delete Unit Mutation ---
+  const deleteUnitMutation = useMutation({
+    mutationFn: (unitId: string) => deleteUnitsService({ id: unitId }),
+    onSuccess: () => {
+      notifySuccess("Unit deleted successfully");
+      setDeleteConfirmation({ isOpen: false, unitId: null });
+      refetchUnits();
+    },
+    onError: (error: AxiosError<any>) => {
+      notifyError(error.response?.data?.message || "Failed to delete unit");
+    },
   });
 
   // --- Create Unit Mutation ---
@@ -105,6 +120,28 @@ const CourseDetail: React.FC = () => {
     },
   });
 
+  // --- Update Unit Mutation ---
+  const updateUnitMutation = useMutation({
+    mutationFn: (values: {
+      courseId: string;
+      unitId: string;
+      title: string;
+      description: string;
+      isPreview: boolean;
+    }) => updateCourseUnitsService(values),
+    onSuccess: () => {
+      notifySuccess("Unit updated successfully");
+      setIsEditModalVisible(false);
+      setEditingUnit(null);
+      refetchUnits();
+    },
+    onError: (error: AxiosError<any>) => {
+      notifyError(error.response?.data?.message || "Failed to update unit");
+    },
+  });
+
+  // --- Handlers ---
+
   const handleAddUnit = (values: { title: string; description: string }) => {
     createUnitMutation.mutate({
       id: courseId!,
@@ -114,8 +151,36 @@ const CourseDetail: React.FC = () => {
     });
   };
 
-  const handleDeleteUnit = (unitId: string) => {
-    deleteUnitMutation.mutate(unitId);
+  const confirmDelete = () => {
+    if (deleteConfirmation.unitId) {
+      deleteUnitMutation.mutate(deleteConfirmation.unitId);
+    }
+  };
+
+  const openEditModal = (unit: Unit) => {
+    setEditingUnit(unit);
+    form.setFieldsValue({
+      title: unit.title,
+      description: unit.description,
+      isPreview: unit.isPreview || false,
+    });
+    setIsEditModalVisible(true);
+  };
+
+  const handleUpdateUnit = (values: {
+    title: string;
+    description: string;
+    isPreview: boolean;
+  }) => {
+    if (editingUnit && courseId) {
+      updateUnitMutation.mutate({
+        courseId: courseId,
+        unitId: editingUnit.courseUnitID,
+        title: values.title,
+        description: values.description,
+        isPreview: values.isPreview,
+      });
+    }
   };
 
   if (loadingCourse || loadingUnits)
@@ -130,8 +195,84 @@ const CourseDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50  animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-lg w-[95%] max-w-md p-6 animate-in zoom-in-95 duration-200 border border-gray-200">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <AlertTriangle className="text-red-600" size={20} />
+                  Are you absolutely sure?
+                </h3>
+                <p className="text-sm text-gray-500">
+                  This action cannot be undone. This will permanently delete the
+                  unit and remove it from our servers.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3 mt-2">
+                <button
+                  onClick={() =>
+                    setDeleteConfirmation({ isOpen: false, unitId: null })
+                  }
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <div></div>
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleteUnitMutation.isPending}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {deleteUnitMutation.isPending ? "Deleting..." : "Continue"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Modal
+        title="Edit Unit Details"
+        open={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdateUnit}
+          initialValues={{ isPreview: false }}
+        >
+          <Form.Item
+            name="title"
+            label="Unit Title"
+            rules={[{ required: true, message: "Please enter unit title" }]}
+          >
+            <Input placeholder="e.g. Introduction to React" />
+          </Form.Item>
+          <Form.Item name="description" label="Description">
+            <Input.TextArea
+              rows={4}
+              placeholder="What will students learn in this unit?"
+            />
+          </Form.Item>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button onClick={() => setIsEditModalVisible(false)}>Cancel</Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={updateUnitMutation.isPending}
+              className="bg-blue-600"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Top Navigation */}
         <div className="flex items-center justify-between">
           <Button
             type="text"
@@ -149,13 +290,12 @@ const CourseDetail: React.FC = () => {
               className="flex items-center gap-2 border-gray-300 shadow-sm"
             >
               <Edit size={16} />
-              Edit Details
+              Edit Course Info
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT COLUMN: Course Meta (4 cols) */}
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="aspect-video w-full bg-gray-100 relative">
@@ -166,7 +306,7 @@ const CourseDetail: React.FC = () => {
                 />
                 <div className="absolute top-3 right-3">
                   <Tag color="gold" className="m-0 shadow-sm font-medium">
-                    Draft
+                    {course?.courseStatus}
                   </Tag>
                 </div>
               </div>
@@ -226,12 +366,9 @@ const CourseDetail: React.FC = () => {
                     <span className="text-gray-500 flex items-center gap-2">
                       <GraduationCap size={14} /> Level
                     </span>
-                    <Tag
-                      bordered={false}
-                      className="m-0 bg-gray-100 text-gray-700 font-medium"
-                    >
+                    <span className="font-medium text-gray-900">
                       {course?.program.level.name || "N/A"}
-                    </Tag>
+                    </span>
                   </div>
                 </div>
 
@@ -252,7 +389,6 @@ const CourseDetail: React.FC = () => {
               </div>
             </div>
 
-            {/* Additional Meta Info */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
               <h4 className="font-semibold text-gray-900 flex items-center gap-2">
                 <LayoutDashboard size={16} /> Learning Outcomes
@@ -263,7 +399,7 @@ const CourseDetail: React.FC = () => {
               <Divider className="my-4" />
               <h4 className="font-semibold text-gray-900">Topics</h4>
               <div className="flex flex-wrap gap-2">
-                {course?.topics.map((topic: any) => (
+                {course?.topics?.map((topic: any) => (
                   <Tag
                     key={topic.topicId}
                     className="m-0 text-gray-600 bg-gray-50 border-gray-200"
@@ -275,7 +411,6 @@ const CourseDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Curriculum Management (8 cols) */}
           <div className="lg:col-span-8 space-y-6">
             <div className="flex items-center justify-between">
               <div>
@@ -300,7 +435,6 @@ const CourseDetail: React.FC = () => {
               </Button>
             </div>
 
-            {/* Quick Create Unit Panel */}
             {activeKey === "create" && (
               <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg animate-in fade-in slide-in-from-top-2">
                 <h4 className="font-semibold text-gray-900 mb-4">
@@ -314,10 +448,7 @@ const CourseDetail: React.FC = () => {
                       { required: true, message: "Please enter unit title" },
                     ]}
                   >
-                    <Input
-                      placeholder="e.g. Introduction to React"
-                      size="large"
-                    />
+                    <Input placeholder="e.g. Unit 1" size="large" />
                   </Form.Item>
                   <Form.Item name="description" label="Description">
                     <Input.TextArea
@@ -340,13 +471,15 @@ const CourseDetail: React.FC = () => {
               </div>
             )}
 
-            {/* Units List */}
             <div className="space-y-4">
               {Array.isArray(units) && units.length > 0 ? (
                 units.map((unit) => (
                   <UnitWithLessons
                     key={unit?.courseUnitID || Math.random()}
-                    deleteUnit={handleDeleteUnit}
+                    onDeleteRequest={(id) =>
+                      setDeleteConfirmation({ isOpen: true, unitId: id })
+                    }
+                    onEditRequest={openEditModal}
                     unit={unit}
                   />
                 ))
@@ -377,11 +510,11 @@ const CourseDetail: React.FC = () => {
   );
 };
 
-// ---- Subcomponent: Unit Item ----
 const UnitWithLessons: React.FC<{
   unit: Unit;
-  deleteUnit: (id: string) => void;
-}> = ({ unit, deleteUnit }) => {
+  onDeleteRequest: (id: string) => void;
+  onEditRequest: (unit: Unit) => void;
+}> = ({ unit, onDeleteRequest, onEditRequest }) => {
   const { data: lessonsResponse, isLoading } = useQuery({
     queryKey: ["lessons", unit?.courseUnitID],
     queryFn: () => getLessonsByUnits({ unitId: unit?.courseUnitID }),
@@ -393,16 +526,25 @@ const UnitWithLessons: React.FC<{
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
-      {/* Unit Header */}
       <div className="p-4 flex items-start justify-between bg-white border-b border-gray-100">
         <div className="flex gap-4 items-start">
           <div className="mt-1 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
             <BookOpen size={16} />
           </div>
           <div>
-            <h4 className="font-semibold text-gray-900 text-lg leading-tight mb-1">
-              {unit?.title || "Untitled Unit"}
-            </h4>
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-semibold text-gray-900 text-lg leading-tight">
+                {unit?.title || "Untitled Unit"}
+              </h4>
+              <Tooltip title="Edit Unit Details">
+                <button
+                  onClick={() => onEditRequest(unit)}
+                  className="text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  <Pencil size={14} />
+                </button>
+              </Tooltip>
+            </div>
             <p className="text-sm text-gray-500 line-clamp-2 max-w-xl">
               {unit?.description || "No description provided"}
             </p>
@@ -417,17 +559,19 @@ const UnitWithLessons: React.FC<{
                 icon={<Edit size={14} />}
                 className="flex items-center gap-1"
               >
-                Manage Content
+                Content
               </Button>
             </Link>
           </Tooltip>
-          <Button
-            danger
-            type="text"
-            size="small"
-            icon={<Trash2 size={14} />}
-            onClick={() => deleteUnit(unit?.courseUnitID)}
-          />
+          <Tooltip title="Delete Unit">
+            <Button
+              danger
+              type="text"
+              size="small"
+              icon={<Trash2 size={14} />}
+              onClick={() => onDeleteRequest(unit?.courseUnitID)}
+            />
+          </Tooltip>
         </div>
       </div>
 

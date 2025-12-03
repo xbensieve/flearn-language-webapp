@@ -315,9 +315,13 @@ const EditCoursePage: React.FC = () => {
                   </DialogHeader>
                   <DialogFooter className="mt-4 gap-2 sm:gap-0">
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button className="cursor-pointer" variant="outline">
+                        Cancel
+                      </Button>
                     </DialogClose>
+                    <div></div>
                     <Button
+                      className="!text-white cursor-pointer"
                       variant="destructive"
                       onClick={() => deleteCourse()}
                       disabled={isDeleting}
