@@ -26,3 +26,17 @@ export const createClassService = async (data: CreateClassRequest) => {
   const res = await api.post("teacher/classes", data);
   return res.data;
 };
+
+export const requestCancelClassService = async (classId: string, reason: string) => {
+  const res = await api.post(`teacher/classes/${classId}/request-cancel`, {
+    reason,
+  });
+  return res.data;
+};
+
+export const deleteClassService = async (classId: string, reason: string) => {
+  const res = await api.delete(`teacher/classes/${classId}`, {
+    data: { reason },
+  });
+  return res.data;
+};
