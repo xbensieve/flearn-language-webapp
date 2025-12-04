@@ -383,7 +383,9 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                           const isImage = /\.(jpe?g|png|webp|gif|svg)$/i.test(
                             url
                           );
-                          const isAudio = /\.(mp3|mpeg|wav|ogg)$/i.test(url);
+                          const isAudio = /\.(mp3|mpeg|wav|ogg|webm)$/i.test(
+                            url
+                          );
 
                           return (
                             <div
@@ -488,6 +490,11 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                   <Descriptions.Item label="Prompt" className="py-3">
                     <div className="whitespace-pre-wrap">
                       {selectedExercise.prompt}
+                    </div>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Content" className="py-3">
+                    <div className="whitespace-pre-wrap">
+                      {selectedExercise.content}
                     </div>
                   </Descriptions.Item>
                   <Descriptions.Item label="Type" className="py-3">
