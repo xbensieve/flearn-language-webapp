@@ -41,7 +41,6 @@ import {
   applicationService,
   type TeacherApplication,
 } from "@/services/teacher/applicationService";
-import { Toaster } from "sonner";
 import { toast } from "react-toastify";
 
 export default function ApplicationDetail() {
@@ -213,7 +212,6 @@ export default function ApplicationDetail() {
 
   return (
     <DashboardLayout>
-      <Toaster position="top-left" />
       <div className="min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 lg:py-12 space-y-8">
           <Button

@@ -70,7 +70,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DateRangePicker from "./DateRangePicker";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 // Hook useDebounce đơn giản để tránh gọi API quá nhiều khi search
 function useDebounce<T>(value: T, delay: number): T {
@@ -368,7 +368,6 @@ export default function ExerciseGradingPage() {
 
   return (
     <DashboardLayout>
-      <Toaster richColors position="top-left" />
       <div className="space-y-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

@@ -117,7 +117,7 @@ const LoginLearner: React.FC = () => {
   return (
     <div className="w-full h-screen lg:grid lg:grid-cols-2 overflow-hidden bg-background">
       <div className="hidden bg-muted lg:block relative">
-        <div className="absolute inset-0 bg-zinc-900">
+        <div className="absolute inset-0 bg-zinc-700">
           <img
             src={BackgroundImage}
             alt="Learning"
@@ -127,7 +127,7 @@ const LoginLearner: React.FC = () => {
 
         <div className="relative z-20 flex h-full flex-col justify-between p-10 text-white">
           <div className="flex items-center gap-2 font-medium text-lg">
-            <GraduationCap className="h-6 w-6" /> FLearn Team.
+            <GraduationCap className="h-6 w-6" /> FLearn Team
           </div>
           <div className="mb-10">
             <blockquote className="space-y-2">
@@ -140,7 +140,7 @@ const LoginLearner: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="mx-auto grid w-full max-w-[400px] gap-6">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="flex items-center justify-center gap-2 text-3xl font-bold tracking-tight text-foreground">
