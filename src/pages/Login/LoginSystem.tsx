@@ -127,7 +127,7 @@ const LoginDashboard: React.FC = () => {
               <Label htmlFor="username">Username or Email</Label>
               <Input
                 id="username"
-                placeholder="admin@flearn.com"
+                placeholder="your-username or email"
                 className={errors.usernameOrEmail ? 'border-red-500' : ''}
                 {...register('usernameOrEmail', { required: true })}
               />
