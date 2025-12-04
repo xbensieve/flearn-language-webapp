@@ -1,26 +1,33 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { loginDashboard } from '../../services/auth';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { useAuth } from '../../utils/AuthContext';
-import { handleRoleRedirect } from '@/utils/authUtils';
-import type { AxiosError } from 'axios';
-import { Lock, Loader2, Eye, EyeOff, ShieldCheck, ArrowRight, GraduationCap } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { loginDashboard } from "../../services/auth";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
+import { useAuth } from "../../utils/AuthContext";
+import { handleRoleRedirect } from "@/utils/authUtils";
+import type { AxiosError } from "axios";
+import {
+  Lock,
+  Loader2,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  ArrowRight,
+  GraduationCap,
+} from "lucide-react";
 
 // Components
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import LoadingScreen from '@/components/Loading/LoadingScreen';
-import BackgroundImage from '@/assets/background-image-02.avif';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import LoadingScreen from "@/components/Loading/LoadingScreen";
+import BackgroundImage from "@/assets/background-image-02.avif";
 
-const APP_DOMAIN = 'http://app-flearn.vercel.app';
+const APP_DOMAIN = "https://app-flearn.vercel.app";
 
 const LoginDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -37,8 +44,8 @@ const LoginDashboard: React.FC = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      usernameOrEmail: '',
-      password: '',
+      usernameOrEmail: "",
+      password: "",
       rememberMe: false,
     },
   });
@@ -46,12 +53,14 @@ const LoginDashboard: React.FC = () => {
   useEffect(() => {
     const checkAuth = async () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      const roles = JSON.parse(localStorage.getItem('FLEARN_USER_ROLES') || '[]');
+      const roles = JSON.parse(
+        localStorage.getItem("FLEARN_USER_ROLES") || "[]"
+      );
       if (
         roles.length > 0 &&
-        roles.some((r: string) => ['admin', 'manager', 'teacher'].includes(r))
+        roles.some((r: string) => ["admin", "manager", "teacher"].includes(r))
       ) {
-        handleRoleRedirect(roles, navigate, 'internal');
+        handleRoleRedirect(roles, navigate, "internal");
         return;
       }
       setIsCheckingAuth(false);
@@ -62,16 +71,17 @@ const LoginDashboard: React.FC = () => {
   const mutation = useMutation({
     mutationFn: loginDashboard,
     onSuccess: (data) => handleAuthSuccess(data),
-    onError: (err: AxiosError<any>) => notifyError(err?.response?.data?.message || 'Login failed'),
+    onError: (err: AxiosError<any>) =>
+      notifyError(err?.response?.data?.message || "Login failed"),
   });
 
   const handleAuthSuccess = (data: any) => {
-    localStorage.setItem('FLEARN_ACCESS_TOKEN', data.accessToken);
-    localStorage.setItem('FLEARN_REFRESH_TOKEN', data.refreshToken);
-    localStorage.setItem('FLEARN_USER_ROLES', JSON.stringify(data.roles));
+    localStorage.setItem("FLEARN_ACCESS_TOKEN", data.accessToken);
+    localStorage.setItem("FLEARN_REFRESH_TOKEN", data.refreshToken);
+    localStorage.setItem("FLEARN_USER_ROLES", JSON.stringify(data.roles));
     updateAuth();
-    notifySuccess('Welcome to Dashboard!');
-    handleRoleRedirect(data.roles, navigate, 'internal');
+    notifySuccess("Welcome to Dashboard!");
+    handleRoleRedirect(data.roles, navigate, "internal");
   };
 
   const onSubmit = (data: any) => {
@@ -100,10 +110,12 @@ const LoginDashboard: React.FC = () => {
           <div className="mb-10 max-w-lg">
             <blockquote className="space-y-4">
               <p className="text-2xl font-light leading-relaxed text-slate-200">
-                "Efficiency is doing better what is already being done. Management is efficiency in
-                climbing the ladder of success."
+                "Efficiency is doing better what is already being done.
+                Management is efficiency in climbing the ladder of success."
               </p>
-              <footer className="text-sm font-medium text-indigo-400">— Peter Drucker</footer>
+              <footer className="text-sm font-medium text-indigo-400">
+                — Peter Drucker
+              </footer>
             </blockquote>
           </div>
         </div>
@@ -120,19 +132,19 @@ const LoginDashboard: React.FC = () => {
           </div>
 
           {/* Login Form */}
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="grid gap-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="username">Username or Email</Label>
               <Input
                 id="username"
-                placeholder="your-username or email"
-                className={errors.usernameOrEmail ? 'border-red-500' : ''}
-                {...register('usernameOrEmail', { required: true })}
+                placeholder="admin@flearn.com"
+                className={errors.usernameOrEmail ? "border-red-500" : ""}
+                {...register("usernameOrEmail", { required: true })}
               />
               {errors.usernameOrEmail && (
-                <span className="text-xs text-red-500">This field is required</span>
+                <span className="text-xs text-red-500">
+                  This field is required
+                </span>
               )}
             </div>
 
@@ -144,32 +156,40 @@ const LoginDashboard: React.FC = () => {
                 <Input
                   id="password"
                   placeholder="******"
-                  type={showPassword ? 'text' : 'password'}
-                  className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
-                  {...register('password', { required: true })}
+                  type={showPassword ? "text" : "password"}
+                  className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                  {...register("password", { required: true })}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer">
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
               {errors.password && (
-                <span className="text-xs text-red-500">Password is required</span>
+                <span className="text-xs text-red-500">
+                  Password is required
+                </span>
               )}
             </div>
 
             <div className="flex items-center justify-end space-x-2">
               <Checkbox
                 id="remember"
-                {...register('rememberMe')}
+                {...register("rememberMe")}
                 className="cursor-pointer h-4 w-4 rounded border border-gray-300 data-[state=checked]:bg-gray-200 data-[state=checked]:text-gray-800"
               />
               <div></div>
               <label
                 htmlFor="remember"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
                 Keep me logged in
               </label>
             </div>
@@ -177,7 +197,8 @@ const LoginDashboard: React.FC = () => {
             <Button
               className="w-full !text-white bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
               type="submit"
-              disabled={mutation.isPending}>
+              disabled={mutation.isPending}
+            >
               {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...
@@ -192,7 +213,8 @@ const LoginDashboard: React.FC = () => {
           <Separator className="my-2" />
           <a
             className="text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
-            href={APP_DOMAIN}>
+            href={APP_DOMAIN}
+          >
             Go to Learner Portal <ArrowRight className="ml-2 h-3 w-3" />
           </a>
         </div>
