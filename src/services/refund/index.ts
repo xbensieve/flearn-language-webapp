@@ -6,6 +6,29 @@ export const notifyStudent = async (payload: NotifyStudentRequest) => {
   return response.data;
 };
 
+// Request student to update bank info
+export const requestBankUpdate = async (refundRequestId: string, note: string) => {
+  const response = await api.post(`/Refund/admin/${refundRequestId}/request-bank-update`, { note });
+  return response.data;
+};
+
+// New API - Get all refunds with pagination
+export const getRefundRequestsAll = async (params: {
+  page?: number;
+  pageSize?: number;
+  status?: number;
+} = {}) => {
+  const query: Record<string, any> = {
+    page: params.page || 1,
+    pageSize: params.pageSize || 50,
+  };
+  if (params.status !== undefined) {
+    query.status = params.status;
+  }
+  const res = await api.get('/Refund/admin/all', { params: query });
+  return res.data;
+};
+
 export const getRefundRequestsClass = async ({ statusFilter }: { statusFilter: string }) => {
   const params = statusFilter !== '' ? { status: Number(statusFilter) } : {};
   const res = await api.get('/Refund/admin/list', { params });
