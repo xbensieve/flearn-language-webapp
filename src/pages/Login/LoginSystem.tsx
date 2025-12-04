@@ -71,8 +71,10 @@ const LoginDashboard: React.FC = () => {
   const mutation = useMutation({
     mutationFn: loginDashboard,
     onSuccess: (data) => handleAuthSuccess(data),
-    onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || "Login failed"),
+    onError: (err: AxiosError<any>) => {
+      console.log(err?.response?.data?.message);
+      notifyError("Login failed");
+    },
   });
 
   const handleAuthSuccess = (data: any) => {
@@ -95,7 +97,7 @@ const LoginDashboard: React.FC = () => {
   return (
     <div className="w-full h-screen lg:grid lg:grid-cols-2 overflow-hidden bg-background">
       <div className="hidden bg-slate-900 lg:block relative">
-        <div className="absolute inset-0 bg-slate-900">
+        <div className="absolute inset-0 bg-slate-700">
           <img
             src={BackgroundImage}
             alt="Dashboard Analytics"
@@ -120,7 +122,7 @@ const LoginDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex bg-gray-50 items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-[400px] gap-6">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="flex items-center justify-center gap-2 text-3xl font-bold tracking-tight text-foreground">
