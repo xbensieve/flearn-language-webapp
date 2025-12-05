@@ -11,6 +11,12 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -552,8 +558,6 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               </FormItem>
             )}
           />
-
-          {/* TEMPLATES */}
           <div className="space-y-4 pt-4 border-t">
             <div className="flex justify-between items-center">
               <Label className="text-base font-semibold flex items-center gap-2">
@@ -573,76 +577,99 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {templates.map((template) => {
-                const isSelected = selectedTemplateId === template.templateId;
-                return (
-                  <div
-                    key={template.templateId}
-                    onClick={() =>
-                      setValue(
-                        "templateId",
-                        isSelected ? undefined : template.templateId
-                      )
-                    }
-                    className={`relative cursor-pointer rounded-xl border transition-all duration-200 group overflow-hidden ${
-                      isSelected
-                        ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
-                        : "bg-white hover:border-primary/50 hover:shadow-md"
-                    }`}
-                  >
-                    <div className="p-4 pb-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4
-                          className={`font-bold text-sm line-clamp-1 ${
-                            isSelected ? "text-primary" : "text-gray-900"
-                          }`}
-                        >
-                          {template.name}
-                        </h4>
-                        {isSelected && (
-                          <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-2 h-8 leading-snug">
-                        {template.description ||
-                          "No description available for this template."}
-                      </p>
-                    </div>
+            <TooltipProvider delayDuration={200}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {templates.map((template) => {
+                  const isSelected = selectedTemplateId === template.templateId;
+                  return (
+                    <div
+                      key={template.templateId}
+                      onClick={() =>
+                        setValue(
+                          "templateId",
+                          isSelected ? undefined : template.templateId
+                        )
+                      }
+                      className={`relative cursor-pointer rounded-xl border transition-all duration-200 group overflow-hidden ${
+                        isSelected
+                          ? "border-primary bg-primary/5 ring-1 ring-primary shadow-sm"
+                          : "bg-white hover:border-primary/50 hover:shadow-md"
+                      }`}
+                    >
+                      <div className="p-4 pb-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <h4
+                                className={`font-bold text-sm line-clamp-1 text-left ${
+                                  isSelected ? "text-primary" : "text-gray-900"
+                                }`}
+                              >
+                                {template.name}
+                              </h4>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="font-semibold">{template.name}</p>
+                            </TooltipContent>
+                          </Tooltip>
 
-                    <div className="grid grid-cols-3 border-t divide-x bg-gray-50/50">
-                      <div className="p-2 flex flex-col items-center justify-center text-center">
-                        <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
-                          Units
-                        </span>
-                        <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
-                          <Layers className="w-3.5 h-3.5 text-blue-500" />
-                          {template.unitCount}
+                          {isSelected && (
+                            <CheckCircle2 className="w-5 h-5 text-primary shrink-0 ml-2" />
+                          )}
                         </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="text-xs text-muted-foreground line-clamp-2 h-8 leading-snug text-left">
+                              {template.description ||
+                                "No description available for this template."}
+                            </p>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side="bottom"
+                            className="max-w-[300px] text-xs"
+                          >
+                            <p>
+                              {template.description ||
+                                "No description available."}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
-                      <div className="p-2 flex flex-col items-center justify-center text-center">
-                        <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
-                          Lessons/Unit
-                        </span>
-                        <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
-                          <FileText className="w-3.5 h-3.5 text-orange-500" />
-                          {template.lessonsPerUnit}
+
+                      <div className="grid grid-cols-3 border-t divide-x bg-gray-50/50">
+                        <div className="p-2 flex flex-col items-center justify-center text-center">
+                          <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
+                            Units
+                          </span>
+                          <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
+                            <Layers className="w-3.5 h-3.5 text-blue-500" />
+                            {template.unitCount}
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-2 flex flex-col items-center justify-center text-center">
-                        <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
-                          Ex/Lesson
-                        </span>
-                        <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
-                          <Dumbbell className="w-3.5 h-3.5 text-green-500" />
-                          {template.exercisesPerLesson}
+                        <div className="p-2 flex flex-col items-center justify-center text-center">
+                          <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
+                            Lessons/Unit
+                          </span>
+                          <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
+                            <FileText className="w-3.5 h-3.5 text-orange-500" />
+                            {template.lessonsPerUnit}
+                          </div>
+                        </div>
+                        <div className="p-2 flex flex-col items-center justify-center text-center">
+                          <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
+                            Ex/Lesson
+                          </span>
+                          <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
+                            <Dumbbell className="w-3.5 h-3.5 text-green-500" />
+                            {template.exercisesPerLesson}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
           </div>
         </CardContent>
       </Card>
