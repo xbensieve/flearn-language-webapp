@@ -35,7 +35,21 @@ const NotificationSettings: React.FC = () => {
       const status = await getWebPushStatus();
       console.log('Web Push Status:', status);
       
-      await testWebPush();
+      const response = await testWebPush();
+      console.log('Test response:', response);
+      
+      // Show a local notification immediately as feedback
+      if ('Notification' in window && Notification.permission === 'granted') {
+        if ('serviceWorker' in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification('Test thông báo 🔔', {
+            body: 'Nếu bạn thấy thông báo này, notification đã hoạt động!',
+            icon: '/logo.png',
+            tag: 'test-local-' + Date.now(),
+          });
+          console.log('Local test notification shown');
+        }
+      }
     } catch (err: unknown) {
       console.error('Test notification failed:', err);
       const error = err as { response?: { data?: unknown } };

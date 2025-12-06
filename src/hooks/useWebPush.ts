@@ -38,7 +38,8 @@ export const useWebPush = () => {
           try {
             const status = await getWebPushStatus();
             console.log('Backend status check:', status);
-            isEnabled = status?.success === true || status?.data?.isRegistered === true;
+            // Only consider enabled if backend confirms isRegistered is true
+            isEnabled = status?.data?.isRegistered === true;
           } catch {
             // If backend check fails, assume not enabled
             isEnabled = false;

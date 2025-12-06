@@ -2,7 +2,6 @@ import React, { useEffect, useCallback } from 'react';
 import {
   initializeMessaging,
   onForegroundMessage,
-  isNotificationEnabled,
 } from '../../lib/firebase';
 
 interface NotificationPayload {
@@ -28,33 +27,49 @@ const NotificationProvider: React.FC<NotificationProviderProps> = ({ children })
       const body = payload.notification?.body || '';
       const url = payload.data?.url;
 
-      console.log('Attempting to show notification:', { title, body });
+      console.log('=== showNotification called ===');
+      console.log('Title:', title);
+      console.log('Body:', body);
+      console.log('Notification.permission:', Notification.permission);
 
-      // Show notification via Service Worker (works even when page is focused)
-      if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+      // Check permission
+      if (Notification.permission !== 'granted') {
+        console.error('Notification permission not granted');
+        return;
+      }
+
+      // Try Service Worker first
+      if ('serviceWorker' in navigator) {
         try {
           const registration = await navigator.serviceWorker.ready;
+          console.log('Service Worker ready, showing notification...');
+          
           await registration.showNotification(title, {
             body: body,
             icon: '/logo.png',
             badge: '/logo.png',
-            tag: 'flearn-notification-' + Date.now(),
+            tag: 'flearn-' + Date.now(),
             data: { url },
             requireInteraction: false,
           });
-          console.log('Notification shown via Service Worker');
+          console.log('✓ Notification shown via Service Worker');
+          return;
         } catch (err) {
-          console.error('Failed to show notification via SW:', err);
-          // Fallback to native Notification API
-          try {
-            new Notification(title, {
-              body: body,
-              icon: '/logo.png',
-            });
-          } catch (e) {
-            console.error('Fallback notification also failed:', e);
-          }
+          console.error('SW notification failed:', err);
         }
+      }
+
+      // Fallback to native Notification
+      try {
+        console.log('Trying native Notification...');
+        const notif = new Notification(title, {
+          body: body,
+          icon: '/logo.png',
+          tag: 'flearn-native-' + Date.now(),
+        });
+        console.log('✓ Native notification created:', notif);
+      } catch (e) {
+        console.error('Native notification failed:', e);
       }
     },
     []
@@ -64,11 +79,14 @@ const NotificationProvider: React.FC<NotificationProviderProps> = ({ children })
     let unsubscribe: (() => void) | null = null;
 
     const setupForegroundListener = async () => {
-      if (!isNotificationEnabled()) {
+      // Check if notifications are supported and permission granted
+      if (!('Notification' in window) || Notification.permission !== 'granted') {
+        console.log('Notifications not granted, skipping listener setup');
         return;
       }
 
       try {
+        console.log('Setting up foreground message listener...');
         await initializeMessaging();
 
         // Listen for foreground messages
@@ -76,6 +94,7 @@ const NotificationProvider: React.FC<NotificationProviderProps> = ({ children })
           console.log('Foreground message received:', payload);
           showNotification(payload as NotificationPayload);
         });
+        console.log('Foreground listener setup complete');
       } catch (error) {
         console.error('Error setting up foreground listener:', error);
       }

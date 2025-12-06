@@ -36,6 +36,7 @@ import AdminPayoutsPage from "../../pages/Admin/AdminPayoutPage";
 import UsersPage from "../../pages/Admin/UsersPage";
 import StaffPage from "../../pages/Admin/StaffPage";
 import CoursesPage from "../../pages/Admin/CoursesPage";
+import AdminSettingsPage from "../../pages/Admin/SettingsPage";
 
 // Manager & Teacher Components
 import Dashboard from "@/pages/Manager/Dashboard";
@@ -132,6 +133,7 @@ const systemRoutes: RouteObject[] = [
       { path: "staff", element: <StaffPage /> },
       { path: "courses", element: <CoursesPage /> },
       { path: "wallet-transactions", element: <WalletHistoryPage /> },
+      { path: "settings", element: <AdminSettingsPage /> },
     ],
   },
   // --- MANAGER ROUTES ---

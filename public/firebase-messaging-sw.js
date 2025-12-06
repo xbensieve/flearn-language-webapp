@@ -13,25 +13,32 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Handle background messages
+// Handle background messages - only show notification when app is in background
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message:', payload);
   
-  const notificationTitle = payload.notification?.title || 'FLearn Notification';
-  const notificationOptions = {
-    body: payload.notification?.body || '',
-    icon: '/logo.png',
-    badge: '/logo.png',
-    tag: payload.data?.tag || 'flearn-notification',
-    data: payload.data,
-    requireInteraction: true,
-    actions: [
-      { action: 'open', title: 'Open' },
-      { action: 'close', title: 'Dismiss' }
-    ]
-  };
+  // Check if any client (tab) is focused - if so, let foreground handler deal with it
+  self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+    const hasFocusedClient = windowClients.some(client => client.focused);
+    
+    if (hasFocusedClient) {
+      console.log('[firebase-messaging-sw.js] App is focused, skipping SW notification');
+      return;
+    }
+    
+    // App is in background, show notification
+    const notificationTitle = payload.notification?.title || 'FLearn Notification';
+    const notificationOptions = {
+      body: payload.notification?.body || '',
+      icon: '/logo.png',
+      badge: '/logo.png',
+      tag: 'flearn-bg-' + Date.now(),
+      data: payload.data,
+      requireInteraction: false,
+    };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  });
 });
 
 // Handle notification click
