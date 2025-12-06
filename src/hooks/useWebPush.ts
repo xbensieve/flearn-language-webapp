@@ -85,8 +85,7 @@ export const useWebPush = () => {
         // Register token with backend
         try {
           console.log('Registering token with backend...');
-          const response = await registerWebPushToken(token);
-          console.log('Backend response:', response);
+          await registerWebPushToken(token);
           
           // Re-initialize messaging to setup listener after permission granted
           await initializeMessaging();
@@ -100,16 +99,41 @@ export const useWebPush = () => {
           }));
           
           return true;
-        } catch (registerError: unknown) {
+        } catch (registerError: any) {
           console.error('Failed to register token with backend:', registerError);
-          const err = registerError as { response?: { data?: { message?: string } } };
-          const errorMsg = err.response?.data?.message || 'Failed to register with server';
-          console.error('Error response:', err.response?.data);
+          
+          // Try to recover: Unregister then Register again
+          // This handles cases where backend thinks token already exists or is invalid
+          if (registerError?.response?.status === 400 || registerError?.response?.status === 409) {
+            console.log('⚠️ Registration failed (400/409). Trying to unregister first...');
+            try {
+              await unregisterWebPush();
+              console.log('Unregistered successfully. Retrying registration...');
+              await registerWebPushToken(token);
+              
+              // Success on retry
+              await initializeMessaging();
+              setState((prev) => ({
+                ...prev,
+                isEnabled: true,
+                permissionStatus: 'granted',
+                isLoading: false,
+                error: null,
+              }));
+              return true;
+            } catch (retryError: any) {
+              console.error('Retry registration failed:', retryError);
+              // Fall through to error handling
+            }
+          }
+
+          const errorMsg = registerError?.response?.data?.message || 'Failed to register with server';
+          console.error('Error response:', registerError?.response?.data);
           
           setState((prev) => ({
             ...prev,
             isLoading: false,
-            error: errorMsg,
+            error: `${errorMsg} (Status: ${registerError?.response?.status})`,
           }));
           return false;
         }
