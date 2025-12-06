@@ -19,7 +19,6 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-// Shadcn Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +38,6 @@ const Register: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRestoringState, setIsRestoringState] = useState(true);
-  // Form 1: Registration Details
   const {
     register,
     handleSubmit,
@@ -54,10 +52,8 @@ const Register: React.FC = () => {
     },
   });
 
-  // Form 2: OTP (Managed via simple state or separate form, here simple state for OTP input)
   const [otpValue, setOtpValue] = useState("");
 
-  // --- LOGIC & EFFECTS (Giữ nguyên logic gốc) ---
   const registerMutation = useMutation({
     mutationFn: registerService,
     onSuccess: (data, variables) => {
@@ -73,7 +69,7 @@ const Register: React.FC = () => {
       }
     },
     onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || "Registration failed"),
+      notifyError(err?.response?.data?.message || "Đăng ký không thành công!"),
   });
 
   const verifyMutation = useMutation({
@@ -81,7 +77,7 @@ const Register: React.FC = () => {
       verifyOtp(values),
     onSuccess: (data) => {
       if (data.success) {
-        notifySuccess("Account verified successfully!");
+        notifySuccess("Tài khoản đã được xác minh thành công!");
         localStorage.removeItem("otpExpiry");
         localStorage.removeItem("registerStep");
         localStorage.removeItem("userEmail");
@@ -89,14 +85,14 @@ const Register: React.FC = () => {
       }
     },
     onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || "Invalid OTP"),
+      notifyError(err?.response?.data?.message || "OTP không hợp lệ"),
   });
 
   const resendMutation = useMutation({
     mutationFn: () => resendOtp({ email: userEmail }),
     onSuccess: (data) => {
       if (data.success) {
-        notifySuccess("New OTP sent!");
+        notifySuccess("OTP mới được gửi!");
         const expiry = Date.now() + 5 * 60 * 1000;
         localStorage.setItem("otpExpiry", expiry.toString());
         setTimeLeft(300);
@@ -141,7 +137,6 @@ const Register: React.FC = () => {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // --- HANDLERS ---
   const onRegisterSubmit = (data: any) => {
     registerMutation.mutate(data);
   };
@@ -158,8 +153,8 @@ const Register: React.FC = () => {
       <LoadingScreen
         message={
           verifyMutation.isSuccess
-            ? "Setup complete. Redirecting..."
-            : "Initializing registration..."
+            ? "Thiết lập hoàn tất. Đang chuyển hướng..."
+            : "Đang khởi tạo đăng ký..."
         }
       />
     );
@@ -167,7 +162,7 @@ const Register: React.FC = () => {
   return (
     <div className="w-full h-screen lg:grid lg:grid-cols-2 overflow-hidden bg-background">
       <div className="hidden bg-muted lg:block relative">
-        <div className="absolute inset-0 bg-zinc-900">
+        <div className="absolute inset-0 bg-zinc-700">
           <img
             src={BackgroundImage}
             alt="Students collaborating"
@@ -177,7 +172,7 @@ const Register: React.FC = () => {
 
         <div className="relative z-20 flex h-full flex-col justify-between p-10 text-white">
           <div className="flex items-center gap-2 font-medium text-lg">
-            <GraduationCap className="h-6 w-6" /> FLearn Team.
+            <GraduationCap className="h-6 w-6" /> FLearn Team
           </div>
 
           <div className="mb-10">
@@ -192,29 +187,26 @@ const Register: React.FC = () => {
         </div>
       </div>
       <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-        {/* Back Button (Mobile/Desktop) */}
         <Button
           variant="ghost"
           className="absolute top-4 left-4 md:top-8 md:left-8 cursor-pointer"
           onClick={() => navigate("/login")}
         >
-          <ArrowLeft className="mr-2 h-4 w-4 " /> Back to Login
+          <ArrowLeft className="mr-2 h-4 w-4 " /> Quay lại đăng nhập
         </Button>
-
         <div className="mx-auto grid w-full max-w-[450px] gap-6">
-          {/* Header */}
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              {step === "register" ? "Create an account" : "Verify your email"}
+              {step === "register"
+                ? "Tạo một tài khoản"
+                : "Xác minh email của bạn"}
             </h1>
             <p className="text-muted-foreground text-sm">
               {step === "register"
-                ? "Enter your details below to create your account"
-                : `We have sent a code to ${userEmail}`}
+                ? "Nhập thông tin chi tiết của bạn bên dưới để tạo tài khoản"
+                : `Chúng tôi đã gửi một mã đến ${userEmail}`}
             </p>
           </div>
-
-          {/* PROGRESS INDICATOR */}
           <div className="flex items-center justify-center gap-2 mb-2">
             <div
               className={`h-2 w-16 rounded-full transition-colors ${
@@ -228,7 +220,6 @@ const Register: React.FC = () => {
             />
           </div>
 
-          {/* STEP 1: REGISTER FORM */}
           {step === "register" && (
             <form
               onSubmit={handleSubmit(onRegisterSubmit)}
@@ -240,7 +231,7 @@ const Register: React.FC = () => {
                   id="userName"
                   placeholder="johndoe"
                   {...register("userName", {
-                    required: "Username is required",
+                    required: "Tên người dùng là bắt buộc",
                   })}
                   className={errors.userName ? "border-red-500" : ""}
                 />
@@ -258,10 +249,10 @@ const Register: React.FC = () => {
                   type="email"
                   placeholder="m@example.com"
                   {...register("email", {
-                    required: "Email is required",
+                    required: "Email là bắt buộc",
                     pattern: {
                       value: /^\S+@\S+$/i,
-                      message: "Invalid email address",
+                      message: "Địa chỉ email không hợp lệ",
                     },
                   })}
                   className={errors.email ? "border-red-500" : ""}
@@ -274,17 +265,17 @@ const Register: React.FC = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mật khẩu</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
+                    placeholder="Tạo mật khẩu"
                     {...register("password", {
-                      required: "Password is required",
+                      required: "Cần có mật khẩu",
                       minLength: {
                         value: 6,
-                        message: "Password must be at least 6 characters",
+                        message: "Mật khẩu phải có ít nhất 6 ký tự",
                       },
                     })}
                     className={
@@ -311,16 +302,16 @@ const Register: React.FC = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
+                    placeholder="Xác nhận mật khẩu của bạn"
                     {...register("confirmPassword", {
                       validate: (val: string) => {
                         if (watch("password") != val) {
-                          return "Your passwords do not match";
+                          return "Mật khẩu của bạn không khớp";
                         }
                       },
                     })}
@@ -355,12 +346,10 @@ const Register: React.FC = () => {
                 {registerMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Continue
+                Tiếp tục
               </Button>
             </form>
           )}
-
-          {/* STEP 2: VERIFY FORM */}
           {step === "verify" && (
             <form
               onSubmit={onVerifySubmit}
@@ -388,7 +377,7 @@ const Register: React.FC = () => {
                   </InputOTP>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Enter the 6-digit code sent to your email.
+                  Nhập mã gồm 6 chữ số được gửi đến email của bạn.
                 </p>
               </div>
 
@@ -400,7 +389,7 @@ const Register: React.FC = () => {
                 {verifyMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Verify Account
+                Xác minh tài khoản
               </Button>
 
               <Separator />
@@ -408,7 +397,7 @@ const Register: React.FC = () => {
               <div className="flex flex-col items-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">
-                    Didn't receive code?
+                    Không nhận được mã?
                   </span>
                   <Button
                     type="button"
@@ -418,8 +407,8 @@ const Register: React.FC = () => {
                     disabled={timeLeft > 0 || resendMutation.isPending}
                   >
                     {timeLeft > 0
-                      ? `Resend in ${formatTime(timeLeft)}`
-                      : "Resend OTP"}
+                      ? `Gửi lại ${formatTime(timeLeft)}`
+                      : "Gửi lại OTP"}
                   </Button>
                 </div>
 
@@ -430,20 +419,18 @@ const Register: React.FC = () => {
                   onClick={resetRegistration}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Entered wrong email? Change it
+                  Nhập sai email? Hãy thay đổi
                 </Button>
               </div>
             </form>
           )}
-
-          {/* Footer */}
           <div className="text-center text-sm mt-2">
-            Already have an account?{" "}
+            Đã có tài khoản?{" "}
             <span
               onClick={() => navigate("/login")}
               className="font-medium text-primary hover:underline cursor-pointer"
             >
-              Sign In
+              Đăng nhập
             </span>
           </div>
         </div>

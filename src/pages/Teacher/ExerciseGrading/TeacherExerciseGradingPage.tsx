@@ -59,7 +59,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import DateRangePicker from "@/pages/Manager/Exercise/DateRangePicker";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 export default function TeacherExerciseGradingPage() {
@@ -279,13 +279,13 @@ export default function TeacherExerciseGradingPage() {
       return JSON.parse(jsonString);
     } catch (e) {
       // Trường hợp chuỗi feedback đơn giản (vd: "Pending AI Evaluation")
+      console.log(e);
       return null;
     }
   };
 
   return (
     <>
-      <Toaster richColors position="top-left" />
       <div className="space-y-6">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

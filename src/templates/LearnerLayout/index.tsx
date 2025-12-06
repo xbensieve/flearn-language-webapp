@@ -25,8 +25,8 @@ import { cn } from "@/lib/utils";
 import { logoutService } from "@/services/auth";
 
 const NAV_ITEMS = [
-  { label: "Apply", href: "/learner/application" },
-  { label: "My Applications", href: "/learner/status" },
+  { label: "Ứng tuyển", href: "/learner/application" },
+  { label: "Đơn của tôi", href: "/learner/status" },
 ] as const;
 
 export default function LearnerLayout() {
@@ -36,24 +36,25 @@ export default function LearnerLayout() {
   const { mutate: logout, isPending: isLoggingOut } = useMutation({
     mutationFn: (refreshToken: string) => logoutService(refreshToken),
     onSuccess: () => {
+      toast.success("Đăng xuất thành công!");
       localStorage.removeItem("FLEARN_ACCESS_TOKEN");
       localStorage.removeItem("FLEARN_REFRESH_TOKEN");
       localStorage.removeItem("FLEARN_USER_ROLES");
-      toast.success("Logged out successfully!");
       window.location.href = "/login";
     },
     onError: (error) => {
-      toast.error(error?.message || "Failed to log out!");
+      toast.error(error?.message || "Đăng xuất thất bại!");
     },
   });
 
   const handleLogout = () => {
     const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
     if (refreshToken) {
+      toast.success("Đăng xuất thành công!");
       logout(refreshToken);
     } else {
       localStorage.clear();
-      toast.success("Logged out successfully!");
+      toast.success("Đăng xuất thành công!");
       window.location.href = "/login";
     }
   };
@@ -106,10 +107,8 @@ export default function LearnerLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50/50">
-      {/* Header */}
       <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          {/* Logo */}
           <Link
             to="/"
             className="flex items-center gap-2 text-xl font-bold text-primary"
@@ -117,8 +116,6 @@ export default function LearnerLayout() {
             <GraduationCap className="h-7 w-7" />
             <span>FLearn</span>
           </Link>
-
-          {/* Desktop Menu - Bao gồm cả Đăng xuất */}
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList className="flex items-center gap-1">
               {NAV_ITEMS.map((item) => (
@@ -126,11 +123,7 @@ export default function LearnerLayout() {
                   {renderNavItem(item)}
                 </NavigationMenuItem>
               ))}
-
-              {/* Divider */}
               <div className="mx-2 h-6 w-px bg-border" />
-
-              {/* Logout as menu item */}
               <NavigationMenuItem>
                 <Button
                   variant="ghost"
@@ -140,7 +133,7 @@ export default function LearnerLayout() {
                   className="text-red-600 hover:!text-red-700 hover:!bg-red-50 cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  Đăng xuất
                   {isLoggingOut && (
                     <Loader2 className="ml-2 h-4 w-4 animate-spin" />
                   )}
@@ -148,8 +141,6 @@ export default function LearnerLayout() {
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
-
-          {/* Mobile Menu Button */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -175,9 +166,7 @@ export default function LearnerLayout() {
                     {item.label}
                   </Link>
                 ))}
-
                 <div className="my-4 border-t border-border" />
-
                 <Button
                   variant="ghost"
                   className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
@@ -188,7 +177,7 @@ export default function LearnerLayout() {
                   disabled={isLoggingOut}
                 >
                   <LogOut className="mr-3 h-4 w-4" />
-                  Logout
+                  Đăng xuất
                   {isLoggingOut && (
                     <Loader2 className="ml-auto h-4 w-4 animate-spin" />
                   )}
@@ -198,50 +187,39 @@ export default function LearnerLayout() {
           </Sheet>
         </div>
       </header>
-
-      {/* Main Content */}
       <main className="flex-1 pt-16">
         <Outlet />
       </main>
-
-      {/* Footer Minimal & Static */}
       <footer className="bg-white pt-16 pb-8 border-t border-gray-200 mt-auto">
         <div className="container mx-auto px-8 md:px-16 lg:px-32">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12 text-center lg:text-left">
-            {/* COLUMN 1: BRAND INFO */}
             <div className="lg:col-span-2 space-y-6 flex flex-col items-center lg:items-start">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
                   <GraduationCap className="w-6 h-6" />
                 </div>
-                <span className="text-2xl font-bold text-gray-900">
-                  FLearn Team.
-                </span>
+                <span className="text-2xl font-bold text-gray-900">FLearn</span>
               </div>
-
               <p className="text-gray-500 text-sm leading-7 max-w-md mx-auto lg:mx-0">
-                FLearn is an AI-powered multilingual speaking platform. We
-                connect learners with professional teachers and provide advanced
-                voice recognition technology for English, Japanese, and Chinese.
+                FLearn là nền tảng học nói đa ngôn ngữ được hỗ trợ bởi AI. Chúng
+                tôi kết nối người học với giáo viên chuyên nghiệp và cung cấp
+                công nghệ nhận dạng giọng nói tiên tiến cho tiếng Anh, tiếng
+                Nhật và tiếng Trung.
               </p>
-
               <div className="space-y-4 pt-2 w-full">
                 <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-600">
                   <MapPin className="w-4 h-4 text-blue-600" />
-                  <span>High Tech Park, Thu Duc City, HCMC</span>
+                  <span>Khu công nghệ cao, Thành phố Thủ Đức, TP.HCM</span>
                 </div>
-
                 <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-gray-600">
                   <Mail className="w-4 h-4 text-blue-600" />
                   <a href="mailto:tri10ngon@gmail.com">tri10ngon@gmail.com</a>
                 </div>
               </div>
             </div>
-
-            {/* COLUMN 2: PROGRAMS */}
             <div className="lg:col-span-1">
               <h3 className="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">
-                Programs
+                Ngôn ngữ
               </h3>
               <ul className="space-y-4">
                 {["English", "Japanese", "Chinese"].map((item) => (
@@ -257,11 +235,9 @@ export default function LearnerLayout() {
                 ))}
               </ul>
             </div>
-
-            {/* COLUMN 3: ABOUT US */}
             <div className="lg:col-span-1">
               <h3 className="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">
-                About Us
+                Về chúng tôi
               </h3>
               <ul className="space-y-4">
                 <li>
@@ -270,7 +246,7 @@ export default function LearnerLayout() {
                     className="text-gray-500 text-sm flex items-center justify-center lg:justify-start gap-2"
                   >
                     <Users className="w-4 h-4 text-gray-400" />
-                    Project & Team
+                    Dự án & Thành viên
                   </a>
                 </li>
                 <li>
@@ -279,46 +255,40 @@ export default function LearnerLayout() {
                     className="text-gray-500 text-sm flex items-center justify-center lg:justify-start gap-2"
                   >
                     <UserPlus className="w-4 h-4 text-gray-400" />
-                    Become a Teacher
+                    Trở thành giáo viên
                   </a>
                 </li>
               </ul>
             </div>
-
-            {/* COLUMN 4: GET THE APP */}
             <div className="lg:col-span-1 flex flex-col items-center lg:items-start">
               <h3 className="font-bold text-gray-900 mb-6 uppercase text-xs tracking-widest">
-                Get the App
+                Tải ứng dụng
               </h3>
-
               <button className="bg-white border border-gray-300 rounded-xl p-4 flex items-center gap-4 w-full max-w-[240px] mx-auto lg:mx-0">
                 <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                   <Download className="w-5 h-5 text-blue-600" />
                 </div>
                 <div className="text-left">
                   <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">
-                    Download Now
+                    Tải ngay bây giờ
                   </div>
                   <div className="font-bold text-gray-900 text-sm">
-                    APK Version
+                    Phiên bản APK
                   </div>
                 </div>
               </button>
-
               <p className="mt-4 text-xs text-gray-400">
-                Compatible with Android devices
+                Tương thích với các thiết bị Android
               </p>
             </div>
           </div>
-
-          {/* COPYRIGHT */}
           <div className="border-t border-gray-200 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} FLearn. All rights reserved.
+              © {new Date().getFullYear()} FLearn. Mọi quyền được bảo lưu.
             </p>
             <div className="flex gap-6 text-sm text-gray-400">
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
+              <a href="#">Chính sách bảo mật</a>
+              <a href="#">Điều khoản dịch vụ</a>
             </div>
           </div>
         </div>
