@@ -88,8 +88,8 @@ export default function LessonExerciseList({ lessonId }: Props) {
 
     if (isAudio) {
       return (
-        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center gap-4 my-4">
-          <div className="bg-blue-600 p-3 rounded-full text-white shadow-sm">
+        <div className="bg-blue-50 p-4 rounded-md border border-blue-100 flex items-center gap-4 my-4">
+          <div className="bg-blue-600 p-3 rounded-md text-white shadow-sm">
             <Music className="w-6 h-6" />
           </div>
           <div className="flex-1">
@@ -122,14 +122,14 @@ export default function LessonExerciseList({ lessonId }: Props) {
         {ex.mediaUrls.map((url, idx) => (
           <div
             key={idx}
-            className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-100 group"
+            className="relative rounded-md overflow-hidden border border-gray-200 bg-gray-100 group"
           >
             {/* Aspect Ratio container */}
             <div className="aspect-video w-full">
               <img
                 src={url}
                 alt={`Illustration ${idx + 1}`}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-cover"
               />
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
   if (loading && page === 1) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-md animate-spin"></div>
         <p className="text-gray-500 font-medium">Loading practice content...</p>
       </div>
     );
@@ -154,7 +154,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
         {exercises.map((ex) => (
           <div
             key={ex.exerciseID}
-            className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col"
+            className="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden flex flex-col"
           >
             {/* 1. Header Section */}
             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-start">
@@ -197,7 +197,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
               {/* Prompt/Instruction */}
               <div className="mb-6">
                 <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  Instruction
+                  Chỉ dẫn
                 </h4>
                 <p className="text-gray-800 text-lg font-medium leading-relaxed">
                   {ex.prompt}
@@ -207,11 +207,11 @@ export default function LessonExerciseList({ lessonId }: Props) {
               {renderMedia(ex)}
 
               {ex.content && ex.content !== ex.prompt && (
-                <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-100 relative">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-400 rounded-l-xl"></div>
+                <div className="mt-6 p-5 bg-gray-50 rounded-md border border-gray-100 relative">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-400 rounded-l-md"></div>
 
                   <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">
-                    Content
+                    Nội dung
                   </h4>
 
                   <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-line">
@@ -228,17 +228,17 @@ export default function LessonExerciseList({ lessonId }: Props) {
                   <AccordionTrigger className="px-6 py-3 text-sm text-gray-600 hover:text-blue-600 hover:no-underline">
                     <span className="flex items-center gap-2">
                       <Lightbulb className="w-4 h-4" />
-                      View Answer Key & Hints
+                      Xem Đáp án & Gợi ý
                     </span>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6 pt-0 space-y-4">
                     {/* Hints */}
                     {ex.hints && (
-                      <div className="flex gap-3 items-start p-3 rounded-lg bg-yellow-50 text-yellow-800 border border-yellow-100">
+                      <div className="flex gap-3 items-start p-3 rounded-md bg-yellow-50 text-yellow-800 border border-yellow-100">
                         <Lightbulb className="w-5 h-5 flex-shrink-0 mt-0.5" />
                         <div>
                           <span className="font-bold block text-xs uppercase mb-1 opacity-70">
-                            Hint
+                            Gợi ý
                           </span>
                           <p className="text-sm">{ex.hints}</p>
                         </div>
@@ -246,11 +246,11 @@ export default function LessonExerciseList({ lessonId }: Props) {
                     )}
 
                     {/* Expected Answer */}
-                    <div className="flex gap-3 items-start p-3 rounded-lg bg-green-50 text-green-800 border border-green-100">
+                    <div className="flex gap-3 items-start p-3 rounded-md bg-green-50 text-green-800 border border-green-100">
                       <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <span className="font-bold block text-xs uppercase mb-1 opacity-70">
-                          Expected Answer
+                          Câu trả lời mong đợi
                         </span>
                         <p className="text-base font-medium">
                           {ex.expectedAnswer}
@@ -262,13 +262,13 @@ export default function LessonExerciseList({ lessonId }: Props) {
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div className="p-2 rounded bg-white border text-gray-500">
                         <span className="font-bold text-green-600 block mb-1">
-                          On Correct:
+                          Đúng:
                         </span>
                         {ex.feedbackCorrect}
                       </div>
                       <div className="p-2 rounded bg-white border text-gray-500">
                         <span className="font-bold text-red-500 block mb-1">
-                          On Incorrect:
+                          Sai:
                         </span>
                         {ex.feedbackIncorrect}
                       </div>
@@ -284,13 +284,13 @@ export default function LessonExerciseList({ lessonId }: Props) {
       {/* Bottom Pagination */}
       {meta && meta.totalPages > 1 && (
         <div className="flex justify-center pt-6 pb-8">
-          <div className="bg-white p-2 rounded-full shadow-md border flex gap-2">
+          <div className="bg-white p-2 rounded-md shadow-md border flex gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1 || loading}
-              className="rounded-full"
+              className="rounded-md"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -304,7 +304,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
               size="icon"
               onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
               disabled={page === meta.totalPages || loading}
-              className="rounded-full"
+              className="rounded-md"
             >
               <ChevronRight className="w-5 h-5" />
             </Button>

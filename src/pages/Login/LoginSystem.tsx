@@ -214,7 +214,7 @@ const LoginDashboard: React.FC = () => {
             className="text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
             href={APP_DOMAIN}
           >
-            Đi đến Cổng thông tin người học
+            Truy cập hệ thống dành cho giáo viên đăng ký
             <ArrowRight className="ml-2 h-3 w-3" />
           </a>
         </div>

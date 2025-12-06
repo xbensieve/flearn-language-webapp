@@ -85,7 +85,7 @@ const ForgotPassword: React.FC = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email hoặc Username</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -95,7 +95,11 @@ const ForgotPassword: React.FC = () => {
                     errors.emailOrUsername ? "border-red-500" : ""
                   }`}
                   {...register("emailOrUsername", {
-                    required: "Email hoặc Username là bắt buộc",
+                    required: "Email là bắt buộc",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email không hợp lệ",
+                    },
                   })}
                 />
               </div>

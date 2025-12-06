@@ -41,7 +41,7 @@ import {
   applicationService,
   type TeacherApplication,
 } from "@/services/teacher/applicationService";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 export default function ApplicationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -66,9 +66,9 @@ export default function ApplicationDetail() {
         const data = await applicationService.getApplicationById(id);
         setApplication(data);
       } catch (err) {
-        setError("Failed to load application details.");
+        setError("Không tải được thông tin chi tiết về đơn đăng ký.");
         console.error(err);
-        toast.error("Failed to load application details.");
+        toast.error("Không tải được thông tin chi tiết về đơn đăng ký.");
       } finally {
         setLoading(false);
       }
@@ -96,10 +96,10 @@ export default function ApplicationDetail() {
         reviewedAt: new Date().toISOString(),
       });
       setIsApproveOpen(false);
-      toast.success("Application approved successfully.");
+      toast.success("Đơn đã được phê duyệt thành công.");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to approve application. Please try again.");
+      toast.error("Không thể chấp nhận đơn đăng ký. Vui lòng thử lại.");
     } finally {
       setActionLoading(false);
     }
@@ -108,7 +108,7 @@ export default function ApplicationDetail() {
   const handleReject = async () => {
     if (!application) return;
     if (!rejectionReason.trim()) {
-      alert("Please provide a rejection reason.");
+      toast.error("Vui lòng cung cấp lý do từ chối.");
       return;
     }
     setActionLoading(true);
@@ -125,10 +125,10 @@ export default function ApplicationDetail() {
         reviewedAt: new Date().toISOString(),
       });
       setIsRejectOpen(false);
-      toast.success("Application rejected successfully.");
+      toast.success("Đơn đăng ký bị từ chối thành công.");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to reject application. Please try again.");
+      toast.error("Không thể từ chối đơn đăng ký. Vui lòng thử lại.");
     } finally {
       setActionLoading(false);
     }
@@ -187,7 +187,7 @@ export default function ApplicationDetail() {
               <AlertCircle className="w-8 h-8 text-gray-400" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-900">
-              Application Not Found
+              Không tìm thấy đơn đăng ký
             </h2>
             <p className="text-gray-600 max-w-md">
               {error ||
@@ -199,7 +199,7 @@ export default function ApplicationDetail() {
               onClick={() => navigate(-1)}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Applications
+              Quay lại
             </Button>
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function ApplicationDetail() {
             onClick={() => navigate(-1)}
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Applications
+            Quay lại
           </Button>
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-3">
@@ -247,11 +247,7 @@ export default function ApplicationDetail() {
                       <h1 className="text-2xl font-bold text-gray-900 mb-1">
                         {application.fullName}
                       </h1>
-                      <p className="text-gray-600 font-medium">
-                        Teacher Application
-                      </p>
                     </div>
-
                     <div className="grid grid-cols-1 gap-2">
                       <div className="flex items-center gap-2 text-sm">
                         <Mail className="w-4 h-4 text-gray-600" />
@@ -282,7 +278,7 @@ export default function ApplicationDetail() {
                     )}
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge
-                        className={`${status.color} px-3 py-1 font-medium`}
+                        className={`${status.color} px-3 py-1 font-medium hover:bg-yellow-300`}
                       >
                         <StatusIcon className="w-3.5 h-3.5 mr-1.5" />
                         {application.status}
@@ -302,23 +298,23 @@ export default function ApplicationDetail() {
                   <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-[160px]">
                     <Button
                       size="lg"
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 !text-white cursor-pointer"
                       onClick={() => setIsApproveOpen(true)}
                     >
                       <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Approve
+                      Duyệt
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer"
                       onClick={() => {
                         setRejectionReason("");
                         setIsRejectOpen(true);
                       }}
                     >
                       <XCircle className="w-4 h-4 mr-2" />
-                      Reject
+                      Từ chối
                     </Button>
                   </div>
                 )}
@@ -332,7 +328,7 @@ export default function ApplicationDetail() {
                 <CardHeader className="border-b border-gray-100 pb-4">
                   <CardTitle className="flex items-center gap-3 text-gray-900 text-lg">
                     <User className="w-5 h-5 text-gray-600" />
-                    Personal Statement
+                    Tiểu sử
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
@@ -340,7 +336,7 @@ export default function ApplicationDetail() {
                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {application.bio || (
                         <span className="text-gray-400 italic">
-                          No personal statement provided.
+                          Chưa cung cấp.
                         </span>
                       )}
                     </p>
@@ -352,16 +348,16 @@ export default function ApplicationDetail() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-gray-900 font-semibold text-sm">
                         <Briefcase className="w-4 h-4 text-gray-600" />
-                        Teaching Experience
+                        Kinh nghiệm giảng dạy
                       </div>
                       <p className="text-gray-600 leading-relaxed text-sm">
-                        {application.teachingExperience || "Not provided"}
+                        {application.teachingExperience || "Chưa cung cấp."}
                       </p>
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-600 font-medium">
-                          Date of Birth
+                          Ngày sinh
                         </span>
                         <span className="text-gray-900 font-semibold">
                           {application.dateOfBirth}
@@ -370,7 +366,7 @@ export default function ApplicationDetail() {
                       <Separator className="bg-gray-200" />
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-gray-600 font-medium">
-                          Submitted
+                          Ngày nộp
                         </span>
                         <span className="text-gray-900 font-semibold">
                           {formatDate(application.submittedAt)}
@@ -385,7 +381,7 @@ export default function ApplicationDetail() {
                 <CardHeader className="border-b border-gray-100 pb-4">
                   <CardTitle className="flex items-center gap-3 text-gray-900 text-lg">
                     <Award className="w-5 h-5 text-gray-600" />
-                    Certificates
+                    Chứng chỉ
                     <Badge
                       variant="secondary"
                       className="ml-auto bg-gray-100 text-gray-700"
@@ -424,7 +420,7 @@ export default function ApplicationDetail() {
                     <Alert className="border-gray-200 bg-gray-50">
                       <AlertCircle className="h-4 w-4 text-gray-600" />
                       <AlertDescription className="text-gray-600">
-                        No certificates uploaded yet.
+                        Chưa có chứng chỉ nào được tải lên.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -437,7 +433,7 @@ export default function ApplicationDetail() {
                 <CardHeader className="border-b border-gray-100 pb-4">
                   <CardTitle className="text-base flex items-center gap-2 text-gray-900">
                     <Clock className="w-4 h-4 text-gray-600" />
-                    Timeline
+                    Mốc thời gian
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
@@ -447,7 +443,7 @@ export default function ApplicationDetail() {
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-sm text-gray-900">
-                        Application Submitted
+                        Ngày nộp
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatDate(application.submittedAt)}
@@ -484,11 +480,11 @@ export default function ApplicationDetail() {
                             <p className="text-xs text-gray-500 mt-1">
                               {application.reviewedAt
                                 ? formatDate(application.reviewedAt)
-                                : "Just now"}
+                                : "Vừa rồi"}
                             </p>
                             {application.reviewer && (
                               <p className="text-xs text-gray-500 mt-1">
-                                by {application.reviewer.fullName}
+                                bởi {application.reviewer.fullName}
                               </p>
                             )}
                           </div>
@@ -534,30 +530,31 @@ export default function ApplicationDetail() {
           <Dialog open={isApproveOpen} onOpenChange={setIsApproveOpen}>
             <DialogContent className="sm:max-w-[425px] bg-white">
               <DialogHeader>
-                <DialogTitle>Approve Application</DialogTitle>
+                <DialogTitle>Duyệt đơn</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to approve this teacher application?
-                  This action will grant the user teacher privileges.
+                  Bạn có chắc chắn muốn chấp thuận đơn đăng ký giáo viên này
+                  không? Thao tác này sẽ cấp cho người dùng quyền giáo viên.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="gap-2 sm:gap-0">
                 <Button
+                  className="cursor-pointer"
                   variant="outline"
                   onClick={() => setIsApproveOpen(false)}
                   disabled={actionLoading}
                 >
-                  Cancel
+                  Hủy
                 </Button>
                 <div></div>
                 <Button
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-green-600 hover:bg-green-700 !text-white cursor-pointer"
                   onClick={handleApprove}
                   disabled={actionLoading}
                 >
                   {actionLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Confirm Approve
+                  Duyệt
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -567,19 +564,19 @@ export default function ApplicationDetail() {
           <Dialog open={isRejectOpen} onOpenChange={setIsRejectOpen}>
             <DialogContent className="sm:max-w-[500px] bg-white">
               <DialogHeader>
-                <DialogTitle>Reject Application</DialogTitle>
+                <DialogTitle>Từ chối đơn</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to reject this teacher application? This
-                  action cannot be undone.
+                  Bạn có chắc chắn muốn từ chối đơn xin việc giáo viên này
+                  không? Hành động này không thể hoàn tác.
                 </DialogDescription>
               </DialogHeader>
               <div className="py-4">
                 <Label htmlFor="reason" className="text-right mb-2 block">
-                  Rejection Reason <span className="text-red-500">*</span>
+                  Lý do từ chối <span className="text-red-500">*</span>
                 </Label>
                 <Textarea
                   id="reason"
-                  placeholder="Please provide a reason for rejection..."
+                  placeholder="Vui lòng cung cấp lý do từ chối..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   className="min-h-[100px]"
@@ -587,14 +584,16 @@ export default function ApplicationDetail() {
               </div>
               <DialogFooter className="gap-2 sm:gap-0">
                 <Button
+                  className="cursor-pointer"
                   variant="outline"
                   onClick={() => setIsRejectOpen(false)}
                   disabled={actionLoading}
                 >
-                  Cancel
+                  Hủy
                 </Button>
                 <div></div>
                 <Button
+                  className="!text-white cursor-pointer"
                   variant="destructive"
                   onClick={handleReject}
                   disabled={actionLoading}
@@ -602,7 +601,7 @@ export default function ApplicationDetail() {
                   {actionLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Confirm Reject
+                  Xác nhận từ chối
                 </Button>
               </DialogFooter>
             </DialogContent>

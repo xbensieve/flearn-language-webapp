@@ -14,20 +14,20 @@ import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 
 const navItems = [
-  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/dashboard/applications", icon: UserCheck, label: "Applications" },
-  { to: "/dashboard/courses", icon: BookOpen, label: "Courses" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Tổng quan" },
+  { to: "/dashboard/applications", icon: UserCheck, label: "Đơn đăng ký" },
+  { to: "/dashboard/courses", icon: BookOpen, label: "Khóa học" },
   {
     to: "/dashboard/exercise-grading",
     icon: ClipboardCheck,
-    label: "Exercise Grading",
+    label: "Chấm điểm bài tập",
   },
   {
     to: "/dashboard/cancellation-requests",
     icon: XCircle,
-    label: "Cancellation Requests",
+    label: "Yêu cầu hủy",
   },
-  { to: "/dashboard/profile", icon: UserCircle, label: "Profile" },
+  { to: "/dashboard/profile", icon: UserCircle, label: "Hồ sơ" },
 ];
 
 export const Sidebar = () => {

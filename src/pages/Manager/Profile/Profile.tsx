@@ -99,10 +99,10 @@ export default function Profile() {
       <div className="font-sans container mx-auto p-6 max-w-5xl">
         <div className="mb-10">
           <h1 className="text-xl font-bold tracking-tight lg:text-2xl">
-            My Profile
+            Hồ sơ của tôi
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            View and manage your account information
+            Xem và quản lý thông tin tài khoản của bạn
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export default function Profile() {
                       {profile.username}
                     </CardTitle>
                     <CardDescription className="text-base">
-                      Member since {joinedDate}
+                      Thành viên kể từ {joinedDate}
                     </CardDescription>
                     <div className="flex flex-wrap gap-2 justify-center sm:justify-start pt-3">
                       {profile.roles.map((role) => (
@@ -156,7 +156,7 @@ export default function Profile() {
                   <div className="group p-5 rounded-md border bg-muted/30 hover:bg-muted/50 transition-all duration-200">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                       <Mail className="h-5 w-5" />
-                      <span className="font-medium text-sm">Email Address</span>
+                      <span className="font-medium text-sm">Địa chỉ email</span>
                     </div>
                     <p className="text-xl font-semibold pl-8 text-foreground break-all">
                       {profile.email}
@@ -166,7 +166,9 @@ export default function Profile() {
                   <div className="group p-5 rounded-md border bg-muted/30 hover:bg-muted/50 transition-all duration-200">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                       <Calendar className="h-5 w-5" />
-                      <span className="font-medium text-sm">Joined On</span>
+                      <span className="font-medium text-sm">
+                        Đã tham gia vào
+                      </span>
                     </div>
                     <p className="text-xl font-semibold pl-8 text-foreground">
                       {joinedDate}
@@ -181,7 +183,7 @@ export default function Profile() {
           <div className="space-y-6">
             <Card className="border shadow-md">
               <CardHeader>
-                <CardTitle className="text-lg">Account Summary</CardTitle>
+                <CardTitle className="text-lg">Tài khoản</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
                 <div className="flex justify-between">
@@ -193,14 +195,14 @@ export default function Profile() {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
                   <Badge variant="outline" className="text-green-600">
-                    Active
+                    Đang hoạt động
                   </Badge>
                 </div>
               </CardContent>
             </Card>
 
             <div className="text-center text-sm text-muted-foreground p-6 bg-muted/30 rounded-md">
-              <p>Your account is secure and up to date.</p>
+              <p>Tài khoản của bạn an toàn và được cập nhật.</p>
             </div>
           </div>
         </div>

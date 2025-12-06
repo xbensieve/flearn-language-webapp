@@ -28,7 +28,7 @@ export const Header = () => {
       localStorage.removeItem("FLEARN_REFRESH_TOKEN");
       localStorage.removeItem("FLEARN_USER_ROLE");
       localStorage.removeItem("FLEARN_USER_ROLES");
-      toast.success("Logout successful");
+      toast.success("Đăng xuất thành công!");
       navigate("/login");
     }
   };
@@ -36,7 +36,9 @@ export const Header = () => {
   return (
     <header className="h-16 bg-surface border-b border-border flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold">Manager Dashboard</h1>
+        <h1 className="text-xl font-semibold">
+          Trang tổng quan dành cho người quản lý
+        </h1>
       </div>
 
       <div className="flex items-center gap-3">
@@ -55,18 +57,18 @@ export const Header = () => {
               className="flex items-center gap-2 cursor-pointer"
             >
               <UserCog />
-              <span className="font-medium">{"Manager"}</span>
+              <span className="font-medium">{"Quản lý"}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => navigate("/dashboard/profile")}
               className="cursor-pointer"
             >
               <User className="mr-2 h-4 w-4" />
-              Profile
+              Hồ sơ
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -74,7 +76,7 @@ export const Header = () => {
               className="text-destructive cursor-pointer focus:text-destructive"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Logout
+              Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

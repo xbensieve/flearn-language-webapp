@@ -187,10 +187,10 @@ export default function TeacherApplications() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Teacher Applications
+              Đơn đăng ký làm giáo viên
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Manage and review all teacher registration requests
+              Quản lý và xem xét tất cả các yêu cầu đăng ký giáo viên
             </p>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function TeacherApplications() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search by name, email, phone..."
+                placeholder="Tìm kiếm theo tên, email, số điện thoại..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -217,13 +217,13 @@ export default function TeacherApplications() {
               >
                 <SelectTrigger className="cursor-pointer">
                   <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="All Status" />
+                  <SelectValue placeholder="Tất cả trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="pending">Đang xét duyệt</SelectItem>
+                  <SelectItem value="approved">Đã duyệt</SelectItem>
+                  <SelectItem value="rejected">Từ chối</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -239,10 +239,10 @@ export default function TeacherApplications() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="oldest">Oldest First</SelectItem>
-                  <SelectItem value="name-asc">Name A to Z</SelectItem>
-                  <SelectItem value="name-desc">Name Z to A</SelectItem>
+                  <SelectItem value="newest">Mới nhất đầu tiên</SelectItem>
+                  <SelectItem value="oldest">Cũ nhất đầu tiên</SelectItem>
+                  <SelectItem value="name-asc">Tên từ A đến Z</SelectItem>
+                  <SelectItem value="name-desc">Tên từ Z đến A</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -250,9 +250,8 @@ export default function TeacherApplications() {
 
           {/* Result count */}
           <div className="mt-3 text-sm text-slate-500">
-            Found <strong>{processedData.length}</strong> application
-            {processedData.length !== 1 ? "s" : ""}
-            {searchTerm && ` matching "${searchTerm}"`}
+            Tìm thấy <strong>{processedData.length}</strong> đơn
+            {searchTerm && ` khớp "${searchTerm}"`}
           </div>
         </div>
 
@@ -272,24 +271,24 @@ export default function TeacherApplications() {
                 <Search className="h-8 w-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-medium text-slate-900">
-                No applications found
+                Không tìm đơn đăng ký nào
               </h3>
               <p className="text-slate-500 mt-1">
-                Try adjusting your search or filters.
+                Hãy thử điều chỉnh tìm kiếm hoặc bộ lọc của bạn.
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow className="bg-slate-50/70 hover:bg-slate-50/90">
-                  <TableHead className="w-12">#</TableHead>
-                  <TableHead>Teacher</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Language</TableHead>
-                  <TableHead>Certificates</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right w-24">Action</TableHead>
+                  <TableHead className="w-12">STT</TableHead>
+                  <TableHead>Giáo viên</TableHead>
+                  <TableHead>Liên hệ</TableHead>
+                  <TableHead>Ngôn ngữ</TableHead>
+                  <TableHead>Chứng chỉ</TableHead>
+                  <TableHead>Ngày nộp</TableHead>
+                  <TableHead className="text-center">Trạng thái</TableHead>
+                  <TableHead className="text-right w-24">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -353,8 +352,7 @@ export default function TeacherApplications() {
 
                     <TableCell>
                       <span className="text-sm font-medium text-slate-700">
-                        {app.certificates.length} certificate
-                        {app.certificates.length !== 1 ? "s" : ""}
+                        {app.certificates.length} chứng chỉ
                       </span>
                     </TableCell>
 
@@ -403,7 +401,7 @@ export default function TeacherApplications() {
                 onClick={() => setPage((p) => p - 1)}
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
+                Trước
               </Button>
               <Button
                 variant="outline"
@@ -411,7 +409,7 @@ export default function TeacherApplications() {
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                Tiếp theo
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>

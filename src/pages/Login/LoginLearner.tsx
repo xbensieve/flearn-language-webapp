@@ -246,7 +246,7 @@ const LoginLearner: React.FC = () => {
               href={SYSTEM_DOMAIN}
               className="text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
             >
-              Nhân viên? Đi đến Cổng thông tin hệ thống{" "}
+              Nhân viên? Truy cập Cổng thông tin hệ thống
               <ArrowRight className="h-3 w-3" />
             </a>
           </div>
