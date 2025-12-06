@@ -15,6 +15,7 @@ import {
   AlertCircle,
   ShieldCheck,
   CreditCard,
+  Bell,
 } from "lucide-react";
 
 // Services
@@ -23,6 +24,7 @@ import {
   logoutService,
   getProfileTeacher,
 } from "../../services/auth";
+import { unregisterWebPush } from "../../services/webPush";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import NotificationSettings from "@/components/NotificationSettings";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
@@ -77,6 +80,8 @@ const Profile: React.FC = () => {
 
   const handleLogoutClick = () => {
     const refreshToken = localStorage.getItem("refreshToken");
+    // Unregister web push before logout
+    unregisterWebPush().catch(() => {});
     if (refreshToken) {
       logout(refreshToken);
     } else {
@@ -263,6 +268,19 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Notification Settings Card */}
+            <Card className="shadow-sm border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <NotificationSettings />
               </CardContent>
             </Card>
 

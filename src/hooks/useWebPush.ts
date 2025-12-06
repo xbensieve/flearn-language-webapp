@@ -1,0 +1,192 @@
+import { useState, useEffect, useCallback } from 'react';
+import {
+  requestNotificationPermission,
+  onForegroundMessage,
+  isNotificationEnabled,
+  getNotificationPermissionStatus,
+  initializeMessaging,
+} from '../lib/firebase';
+import { registerWebPushToken, unregisterWebPush, getWebPushStatus } from '../services/webPush';
+import { notification } from 'antd';
+
+interface WebPushState {
+  isSupported: boolean;
+  isEnabled: boolean;
+  isLoading: boolean;
+  permissionStatus: NotificationPermission | 'unsupported';
+  error: string | null;
+}
+
+export const useWebPush = () => {
+  const [state, setState] = useState<WebPushState>({
+    isSupported: false,
+    isEnabled: false,
+    isLoading: true,
+    permissionStatus: 'default',
+    error: null,
+  });
+
+  // Check initial status
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const isSupported = 'Notification' in window && 'serviceWorker' in navigator;
+        const permissionStatus = getNotificationPermissionStatus();
+        const isEnabled = isNotificationEnabled();
+
+        setState((prev) => ({
+          ...prev,
+          isSupported,
+          isEnabled,
+          permissionStatus,
+          isLoading: false,
+          // Don't show error if just blocked - that's expected
+          error: null,
+        }));
+
+        // Initialize messaging only if permission is granted
+        if (isSupported && permissionStatus === 'granted') {
+          await initializeMessaging();
+          
+          // Setup foreground message listener
+          onForegroundMessage((payload: unknown) => {
+            const message = payload as { notification?: { title?: string; body?: string } };
+            // Show notification using Ant Design
+            notification.info({
+              message: message.notification?.title || 'New Notification',
+              description: message.notification?.body,
+              placement: 'topRight',
+              duration: 5,
+            });
+          });
+        }
+      } catch (error) {
+        console.error('Error checking notification status:', error);
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          // Don't show error on initial check
+          error: null,
+        }));
+      }
+    };
+
+    checkStatus();
+  }, []);
+
+  // Enable notifications
+  const enableNotifications = useCallback(async () => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      const token = await requestNotificationPermission();
+      console.log('=== FCM Token ===');
+      console.log('Token obtained:', token);
+      console.log('Token length:', token?.length);
+
+      if (token) {
+        // Register token with backend
+        try {
+          console.log('Registering token with backend...');
+          const response = await registerWebPushToken(token);
+          console.log('Backend response:', response);
+        } catch (registerError: unknown) {
+          console.error('Failed to register token with backend:', registerError);
+          const err = registerError as { response?: { data?: unknown } };
+          console.error('Error response:', err.response?.data);
+          // Show error to user
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: 'Failed to register with server',
+          }));
+          return false;
+        }
+
+        setState((prev) => ({
+          ...prev,
+          isEnabled: true,
+          permissionStatus: 'granted',
+          isLoading: false,
+          error: null,
+        }));
+
+        // Setup foreground message listener
+        onForegroundMessage((payload: unknown) => {
+          const message = payload as { notification?: { title?: string; body?: string } };
+          notification.info({
+            message: message.notification?.title || 'New Notification',
+            description: message.notification?.body,
+            placement: 'topRight',
+            duration: 5,
+          });
+        });
+
+        return true;
+      } else {
+        const currentPermission = getNotificationPermissionStatus();
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          permissionStatus: currentPermission,
+          // Only show error if permission was granted but token failed
+          error: currentPermission === 'granted' ? 'Failed to get notification token' : null,
+        }));
+        return false;
+      }
+    } catch (error) {
+      console.error('Error enabling notifications:', error);
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to enable notifications',
+      }));
+      return false;
+    }
+  }, []);
+
+  // Disable notifications
+  const disableNotifications = useCallback(async () => {
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+      await unregisterWebPush();
+
+      setState((prev) => ({
+        ...prev,
+        isEnabled: false,
+        isLoading: false,
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error disabling notifications:', error);
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to disable notifications',
+      }));
+      return false;
+    }
+  }, []);
+
+  // Check server status
+  const checkServerStatus = useCallback(async () => {
+    try {
+      const status = await getWebPushStatus();
+      return status;
+    } catch (error) {
+      console.error('Error checking server status:', error);
+      return null;
+    }
+  }, []);
+
+  return {
+    ...state,
+    enableNotifications,
+    disableNotifications,
+    checkServerStatus,
+  };
+};
+
+export default useWebPush;
