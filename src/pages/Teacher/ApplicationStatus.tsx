@@ -26,6 +26,7 @@ import {
   ExclamationCircleOutlined,
   EyeOutlined,
   SearchOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import type {
   ApplicationData,
@@ -33,6 +34,7 @@ import type {
 } from "../../services/teacherApplication/types";
 import { getMyApplication } from "../../services/teacherApplication";
 import { useDebounce } from "../../utils/useDebound";
+import NotificationSettings from "../../components/NotificationSettings";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -219,6 +221,24 @@ const ApplicationStatus: React.FC = () => {
             Search, filter, and view all your applications in one place.
           </Paragraph>
         </div>
+
+        {/* Notification Settings */}
+        <Card 
+          className="!mb-4 shadow-md rounded-xl"
+          title={
+            <Space>
+              <BellOutlined className="text-blue-500" />
+              <span>Notification Settings</span>
+            </Space>
+          }
+        >
+          <div className="max-w-md">
+            <p className="text-gray-500 text-sm mb-4">
+              Enable notifications to receive instant updates when your application status changes.
+            </p>
+            <NotificationSettings />
+          </div>
+        </Card>
 
         {/* Filters */}
         <Card className="!mb-2 shadow-md rounded-xl">
