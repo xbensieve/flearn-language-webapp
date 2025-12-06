@@ -121,6 +121,12 @@ let isListenerSetup = false;
 const setupGlobalListener = () => {
   if (!messaging || isListenerSetup) return;
   
+  // Only setup listener if permission is granted
+  if (Notification.permission !== 'granted') {
+    console.log('📩 Notification permission not granted, skipping listener setup');
+    return;
+  }
+  
   isListenerSetup = true;
   console.log('📩 Setting up global Firebase message listener');
   

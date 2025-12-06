@@ -88,6 +88,9 @@ export const useWebPush = () => {
           const response = await registerWebPushToken(token);
           console.log('Backend response:', response);
           
+          // Re-initialize messaging to setup listener after permission granted
+          await initializeMessaging();
+          
           setState((prev) => ({
             ...prev,
             isEnabled: true,
