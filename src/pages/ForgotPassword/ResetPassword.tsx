@@ -102,7 +102,7 @@ const ResetPassword: React.FC = () => {
           className="absolute top-4 left-4 md:top-8 md:left-8 cursor-pointer !text-foreground"
           onClick={() => navigate("/login")}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
+          <ArrowLeft className="mr-2 h-4 w-4" /> Hủy
         </Button>
 
         <div className="mx-auto grid w-full max-w-[400px] gap-6">
@@ -113,10 +113,10 @@ const ResetPassword: React.FC = () => {
               </div>
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Set new password
+              Đặt mật khẩu mới
             </h1>
             <p className="text-muted-foreground text-sm">
-              Enter the code sent to{" "}
+              Nhập mã được gửi đến{" "}
               <span className="font-medium text-foreground">{userEmail}</span>
             </p>
           </div>
@@ -158,24 +158,24 @@ const ResetPassword: React.FC = () => {
                 </InputOTPGroup>
               </InputOTP>
               {errors.otpCode && (
-                <span className="text-xs text-red-500">OTP is required</span>
+                <span className="text-xs text-red-500">OTP là bắt buộc</span>
               )}
             </div>
 
             {/* PASSWORD INPUTS */}
             <div className="grid gap-2">
-              <Label htmlFor="newPassword">New Password</Label>
+              <Label htmlFor="newPassword">Mật khẩu mới</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
                   type={showPass ? "text" : "password"}
-                  placeholder="Min. 8 characters"
+                  placeholder="Tối thiểu 8 ký tự"
                   className={
                     errors.newPassword ? "border-red-500 pr-10" : "pr-10"
                   }
                   {...register("newPassword", {
-                    required: "Password is required",
-                    minLength: { value: 6, message: "Min 6 chars" },
+                    required: "Cần có mật khẩu",
+                    minLength: { value: 6, message: "Tối thiểu 6 ký tự" },
                   })}
                 />
                 <button
@@ -198,19 +198,19 @@ const ResetPassword: React.FC = () => {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Xác nhận mật khẩu</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
                   type={showConfirmPass ? "text" : "password"}
-                  placeholder="Re-enter password"
+                  placeholder="Nhập lại mật khẩu"
                   className={
                     errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"
                   }
                   {...register("confirmPassword", {
                     validate: (val) => {
                       if (watch("newPassword") !== val)
-                        return "Passwords do not match";
+                        return "Mật khẩu không khớp";
                     },
                   })}
                 />
@@ -241,7 +241,7 @@ const ResetPassword: React.FC = () => {
               {mutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Reset Password
+              Đặt lại mật khẩu
             </Button>
           </form>
         </div>

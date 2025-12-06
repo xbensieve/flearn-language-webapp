@@ -95,6 +95,7 @@ export interface CourseDetail {
   numUnits: number;
   averageRating: number;
   learnerCount: number;
+  reviewCount: number;
   createdAt: string;
   program: Program;
   teacher: Teacher;

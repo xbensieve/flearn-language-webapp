@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
-  Clock,
   BookOpen,
   Users,
   Star,
@@ -110,7 +109,7 @@ export default function CourseDetail() {
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Courses
+          Trở lại
         </Button>
         <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-12">
           <div className="lg:col-span-2 space-y-10">
@@ -141,11 +140,17 @@ export default function CourseDetail() {
                   </Badge>
                   <Badge variant="outline" className="gap-1.5 font-sans">
                     <Users className="w-3.5 h-3.5" />
-                    {course.learnerCount.toLocaleString()} learners
+                    {course.learnerCount.toLocaleString()} học viên
                   </Badge>
-                  <Badge variant="outline" className="gap-1.5 font-sans">
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1.5 font-sans"
+                  >
                     <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                    {course.averageRating}
+                    <span>{course.averageRating}</span>
+                    <span className="text-gray-500">
+                      ({course.reviewCount})
+                    </span>
                   </Badge>
                 </div>
               </div>
@@ -161,7 +166,7 @@ export default function CourseDetail() {
                 <div>
                   <CardTitle className="text-lg flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span className="font-sans">Teacher</span>
+                    <span className="font-sans">Giáo viên</span>
                   </CardTitle>
                   <p className="font-sans text-sm text-muted-foreground">
                     {course.teacher.name}
@@ -175,9 +180,11 @@ export default function CourseDetail() {
 
             <Tabs defaultValue="curriculum" className="w-full font-sans">
               <TabsList className="grid w-full grid-cols-3 h-12 ">
-                <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                <TabsTrigger value="outcomes">Outcomes</TabsTrigger>
-                <TabsTrigger value="topics">Topics</TabsTrigger>
+                <TabsTrigger value="curriculum">
+                  Chương trình giảng dạy
+                </TabsTrigger>
+                <TabsTrigger value="outcomes">Kết quả</TabsTrigger>
+                <TabsTrigger value="topics">Chủ đề</TabsTrigger>
               </TabsList>
 
               <TabsContent value="curriculum" className="mt-6">
@@ -187,7 +194,7 @@ export default function CourseDetail() {
               <TabsContent value="outcomes" className="mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>What You'll Achieve</CardTitle>
+                    <CardTitle>Những gì bạn sẽ đạt được</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {learningOutcomes.map((outcome, idx) => (
@@ -234,10 +241,10 @@ function CourseCurriculum({ units }: { units: CourseDetail["units"] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-bold">Course Content</h3>
+        <h3 className="text-2xl font-bold">Nội dung khóa học</h3>
         <p className="text-sm text-muted-foreground">
-          {units.length} Units •{" "}
-          {units.reduce((acc, u) => acc + u.totalLessons, 0)} Lessons
+          {units.length} Chương •{" "}
+          {units.reduce((acc, u) => acc + u.totalLessons, 0)} Bài học
         </p>
       </div>
 
@@ -250,7 +257,7 @@ function CourseCurriculum({ units }: { units: CourseDetail["units"] }) {
             <div className="flex justify-between items-start">
               <div>
                 <h4 className="font-semibold text-lg">
-                  Unit {unit.position}: {unit.title}
+                  Chương {unit.position}: {unit.title}
                 </h4>
                 {unit.description && (
                   <p className="text-sm text-muted-foreground mt-1">
@@ -258,7 +265,9 @@ function CourseCurriculum({ units }: { units: CourseDetail["units"] }) {
                   </p>
                 )}
               </div>
-              <Badge variant="secondary">{unit.totalLessons} lessons</Badge>
+              <p className="text-sm text-muted-foreground mt-1 text-ellipsis whitespace-nowrap">
+                {unit.totalLessons} bài học
+              </p>
             </div>
           </CardHeader>
         </Card>
@@ -306,7 +315,9 @@ function CourseSidebar({
       <CardContent className="p-6 space-y-6">
         <div className="space-y-2">
           <p className="text-4xl font-semibold text-primary">
-            {course.price === 0 ? "Free" : `đ${course.price.toLocaleString()}`}
+            {course.price === 0
+              ? "Miễn phí"
+              : `${course.price.toLocaleString()}đ`}
           </p>
         </div>
 
@@ -315,19 +326,13 @@ function CourseSidebar({
         <div className="space-y-4 text-sm">
           <div className="flex justify-between">
             <span className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="w-4 h-4" /> Duration
-            </span>
-            <span className="font-medium">{course.estimatedHours} hours</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="flex items-center gap-2 text-muted-foreground">
-              <BookOpen className="w-4 h-4" /> Lessons
+              <BookOpen className="w-4 h-4" /> Bài học
             </span>
             <span className="font-medium">{course.numLessons}</span>
           </div>
           <div className="flex justify-between">
             <span className="flex items-center gap-2 thai-muted-foreground">
-              <Layers className="w-4 h-4" /> Level
+              <Layers className="w-4 h-4" /> Trình độ
             </span>
             <span className="font-medium">{course.program.level.name}</span>
           </div>
@@ -344,10 +349,10 @@ function CourseSidebar({
           {isReviewLoading ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Loading Content...
+              Đang tải nội dung...
             </>
           ) : (
-            <span className="text-white">Review Course</span>
+            <span className="text-white">Đánh giá khóa học</span>
           )}
         </Button>
       </CardContent>

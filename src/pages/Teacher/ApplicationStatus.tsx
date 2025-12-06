@@ -12,7 +12,6 @@ import {
   Alert,
   Space,
   Divider,
-  Collapse,
   Input,
   Select,
 } from "antd";
@@ -21,12 +20,10 @@ import { useNavigate } from "react-router-dom";
 import {
   ClockCircleOutlined,
   UserOutlined,
-  FileTextOutlined,
   TrophyOutlined,
   ExclamationCircleOutlined,
   EyeOutlined,
   SearchOutlined,
-  BellOutlined,
 } from "@ant-design/icons";
 import type {
   ApplicationData,
@@ -34,7 +31,7 @@ import type {
 } from "../../services/teacherApplication/types";
 import { getMyApplication } from "../../services/teacherApplication";
 import { useDebounce } from "../../utils/useDebound";
-import NotificationSettings from "../../components/NotificationSettings";
+
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -102,7 +99,7 @@ const ApplicationStatus: React.FC = () => {
         <Space direction="vertical" size="large" className="text-center">
           <Spin size="large" />
           <Title level={4} type="secondary">
-            Loading applications...
+            Đang tải đơn đăng ký...
           </Title>
         </Space>
       </div>
@@ -122,7 +119,7 @@ const ApplicationStatus: React.FC = () => {
             message="Error"
             description={
               (error as any)?.response?.data?.message ||
-              "Failed to load applications."
+              "Không tải được đơn đăng ký."
             }
             type="error"
             showIcon
@@ -133,7 +130,7 @@ const ApplicationStatus: React.FC = () => {
             onClick={() => navigate("/learner/application")}
             icon={<UserOutlined />}
           >
-            Apply to Teach
+            Đăng ký để giảng dạy
           </Button>
         </Space>
       </div>
@@ -142,7 +139,7 @@ const ApplicationStatus: React.FC = () => {
 
   const columns = [
     {
-      title: "Applicant",
+      title: "Người xin việc",
       key: "name",
       render: (_: any, record: ApplicationData) => (
         <Space>
@@ -156,16 +153,12 @@ const ApplicationStatus: React.FC = () => {
           />
           <div>
             <Text strong>{record.fullName}</Text>
-            <br />
-            <Text type="secondary" className="text-xs">
-              ID: {record.applicationID.slice(0, 8)}...
-            </Text>
           </div>
         </Space>
       ),
     },
     {
-      title: "Language",
+      title: "Ngôn ngữ",
       render: (_: any, record: ApplicationData) => (
         <Text strong>
           {record.language}{" "}
@@ -174,7 +167,7 @@ const ApplicationStatus: React.FC = () => {
       ),
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       render: (status: string) => {
         const s = statusMap[status] || statusMap.Pending;
@@ -186,12 +179,12 @@ const ApplicationStatus: React.FC = () => {
       },
     },
     {
-      title: "Submitted",
+      title: "Ngày nộp",
       dataIndex: "submittedAt",
       render: (date: string) => <Text>{date}</Text>,
     },
     {
-      title: "Action",
+      title: "Hành động",
       key: "action",
       render: (_: any, record: ApplicationData) => (
         <Button
@@ -203,7 +196,7 @@ const ApplicationStatus: React.FC = () => {
           }}
           className="text-sky-600 hover:text-sky-700"
         >
-          View Details
+          Xem chi tiết
         </Button>
       ),
     },
@@ -212,69 +205,36 @@ const ApplicationStatus: React.FC = () => {
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-10">
           <Title level={1} className="text-4xl font-bold text-gray-900 mb-3">
-            Your Teacher Applications
+            Đơn đăng ký làm giáo viên của bạn
           </Title>
-          <Paragraph className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Search, filter, and view all your applications in one place.
-          </Paragraph>
         </div>
-
-        {/* Notification Settings */}
-        <Card 
-          className="!mb-4 shadow-md rounded-xl"
-          title={
-            <Space>
-              <BellOutlined className="text-blue-500" />
-              <span>Notification Settings</span>
-            </Space>
-          }
-        >
-          <div className="max-w-md">
-            <p className="text-gray-500 text-sm mb-4">
-              Enable notifications to receive instant updates when your application status changes.
-            </p>
-            <NotificationSettings />
-          </div>
-        </Card>
 
         {/* Filters */}
         <Card className="!mb-2 shadow-md rounded-xl">
           <Space wrap className="w-full" size="middle">
             <Input
-              placeholder="Search by name or language..."
+              placeholder="Tìm kiếm theo tên hoặc ngôn ngữ..."
               prefix={<SearchOutlined />}
               allowClear
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               style={{ width: 280 }}
             />
-            {/* <Select
-              placeholder="Sort by"
-              style={{ width: 160 }}
-              onChange={(v) => setSortBy(v as any)}
-              defaultValue="newest"
-              options={[
-                { label: 'Newest First', value: 'newest' },
-                { label: 'Oldest First', value: 'oldest' },
-              ]}
-            /> */}
             <Select
-              placeholder="Filter by status"
+              placeholder="Lọc theo trạng thái"
               style={{ width: 180 }}
               allowClear
               onChange={(v) => setStatusFilter(v)}
               options={[
-                { label: "Pending", value: "Pending" },
-                { label: "Approved", value: "Approved" },
-                { label: "Rejected", value: "Rejected" },
+                { label: "Đang xử lý", value: "Pending" },
+                { label: "Đã duyệt", value: "Approved" },
+                { label: "Từ chối", value: "Rejected" },
               ]}
             />
           </Space>
         </Card>
-
         {/* Table */}
         <Card className="shadow-lg rounded-2xl overflow-hidden">
           <Table
@@ -288,7 +248,7 @@ const ApplicationStatus: React.FC = () => {
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} applications`,
+                `${range[0]}-${range[1]} của ${total} đơn`,
               onChange: (p, ps) => {
                 setPage(p);
                 setPageSize(ps || 10);
@@ -305,12 +265,6 @@ const ApplicationStatus: React.FC = () => {
           footer={null}
           width={900}
           centered
-          title={
-            <Space>
-              <UserOutlined className="text-sky-600" />
-              <span className="font-bold">Application Details</span>
-            </Space>
-          }
         >
           {selectedApp && (
             <div className="space-y-6">
@@ -327,10 +281,7 @@ const ApplicationStatus: React.FC = () => {
                       {selectedApp.fullName}
                     </Title>
                     <Text type="secondary">
-                      Submitted:{" "}
-                      {new Date(selectedApp.submittedAt).toLocaleString(
-                        "en-GB"
-                      )}
+                      Ngày nộp: {selectedApp.submittedAt}
                     </Text>
                   </div>
                 </Space>
@@ -349,19 +300,19 @@ const ApplicationStatus: React.FC = () => {
                   {selectedApp.email}
                 </div>
                 <div>
-                  <span className="font-semibold">Phone:</span>{" "}
+                  <span className="font-semibold">Số điện thoại:</span>{" "}
                   {selectedApp.phoneNumber}
                 </div>
                 <div>
-                  <span className="font-semibold">Language:</span>{" "}
+                  <span className="font-semibold">Ngôn ngữ:</span>{" "}
                   {selectedApp.language} ({selectedApp.proficiencyCode})
                 </div>
                 <div>
-                  <span className="font-semibold">DOB:</span>{" "}
+                  <span className="font-semibold">Ngày sinh:</span>{" "}
                   {selectedApp.dateOfBirth}
                 </div>
                 <div>
-                  <span className="font-semibold">Experience:</span>{" "}
+                  <span className="font-semibold">Kinh nghiệm:</span>{" "}
                   {selectedApp.teachingExperience || "—"}
                 </div>
                 {selectedApp.meetingUrl && (
@@ -378,32 +329,15 @@ const ApplicationStatus: React.FC = () => {
                   </div>
                 )}
               </div>
-
               <Divider />
-
-              <Collapse
-                items={[
-                  {
-                    key: "bio",
-                    label: (
-                      <span className="font-medium">
-                        <FileTextOutlined /> Bio
-                      </span>
-                    ),
-                    children: (
-                      <Paragraph className="whitespace-pre-wrap">
-                        {selectedApp.bio || "No bio."}
-                      </Paragraph>
-                    ),
-                  },
-                ]}
-              />
-
+              <Paragraph className="whitespace-pre-wrap">
+                <span className="font-semibold">Tiểu sử: </span>
+                {selectedApp.bio || "No bio."}
+              </Paragraph>
               {selectedApp.certificates?.length ? (
                 <div className="mt-4">
                   <Title level={5} className="flex items-center gap-2">
-                    <TrophyOutlined className="text-yellow-500" />
-                    Certificates ({selectedApp.certificates.length})
+                    Chứng chỉ: ({selectedApp.certificates.length})
                   </Title>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {selectedApp.certificates.map((cert) => (

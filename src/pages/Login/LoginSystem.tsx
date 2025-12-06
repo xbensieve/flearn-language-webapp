@@ -18,7 +18,6 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-// Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,10 +33,8 @@ const LoginDashboard: React.FC = () => {
   const { updateAuth } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
-  // State quản lý Loading màn hình chờ (tránh Flash content)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // Form Setup
   const {
     register,
     handleSubmit,
@@ -73,7 +70,7 @@ const LoginDashboard: React.FC = () => {
     onSuccess: (data) => handleAuthSuccess(data),
     onError: (err: AxiosError<any>) => {
       console.log(err?.response?.data?.message);
-      notifyError("Login failed");
+      notifyError("Đăng nhập thất bại!");
     },
   });
 
@@ -82,7 +79,7 @@ const LoginDashboard: React.FC = () => {
     localStorage.setItem("FLEARN_REFRESH_TOKEN", data.refreshToken);
     localStorage.setItem("FLEARN_USER_ROLES", JSON.stringify(data.roles));
     updateAuth();
-    notifySuccess("Welcome to Dashboard!");
+    notifySuccess("Đăng nhập thành công!");
     handleRoleRedirect(data.roles, navigate, "internal");
   };
 
@@ -91,7 +88,7 @@ const LoginDashboard: React.FC = () => {
   };
 
   if (isCheckingAuth || mutation.isSuccess) {
-    return <LoadingScreen message="Accessing System Portal..." />;
+    return <LoadingScreen message="Truy cập Cổng thông tin hệ thống..." />;
   }
 
   return (
@@ -107,7 +104,7 @@ const LoginDashboard: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
         <div className="relative z-20 flex h-full flex-col justify-between p-10 text-white">
           <div className="flex items-center gap-2 font-medium text-lg text-indigo-300">
-            <GraduationCap className="h-6 w-6" /> FLearn Management
+            <GraduationCap className="h-6 w-6" /> Hệ thống quản lý FLearn
           </div>
           <div className="mb-10 max-w-lg">
             <blockquote className="space-y-4">
@@ -122,21 +119,20 @@ const LoginDashboard: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="flex bg-gray-50 items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex bg-white items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid w-full max-w-[400px] gap-6">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="flex items-center justify-center gap-2 text-3xl font-bold tracking-tight text-foreground">
-              <ShieldCheck className="h-7 w-7" /> System Access
+              <ShieldCheck className="h-7 w-7" /> Truy cập hệ thống
             </h1>
             <p className="text-muted-foreground text-sm">
-              Restricted area for Administrators & Staff
+              Khu vực dành riêng cho Quản trị viên và Nhân sự
             </p>
           </div>
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username or Email</Label>
+              <Label htmlFor="username">Username hoặc Email</Label>
               <Input
                 id="username"
                 placeholder="admin@flearn.com"
@@ -145,14 +141,14 @@ const LoginDashboard: React.FC = () => {
               />
               {errors.usernameOrEmail && (
                 <span className="text-xs text-red-500">
-                  This field is required
+                  Trường này là bắt buộc
                 </span>
               )}
             </div>
 
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Mật khẩu</Label>
               </div>
               <div className="relative">
                 <Input
@@ -176,7 +172,7 @@ const LoginDashboard: React.FC = () => {
               </div>
               {errors.password && (
                 <span className="text-xs text-red-500">
-                  Password is required
+                  Trường này là bắt buộc
                 </span>
               )}
             </div>
@@ -190,9 +186,9 @@ const LoginDashboard: React.FC = () => {
               <div></div>
               <label
                 htmlFor="remember"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
               >
-                Keep me logged in
+                Duy trì đăng nhập
               </label>
             </div>
 
@@ -203,11 +199,12 @@ const LoginDashboard: React.FC = () => {
             >
               {mutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang xác
+                  minh...
                 </>
               ) : (
                 <>
-                  <Lock className="mr-2 h-4 w-4" /> Sign In to Dashboard
+                  <Lock className="mr-2 h-4 w-4" /> Đăng nhập
                 </>
               )}
             </Button>
@@ -217,7 +214,8 @@ const LoginDashboard: React.FC = () => {
             className="text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
             href={APP_DOMAIN}
           >
-            Go to Learner Portal <ArrowRight className="ml-2 h-3 w-3" />
+            Truy cập hệ thống dành cho giáo viên đăng ký
+            <ArrowRight className="ml-2 h-3 w-3" />
           </a>
         </div>
       </div>

@@ -177,13 +177,13 @@ export default function CourseLearningViewer({
       setIsApproveConfirmOpen(false);
       setMessage({
         type: "success",
-        text: "The course has been APPROVED successfully!",
+        text: "Khóa học đã được DUYỆT thành công!",
       });
     } catch (error) {
       console.error("Lỗi khi phê duyệt khóa học:", error);
       setMessage({
         type: "error",
-        text: "Approval failed. Please try again.",
+        text: "Không phê duyệt được. Vui lòng thử lại.",
       });
       setIsApproveConfirmOpen(false);
     } finally {
@@ -218,13 +218,13 @@ export default function CourseLearningViewer({
       setRejectReason("");
       setMessage({
         type: "success",
-        text: "The course was successfully REJECTED!",
+        text: "Khóa học đã bị TỪ CHỐI thành công!",
       });
     } catch (error) {
       console.error("Lỗi khi từ chối khóa học:", error);
       setMessage({
         type: "error",
-        text: "Rejection failed. Please try again.",
+        text: "Từ chối không thành công. Vui lòng thử lại.",
       });
     } finally {
       setIsProcessingAction(false);
@@ -247,16 +247,16 @@ export default function CourseLearningViewer({
                   }))
                 }
                 className={cn(
-                  "w-full px-5 py-4 flex items-center justify-between text-left rounded-lg mx-3 transition-all",
+                  "w-full px-5 py-4 flex items-center justify-between text-left rounded-none mx-3 transition-all",
                   "hover:bg-gray-100 cursor-pointer",
                   isExpanded && "bg-gray-50"
                 )}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                    Unit {unit.position}
+                    Chương {unit.position}
                   </p>
-                  <p className="font-medium text-gray-900 truncate">
+                  <p className="font-medium text-gray-900 max-w-[230px] overflow-hidden text-ellipsis whitespace-nowrap">
                     {unit.title}
                   </p>
                 </div>
@@ -280,7 +280,7 @@ export default function CourseLearningViewer({
                           selectLesson(lesson.lessonID, unit.courseUnitID)
                         }
                         className={cn(
-                          "w-full px-5 py-3 text-left flex items-center gap-3 text-sm rounded-r-lg transition-all cursor-pointer",
+                          "w-full px-5 py-3 text-left flex items-center gap-3 text-sm rounded-r-none transition-all cursor-pointer",
                           isActive
                             ? "bg-blue-50 text-blue-700 font-medium border-l-4 border-blue-600 -ml-0.5"
                             : "hover:bg-gray-50 text-gray-700"
@@ -292,7 +292,7 @@ export default function CourseLearningViewer({
                             isActive ? "text-blue-600" : "text-gray-400"
                           )}
                         />
-                        <span className="block w-full line-clamp-2">
+                        <span className="block w-full line-clamp-2 max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
                           {lesson.position}. {lesson.title}
                         </span>
                       </button>
@@ -308,7 +308,7 @@ export default function CourseLearningViewer({
   }, [units, expandedUnits, activeLessonId]);
 
   const StatusBadge = ({ status }: { status: string }) => {
-    let classes = "px-3 py-1 rounded-full text-md font-medium font-sans ";
+    let classes = "px-3 py-1 rounded-md text-md font-medium font-sans ";
     let text = "";
 
     switch (status) {
@@ -332,16 +332,16 @@ export default function CourseLearningViewer({
   // Approve Confirmation Modal
   const ApproveConfirmModal = () => (
     <Dialog open={isApproveConfirmOpen} onOpenChange={setIsApproveConfirmOpen}>
-      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden gap-0 rounded-xl">
+      <DialogContent className="sm:max-w-[450px] p-0 overflow-hidden gap-0 rounded-md">
         <div className="bg-green-50 p-6 flex flex-col items-center justify-center text-center border-b border-green-100">
-          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-green-100 rounded-md flex items-center justify-center mb-4">
             <Check className="w-6 h-6 text-green-600" />
           </div>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            Approve Course
+            Phê duyệt khóa học
           </DialogTitle>
           <DialogDescription className="text-gray-600 mt-2 max-w-xs mx-auto">
-            Are you sure you want to approve this course for publication?
+            Bạn có chắc chắn muốn chấp thuận xuất bản khóa học này không?
           </DialogDescription>
         </div>
 
@@ -352,7 +352,7 @@ export default function CourseLearningViewer({
             disabled={isProcessingAction}
             className="w-full sm:w-auto min-w-[100px] border-gray-300 text-gray-700 cursor-pointer"
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             onClick={confirmApprove}
@@ -360,7 +360,7 @@ export default function CourseLearningViewer({
             className="w-full sm:w-auto min-w-[100px] bg-green-600 hover:bg-green-700 
           !text-white font-medium shadow-sm cursor-pointer"
           >
-            {isProcessingAction ? "Processing..." : "Yes, Approve"}
+            {isProcessingAction ? "Đang xử lý..." : "Có, Duyệt"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -396,18 +396,18 @@ export default function CourseLearningViewer({
 
       {/* --- Modal hiển thị danh sách bài tập --- */}
       <Dialog open={isExerciseOpen} onOpenChange={setIsExerciseOpen}>
-        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-xl">
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-md">
           <DialogHeader className="p-6 pb-4 border-b bg-white flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-lg">
+              <div className="bg-blue-100 p-2 rounded-md">
                 <Dumbbell className="w-6 h-6 text-blue-600" />
               </div>
               <div>
                 <DialogTitle className="text-xl font-bold text-gray-900">
-                  Practice Exercises
+                  Bài tập thực hành
                 </DialogTitle>
                 <DialogDescription className="text-sm text-gray-500 mt-1">
-                  Lesson: {lessonData?.title}
+                  Bài học: {lessonData?.title}
                 </DialogDescription>
               </div>
             </div>
@@ -458,7 +458,7 @@ export default function CourseLearningViewer({
                   className="text-red-600 hover:bg-red-50 hover:text-red-700 font-medium px-2 sm:px-4 h-9 cursor-pointer border-2 border-red-200"
                 >
                   <Ban className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Reject</span>
+                  <span className="hidden sm:inline">Từ chối</span>
                 </Button>
                 <Button
                   size="sm"
@@ -467,11 +467,11 @@ export default function CourseLearningViewer({
                   className="bg-blue-600 hover:bg-blue-700 !text-white font-medium px-2 sm:px-4 h-9 shadow-sm cursor-pointer"
                 >
                   {isProcessingAction ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin sm:mr-2" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-md animate-spin sm:mr-2" />
                   ) : (
                     <Check className="w-4 h-4 sm:mr-2" />
                   )}
-                  <span className="hidden sm:inline">Approve</span>
+                  <span className="hidden sm:inline">Duyệt</span>
                 </Button>
                 <div className="h-6 w-px bg-gray-200 mx-1 sm:hidden"></div>
               </div>
@@ -512,7 +512,7 @@ export default function CourseLearningViewer({
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetContent side="left" className="w-80 p-0">
               <div className="h-16 border-b flex items-center px-6 font-semibold bg-gray-50">
-                Course Content
+                Nội dung khóa học
               </div>
               <ScrollArea className="h-[calc(100vh-4rem)]">
                 {SidebarContent}
@@ -522,7 +522,7 @@ export default function CourseLearningViewer({
 
           <aside className="hidden sm:flex w-80 border-r bg-white flex-col">
             <div className="h-16 border-b flex items-center px-6 font-semibold bg-gray-50">
-              Course Content
+              Nội dung khóa học
             </div>
             <ScrollArea className="flex-1">{SidebarContent}</ScrollArea>
           </aside>
@@ -533,7 +533,7 @@ export default function CourseLearningViewer({
                 <div className="text-center">
                   <div className="w-12 h-12 border-4 border-blue-500 border-b-transparent rounded-full animate-spin mx-auto"></div>
                   <p className="mt-3 text-gray-700 text-base font-medium flex justify-center items-center gap-1">
-                    Loading
+                    Đang tải
                     <span className="flex space-x-1 ml-1">
                       <span className="w-1 h-1 bg-gray-700 rounded-full animate-bounce delay-75"></span>
                       <span className="w-1 h-1 bg-gray-700 rounded-full animate-bounce delay-150"></span>
@@ -551,14 +551,14 @@ export default function CourseLearningViewer({
                     : "pb-8"
                 )}
               >
-                <div className="text-sm text-gray-500 mb-5">
-                  Unit{" "}
+                <div className="text-sm text-gray-500 mb-5 ">
+                  Chương{" "}
                   {
                     units.find(
                       (u) => u.courseUnitID === lessonData.courseUnitID
                     )?.position
                   }{" "}
-                  • Lesson {lessonData.position}
+                  • Bài học {lessonData.position}
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
@@ -591,7 +591,7 @@ export default function CourseLearningViewer({
                       <div className="flex items-center gap-4">
                         <FileText className="w-12 h-12 text-blue-600" />
                         <div>
-                          <p className="font-medium">Document</p>
+                          <p className="font-medium">Tài liệu</p>
                           <p className="text-sm text-gray-500">PDF</p>
                         </div>
                       </div>
@@ -599,7 +599,7 @@ export default function CourseLearningViewer({
                         onClick={() => setPdfUrl(lessonData.documentUrl!)}
                         className="bg-blue-500 hover:bg-blue-400 !text-white cursor-pointer rounded-md"
                       >
-                        View document
+                        Xem tài liệu
                       </Button>
                     </div>
                   </div>
@@ -619,9 +619,9 @@ export default function CourseLearningViewer({
                     className="border-indigo-300 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 font-medium cursor-pointer"
                   >
                     <Dumbbell className="w-4 h-4 mr-2" />
-                    Exercises
+                    Bài tập
                     {lessonData.totalExercises > 0 && (
-                      <span className="ml-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
+                      <span className="ml-2 bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-md">
                         {lessonData.totalExercises}
                       </span>
                     )}
@@ -643,8 +643,8 @@ export default function CourseLearningViewer({
                                 }`}
                     >
                       <ChevronLeft className="w-5 h-5 mr-2" />
-                      <span className="hidden sm:inline">Previous</span>
-                      <span className="sm:hidden">Previous</span>
+                      <span className="hidden sm:inline">Trước</span>
+                      <span className="sm:hidden">Trước</span>
                     </Button>
 
                     {hasNext && (
@@ -653,8 +653,8 @@ export default function CourseLearningViewer({
                         onClick={goNext}
                         className="min-w-0 flex-1 sm:flex-initial max-w-xs sm:max-w-none bg-blue-600 hover:bg-blue-700 !text-white forced-color-adjust-none font-medium transition-all duration-300 hover:translate-x-1 active:scale-95 cursor-pointer"
                       >
-                        <span className="hidden sm:inline">Next Lesson</span>
-                        <span className="sm:hidden">Next</span>
+                        <span className="hidden sm:inline">Bài tiếp theo</span>
+                        <span className="sm:hidden">Tiếp theo</span>
                         <ChevronRight className="w-5 h-5 ml-2" />
                       </Button>
                     )}
@@ -664,7 +664,7 @@ export default function CourseLearningViewer({
               </div>
             ) : (
               <div className="h-full flex items-center justify-center px-8 text-center">
-                <p className="text-xl text-gray-600">Select a lesson</p>
+                <p className="text-xl text-gray-600">Chọn bài học</p>
               </div>
             )}
           </main>

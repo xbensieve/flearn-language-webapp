@@ -61,7 +61,6 @@ import LoadingScreen from "@/components/Loading/LoadingScreen";
 import BackgroundImage from "@/assets/background-image-05.jpg";
 const { Option } = Select;
 const { Title, Paragraph, Text } = Typography;
-
 // eslint-disable-next-line react-refresh/only-export-components
 export const proficiencyByLanguage: Record<
   string,
@@ -77,11 +76,11 @@ export const proficiencyByLanguage: Record<
 const LANGUAGES = [
   {
     code: "en",
-    name: "English",
+    name: "Tiếng Anh",
     flag: "US",
-    color: "#3b82f6", // blue-500
-    gradientStart: "#dbeafe", // blue-50
-    gradientEnd: "#bfdbfe", // blue-100
+    color: "#3b82f6",
+    gradientStart: "#dbeafe",
+    gradientEnd: "#bfdbfe",
     native: "379M",
     learners: "1.5B+",
     badge: "Most Popular",
@@ -89,11 +88,11 @@ const LANGUAGES = [
   },
   {
     code: "ja",
-    name: "Japanese",
+    name: "Tiếng Nhật",
     flag: "JP",
-    color: "#ef4444", // red-500
-    gradientStart: "#fee2e2", // red-50
-    gradientEnd: "#fecaca", // red-100
+    color: "#ef4444",
+    gradientStart: "#fee2e2",
+    gradientEnd: "#fecaca",
     native: "125M",
     learners: "3M+",
     badge: "Unique Culture",
@@ -101,25 +100,23 @@ const LANGUAGES = [
   },
   {
     code: "zh",
-    name: "Chinese",
+    name: "Tiếng Trung",
     flag: "CN",
-    color: "#eab308", // yellow-500
-    gradientStart: "#fefce8", // yellow-50
-    gradientEnd: "#fef9c3", // yellow-100
+    color: "#eab308",
+    gradientStart: "#fefce8",
+    gradientEnd: "#fef9c3",
     native: "1.1B",
     learners: "40M+",
     badge: "Business Power",
     icon: <Users className="w-4 h-4" />,
   },
 ] as const;
-
 interface LanguageCardProps {
   lang: Language;
   selected: boolean;
   onClick: () => void;
   loading?: boolean;
 }
-
 const LanguageCard: React.FC<LanguageCardProps> = ({
   lang,
   selected,
@@ -150,10 +147,8 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
         }}
         bodyStyle={{ padding: "24px" }}
       >
-        {/* Flag + Badge */}
         <div className="flex justify-center mb-4 relative">
           <div className="relative">
-            {/* Flag */}
             <div
               className="w-16 h-16 rounded-md overflow-hidden shadow-lg ring-4 ring-white"
               style={{
@@ -162,8 +157,6 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
                 backgroundPosition: "center",
               }}
             />
-
-            {/* Selected Indicator */}
             {selected && (
               <motion.div
                 animate={{ scale: 1 }}
@@ -186,8 +179,6 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
             )}
           </div>
         </div>
-
-        {/* Language Name */}
         <Text
           strong
           className="block text-center text-lg mb-3"
@@ -198,42 +189,6 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
         >
           {info.name}
         </Text>
-
-        {/* Badge */}
-        {/* <div className='flex justify-center mb-4'>
-          <Badge
-            count={info.badge}
-            style={{
-              backgroundColor: info.color.replace('bg-', '#'),
-              color: 'white',
-              fontSize: '11px',
-              fontWeight: 'bold',
-              padding: '0 8px',
-              height: '22px',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          />
-        </div> */}
-
-        {/* Stats */}
-        {/* <Space direction='vertical' size={8} className='w-full'>
-          <div className='flex items-center justify-between text-sm'>
-            <span className='text-gray-600 flex items-center gap-1'>
-              <Globe className='w-3.5 h-3.5' /> Native
-            </span>
-            <span className='font-bold text-gray-900'>{info.native}</span>
-          </div>
-          <div className='flex items-center justify-between text-sm'>
-            <span className='text-gray-600 flex items-center gap-1'>
-              <Users className='w-3.5 h-3.5' /> Learners
-            </span>
-            <span className='font-bold text-gray-900'>{info.learners}</span>
-          </div>
-        </Space> */}
-
-        {/* Pulse Animation */}
         {selected && (
           <motion.div
             className="absolute inset-0 rounded-md pointer-events-none"
@@ -252,7 +207,6 @@ const LanguageCard: React.FC<LanguageCardProps> = ({
     </motion.div>
   );
 };
-
 interface ProficiencyCardProps {
   level: { label: string; value: string; description?: string };
   selected: boolean;
@@ -290,7 +244,6 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
         }}
         bodyStyle={{ padding: "18px" }}
       >
-        {/* Level Label */}
         <Text
           strong
           className="block text-center text-lg mb-2"
@@ -301,17 +254,6 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
         >
           {level.label}
         </Text>
-
-        {/* Description */}
-        {/* <Text
-          type='secondary'
-          className='block text-center text-xs mb-3'
-          style={{ color: selected ? '#555' : '#6b7280' }}
-        >
-          {levelInfo.description}
-        </Text> */}
-
-        {/* Pulse when selected */}
         {selected && (
           <motion.div
             className="absolute inset-0 rounded-md pointer-events-none"
@@ -327,7 +269,6 @@ const ProficiencyCard: React.FC<ProficiencyCardProps> = ({
     </motion.div>
   );
 };
-
 const TeacherApplicationPage: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -363,11 +304,11 @@ const TeacherApplicationPage: React.FC = () => {
     mutationFn: submitTeacherApplication,
     onSuccess: () => {
       setIsSubmitted(true);
-      notifySuccess("Application submitted successfully!");
+      notifySuccess("Đơn đăng ký đã được gửi thành công!");
       navigate("/learner/application?status=success");
     },
     onError: (err: AxiosError<any>) => {
-      toast.error(err.response?.data.errors || "Failed to submit application.");
+      toast.error(err.response?.data.errors || "Không nộp được đơn!");
     },
   });
 
@@ -375,11 +316,11 @@ const TeacherApplicationPage: React.FC = () => {
     mutationFn: updateSubmitTeacherApplication,
     onSuccess: () => {
       setIsSubmitted(true);
-      notifySuccess("Application updated successfully!");
+      notifySuccess("Đơn được cập nhật thành công!");
       navigate("/teacher");
     },
     onError: (err: AxiosError<any>) => {
-      toast.error(err.response?.data.errors || "Failed to update application.");
+      toast.error(err.response?.data.errors || "Không cập nhật được đơn!");
     },
   });
 
@@ -401,7 +342,6 @@ const TeacherApplicationPage: React.FC = () => {
       }
       setCurrentStep((prev) => prev + 1);
     } catch (err) {
-      // validation failed
       console.log(err);
       return;
     }
@@ -439,7 +379,6 @@ const TeacherApplicationPage: React.FC = () => {
           : [],
         ProficiencyCode: allData.proficiencyCode,
       };
-
       const now = new Date();
       const closestApplication = response?.data.reduce(
         (closest: any, current: any) => {
@@ -454,58 +393,45 @@ const TeacherApplicationPage: React.FC = () => {
         null
       );
 
-      // --- Hàm xử lý khi thành công (Dọn dẹp & Chuyển hướng) ---
       const handleSuccessActions = () => {
-        // 1. Reset Form Antd
         form.resetFields();
-
-        // 2. Reset State nội bộ (để xóa các lựa chọn đã lưu trong biến tạm)
         setFormData({});
         setSelectedLanguage(null);
         setCurrentStep(0);
-
-        // 3. Thông báo & Chuyển hướng
         navigate("/learner/status");
       };
-      // ---------------------------------------------------------
-
       console.log("closestApplication", closestApplication);
-
       if (
         closestApplication &&
         closestApplication.status.toLowerCase() === "pending"
       ) {
-        // Truyền callback onSuccess vào đây
         updateMutate(payload, {
           onSuccess: handleSuccessActions,
         });
       } else {
-        // Truyền callback onSuccess vào đây
         mutate(payload, {
           onSuccess: handleSuccessActions,
         });
       }
     } catch (err) {
-      // validation failed
       console.log(err);
     }
   };
 
-  // ✅ Step content
   const steps = [
     {
-      title: "Language",
+      title: "Ngôn ngữ",
       content: (
         <Form form={form} layout="vertical" size="large">
           <Form.Item
-            label={<Text strong>Select Language</Text>}
+            label={<Text strong>Chọn ngôn ngữ</Text>}
             name="LangCode"
-            rules={[{ required: true, message: "Please select a language" }]}
+            rules={[{ required: true, message: "Vui lòng chọn một ngôn ngữ" }]}
           >
             <div>
               {loadingLanguages ? (
                 <div style={{ textAlign: "center", padding: "40px 0" }}>
-                  <Spin size="large" tip="Loading languages..." />
+                  <Spin size="large" tip="Đang tải ngôn ngữ..." />
                 </div>
               ) : (
                 <Flex gap={24} justify="space-between">
@@ -532,14 +458,13 @@ const TeacherApplicationPage: React.FC = () => {
               )}
             </div>
           </Form.Item>
-
           <Form.Item
-            label={<Text strong>Proficiency Level</Text>}
+            label={<Text strong>Mức độ thành thạo</Text>}
             name="proficiencyCode"
             rules={[
               {
                 required: true,
-                message: "Please select your proficiency level",
+                message: "Vui lòng chọn trình độ thành thạo của bạn",
               },
             ]}
           >
@@ -553,7 +478,7 @@ const TeacherApplicationPage: React.FC = () => {
                     padding: "20px 0",
                   }}
                 >
-                  Please select a language first
+                  Vui lòng chọn ngôn ngữ trước
                 </Text>
               ) : (
                 <Row gutter={[12, 12]}>
@@ -587,40 +512,39 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: "Information",
+      title: "Thông tin",
       content: (
         <Form form={form} layout="vertical" className="!space-y-6" size="large">
-          {/* === 1. Personal Details === */}
           <InfoSection
-            title="Personal Details"
+            title="Thông tin cá nhân"
             icon={<User className="w-5 h-5" />}
           >
             <Row gutter={16}>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="FullName"
-                  label="Full Name"
+                  label="Họ và tên"
                   required
-                  rules={[{ required: true, message: "Full name is required" }]}
+                  rules={[
+                    { required: true, message: "Tên đầy đủ là bắt buộc" },
+                  ]}
                 >
-                  <Input placeholder="Nguyễn Văn A" className="h-11" />
+                  <Input placeholder="Nguyễn Văn Nam" className="h-11" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
                 <Form.Item
                   name="BirthDate"
-                  label="Date of Birth"
+                  label="Ngày sinh"
                   rules={[
-                    { required: true, message: "Date of birth is required" },
+                    { required: true, message: "Ngày sinh là bắt buộc" },
                     {
                       validator: (_, value) => {
                         if (!value) return Promise.reject();
                         const today = new Date();
                         const age = today.getFullYear() - value.year();
                         if (age < 18) {
-                          return Promise.reject(
-                            "You must be at least 18 years old"
-                          );
+                          return Promise.reject("Bạn phải ít nhất 18 tuổi");
                         }
                         return Promise.resolve();
                       },
@@ -636,8 +560,10 @@ const TeacherApplicationPage: React.FC = () => {
               </Col>
             </Row>
           </InfoSection>
-
-          <InfoSection title="Avatar" icon={<Camera className="w-5 h-5" />}>
+          <InfoSection
+            title="Hình đại diện"
+            icon={<Camera className="w-5 h-5" />}
+          >
             <Form.Item
               noStyle
               shouldUpdate={(prev, next) => prev.Avatar !== next.Avatar}
@@ -663,7 +589,6 @@ const TeacherApplicationPage: React.FC = () => {
 
                 return (
                   <div className="flex flex-col items-center">
-                    {/* Avatar Preview */}
                     <div className="mb-6">
                       {previewUrl ? (
                         <img
@@ -677,21 +602,19 @@ const TeacherApplicationPage: React.FC = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Tiêu đề & hướng dẫn */}
                     <div className="text-center mb-4">
                       <Text strong className="block text-lg">
-                        Edit Avatar
+                        Chỉnh sửa hình đại diện
                       </Text>
-
                       <Text
                         type="secondary"
                         className="text-xs leading-relaxed"
                       >
-                        • At least 250×250 pixels
+                        Ít nhất 250×250 pixel
                         <br />
-                        • JPG, PNG and BMP formats only
-                        <br />• Maximum size of 2 MB
+                        Chỉ định dạng JPG, PNG và BMP
+                        <br />
+                        Kích thước tối đa 2 MB
                       </Text>
                     </div>
                     <Form.Item
@@ -703,7 +626,7 @@ const TeacherApplicationPage: React.FC = () => {
                       rules={[
                         {
                           required: true,
-                          message: "Please upload a photo",
+                          message: "Vui lòng tải lên một bức ảnh",
                         },
                       ]}
                       validateTrigger={["onChange", "onSubmit"]}
@@ -723,7 +646,7 @@ const TeacherApplicationPage: React.FC = () => {
                           className="w-full max-w-xs"
                           size="large"
                         >
-                          CHOOSE A PHOTO
+                          CHỌN MỘT ẢNH
                         </Button>
                       </Upload>
                     </Form.Item>
@@ -732,27 +655,29 @@ const TeacherApplicationPage: React.FC = () => {
               }}
             </Form.Item>
           </InfoSection>
-
-          {/* === 2. About You === */}
-          <InfoSection title="About You" icon={<User className="w-5 h-5" />}>
+          <InfoSection
+            title="Giới thiệu về bạn"
+            icon={<User className="w-5 h-5" />}
+          >
             <Form.Item
               name="Bio"
-              label="Tell us about yourself"
+              label="Hãy cho chúng tôi biết về bạn"
               rules={[
-                { required: true, message: "Please tell us about yourself" },
+                {
+                  required: true,
+                  message: "Xin hãy cho chúng tôi biết về bạn",
+                },
               ]}
             >
               <Input.TextArea
                 rows={4}
-                placeholder="E.g., Passionate English teacher with 3 years of experience helping students achieve fluency..."
+                placeholder="Ví dụ, giáo viên tiếng Anh nhiệt tình với 3 năm kinh nghiệm giúp học sinh đạt được trình độ nói lưu loát..."
                 className="resize-none"
               />
             </Form.Item>
           </InfoSection>
-
-          {/* === 3. Contact Information === */}
           <InfoSection
-            title="Contact Information"
+            title="Thông tin liên hệ"
             icon={<Mail className="w-5 h-5" />}
           >
             <Row gutter={16}>
@@ -761,8 +686,8 @@ const TeacherApplicationPage: React.FC = () => {
                   label="Email"
                   name="Email"
                   rules={[
-                    { required: true, message: "Email is required" },
-                    { type: "email", message: "Invalid email format" },
+                    { required: true, message: "Email là bắt buộc" },
+                    { type: "email", message: "Định dạng email không hợp lệ" },
                   ]}
                 >
                   <Input placeholder="johndoe@gmail.com" className="h-11" />
@@ -771,22 +696,18 @@ const TeacherApplicationPage: React.FC = () => {
               <Col xs={24} md={12}>
                 <Form.Item
                   name="PhoneNumber"
-                  label="Phone number"
+                  label="Số điện thoại"
                   rules={[
-                    { required: true, message: "Phone number is required" },
+                    { required: true, message: "Số điện thoại là bắt buộc" },
                     {
                       validator: (_, value) => {
                         if (!value) return Promise.reject();
-
-                        // Remove all non-digits
                         const digits = value.replace(/\D/g, "");
-
-                        // Must start with 0 (local) or 84 (intl)
                         const isVN =
                           /^0\d{9}$/.test(digits) || /^84\d{9}$/.test(digits);
                         if (!isVN) {
                           return Promise.reject(
-                            "Please enter a valid Vietnamese phone number"
+                            "Vui lòng nhập số điện thoại Việt Nam hợp lệ"
                           );
                         }
 
@@ -800,14 +721,10 @@ const TeacherApplicationPage: React.FC = () => {
                     className="h-11"
                     maxLength={14}
                     onChange={(e) => {
-                      let val = e.target.value.replace(/\D/g, ""); // keep digits only
-
-                      // Auto-convert 0... → +84...
+                      let val = e.target.value.replace(/\D/g, "");
                       if (val.startsWith("0") && val.length > 1) {
                         val = "84" + val.slice(1);
                       }
-
-                      // Format: +84 XXX XXX XXX
                       if (val.startsWith("84") && val.length > 2) {
                         val =
                           "+84 " +
@@ -815,8 +732,6 @@ const TeacherApplicationPage: React.FC = () => {
                             .slice(2)
                             .replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
                       }
-
-                      // Update form field
                       form.setFieldsValue({ PhoneNumber: val });
                     }}
                   />
@@ -824,38 +739,34 @@ const TeacherApplicationPage: React.FC = () => {
               </Col>
             </Row>
           </InfoSection>
-
-          {/* === 4. Teaching Experience === */}
           <InfoSection
-            title="Teaching Experience"
+            title="Kinh nghiệm giảng dạy"
             icon={<BookOpen className="w-5 h-5" />}
           >
             <Form.Item
-              label="Teaching experience"
+              label="Kinh nghiệm giảng dạy"
               name="TeachingExperience"
               rules={[
                 {
                   required: true,
-                  message: "Please describe your teaching background",
+                  message: "Vui lòng mô tả lý lịch giảng dạy của bạn",
                 },
               ]}
             >
               <Input.TextArea
                 rows={4}
-                placeholder="E.g., Taught 200+ students online, specialized in conversational English, TOEIC prep..."
+                placeholder="Ví dụ: Đã dạy trực tuyến cho hơn 200 học viên, chuyên về tiếng Anh giao tiếp, luyện thi TOEIC..."
                 className="resize-none"
               />
             </Form.Item>
           </InfoSection>
-
-          {/* === 5. Meeting Link === */}
           <InfoSection title="Meeting Link" icon={<Link className="w-5 h-5" />}>
             <Form.Item
               name="MeetingUrl"
               label="Meeting link"
               rules={[
-                { required: true, message: "Meeting link is required" },
-                { type: "url", message: "Please enter a valid URL" },
+                { required: true, message: "Meeting link là bắt buộc" },
+                { type: "url", message: "Vui lòng nhập URL hợp lệ" },
               ]}
             >
               <Input
@@ -868,7 +779,7 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: "Certificates",
+      title: "Chứng chỉ",
       content: (
         <Form form={form} layout="vertical" size="large">
           <Form.List name="Certificates">
@@ -876,7 +787,7 @@ const TeacherApplicationPage: React.FC = () => {
               <>
                 {loadingCertificates && (
                   <div className="flex justify-center py-8">
-                    <Spin size="large" tip="Loading certificates..." />
+                    <Spin size="large" tip="Đang tải chứng chỉ..." />
                   </div>
                 )}
 
@@ -895,18 +806,18 @@ const TeacherApplicationPage: React.FC = () => {
                               label={
                                 <span className="flex items-center gap-2 text-gray-700 font-medium">
                                   <Trophy className="w-4 h-4 text-yellow-500" />
-                                  Certificate Type
+                                  Loại chứng chỉ
                                 </span>
                               }
                               rules={[
                                 {
                                   required: true,
-                                  message: "Select a certificate",
+                                  message: "Chọn chứng chỉ",
                                 },
                               ]}
                             >
                               <Select
-                                placeholder="Choose certificate"
+                                placeholder="Chọn chứng chỉ"
                                 disabled={
                                   !selectedLanguage || loadingCertificates
                                 }
@@ -936,20 +847,20 @@ const TeacherApplicationPage: React.FC = () => {
                             <Form.Item
                               {...restField}
                               name={[name, "CertificateImage"]}
-                              label="Image"
+                              label="Hình ảnh"
                               valuePropName="fileList"
                               getValueFromEvent={(e) => e && e.fileList}
                               rules={[
                                 {
                                   required: true,
-                                  message: "Please upload image",
+                                  message: "Vui lòng tải hình ảnh lên",
                                 },
                               ]}
                             >
                               <Upload
                                 listType="picture-card"
                                 maxCount={1}
-                                beforeUpload={() => false} // chặn upload tự động
+                                beforeUpload={() => false}
                                 onPreview={(file) => {
                                   setPreviewImage(
                                     file.url ||
@@ -963,7 +874,7 @@ const TeacherApplicationPage: React.FC = () => {
                               >
                                 <div>
                                   <UploadOutlined />
-                                  <div style={{ marginTop: 8 }}>Upload</div>
+                                  <div style={{ marginTop: 8 }}>Tải lên</div>
                                 </div>
                               </Upload>
                             </Form.Item>
@@ -982,7 +893,6 @@ const TeacherApplicationPage: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* === Remove Button (only if >1) === */}
                         {fields.length > 1 && (
                           <Button
                             type="text"
@@ -998,10 +908,11 @@ const TeacherApplicationPage: React.FC = () => {
                   ))}
                 </Space>
 
-                {/* === Empty State (never shown) === */}
                 {fields.length === 0 && !loadingCertificates && (
                   <div className="text-center py-12 text-gray-500">
-                    <Text type="secondary">No certificates added yet.</Text>
+                    <Text type="secondary">
+                      Chưa có chứng chỉ nào được thêm vào.
+                    </Text>
                   </div>
                 )}
 
@@ -1013,7 +924,7 @@ const TeacherApplicationPage: React.FC = () => {
                     icon={<UploadOutlined />}
                     className="border-indigo-300 text-indigo-600 hover:border-indigo-500 hover:text-indigo-700"
                   >
-                    Add Certificate
+                    Thêm chứng chỉ
                   </Button>
                 </div>
               </>
@@ -1023,18 +934,18 @@ const TeacherApplicationPage: React.FC = () => {
       ),
     },
     {
-      title: "Review & Submit",
+      title: "Xem xét & Gửi",
       content: (
         <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
           <Title
             level={3}
             className="text-center text-transparent bg-clip-text mb-2 tracking-wide"
           >
-            Review Your Application
+            Xem lại đơn đăng ký của bạn
           </Title>
           <Paragraph className="text-center text-gray-600 mb-8">
-            Double-check your details before submitting. Everything looks good?
-            Hit submit!
+            Kiểm tra lại thông tin của bạn trước khi gửi. Mọi thứ đã ổn chưa?
+            Nhấn gửi!
           </Paragraph>
 
           {/* Language Card */}
@@ -1042,7 +953,7 @@ const TeacherApplicationPage: React.FC = () => {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-2 h-2 bg-blue-500 rounded-md"></div>
               <Paragraph className="text-gray-700 font-semibold !mb-0">
-                Preferred Language
+                Ngôn ngữ đã chọn
               </Paragraph>
             </div>
             <p className="text-gray-800 text-lg font-medium">
@@ -1053,17 +964,14 @@ const TeacherApplicationPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Basic Info Card */}
             <div className="bg-white border p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-2 h-2 bg-indigo-500 rounded-md"></div>
                 <Paragraph className="text-gray-700 font-semibold !mb-0">
-                  Basic Information
+                  Thông tin cơ bản
                 </Paragraph>
               </div>
-
               <div className="space-y-4 text-gray-800">
-                {/* Avatar + Name - Full width hero section */}
                 <div className="flex items-center gap-4 p-4">
                   {formData.Avatar?.[0] ? (
                     <Avatar
@@ -1076,7 +984,7 @@ const TeacherApplicationPage: React.FC = () => {
                         <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 rounded-md flex items-center justify-center text-white font-bold text-sm">
                           A
                         </div>
-                      } // Fallback icon
+                      }
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-md flex items-center justify-center shadow-md ring-2 ring-indigo-100">
@@ -1087,10 +995,10 @@ const TeacherApplicationPage: React.FC = () => {
                   )}
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">
-                      {formData.FullName || "Unnamed Applicant"}
+                      {formData.FullName || "Người nộp đơn không tên"}
                     </h3>
                     <p className="text-indigo-600 font-medium">
-                      {formData.Email || "No email provided"}
+                      {formData.Email || "Không có email nào được cung cấp"}
                     </p>
                   </div>
                 </div>
@@ -1098,13 +1006,13 @@ const TeacherApplicationPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
-                      label: "Date of Birth",
+                      label: "Ngày sinh",
                       value:
                         formData.BirthDate?.format?.("MMM DD, YYYY") || "-",
                       icon: <Cake />,
                     },
                     {
-                      label: "Phone",
+                      label: "Số điện thoại",
                       value: formData.PhoneNumber || "-",
                       icon: <Phone />,
                     },
@@ -1114,9 +1022,11 @@ const TeacherApplicationPage: React.FC = () => {
                         <a
                           href={formData.MeetingUrl}
                           target="_blank"
-                          className="text-blue-600 hover:underline font-medium"
+                          className="text-blue-600 hover:underline font-medium block max-w-full"
                         >
-                          View Link
+                          <span className="block overflow-hidden text-ellipsis whitespace-nowrap">
+                            {formData.MeetingUrl}
+                          </span>
                         </a>
                       ) : (
                         "-"
@@ -1124,7 +1034,7 @@ const TeacherApplicationPage: React.FC = () => {
                       icon: <Link />,
                     },
                     {
-                      label: "Proficiency Level",
+                      label: "Mức độ thành thạo",
                       value: formData.proficiencyCode ? (
                         <p>{formData.proficiencyCode}</p>
                       ) : (
@@ -1138,27 +1048,30 @@ const TeacherApplicationPage: React.FC = () => {
                       className="flex items-center gap-3 p-3 bg-gray-50 rounded-md"
                     >
                       <span className="text-2xl">{field.icon}</span>
-                      <div>
+
+                      <div className="flex-1 min-w-0">
                         <strong className="block text-sm font-medium text-gray-700">
                           {field.label}
                         </strong>
-                        <span className="text-gray-900">{field.value}</span>
+
+                        <span className="block overflow-hidden text-ellipsis whitespace-nowrap text-gray-900">
+                          {field.value}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
-
-                {/* Full-width fields */}
                 {[
                   {
-                    label: "Bio",
-                    value: formData.Bio || "No bio provided",
+                    label: "Tiểu sử",
+                    value: formData.Bio || "Không có sinh học được cung cấp",
                     icon: <Info />,
                   },
                   {
-                    label: "Teaching Experience",
+                    label: "Kinh nghiệm giảng dạy",
                     value:
-                      formData.TeachingExperience || "No experience listed",
+                      formData.TeachingExperience ||
+                      "Không có kinh nghiệm được liệt kê",
                     icon: <GraduationCap />,
                   },
                 ].map((field, idx) => (
@@ -1179,13 +1092,12 @@ const TeacherApplicationPage: React.FC = () => {
                 ))}
               </div>
             </div>
-            {/* Certificates Card - Only if exists, otherwise hidden */}
             {formData.Certificates && formData.Certificates.length > 0 ? (
               <div className="bg-white border  p-6 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-2 h-2 bg-green-500 rounded-md"></div>
                   <Paragraph className="text-gray-700 font-semibold !mb-0">
-                    Your Certificates
+                    Chứng chỉ của bạn
                   </Paragraph>
                 </div>
                 <div className="space-y-4 max-h-120 overflow-y-auto">
@@ -1215,7 +1127,9 @@ const TeacherApplicationPage: React.FC = () => {
                           />
                         ) : (
                           <div className="w-full max-w-sm mx-auto h-32 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
-                            <span className="text-sm">No image uploaded</span>
+                            <span className="text-sm">
+                              Không có hình ảnh được tải lên
+                            </span>
                           </div>
                         )}
                       </div>
@@ -1224,9 +1138,11 @@ const TeacherApplicationPage: React.FC = () => {
                 </div>
                 {formData.Certificates.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    <p className="text-lg">No certificates added yet.</p>
+                    <p className="text-lg">
+                      Chưa có chứng chỉ nào được thêm vào.
+                    </p>
                     <Button type="dashed" className="mt-2">
-                      Add More
+                      Thêm nhiều hơn nữa
                     </Button>
                   </div>
                 )}
@@ -1236,18 +1152,20 @@ const TeacherApplicationPage: React.FC = () => {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-2 h-2 bg-green-500 rounded-md"></div>
                   <Paragraph className="text-gray-700 font-semibold !mb-0">
-                    Your Certificates
+                    Chứng chỉ của bạn
                   </Paragraph>
                 </div>
                 <div className="text-center py-8 text-gray-500">
-                  <p className="text-lg">No certificates added yet.</p>
+                  <p className="text-lg">
+                    Chưa có chứng chỉ nào được thêm vào.
+                  </p>
                 </div>
               </div>
             )}
           </div>
 
           {isSubmitting || isUpdating ? (
-            <LoadingScreen />
+            <LoadingScreen message="Đang gửi đơn đăng ký..." />
           ) : (
             !isSubmitted && (
               <div className="flex flex-col items-center">
@@ -1256,10 +1174,11 @@ const TeacherApplicationPage: React.FC = () => {
                   onClick={() => handleSubmit()}
                   size="large"
                 >
-                  Submit Application{" "}
+                  Gửi đơn đăng ký{" "}
                 </Button>
                 <Paragraph className="text-xs text-gray-500 mt-2">
-                  By submitting, you agree to our terms and privacy policy.
+                  Bằng cách gửi, bạn đồng ý với các điều khoản và chính sách bảo
+                  mật của chúng tôi.
                 </Paragraph>
               </div>
             )
@@ -1282,19 +1201,19 @@ const TeacherApplicationPage: React.FC = () => {
   if (pendingApplication) {
     return (
       <div className="mt-15 flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white p-10 rounded-md shadow-xl max-w-lg w-full text-center border border-gray-100">
+        <div className="p-10 rounded-md max-w-lg w-full text-center">
           <div className="mb-6 flex justify-center">
-            <div className="w-24 h-24 bg-blue-50 rounded-md flex items-center justify-center animate-pulse">
-              <ClockCircleOutlined className="text-5xl text-blue-500" />
+            <div className="w-24 h-24 rounded-md flex items-center justify-center animate-pulse">
+              <ClockCircleOutlined className="text-5xl" />
             </div>
           </div>
-          <Title level={2} className="mb-3 text-gray-800">
-            Application Under Review
+          <Title level={2} className="mb-3 text-gray-800 whitespace-nowrap">
+            Đơn đăng ký đang được xem xét
           </Title>
           <Paragraph className="text-gray-500 text-lg mb-8 leading-relaxed">
-            You have already submitted an application that is currently being
-            reviewed by our admins. You cannot submit a new application until
-            the process is complete.
+            Bạn đã nộp đơn đăng ký và đơn đăng ký này hiện đang được quản trị
+            viên của chúng tôi xem xét. Bạn không thể nộp đơn đăng ký mới cho
+            đến khi quá trình hoàn tất.
           </Paragraph>
           <Button
             type="primary"
@@ -1302,7 +1221,7 @@ const TeacherApplicationPage: React.FC = () => {
             onClick={() => navigate("/learner/status")}
             className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium rounded-md shadow-lg shadow-blue-200"
           >
-            Check Application Status
+            Kiểm tra trạng thái đơn đăng ký
           </Button>
         </div>
       </div>
@@ -1329,9 +1248,8 @@ const TeacherApplicationPage: React.FC = () => {
               lineHeight: 1.2,
             }}
           >
-            Get paid to help <br />
-            others learn a <br />
-            language
+            Giải pháp đào tạo ngôn ngữ chuyên nghiệp – tạo giá trị từ việc nâng
+            cao năng lực học tập.
           </Title>
 
           <Text
@@ -1342,13 +1260,14 @@ const TeacherApplicationPage: React.FC = () => {
               maxWidth: "1000px",
             }}
           >
-            FLearn is an online platform that connects learners with English,
-            Chinese, and Japanese language teachers. Join our community of
-            passionate educators and start making a difference today!
+            FLearn là nền tảng trực tuyến kết nối người học với giáo viên tiếng
+            Anh, tiếng Trung và tiếng Nhật. Hãy tham gia cộng đồng những nhà
+            giáo dục đầy nhiệt huyết của chúng tôi và bắt đầu tạo nên sự khác
+            biệt ngay hôm nay!
           </Text>
         </div>
       </div>
-      <div className="px-4 relative z-20 -mt-24">
+      <div className="px-4 relative z-20 -mt-20">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1375,7 +1294,7 @@ const TeacherApplicationPage: React.FC = () => {
                   className="px-8 h-10 text-gray-600 hover:text-gray-900 border-gray-300"
                   size="large"
                 >
-                  Previous
+                  Trước
                 </Button>
               )}
             </div>
@@ -1388,7 +1307,7 @@ const TeacherApplicationPage: React.FC = () => {
                   size="large"
                   className="px-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-none shadow-lg shadow-blue-200"
                 >
-                  Next
+                  Tiếp theo
                 </Button>
               )}
             </div>

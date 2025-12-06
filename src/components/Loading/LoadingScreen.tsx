@@ -10,7 +10,7 @@ interface LoadingScreenProps {
 }
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({
-  message = "Initializing workspace...",
+  message = "Đang khởi tạo không gian làm việc...",
 }) => {
   const [progress, setProgress] = useState(13);
 

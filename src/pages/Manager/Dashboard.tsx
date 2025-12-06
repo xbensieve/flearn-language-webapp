@@ -197,14 +197,14 @@ export default function Dashboard() {
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-              Executive Dashboard
+              Bảng điều hành
             </h2>
             <p className="text-muted-foreground mt-1">
-              Performance metrics from{" "}
+              Số liệu hiệu suất từ{" "}
               <span className="font-medium text-foreground">
                 {dateRange.startDate}
               </span>{" "}
-              to{" "}
+              đến{" "}
               <span className="font-medium text-foreground">
                 {dateRange.endDate}
               </span>
@@ -249,7 +249,7 @@ export default function Dashboard() {
             {/* Limit */}
             <div className="flex items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">
-                Limit:
+                Giới hạn:
               </span>
               <select
                 className="h-8 bg-transparent text-sm outline-none cursor-pointer"
@@ -277,7 +277,7 @@ export default function Dashboard() {
         {/* --- KPI Overview --- */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KpiCard
-            title="Total Revenue"
+            title="Tổng doanh thu"
             value={formatCurrency(overview?.totalRevenue || 0)}
             icon={
               <span
@@ -289,29 +289,29 @@ export default function Dashboard() {
                 ₫
               </span>
             }
-            subtext="Gross revenue in period"
+            subtext="Tổng doanh thu trong kỳ"
             trend="neutral"
           />
 
           <KpiCard
-            title="Active Learners"
+            title="Người học tích cực"
             value={overview?.activeLearners || 0}
             icon={<Activity className="h-4 w-4 text-blue-600" />}
-            subtext="Engaged users"
+            subtext="Người dùng đã tương tác"
             trend="up"
           />
           <KpiCard
-            title="New Registrations"
+            title="Đăng ký mới"
             value={`+${overview?.newRegistrations || 0}`}
             icon={<Users className="h-4 w-4 text-violet-600" />}
-            subtext="New sign-ups"
+            subtext="Đăng ký mới"
             trend="up"
           />
           <KpiCard
-            title="Churn Rate"
+            title="Tỷ lệ rời bỏ"
             value={`${overview?.churnRate || 0}%`}
             icon={<Zap className="h-4 w-4 text-amber-600" />}
-            subtext="Inactive paid users"
+            subtext="Người dùng trả phí không hoạt động"
             trend={(overview?.churnRate || 0) > 20 ? "down" : "neutral"}
             alert={(overview?.churnRate || 0) > 20}
           />
@@ -322,9 +322,9 @@ export default function Dashboard() {
           {/* Revenue Area Chart */}
           <Card className="col-span-4 shadow-sm border-slate-200">
             <CardHeader>
-              <CardTitle>Revenue Analytics</CardTitle>
+              <CardTitle>Phân tích doanh thu</CardTitle>
               <CardDescription>
-                Daily revenue trends over the selected period.
+                Xu hướng doanh thu hàng ngày trong khoảng thời gian đã chọn.
               </CardDescription>
             </CardHeader>
             <CardContent className="pl-0">
@@ -372,7 +372,7 @@ export default function Dashboard() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `${value / 1000}k`}
+                      tickFormatter={(value) => `${value / 1000}đ`}
                       dx={-10}
                     />
                     <Tooltip
@@ -397,9 +397,9 @@ export default function Dashboard() {
           {/* Engagement Metrics */}
           <Card className="col-span-3 shadow-sm border-slate-200 flex flex-col">
             <CardHeader>
-              <CardTitle>Engagement & Activity</CardTitle>
+              <CardTitle>Tương tác & Hoạt động</CardTitle>
               <CardDescription>
-                User study habits and completion rates.
+                Thói quen học tập và tỷ lệ hoàn thành của người dùng.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col justify-between">
@@ -411,13 +411,13 @@ export default function Dashboard() {
                       <Users className="h-4 w-4 text-blue-500" />
                     </div>
                     <span className="text-sm font-medium text-slate-600">
-                      Avg. Time Spent
+                      Thời gian trung bình đã dành
                     </span>
                   </div>
                   <span className="text-xl font-bold text-slate-900">
                     {engagement?.avgTimeSpentPerUser || 0}{" "}
                     <span className="text-sm font-normal text-muted-foreground">
-                      min
+                      phút
                     </span>
                   </span>
                 </div>
@@ -429,7 +429,7 @@ export default function Dashboard() {
                       <Activity className="h-4 w-4 text-emerald-500" />
                     </div>
                     <span className="text-sm font-medium text-slate-600">
-                      Completion Rate
+                      Tỷ lệ hoàn thành
                     </span>
                   </div>
                   <span className="text-xl font-bold text-slate-900">
@@ -445,7 +445,7 @@ export default function Dashboard() {
                 {/* Activity Bar Chart */}
                 <div className="pt-4">
                   <p className="mb-4 text-sm font-semibold text-slate-500">
-                    Activity Volume
+                    Khối lượng hoạt động
                   </p>
                   <div className="h-[140px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -457,7 +457,7 @@ export default function Dashboard() {
                             if (active && payload && payload.length) {
                               return (
                                 <div className="rounded border bg-black text-white px-2 py-1 text-xs">
-                                  {label}: {payload[0].value} actions
+                                  {label}: {payload[0].value} hành động
                                 </div>
                               );
                             }
@@ -483,27 +483,27 @@ export default function Dashboard() {
         <Card className="shadow-sm border-slate-200">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Content Drop-off Analysis</CardTitle>
+              <CardTitle>Phân tích sự sụt giảm nội dung</CardTitle>
               <CardDescription>
-                Identify lessons where students struggle or leave.
+                Xác định những bài học mà học sinh gặp khó khăn hoặc bỏ dở.
               </CardDescription>
             </div>
             <Badge
               variant="outline"
               className="px-3 py-1 bg-amber-50 text-amber-700 border-amber-200"
             >
-              Attention Required
+              Cần chú ý
             </Badge>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[30%]">Lesson Title</TableHead>
-                  <TableHead className="w-[25%]">Course</TableHead>
-                  <TableHead className="text-center">Started</TableHead>
-                  <TableHead className="text-center">Completed</TableHead>
-                  <TableHead className="text-right">Drop-off Rate</TableHead>
+                  <TableHead className="w-[30%]">Tiêu đề bài học</TableHead>
+                  <TableHead className="w-[25%]">Khóa học</TableHead>
+                  <TableHead className="text-center">Đã bắt đầu</TableHead>
+                  <TableHead className="text-center">Hoàn thành</TableHead>
+                  <TableHead className="text-right">Tỷ lệ bỏ học</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -537,7 +537,7 @@ export default function Dashboard() {
                       colSpan={5}
                       className="text-center h-32 text-muted-foreground"
                     >
-                      No critical drop-off points found in this range.
+                      Không tìm thấy điểm rơi quan trọng nào trong phạm vi này.
                     </TableCell>
                   </TableRow>
                 )}

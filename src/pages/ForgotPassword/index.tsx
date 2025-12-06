@@ -7,8 +7,6 @@ import { forgotPassword } from "../../services/auth";
 import { notifySuccess, notifyError } from "../../utils/toastConfig";
 import type { AxiosError } from "axios";
 import { Loader2, ArrowLeft, KeyRound, Mail } from "lucide-react";
-
-// Shadcn Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,13 +29,13 @@ const ForgotPassword: React.FC = () => {
     mutationFn: (values: { emailOrUsername: string }) => forgotPassword(values),
     onSuccess: (data, variables) => {
       if (data.success) {
-        notifySuccess(data.message || "OTP sent to your email!");
+        notifySuccess(data.message || "Mã OTP đã được gửi đến email của bạn!");
         localStorage.setItem("resetEmail", variables.emailOrUsername);
         navigate("/reset-password");
       }
     },
     onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || "Failed to send OTP"),
+      notifyError(err?.response?.data?.message || "Không gửi được OTP"),
   });
 
   const onSubmit = (values: { emailOrUsername: string }) => {
@@ -71,33 +69,37 @@ const ForgotPassword: React.FC = () => {
           className="absolute top-4 left-4 md:top-8 md:left-8 cursor-pointer !text-foreground"
           onClick={() => navigate("/login")}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Login
+          <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại đăng nhập
         </Button>
 
         <div className="mx-auto grid w-full max-w-[400px] gap-6">
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="flex items-center justify-center gap-2 text-3xl font-bold tracking-tight text-foreground">
               <KeyRound className="h-6 w-6" />
-              Forgot password?
+              Quên mật khẩu?
             </h1>
             <p className="text-muted-foreground text-sm">
-              No worries, we'll send you reset instructions.
+              Đừng lo lắng, chúng tôi sẽ gửi cho bạn hướng dẫn thiết lập lại.
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email or Username</Label>
+              <Label htmlFor="email">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
-                  placeholder="Enter your email"
+                  placeholder="Nhập email của bạn"
                   className={`pl-9 ${
                     errors.emailOrUsername ? "border-red-500" : ""
                   }`}
                   {...register("emailOrUsername", {
-                    required: "Email or username is required",
+                    required: "Email là bắt buộc",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email không hợp lệ",
+                    },
                   })}
                 />
               </div>
@@ -116,7 +118,7 @@ const ForgotPassword: React.FC = () => {
               {mutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Send Reset Code
+              Gửi mã đặt lại
             </Button>
           </form>
         </div>

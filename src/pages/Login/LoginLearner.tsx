@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { loginLearner, loginWithGoogle } from "../../services/auth";
+import { loginLearner } from "../../services/auth";
 import { notifyError, notifySuccess } from "../../utils/toastConfig";
 import { useAuth } from "../../utils/AuthContext";
 import type { AxiosError } from "axios";
@@ -53,7 +52,7 @@ const LoginLearner: React.FC = () => {
             )
           ) {
             notifyError(
-              "Account has Staff privileges. Please login at the System Portal."
+              "Tài khoản có quyền Nhân viên. Vui lòng đăng nhập tại Cổng thông tin Hệ thống."
             );
             localStorage.clear();
             window.location.href = SYSTEM_DOMAIN;
@@ -76,13 +75,7 @@ const LoginLearner: React.FC = () => {
     mutationFn: loginLearner,
     onSuccess: (data) => handleAuthSuccess(data),
     onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || "Login failed"),
-  });
-
-  const googleMutation = useMutation({
-    mutationFn: loginWithGoogle,
-    onSuccess: (data: any) => handleAuthSuccess(data.data),
-    onError: () => notifyError("Google login failed"),
+      notifyError(err?.response?.data?.message || "Đăng nhập thất bại!"),
   });
 
   const handleAuthSuccess = (data: any) => {
@@ -91,7 +84,9 @@ const LoginLearner: React.FC = () => {
       ["admin", "manager", "teacher"].includes(r.toLowerCase())
     );
     if (isStaff) {
-      notifyError("You are a Staff member. Please use the System Portal.");
+      notifyError(
+        "Bạn là nhân viên. Vui lòng sử dụng Cổng thông tin hệ thống."
+      );
       setTimeout(() => {
         window.location.href = SYSTEM_DOMAIN;
       }, 1500);
@@ -102,7 +97,7 @@ const LoginLearner: React.FC = () => {
     localStorage.setItem("FLEARN_REFRESH_TOKEN", data.refreshToken);
     localStorage.setItem("FLEARN_USER_ROLES", JSON.stringify(data.roles));
     updateAuth();
-    notifySuccess("Welcome back to Flearn!");
+    notifySuccess("Đăng nhập thành công!");
     navigate("/learner");
   };
 
@@ -110,8 +105,8 @@ const LoginLearner: React.FC = () => {
     mutation.mutate(data);
   };
 
-  if (isCheckingAuth || mutation.isSuccess || googleMutation.isSuccess) {
-    return <LoadingScreen message="Verifying secure session..." />;
+  if (isCheckingAuth || mutation.isSuccess) {
+    return <LoadingScreen message="Xác minh phiên an toàn..." />;
   }
 
   return (
@@ -145,13 +140,9 @@ const LoginLearner: React.FC = () => {
           <div className="flex flex-col space-y-2 text-center">
             <h1 className="flex items-center justify-center gap-2 text-3xl font-bold tracking-tight text-foreground">
               <GraduationCap className="h-10 w-10" />
-              FLearn - Log In
+              FLearn - Đăng nhập
             </h1>
-            <p className="text-muted-foreground text-sm">
-              Enter your credentials to access your learning path
-            </p>
           </div>
-
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             <div className="grid gap-2">
               <div
@@ -160,17 +151,17 @@ const LoginLearner: React.FC = () => {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="username">Username or Email</Label>
+              <Label htmlFor="username">Username hoặc Email</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="johndoe@gmail.com or johndoe"
+                placeholder="johndoe@gmail.com hoặc johndoe"
                 className={errors.usernameOrEmail ? "border-red-500" : ""}
                 {...register("usernameOrEmail", { required: true })}
               />
               {errors.usernameOrEmail && (
                 <span className="text-xs text-red-500">
-                  Username is required
+                  Trường này là bắt buộc
                 </span>
               )}
             </div>
@@ -182,7 +173,7 @@ const LoginLearner: React.FC = () => {
                   onClick={() => navigate("/forgot-password")}
                   className="text-sm font-medium text-primary hover:underline cursor-pointer"
                 >
-                  Forgot password?
+                  Quên mật khẩu?
                 </a>
               </div>
               <div className="relative">
@@ -207,7 +198,7 @@ const LoginLearner: React.FC = () => {
               </div>
               {errors.password && (
                 <span className="text-xs text-red-500">
-                  Password is required
+                  Trường này là bắt buộc
                 </span>
               )}
             </div>
@@ -222,9 +213,9 @@ const LoginLearner: React.FC = () => {
               <div></div>
               <label
                 htmlFor="remember"
-                className="text-sm font-medium leading-none text-gray-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none text-gray-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
               >
-                Remember me
+                Duy trì đăng nhập
               </label>
             </div>
 
@@ -236,17 +227,17 @@ const LoginLearner: React.FC = () => {
               {mutation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Sign In
+              Đăng nhập
             </Button>
           </form>
 
           <div className="text-center text-sm">
-            Don&apos;t have an account?{" "}
+            Không có tài khoản?{" "}
             <span
               onClick={() => navigate("/register")}
               className="font-medium text-primary hover:underline cursor-pointer"
             >
-              Sign up
+              Đăng ký
             </span>
           </div>
           <Separator className="my-2" />
@@ -255,7 +246,7 @@ const LoginLearner: React.FC = () => {
               href={SYSTEM_DOMAIN}
               className="text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 transition-colors"
             >
-              Staff Member? Go to System Portal{" "}
+              Nhân viên? Truy cập Cổng thông tin hệ thống
               <ArrowRight className="h-3 w-3" />
             </a>
           </div>

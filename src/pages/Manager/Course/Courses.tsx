@@ -134,9 +134,9 @@ export default function Courses() {
     const now = new Date();
     const diffMs = now.getTime() - submittedDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return "just now";
-    if (diffDays === 1) return "1 day ago";
-    return `${diffDays} days ago`;
+    if (diffDays === 0) return "Vừa rồi";
+    if (diffDays === 1) return "1 ngày trước";
+    return `${diffDays} ngày trước`;
   };
 
   const getStatusColor = (status: string) => {
@@ -158,10 +158,10 @@ export default function Courses() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Course Management
+              Quản lý khóa học
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Review and manage instructor course submissions.
+              Xem xét và quản lý các bài giảng của giảng viên.
             </p>
           </div>
         </div>
@@ -172,7 +172,7 @@ export default function Courses() {
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search by course title, teacher name..."
+                  placeholder="Tìm kiếm theo tên khóa học, tên giáo viên..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-12 pr-4 h-10 text-base bg-gray-50 focus:bg-white border border-gray-200 rounded-md focus:ring-4 focus:ring-blue-500/10"
@@ -182,7 +182,7 @@ export default function Courses() {
             <div className="mt-5 pt-5 flex flex-wrap items-center gap-4 text-sm">
               <div className="flex items-center gap-2 text-gray-600">
                 <Filter className="h-4 w-4" />
-                <span className="font-medium">Filter by</span>
+                <span className="font-medium">Lọc theo</span>
               </div>
 
               <Select value={levelFilter} onValueChange={setLevelFilter}>
@@ -190,10 +190,10 @@ export default function Courses() {
                   <SelectValue placeholder="Level" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
-                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="all">Tất cả các trình độ</SelectItem>
                   <SelectGroup>
                     <SelectLabel className="text-xs font-bold text-slate-500 mt-2 px-2">
-                      English
+                      Tiếng Anh
                     </SelectLabel>
                     <SelectItem value="A1">A1 (Beginner)</SelectItem>
                     <SelectItem value="A2">A2 (Elementary)</SelectItem>
@@ -204,7 +204,7 @@ export default function Courses() {
                   </SelectGroup>
                   <SelectGroup>
                     <SelectLabel className="text-xs font-bold text-slate-500 mt-2 px-2">
-                      Japanese
+                      Tiếng Nhật
                     </SelectLabel>
                     <SelectItem value="N5">N5 (Basic)</SelectItem>
                     <SelectItem value="N4">N4 (Elementary)</SelectItem>
@@ -214,7 +214,7 @@ export default function Courses() {
                   </SelectGroup>
                   <SelectGroup>
                     <SelectLabel className="text-xs font-bold text-slate-500 mt-2 px-2">
-                      Chinese
+                      Tiếng Trung
                     </SelectLabel>
                     <SelectItem value="HSK1">HSK 1</SelectItem>
                     <SelectItem value="HSK2">HSK 2</SelectItem>
@@ -231,9 +231,9 @@ export default function Courses() {
                   <SelectValue placeholder="Price" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Prices</SelectItem>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="all">Tất cả giá</SelectItem>
+                  <SelectItem value="free">Miễn phí</SelectItem>
+                  <SelectItem value="paid">Có phí</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -241,14 +241,14 @@ export default function Courses() {
                 value={statusFilter}
                 onValueChange={(val: SubmissionStatus) => setStatusFilter(val)}
               >
-                <SelectTrigger className="w-[130px] h-10 bg-gray-50 border-gray-200 cursor-pointer">
+                <SelectTrigger className="w-[150px] h-10 bg-gray-50 border-gray-200 cursor-pointer">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Approved">Approved</SelectItem>
-                  <SelectItem value="Rejected">Rejected</SelectItem>
+                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                  <SelectItem value="Pending">Đang xét duyệt</SelectItem>
+                  <SelectItem value="Approved">Đã duyệt</SelectItem>
+                  <SelectItem value="Rejected">Từ chối</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -261,12 +261,12 @@ export default function Courses() {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="oldest">Oldest First</SelectItem>
-                  <SelectItem value="atoz">Title: A → Z</SelectItem>
-                  <SelectItem value="ztoa">Title: Z → A</SelectItem>
-                  <SelectItem value="price-asc">Price: Low → High</SelectItem>
-                  <SelectItem value="price-desc">Price: High → Low</SelectItem>
+                  <SelectItem value="newest">Mới nhất đầu tiên</SelectItem>
+                  <SelectItem value="oldest">Cũ nhất đầu tiên</SelectItem>
+                  <SelectItem value="atoz">Tiêu đề: A → Z</SelectItem>
+                  <SelectItem value="ztoa">Tiêu đề: Z → A</SelectItem>
+                  <SelectItem value="price-asc">Giá: Thấp → Cao</SelectItem>
+                  <SelectItem value="price-desc">Giá: Cao → Thấp</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -281,15 +281,14 @@ export default function Courses() {
                   }}
                   className="text-blue-600 font-medium hover:underline cursor-pointer"
                 >
-                  Clear all filters
+                  Xóa tất cả bộ lọc
                 </button>
               )}
             </div>
 
             <div className="mt-4 text-sm text-slate-500">
-              Found <strong>{processedData.length}</strong> course
-              {processedData.length !== 1 ? "s" : ""}
-              {searchTerm && ` matching "${searchTerm}"`}
+              Tìm thấy <strong>{processedData.length}</strong> khóa học
+              {searchTerm && ` khớp "${searchTerm}"`}
             </div>
           </div>
         </div>
@@ -302,7 +301,9 @@ export default function Courses() {
           </div>
         ) : paginatedData.length === 0 ? (
           <div className="text-center py-20 bg-slate-50 rounded-sm border border-dashed">
-            <p className="text-slate-500">No courses match your filters.</p>
+            <p className="text-slate-500">
+              Không có khóa học nào phù hợp với bộ lọc của bạn.
+            </p>
             <Button
               variant="link"
               onClick={() => {
@@ -314,7 +315,7 @@ export default function Courses() {
               }}
               className="cursor-pointer"
             >
-              Clear all filters & search
+              Xóa tất cả bộ lọc và tìm kiếm
             </Button>
           </div>
         ) : (
@@ -333,7 +334,7 @@ export default function Courses() {
                   <img
                     src={item.course.imageUrl}
                     alt={item.course.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
                   <div className="absolute top-3 right-3">
@@ -354,7 +355,7 @@ export default function Courses() {
                         variant="default"
                         className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100 rounded-sm font-medium text-sm px-2"
                       >
-                        <span className="mr-1.5">Level:</span>
+                        <span className="mr-1.5">Trình độ:</span>
                         {item.course.program.level.name}
                       </Badge>
                     </div>
@@ -366,8 +367,8 @@ export default function Courses() {
                       }`}
                     >
                       {item.course.price === 0
-                        ? "Free"
-                        : `đ${item.course.price.toLocaleString()}`}
+                        ? "Miễn phí"
+                        : `${item.course.price.toLocaleString()}đ`}
                     </span>
                   </div>
 
@@ -376,7 +377,6 @@ export default function Courses() {
                   </h3>
 
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm font-sans">Teacher:</span>
                     <img
                       src={item.submitter.avatar}
                       alt={item.submitter.name}
@@ -388,14 +388,14 @@ export default function Courses() {
                   </div>
 
                   <p className="font-sans text-sm text-slate-950 line-clamp-2 mb-4 flex-grow leading-relaxed">
-                    <span>Description:</span> {item.course.description}
+                    <span>Mô tả:</span> {item.course.description}
                   </p>
 
                   <div className="pt-4 mt-auto border-t border-slate-100 flex flex-col gap-2 text-xs text-slate-500">
                     <div className="flex items-center gap-2">
                       <FileText className="w-3.5 h-3.5 text-slate-400" />
                       <span>
-                        Submitted:{" "}
+                        Ngày nộp:{" "}
                         <span className="font-medium text-slate-700">
                           {item.submittedAt}
                         </span>
@@ -405,7 +405,7 @@ export default function Courses() {
                     <div className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span className="text-slate-500">
-                        Status changed{" "}
+                        Đã nộp:{" "}
                         <span className="text-emerald-600 font-medium">
                           {getTimeAgo(item.submittedAt)}
                         </span>
@@ -421,8 +421,8 @@ export default function Courses() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
             <div className="text-sm text-slate-600">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> (
-              {processedData.length} total)
+              Page <strong>{page}</strong> của <strong>{totalPages}</strong> (
+              {processedData.length} tổng)
             </div>
             <div className="flex gap-2">
               <Button
@@ -433,7 +433,7 @@ export default function Courses() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
+                Trước
               </Button>
               <Button
                 className="cursor-pointer"
@@ -442,7 +442,7 @@ export default function Courses() {
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >
-                Next
+                Tiếp theo
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
