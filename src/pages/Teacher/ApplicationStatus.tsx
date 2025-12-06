@@ -32,6 +32,7 @@ import type {
 import { getMyApplication } from "../../services/teacherApplication";
 import { useDebounce } from "../../utils/useDebound";
 
+
 const { Title, Paragraph, Text } = Typography;
 
 const statusMap: Record<
@@ -209,6 +210,7 @@ const ApplicationStatus: React.FC = () => {
             Đơn đăng ký làm giáo viên của bạn
           </Title>
         </div>
+
         {/* Filters */}
         <Card className="!mb-2 shadow-md rounded-xl">
           <Space wrap className="w-full" size="middle">

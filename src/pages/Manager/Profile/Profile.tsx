@@ -14,6 +14,7 @@ import { Mail, User, Calendar, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { format } from "date-fns";
+import NotificationSettings from "@/components/NotificationSettings";
 
 interface UserProfile {
   userId: string;
@@ -200,6 +201,9 @@ export default function Profile() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Notification Settings */}
+            <NotificationSettings />
 
             <div className="text-center text-sm text-muted-foreground p-6 bg-muted/30 rounded-md">
               <p>Tài khoản của bạn an toàn và được cập nhật.</p>

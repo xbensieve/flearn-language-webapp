@@ -21,10 +21,12 @@ import {
   MenuUnfoldOutlined,
   BookOutlined,
   UserOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
+import { unregisterWebPush } from "../../services/webPush";
 import { notifyError, notifySuccess } from "@/utils/toastConfig";
 import { ArrowLeftRight } from "lucide-react";
 
@@ -58,7 +60,14 @@ const DashboardLayout: React.FC = () => {
     },
   });
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
+    // Unregister web push before logout
+    try {
+      await unregisterWebPush();
+    } catch (e) {
+      console.error('Failed to unregister web push:', e);
+    }
+    
     const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
     if (refreshToken) {
       logout(refreshToken);
@@ -118,6 +127,13 @@ const DashboardLayout: React.FC = () => {
           icon: <ArrowLeftRight />,
           label: "Wallet Transactions",
         },
+      ],
+    },
+    {
+      type: "group",
+      label: "SYSTEM",
+      children: [
+        { key: "/admin/settings", icon: <SettingOutlined />, label: "Settings" },
       ],
     },
   ];

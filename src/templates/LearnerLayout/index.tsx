@@ -23,6 +23,7 @@ import { Loader2 } from "lucide-react";
 import LoadingScreen from "@/components/Loading/LoadingScreen";
 import { cn } from "@/lib/utils";
 import { logoutService } from "@/services/auth";
+import { unregisterWebPush } from "@/services/webPush";
 
 const NAV_ITEMS = [
   { label: "Ứng tuyển", href: "/learner/application" },
@@ -47,7 +48,14 @@ export default function LearnerLayout() {
     },
   });
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Unregister web push before logout
+    try {
+      await unregisterWebPush();
+    } catch (e) {
+      console.error('Failed to unregister web push:', e);
+    }
+    
     const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
     if (refreshToken) {
       toast.success("Đăng xuất thành công!");
