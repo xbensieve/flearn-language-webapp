@@ -19,21 +19,6 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Messaging (only if supported)
 let messaging: ReturnType<typeof getMessaging> | null = null;
 
-export const initializeMessaging = async () => {
-  try {
-    const supported = await isSupported();
-    if (supported) {
-      messaging = getMessaging(app);
-      return messaging;
-    }
-    console.warn('Firebase Messaging is not supported in this browser');
-    return null;
-  } catch (error) {
-    console.error('Error initializing Firebase Messaging:', error);
-    return null;
-  }
-};
-
 // Request notification permission and get FCM token
 export const requestNotificationPermission = async (): Promise<string | null> => {
   try {
@@ -128,24 +113,96 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
   }
 };
 
-// Listen for foreground messages
+// Global message handlers
+const messageHandlers: Set<(payload: unknown) => void> = new Set();
+let isListenerSetup = false;
+
+// Setup global listener once
+const setupGlobalListener = () => {
+  if (!messaging || isListenerSetup) return;
+  
+  isListenerSetup = true;
+  console.log('📩 Setting up global Firebase message listener');
+  
+  onMessage(messaging, (payload) => {
+    console.log('📩 Firebase message received:', payload);
+    
+    // ALWAYS show desktop notification first
+    showDesktopNotification(payload);
+    
+    // Then broadcast to all handlers
+    messageHandlers.forEach(handler => {
+      try {
+        handler(payload);
+      } catch (err) {
+        console.error('Handler error:', err);
+      }
+    });
+  });
+};
+
+// Show desktop notification directly
+const showDesktopNotification = async (payload: unknown) => {
+  const data = payload as { notification?: { title?: string; body?: string }; data?: { url?: string } };
+  const title = data.notification?.title || 'New Notification';
+  const body = data.notification?.body || '';
+  
+  if (Notification.permission !== 'granted') return;
+  
+  try {
+    const notification = new Notification(title, {
+      body,
+      icon: '/logo.png',
+      tag: 'flearn-' + Date.now(),
+    });
+    
+    notification.onclick = () => {
+      window.focus();
+      if (data.data?.url) {
+        window.location.href = data.data.url;
+      }
+      notification.close();
+    };
+    
+    setTimeout(() => notification.close(), 5000);
+    console.log('📩 Desktop notification shown');
+  } catch (err) {
+    console.error('Failed to show notification:', err);
+  }
+};
+
+// Listen for foreground messages - register handler
 export const onForegroundMessage = (callback: (payload: unknown) => void) => {
-  if (!messaging) {
-    console.warn('Firebase Messaging not initialized for foreground listener');
-    return () => {};
+  messageHandlers.add(callback);
+  console.log('📩 Handler registered, total handlers:', messageHandlers.size);
+  
+  // Setup global listener if not already done
+  if (messaging && !isListenerSetup) {
+    setupGlobalListener();
   }
   
-  console.log('Registering foreground message listener...');
-  
-  return onMessage(messaging, (payload) => {
-    console.log('📩 Firebase onMessage triggered:', payload);
-    try {
-      callback(payload);
-      console.log('📩 Callback executed successfully');
-    } catch (err) {
-      console.error('📩 Callback error:', err);
+  // Return unsubscribe function
+  return () => {
+    messageHandlers.delete(callback);
+    console.log('📩 Handler unregistered, remaining handlers:', messageHandlers.size);
+  };
+};
+
+// Initialize messaging and setup listener
+export const initializeMessaging = async () => {
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      messaging = getMessaging(app);
+      setupGlobalListener();
+      return messaging;
     }
-  });
+    console.warn('Firebase Messaging is not supported in this browser');
+    return null;
+  } catch (error) {
+    console.error('Error initializing Firebase Messaging:', error);
+    return null;
+  }
 };
 
 // Check if notifications are enabled
