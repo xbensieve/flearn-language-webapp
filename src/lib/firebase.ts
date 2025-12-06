@@ -67,11 +67,26 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
       return null;
     }
 
-    // Register service worker
+    // Register service worker - check if already registered first
     console.log('Registering service worker...');
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-      scope: '/'
-    });
+    let registration: ServiceWorkerRegistration;
+    
+    try {
+      // Check for existing registration
+      const existingReg = await navigator.serviceWorker.getRegistration('/');
+      if (existingReg) {
+        console.log('Using existing Service Worker registration');
+        registration = existingReg;
+      } else {
+        registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/'
+        });
+        console.log('New Service Worker registered');
+      }
+    } catch (swError) {
+      console.error('Service Worker registration failed:', swError);
+      return null;
+    }
     
     // Wait for service worker to be ready
     await navigator.serviceWorker.ready;

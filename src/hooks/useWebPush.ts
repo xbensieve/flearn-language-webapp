@@ -99,47 +99,44 @@ export const useWebPush = () => {
           console.log('Registering token with backend...');
           const response = await registerWebPushToken(token);
           console.log('Backend response:', response);
+          
+          setState((prev) => ({
+            ...prev,
+            isEnabled: true,
+            permissionStatus: 'granted',
+            isLoading: false,
+            error: null,
+          }));
+          
+          return true;
         } catch (registerError: unknown) {
           console.error('Failed to register token with backend:', registerError);
-          const err = registerError as { response?: { data?: unknown } };
+          const err = registerError as { response?: { data?: { message?: string } } };
+          const errorMsg = err.response?.data?.message || 'Failed to register with server';
           console.error('Error response:', err.response?.data);
-          // Show error to user
+          
           setState((prev) => ({
             ...prev,
             isLoading: false,
-            error: 'Failed to register with server',
+            error: errorMsg,
           }));
           return false;
         }
-
-        setState((prev) => ({
-          ...prev,
-          isEnabled: true,
-          permissionStatus: 'granted',
-          isLoading: false,
-          error: null,
-        }));
-
-        // Setup foreground message listener
-        onForegroundMessage((payload: unknown) => {
-          const message = payload as { notification?: { title?: string; body?: string } };
-          notification.info({
-            message: message.notification?.title || 'New Notification',
-            description: message.notification?.body,
-            placement: 'topRight',
-            duration: 5,
-          });
-        });
-
-        return true;
       } else {
         const currentPermission = getNotificationPermissionStatus();
+        let errorMsg = null;
+        
+        if (currentPermission === 'granted') {
+          errorMsg = 'Failed to get notification token. Please try again.';
+        } else if (currentPermission === 'denied') {
+          errorMsg = 'Notification permission denied by browser.';
+        }
+        
         setState((prev) => ({
           ...prev,
           isLoading: false,
           permissionStatus: currentPermission,
-          // Only show error if permission was granted but token failed
-          error: currentPermission === 'granted' ? 'Failed to get notification token' : null,
+          error: errorMsg,
         }));
         return false;
       }
@@ -148,7 +145,7 @@ export const useWebPush = () => {
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: 'Failed to enable notifications',
+        error: 'Failed to enable notifications. Please try again.',
       }));
       return false;
     }
