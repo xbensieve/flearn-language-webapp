@@ -31,6 +31,7 @@ import type {
 } from "../../services/teacherApplication/types";
 import { getMyApplication } from "../../services/teacherApplication";
 import { useDebounce } from "../../utils/useDebound";
+import NotificationSettings from "../../components/NotificationSettings";
 
 
 const { Title, Paragraph, Text } = Typography;
@@ -210,6 +211,14 @@ const ApplicationStatus: React.FC = () => {
             Đơn đăng ký làm giáo viên của bạn
           </Title>
         </div>
+
+        {/* Notification Settings */}
+        <Card className="!mb-4 shadow-md rounded-xl">
+          <NotificationSettings />
+          <p className="text-gray-500 text-sm mt-2">
+            Bật thông báo để nhận kết quả duyệt đơn đăng ký ngay trên desktop.
+          </p>
+        </Card>
 
         {/* Filters */}
         <Card className="!mb-2 shadow-md rounded-xl">
