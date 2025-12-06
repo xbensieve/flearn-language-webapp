@@ -131,13 +131,20 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
 // Listen for foreground messages
 export const onForegroundMessage = (callback: (payload: unknown) => void) => {
   if (!messaging) {
-    console.warn('Firebase Messaging not initialized');
+    console.warn('Firebase Messaging not initialized for foreground listener');
     return () => {};
   }
   
+  console.log('Registering foreground message listener...');
+  
   return onMessage(messaging, (payload) => {
-    console.log('Foreground message received:', payload);
-    callback(payload);
+    console.log('📩 Firebase onMessage triggered:', payload);
+    try {
+      callback(payload);
+      console.log('📩 Callback executed successfully');
+    } catch (err) {
+      console.error('📩 Callback error:', err);
+    }
   });
 };
 

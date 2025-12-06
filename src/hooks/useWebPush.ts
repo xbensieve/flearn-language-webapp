@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   requestNotificationPermission,
-  onForegroundMessage,
   getNotificationPermissionStatus,
   initializeMessaging,
 } from '../lib/firebase';
 import { registerWebPushToken, unregisterWebPush, getWebPushStatus } from '../services/webPush';
-import { notification } from 'antd';
 
 interface WebPushState {
   isSupported: boolean;
@@ -56,19 +54,9 @@ export const useWebPush = () => {
         }));
 
         // Initialize messaging only if permission is granted and backend confirmed
+        // Note: Foreground message listener is handled by NotificationProvider
         if (isSupported && permissionStatus === 'granted' && isEnabled) {
           await initializeMessaging();
-          
-          // Setup foreground message listener
-          onForegroundMessage((payload: unknown) => {
-            const message = payload as { notification?: { title?: string; body?: string } };
-            notification.info({
-              message: message.notification?.title || 'New Notification',
-              description: message.notification?.body,
-              placement: 'topRight',
-              duration: 5,
-            });
-          });
         }
       } catch (error) {
         console.error('Error checking notification status:', error);
