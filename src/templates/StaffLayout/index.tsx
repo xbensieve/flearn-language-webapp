@@ -4,6 +4,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getProfile, logoutService } from '../../services/auth';
+import { unregisterWebPush } from '../../services/webPush';
 import { toast } from 'react-toastify';
 import { Book } from 'lucide-react';
 
@@ -73,7 +74,14 @@ const StaffDashboardLayout: React.FC = () => {
     retry: 1,
   });
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Unregister web push before logout
+    try {
+      await unregisterWebPush();
+    } catch (e) {
+      console.error('Failed to unregister web push:', e);
+    }
+    
     localStorage.removeItem('FLEARN_ACCESS_TOKEN');
     localStorage.removeItem('FLEARN_REFRESH_TOKEN');
     toast.success('Bạn đã đăng xuất!');
