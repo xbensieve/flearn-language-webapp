@@ -119,7 +119,10 @@ let isListenerSetup = false;
 
 // Setup global listener once
 const setupGlobalListener = () => {
-  if (!messaging || isListenerSetup) return;
+  if (!messaging) {
+    console.log('📩 No messaging instance, cannot setup listener');
+    return;
+  }
   
   // Only setup listener if permission is granted
   if (Notification.permission !== 'granted') {
@@ -127,8 +130,13 @@ const setupGlobalListener = () => {
     return;
   }
   
+  if (isListenerSetup) {
+    console.log('📩 Listener already setup');
+    return;
+  }
+  
   isListenerSetup = true;
-  console.log('📩 Setting up global Firebase message listener');
+  console.log('📩 Setting up global Firebase message listener NOW');
   
   onMessage(messaging, (payload) => {
     console.log('📩 Firebase message received:', payload);
@@ -145,6 +153,8 @@ const setupGlobalListener = () => {
       }
     });
   });
+  
+  console.log('📩 ✅ Global listener setup complete!');
 };
 
 // Show desktop notification directly
