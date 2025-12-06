@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   requestNotificationPermission,
   onForegroundMessage,
-  isNotificationEnabled,
   getNotificationPermissionStatus,
   initializeMessaging,
 } from '../lib/firebase';
@@ -26,13 +25,25 @@ export const useWebPush = () => {
     error: null,
   });
 
-  // Check initial status
+  // Check initial status - verify with backend
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const isSupported = 'Notification' in window && 'serviceWorker' in navigator;
         const permissionStatus = getNotificationPermissionStatus();
-        const isEnabled = isNotificationEnabled();
+        
+        // Check with backend if notification is actually enabled
+        let isEnabled = false;
+        if (permissionStatus === 'granted') {
+          try {
+            const status = await getWebPushStatus();
+            console.log('Backend status check:', status);
+            isEnabled = status?.success === true || status?.data?.isRegistered === true;
+          } catch {
+            // If backend check fails, assume not enabled
+            isEnabled = false;
+          }
+        }
 
         setState((prev) => ({
           ...prev,
@@ -40,18 +51,16 @@ export const useWebPush = () => {
           isEnabled,
           permissionStatus,
           isLoading: false,
-          // Don't show error if just blocked - that's expected
           error: null,
         }));
 
-        // Initialize messaging only if permission is granted
-        if (isSupported && permissionStatus === 'granted') {
+        // Initialize messaging only if permission is granted and backend confirmed
+        if (isSupported && permissionStatus === 'granted' && isEnabled) {
           await initializeMessaging();
           
           // Setup foreground message listener
           onForegroundMessage((payload: unknown) => {
             const message = payload as { notification?: { title?: string; body?: string } };
-            // Show notification using Ant Design
             notification.info({
               message: message.notification?.title || 'New Notification',
               description: message.notification?.body,
@@ -65,7 +74,6 @@ export const useWebPush = () => {
         setState((prev) => ({
           ...prev,
           isLoading: false,
-          // Don't show error on initial check
           error: null,
         }));
       }

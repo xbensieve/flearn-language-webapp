@@ -1,6 +1,4 @@
 import React, { useEffect, useCallback } from 'react';
-import { notification } from 'antd';
-import { BellOutlined } from '@ant-design/icons';
 import {
   initializeMessaging,
   onForegroundMessage,
@@ -24,51 +22,42 @@ interface NotificationProviderProps {
 }
 
 const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
-  const [api, contextHolder] = notification.useNotification();
-
   const showNotification = useCallback(
-    (payload: NotificationPayload) => {
+    async (payload: NotificationPayload) => {
       const title = payload.notification?.title || 'New Notification';
       const body = payload.notification?.body || '';
       const url = payload.data?.url;
 
-      // Show Ant Design notification in UI
-      api.info({
-        message: title,
-        description: body,
-        placement: 'topRight',
-        duration: 6,
-        icon: <BellOutlined style={{ color: '#1890ff' }} />,
-        onClick: () => {
-          if (url) {
-            window.location.href = url;
-          }
-        },
-        style: {
-          cursor: url ? 'pointer' : 'default',
-        },
-      });
+      console.log('Attempting to show notification:', { title, body });
 
-      // Also show native browser notification if page is visible but not focused
-      if (document.visibilityState === 'visible' && !document.hasFocus()) {
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const nativeNotif = new Notification(title, {
+      // Show notification via Service Worker (works even when page is focused)
+      if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification(title, {
             body: body,
             icon: '/logo.png',
-            tag: 'flearn-foreground',
+            badge: '/logo.png',
+            tag: 'flearn-notification-' + Date.now(),
+            data: { url },
+            requireInteraction: false,
           });
-
-          nativeNotif.onclick = () => {
-            window.focus();
-            if (url) {
-              window.location.href = url;
-            }
-            nativeNotif.close();
-          };
+          console.log('Notification shown via Service Worker');
+        } catch (err) {
+          console.error('Failed to show notification via SW:', err);
+          // Fallback to native Notification API
+          try {
+            new Notification(title, {
+              body: body,
+              icon: '/logo.png',
+            });
+          } catch (e) {
+            console.error('Fallback notification also failed:', e);
+          }
         }
       }
     },
-    [api]
+    []
   );
 
   useEffect(() => {
@@ -103,7 +92,6 @@ const NotificationProvider: React.FC<NotificationProviderProps> = ({ children })
 
   return (
     <>
-      {contextHolder}
       {children}
     </>
   );

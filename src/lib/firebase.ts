@@ -43,8 +43,15 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
       return null;
     }
 
+    if (!('serviceWorker' in navigator)) {
+      console.warn('Service Worker not supported');
+      return null;
+    }
+
     // Request permission
     const permission = await Notification.requestPermission();
+    console.log('Permission result:', permission);
+    
     if (permission !== 'granted') {
       console.warn('Notification permission denied');
       return null;
@@ -60,57 +67,44 @@ export const requestNotificationPermission = async (): Promise<string | null> =>
       return null;
     }
 
-    // Register service worker and wait for it to be ready
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    console.log('Service Worker registered:', registration);
+    // Register service worker
+    console.log('Registering service worker...');
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      scope: '/'
+    });
+    
+    // Wait for service worker to be ready
+    await navigator.serviceWorker.ready;
+    console.log('Service Worker ready:', registration);
 
-    // Wait for the service worker to be ready/active
-    if (registration.installing) {
-      console.log('Service Worker installing...');
-      await new Promise<void>((resolve) => {
-        registration.installing!.addEventListener('statechange', (e) => {
-          if ((e.target as ServiceWorker).state === 'activated') {
-            console.log('Service Worker activated');
-            resolve();
-          }
+    // Get FCM token with retries
+    let token: string | null = null;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (!token && attempts < maxAttempts) {
+      attempts++;
+      console.log(`Getting FCM token (attempt ${attempts})...`);
+      
+      try {
+        token = await getToken(messaging, {
+          vapidKey: VAPID_KEY,
+          serviceWorkerRegistration: registration
         });
-      });
-    } else if (registration.waiting) {
-      console.log('Service Worker waiting...');
-      await new Promise<void>((resolve) => {
-        registration.waiting!.addEventListener('statechange', (e) => {
-          if ((e.target as ServiceWorker).state === 'activated') {
-            console.log('Service Worker activated');
-            resolve();
-          }
-        });
-      });
-    } else if (registration.active) {
-      console.log('Service Worker already active');
+      } catch (err) {
+        console.error(`Attempt ${attempts} failed:`, err);
+        if (attempts < maxAttempts) {
+          // Wait before retry
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
     }
 
-    // Ensure service worker is ready
-    await navigator.serviceWorker.ready;
-    console.log('Service Worker ready');
-
-    // Get FCM token
-    const token = await getToken(messaging, {
-      vapidKey: VAPID_KEY,
-      serviceWorkerRegistration: registration
-    }).catch(async (err) => {
-      console.error('getToken error:', err);
-      // Try without vapidKey as fallback
-      console.log('Trying without VAPID key...');
-      return await getToken(messaging!, {
-        serviceWorkerRegistration: registration
-      });
-    });
-
     if (token) {
-      console.log('FCM Token:', token);
+      console.log('FCM Token obtained:', token.substring(0, 20) + '...');
       return token;
     } else {
-      console.warn('No FCM token available');
+      console.warn('Failed to get FCM token after', maxAttempts, 'attempts');
       return null;
     }
   } catch (error) {
