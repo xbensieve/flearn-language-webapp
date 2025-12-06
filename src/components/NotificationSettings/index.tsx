@@ -21,6 +21,38 @@ const NotificationSettings: React.FC = () => {
     disableNotifications,
   } = useWebPush();
 
+  // Check if in incognito/private mode
+  const [isIncognito, setIsIncognito] = React.useState(false);
+  
+  React.useEffect(() => {
+    // Detect incognito mode
+    const checkIncognito = async () => {
+      try {
+        const fs = (navigator as any).webkitTemporaryStorage;
+        if (fs) {
+          fs.queryUsageAndQuota((_used: number, quota: number) => {
+            // In incognito, quota is usually very limited (< 120MB)
+            if (quota < 120000000) {
+              setIsIncognito(true);
+            }
+          }, () => {});
+        }
+        
+        // Alternative check using storage estimate
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+          const estimate = await navigator.storage.estimate();
+          // Incognito typically has very limited quota
+          if (estimate.quota && estimate.quota < 120000000) {
+            setIsIncognito(true);
+          }
+        }
+      } catch {
+        // If error, might be incognito
+      }
+    };
+    checkIncognito();
+  }, []);
+
   const handleToggle = async (checked: boolean) => {
     if (checked) {
       await enableNotifications();
@@ -91,6 +123,17 @@ const NotificationSettings: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {isIncognito && (
+        <div className="p-3 bg-gray-100 rounded-lg border border-gray-300">
+          <Space>
+            <WarningOutlined className="text-gray-500" />
+            <span className="text-gray-600 text-xs">
+              Notifications don't work in incognito/private mode. Please use a normal browser window.
+            </span>
+          </Space>
+        </div>
+      )}
+      
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
@@ -105,7 +148,7 @@ const NotificationSettings: React.FC = () => {
           checked={isEnabled}
           onChange={handleToggle}
           loading={isLoading}
-          disabled={!isSupported || permissionStatus === 'denied'}
+          disabled={!isSupported || permissionStatus === 'denied' || isIncognito}
         />
       </div>
 
