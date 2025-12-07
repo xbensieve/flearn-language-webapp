@@ -11,10 +11,8 @@ import {
   Link2,
   LogOut,
   User,
-  Wallet,
   AlertCircle,
   ShieldCheck,
-  CreditCard,
   Bell,
 } from "lucide-react";
 
@@ -31,7 +29,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -160,7 +157,6 @@ const Profile: React.FC = () => {
 
   const user = profileData.data;
   const teacher = teacherProfile?.profile;
-  const wallet = teacherProfile?.wallet;
 
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 px-4 md:py-12">
@@ -283,54 +279,6 @@ const Profile: React.FC = () => {
                 <NotificationSettings />
               </CardContent>
             </Card>
-
-            {isTeacher && wallet && (
-              <Card className="shadow-sm border-gray-200 bg-gradient-to-br from-emerald-50 to-white">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center gap-2 text-emerald-800">
-                    <Wallet className="w-5 h-5" />
-                    My Wallet
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <p className="text-sm text-emerald-600/80 font-medium">
-                      Available Balance
-                    </p>
-                    <p className="text-3xl font-bold text-emerald-700">
-                      {wallet.availableBalance.toLocaleString()}{" "}
-                      <span className="text-lg">{wallet.currency}</span>
-                    </p>
-                  </div>
-                  <Separator className="bg-emerald-200/50 mb-4" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        Total Income
-                      </p>
-                      <p className="font-semibold text-gray-700">
-                        {wallet.totalBalance.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">On Hold</p>
-                      <p className="font-semibold text-orange-600">
-                        {wallet.holdBalance.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-0">
-                  <Button
-                    variant="outline"
-                    className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Withdraw Funds
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
           </div>
 
           {/* RIGHT COLUMN: Professional Details (Span 8) */}

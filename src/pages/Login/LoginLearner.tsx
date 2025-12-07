@@ -4,7 +4,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { loginLearner } from "../../services/auth";
-import { notifyError, notifySuccess } from "../../utils/toastConfig";
 import { useAuth } from "../../utils/AuthContext";
 import type { AxiosError } from "axios";
 import { Loader2, Eye, EyeOff, ArrowRight, GraduationCap } from "lucide-react";
@@ -16,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import BackgroundImage from "@/assets/background-image.avif";
 import LoadingScreen from "@/components/Loading/LoadingScreen";
+import { toast } from "sonner";
 
 const SYSTEM_DOMAIN = "https://system-flearn.vercel.app";
 
@@ -51,7 +51,7 @@ const LoginLearner: React.FC = () => {
               ["admin", "manager", "teacher"].includes(r)
             )
           ) {
-            notifyError(
+            toast.error(
               "Tài khoản có quyền Nhân viên. Vui lòng đăng nhập tại Cổng thông tin Hệ thống."
             );
             localStorage.clear();
@@ -75,7 +75,7 @@ const LoginLearner: React.FC = () => {
     mutationFn: loginLearner,
     onSuccess: (data) => handleAuthSuccess(data),
     onError: (err: AxiosError<any>) =>
-      notifyError(err?.response?.data?.message || "Đăng nhập thất bại!"),
+      toast.error(err?.response?.data?.message || "Đăng nhập thất bại!"),
   });
 
   const handleAuthSuccess = (data: any) => {
@@ -84,7 +84,7 @@ const LoginLearner: React.FC = () => {
       ["admin", "manager", "teacher"].includes(r.toLowerCase())
     );
     if (isStaff) {
-      notifyError(
+      toast.error(
         "Bạn là nhân viên. Vui lòng sử dụng Cổng thông tin hệ thống."
       );
       setTimeout(() => {
@@ -97,7 +97,7 @@ const LoginLearner: React.FC = () => {
     localStorage.setItem("FLEARN_REFRESH_TOKEN", data.refreshToken);
     localStorage.setItem("FLEARN_USER_ROLES", JSON.stringify(data.roles));
     updateAuth();
-    notifySuccess("Đăng nhập thành công!");
+    toast.success("Đăng nhập thành công!");
     navigate("/learner");
   };
 

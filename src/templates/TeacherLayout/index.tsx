@@ -8,9 +8,7 @@ import {
   Library,
   Users,
   FilePlus2,
-  Landmark,
   ClipboardCheck,
-  Wallet,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -18,7 +16,7 @@ import {
   GraduationCap,
   ArrowLeftRight,
 } from "lucide-react";
-import { UserOutlined } from "@ant-design/icons";
+import { BankFilled, UserOutlined } from "@ant-design/icons";
 import { useAuth } from "@/utils/AuthContext";
 
 const TeacherLayout: React.FC = () => {
@@ -47,21 +45,20 @@ const TeacherLayout: React.FC = () => {
   if (isLoading) return <Spin fullscreen />;
 
   const navItems = [
-    { to: "", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/course", icon: Library, label: "My Courses" },
-    { to: "/classes", icon: Users, label: "Classes & Students" },
-    { to: "/course/create", icon: FilePlus2, label: "Create Course" },
+    { to: "", icon: LayoutDashboard, label: "Tổng quan" },
+    { to: "/course", icon: Library, label: "Khóa học" },
+    { to: "/classes", icon: Users, label: "Lớp học" },
+    { to: "/course/create", icon: FilePlus2, label: "Tạo khóa học" },
     {
       to: "/assignments",
       icon: ClipboardCheck,
-      label: "Grading & Review",
+      label: "Chấm điểm & Đánh giá",
     },
-    { to: "/payout-request", icon: Landmark, label: "Bank Account" },
-    { to: "/payouts", icon: Wallet, label: "Payout History" },
+    { to: "/payout-request", icon: BankFilled, label: "Thanh toán" },
     {
       to: "/wallet-transactions",
       icon: ArrowLeftRight,
-      label: "Wallet Transactions",
+      label: "Giao dịch ví",
     },
   ];
 

@@ -4,7 +4,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { loginDashboard } from "../../services/auth";
-import { notifyError, notifySuccess } from "../../utils/toastConfig";
 import { useAuth } from "../../utils/AuthContext";
 import { handleRoleRedirect } from "@/utils/authUtils";
 import type { AxiosError } from "axios";
@@ -25,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import LoadingScreen from "@/components/Loading/LoadingScreen";
 import BackgroundImage from "@/assets/background-image-02.avif";
+import { toast } from "sonner";
 
 const APP_DOMAIN = "https://app-flearn.vercel.app";
 
@@ -70,7 +70,7 @@ const LoginDashboard: React.FC = () => {
     onSuccess: (data) => handleAuthSuccess(data),
     onError: (err: AxiosError<any>) => {
       console.log(err?.response?.data?.message);
-      notifyError("Đăng nhập thất bại!");
+      toast.error("Đăng nhập thất bại!");
     },
   });
 
@@ -79,7 +79,7 @@ const LoginDashboard: React.FC = () => {
     localStorage.setItem("FLEARN_REFRESH_TOKEN", data.refreshToken);
     localStorage.setItem("FLEARN_USER_ROLES", JSON.stringify(data.roles));
     updateAuth();
-    notifySuccess("Đăng nhập thành công!");
+    toast.success("Đăng nhập thành công!");
     handleRoleRedirect(data.roles, navigate, "internal");
   };
 

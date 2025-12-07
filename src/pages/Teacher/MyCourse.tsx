@@ -116,7 +116,7 @@ export default function MyCourses() {
   const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
     mutationFn: (id: string) => deleteCourseService(id),
     onSuccess: () => {
-      toast.success("Course deleted successfully");
+      toast.success("Khóa học đã được xóa thành công!");
       // Refresh lại list sau khi xóa
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       setDeleteId(null);
@@ -173,10 +173,10 @@ export default function MyCourses() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            My Courses
+            Khóa học của tôi
           </h1>
           <p className="text-slate-500 mt-1">
-            Manage your curriculum and track learner progress.
+            Quản lý chương trình giảng dạy và theo dõi tiến độ của người học.
           </p>
         </div>
         <Button
@@ -184,7 +184,7 @@ export default function MyCourses() {
           className="bg-blue-600 hover:bg-blue-700 !text-white shadow-sm h-10 px-6 cursor-pointer"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Create Course
+          Tạo khóa học
         </Button>
       </div>
 
@@ -193,7 +193,7 @@ export default function MyCourses() {
         <div className="relative w-full lg:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
-            placeholder="Search courses..."
+            placeholder="Tìm kiếm khóa học..."
             className="pl-9 bg-slate-50 border-slate-200 focus-visible:ring-blue-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -215,11 +215,11 @@ export default function MyCourses() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Statuses</SelectItem>
-              <SelectItem value="Draft">Draft</SelectItem>
-              <SelectItem value="PendingApproval">Pending</SelectItem>
-              <SelectItem value="Published">Published</SelectItem>
-              <SelectItem value="Rejected">Rejected</SelectItem>
+              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+              <SelectItem value="Draft">Bản nháp</SelectItem>
+              <SelectItem value="PendingApproval">Chưa giải quyết</SelectItem>
+              <SelectItem value="Published">Đã xuất bản</SelectItem>
+              <SelectItem value="Rejected">Bị từ chối</SelectItem>
             </SelectContent>
           </Select>
 
@@ -237,9 +237,9 @@ export default function MyCourses() {
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Default</SelectItem>
-              <SelectItem value="price_asc">Price: Low to High</SelectItem>
-              <SelectItem value="price_desc">Price: High to Low</SelectItem>
+              <SelectItem value="default">Mặc định</SelectItem>
+              <SelectItem value="price_asc">Giá: Thấp đến Cao</SelectItem>
+              <SelectItem value="price_desc">Giá: Cao đến Thấp</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -312,7 +312,7 @@ export default function MyCourses() {
                       <div className="flex flex-col">
                         {isFree ? (
                           <span className="text-emerald-600 font-bold text-lg">
-                            FREE
+                            Miễn phí
                           </span>
                         ) : course.discountPrice ? (
                           <>
@@ -347,7 +347,7 @@ export default function MyCourses() {
                       onClick={() => navigate(`${course.courseId}`)}
                     >
                       <BookOpen className="w-4 h-4 mr-2" />
-                      View
+                      Xem
                     </Button>
 
                     {canEdit && (
@@ -356,7 +356,7 @@ export default function MyCourses() {
                         className="flex-1 text-slate-600 hover:text-green-600 hover:bg-green-50 cursor-pointer"
                         onClick={() => navigate(`${course.courseId}/edit`)}
                       >
-                        Edit
+                        Sửa
                       </Button>
                     )}
 
@@ -375,14 +375,14 @@ export default function MyCourses() {
                           className="cursor-pointer"
                           onClick={() => navigate(`${course.courseId}`)}
                         >
-                          View Details
+                          Xem chi tiết
                         </DropdownMenuItem>
                         {canEdit && (
                           <DropdownMenuItem
                             className="cursor-pointer"
                             onClick={() => navigate(`${course.courseId}/edit`)}
                           >
-                            Edit Content
+                            Chỉnh sửa nội dung
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
@@ -390,7 +390,7 @@ export default function MyCourses() {
                           className="text-red-600 focus:text-red-600 focus:bg-red-50 cursor-pointer"
                           onClick={() => setDeleteId(course.courseId)}
                         >
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete Course
+                          <Trash2 className="w-4 h-4 mr-2" /> Xóa khóa học
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -403,8 +403,8 @@ export default function MyCourses() {
           {/* --- Pagination --- */}
           <div className="flex items-center justify-between border-t border-slate-200 pt-6">
             <p className="text-sm text-slate-500">
-              Showing <strong>{processedCourses.length}</strong> of{" "}
-              <strong>{totalItems}</strong> results
+              Đang hiển thị <strong>{processedCourses.length}</strong> của{" "}
+              <strong>{totalItems}</strong> kết quả
             </p>
             <div className="flex gap-2">
               <Button
@@ -413,7 +413,7 @@ export default function MyCourses() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
-                Previous
+                Trước
               </Button>
               <Button
                 variant="outline"
@@ -421,7 +421,7 @@ export default function MyCourses() {
                 onClick={() => setPage((p) => p + 1)}
                 disabled={processedCourses.length < pageSize}
               >
-                Next
+                Tiếp theo
               </Button>
             </div>
           </div>
@@ -433,19 +433,19 @@ export default function MyCourses() {
             <LayoutGrid className="w-8 h-8 text-slate-300" />
           </div>
           <h3 className="text-lg font-semibold text-slate-900">
-            No courses found
+            Không tìm thấy khóa học nào
           </h3>
           <p className="text-slate-500 max-w-sm text-center mt-2 mb-6">
             {searchQuery
-              ? `We couldn't find any courses matching "${searchQuery}".`
-              : "Get started by creating your first course today."}
+              ? `Chúng tôi không thể tìm thấy bất kỳ khóa học nào phù hợp "${searchQuery}".`
+              : "Bắt đầu bằng cách tạo khóa học đầu tiên của bạn ngay hôm nay."}
           </p>
           {!searchQuery && (
             <Button
               onClick={() => navigate("create")}
               className="bg-blue-600 hover:bg-blue-700 !text-white cursor-pointer"
             >
-              Create Course
+              Tạo khóa học
             </Button>
           )}
         </div>
@@ -460,16 +460,16 @@ export default function MyCourses() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="h-5 w-5" />
-              Delete Course?
+              Xóa khóa học?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this course? This action cannot be
-              undone, and all associated data (lessons, exercises) will be
-              permanently removed.
+              Bạn có chắc chắn muốn xóa khóa học này không? Thao tác này không
+              thể hoàn tác và tất cả dữ liệu liên quan (bài học, bài tập) sẽ bị
+              xóa vĩnh viễn.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
             <div></div>
             <AlertDialogAction
               onClick={(e) => {
@@ -481,10 +481,10 @@ export default function MyCourses() {
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang xóa...
                 </>
               ) : (
-                "Delete"
+                "Xóa bỏ"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

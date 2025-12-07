@@ -55,10 +55,10 @@ import EditCoursePage from "../../pages/Teacher/EditCoursePage";
 import UnitsManager from "../../pages/Teacher/UnitsManager";
 import MyClasses from "../../pages/Teacher/MyClasses";
 import ClassDetail from "../../pages/Teacher/ClassDetail";
-import PayoutPage from "../../pages/Teacher/PayoutPage";
 import TeacherPayoutPage from "../../pages/Teacher/TeacherPayoutPage";
 import WalletHistoryPage from "@/pages/Wallet/WalletHistory";
 import CreateCoursePage from "@/pages/Teacher/Course/CreateCoursePage";
+import PayoutManagerPage from "@/pages/Teacher/Finance/PayoutManagerPage";
 
 // Lấy biến môi trường (Mặc định là learner nếu không set)
 const APP_MODE = import.meta.env.VITE_APP_MODE || "learner";
@@ -181,7 +181,7 @@ const systemRoutes: RouteObject[] = [
       { path: "course/:id/edit/unit/:id", element: <UnitsManager /> },
       { path: "classes", element: <MyClasses /> },
       { path: "classes/:id", element: <ClassDetail /> },
-      { path: "payout-request", element: <PayoutPage /> },
+      { path: "payout-request", element: <PayoutManagerPage /> },
       { path: "payouts", element: <TeacherPayoutPage /> },
       { path: "wallet-transactions", element: <WalletHistoryPage /> },
     ],

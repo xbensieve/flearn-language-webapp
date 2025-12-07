@@ -326,7 +326,10 @@ export default function Courses() {
                 className="group flex flex-col bg-white rounded-sm border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer"
                 onClick={() =>
                   navigate(`/dashboard/courses/${item.course.courseId}`, {
-                    state: { submissionId: item.submissionId },
+                    state: {
+                      submissionId: item.submissionId,
+                      submissionStatus: item.submissionStatus,
+                    },
                   })
                 }
               >
