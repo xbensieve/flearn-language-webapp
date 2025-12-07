@@ -34,7 +34,7 @@ const UnitsManager: React.FC = () => {
   const deleteLessonMutation = useMutation({
     mutationFn: (lessonId: string) => deleteLessonService({ id: lessonId }),
     onSuccess: () => {
-      notifySuccess("Lesson deleted successfully");
+      notifySuccess("Bài học đã được xóa thành công!");
       queryClient.invalidateQueries({ queryKey: ["lessons", unitId] });
       refetchUnit();
     },
@@ -88,7 +88,7 @@ const UnitsManager: React.FC = () => {
           icon={<PlusOutlined />}
           onClick={handleOpenDrawer}
         >
-          {drawerVisible ? "Close Form" : "Add Lesson"}
+          {drawerVisible ? "Đóng biểu mẫu" : "Thêm bài học"}
         </Button>
       </div>
 
@@ -99,14 +99,14 @@ const UnitsManager: React.FC = () => {
 
       {/* Drawer for LessonForm */}
       <Drawer
-        title="Add New Lesson"
+        title="Thêm bài học mới"
         width={600}
         open={drawerVisible}
         onClose={handleCloseDrawer}
         footer={
           <div className="text-right">
             <Button onClick={handleCloseDrawer} className="mr-2">
-              Cancel
+              Thoát
             </Button>
           </div>
         }

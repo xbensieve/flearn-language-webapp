@@ -205,7 +205,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
   };
 
   if (isLoading && !isEditMode)
-    return <LoadingScreen message="Creating course! Please wait..." />;
+    return <LoadingScreen message="Đang tạo khóa học! Vui lòng đợi..." />;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -217,9 +217,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle>General Information</CardTitle>
+              <CardTitle>Thông tin chung</CardTitle>
               <CardDescription>
-                The core details of your course.
+                Những thông tin cốt lõi của khóa học của bạn.
               </CardDescription>
             </div>
           </div>
@@ -231,7 +231,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Course Title <RequiredMark />
+                  Tên khóa học <RequiredMark />
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -252,11 +252,11 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Description <RequiredMark />
+                    Mô tả <RequiredMark />
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Explain what the course covers..."
+                      placeholder="Giải thích nội dung khóa học..."
                       className="h-32 resize-none"
                       {...field}
                     />
@@ -271,11 +271,11 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Learning Outcomes <RequiredMark />
+                    Kết quả học tập <RequiredMark />
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="What will students be able to do after finishing?"
+                      placeholder="Học viên có thể làm gì sau khi hoàn thành?"
                       className="h-32 resize-none"
                       {...field}
                     />
@@ -289,7 +289,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
           {/* --- IMAGE UPLOAD SECTION --- */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">
-              Thumbnail {!isEditMode && <RequiredMark />}
+              Ảnh bìa {!isEditMode && <RequiredMark />}
             </Label>
 
             {!previewImage ? (
@@ -307,10 +307,10 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-gray-700">
-                      Click to upload image
+                      Bấm để tải hình ảnh lên
                     </p>
                     <p className="text-xs text-gray-500">
-                      SVG, PNG, JPG (Recommended 1280x720)
+                      SVG, PNG, JPG (Khuyến khích 1280x720)
                     </p>
                   </div>
                 </div>
@@ -334,7 +334,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       size="sm"
                       className="gap-2 pointer-events-none"
                     >
-                      <ImageIcon className="w-4 h-4" /> Change Image
+                      <ImageIcon className="w-4 h-4" /> Thay đổi hình ảnh
                     </Button>
                     <input
                       type="file"
@@ -355,7 +355,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       }
                       className="gap-2"
                     >
-                      <X className="w-4 h-4" /> Undo
+                      <X className="w-4 h-4" /> Hoàn tác
                     </Button>
                   )}
                 </div>
@@ -363,13 +363,13 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                 {/* Badge báo trạng thái ảnh */}
                 <div className="absolute top-2 right-2">
                   {currentImage instanceof File ? (
-                    <Badge className="bg-green-500">New File</Badge>
+                    <Badge className="bg-green-500">Tệp mới</Badge>
                   ) : (
                     <Badge
                       variant="secondary"
                       className="bg-white/90 text-gray-700"
                     >
-                      Current Image
+                      Hình ảnh hiện tại
                     </Badge>
                   )}
                 </div>
@@ -393,9 +393,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               <Layout className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle>Curriculum Structure</CardTitle>
+              <CardTitle>Cấu trúc chương trình giảng dạy</CardTitle>
               <CardDescription>
-                Define the level, duration, and content.
+                Xác định mức độ, thời lượng và nội dung.
               </CardDescription>
             </div>
           </div>
@@ -408,7 +408,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Program <RequiredMark />
+                    Chương trình <RequiredMark />
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -420,7 +420,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                     <FormControl>
                       <SelectTrigger className="h-11">
                         <SelectValue
-                          placeholder="Select specific program"
+                          placeholder="Chọn chương trình cụ thể"
                           className="text-muted-foreground truncate max-w-full"
                         >
                           {/* Hiển thị tên program khi đã chọn */}
@@ -484,7 +484,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Duration (Days) <RequiredMark />
+                    Thời lượng (Ngày) <RequiredMark />
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -507,7 +507,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Topics <RequiredMark />
+                  Chủ đề <RequiredMark />
                 </FormLabel>
                 <Select
                   onValueChange={(val) => {
@@ -518,7 +518,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                 >
                   <FormControl>
                     <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select relevant topics" />
+                      <SelectValue placeholder="Chọn chủ đề liên quan" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -561,8 +561,8 @@ export const CourseForm: React.FC<CourseFormProps> = ({
           <div className="space-y-4 pt-4 border-t">
             <div className="flex justify-between items-center">
               <Label className="text-base font-semibold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-yellow-500" /> Apply a
-                Template
+                <Sparkles className="w-4 h-4 text-yellow-500" /> Áp dụng một Bản
+                mẫu
               </Label>
               {selectedTemplateId && (
                 <Button
@@ -572,7 +572,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                   onClick={() => setValue("templateId", undefined)}
                   className="text-red-500 h-8 hover:bg-red-50 cursor-pointer"
                 >
-                  <X className="w-4 h-4 mr-1" /> Clear Template
+                  <X className="w-4 h-4 mr-1" /> Xóa mẫu
                 </Button>
               )}
             </div>
@@ -621,7 +621,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                           <TooltipTrigger asChild>
                             <p className="text-xs text-muted-foreground line-clamp-2 h-8 leading-snug text-left">
                               {template.description ||
-                                "No description available for this template."}
+                                "Không có mô tả nào cho mẫu này."}
                             </p>
                           </TooltipTrigger>
                           <TooltipContent
@@ -629,8 +629,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                             className="max-w-[300px] text-xs"
                           >
                             <p>
-                              {template.description ||
-                                "No description available."}
+                              {template.description || "Không có mô tả có sẵn."}
                             </p>
                           </TooltipContent>
                         </Tooltip>
@@ -639,7 +638,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       <div className="grid grid-cols-3 border-t divide-x bg-gray-50/50">
                         <div className="p-2 flex flex-col items-center justify-center text-center">
                           <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
-                            Units
+                            Chương
                           </span>
                           <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
                             <Layers className="w-3.5 h-3.5 text-blue-500" />
@@ -648,7 +647,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                         </div>
                         <div className="p-2 flex flex-col items-center justify-center text-center">
                           <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
-                            Lessons/Unit
+                            Bài học/ Chương
                           </span>
                           <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
                             <FileText className="w-3.5 h-3.5 text-orange-500" />
@@ -657,7 +656,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                         </div>
                         <div className="p-2 flex flex-col items-center justify-center text-center">
                           <span className="text-[10px] uppercase text-muted-foreground font-semibold mb-0.5">
-                            Ex/Lesson
+                            Bài tập/ Bài học
                           </span>
                           <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
                             <Dumbbell className="w-3.5 h-3.5 text-green-500" />
@@ -681,9 +680,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               <DollarSign className="w-5 h-5" />
             </div>
             <div>
-              <CardTitle>Settings & Pricing</CardTitle>
+              <CardTitle>Cài đặt & Giá cả</CardTitle>
               <CardDescription>
-                Monetization and grading policies.
+                Chính sách kiếm tiền và chấm điểm.
               </CardDescription>
             </div>
           </div>
@@ -697,7 +696,8 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                 return (
                   <FormItem>
                     <FormLabel>
-                      Course Type <RequiredMark />
+                      Loại khóa học
+                      <RequiredMark />
                     </FormLabel>
                     <div className="grid grid-cols-2 gap-4">
                       <div
@@ -708,9 +708,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        <span className="block font-bold">Free</span>
+                        <span className="block font-bold">Miễn phí</span>
                         <span className="text-xs opacity-70">
-                          AI Grading Only
+                          Chỉ chấm điểm AI
                         </span>
                         {isEditMode && field.value === 1 && (
                           <div className="mt-2">
@@ -718,7 +718,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                               variant="secondary"
                               className="text-xs bg-blue-100 text-blue-800"
                             >
-                              Currently Selected
+                              Hiện đã được chọn
                             </Badge>
                           </div>
                         )}
@@ -733,7 +733,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       >
                         <span className="block font-bold">Paid</span>
                         <span className="text-xs opacity-70">
-                          AI And Teacher Review
+                          Đánh giá AI và giáo viên
                         </span>
                         {isEditMode && field.value === 2 && (
                           <div className="mt-2">
@@ -741,7 +741,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                               variant="secondary"
                               className="text-xs bg-blue-100 text-blue-800"
                             >
-                              Currently Selected
+                              Hiện đã được chọn
                             </Badge>
                           </div>
                         )}
@@ -760,15 +760,14 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                 render={({ field }) => (
                   <FormItem className="animate-in fade-in slide-in-from-left-2">
                     <FormLabel>
-                      Price (VND) <RequiredMark />
+                      Giá (đ) <RequiredMark />
                     </FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <DollarSign className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                         <Input
                           type="number"
                           className="pl-10 h-11 text-lg font-medium"
-                          placeholder="500,000"
+                          placeholder="Nhập số tiền"
                           value={field.value || ""}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -776,6 +775,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                           min={0}
                           step={1000}
                         />
+                        <span className="absolute left-3 top-2 text-gray-400 font-bold text-lg pointer-events-none">
+                          ₫
+                        </span>
                       </div>
                     </FormControl>
                     {(field.value ?? 0) > 0 && (
@@ -785,7 +787,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                           {new Intl.NumberFormat("vi-VN").format(
                             field.value ?? 0
                           )}{" "}
-                          VND
+                          đ
                         </span>
                         {isEditMode &&
                           initialPrice !== undefined &&
@@ -795,7 +797,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                               {new Intl.NumberFormat("vi-VN").format(
                                 initialPrice
                               )}{" "}
-                              VND
+                              đ
                             </Badge>
                           )}
                       </div>
@@ -821,25 +823,25 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                   <div className="flex justify-between items-center">
                     <div>
                       <FormLabel>
-                        Grading Method <RequiredMark />
+                        Phương pháp chấm điểm <RequiredMark />
                       </FormLabel>
                       <FormDescription>
                         {gradingTypeValue === "1"
-                          ? "AI will automatically grade exercises."
-                          : "Teachers will manually review submissions + AI assistance."}
+                          ? "AI sẽ tự động chấm điểm bài tập."
+                          : "Giáo viên sẽ tự tay xem xét bài nộp + sự hỗ trợ của AI."}
                       </FormDescription>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="bg-white">
                         {gradingTypeValue === "1"
-                          ? "Auto (AI)"
-                          : "Manual (Teacher)"}
+                          ? "Tự động (AI)"
+                          : "Thủ công (Giáo viên)"}
                       </Badge>
                       {isEditMode &&
                         initialGradingType &&
                         initialGrading !== gradingTypeValue && (
                           <Badge variant="secondary" className="text-xs">
-                            Updated
+                            Đã cập nhật
                           </Badge>
                         )}
                     </div>
@@ -847,9 +849,10 @@ export const CourseForm: React.FC<CourseFormProps> = ({
 
                   {currentCourseType === 1 && gradingTypeValue !== "1" && (
                     <div className="mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
-                      <span className="font-medium">Warning:</span> Free courses
-                      must use AI grading only. Grading method will be
-                      automatically set to "Auto (AI)".
+                      <span className="font-medium">Cảnh báo:</span> Các khóa
+                      học miễn phí phải chỉ sử dụng công nghệ chấm điểm AI.
+                      Phương pháp chấm điểm sẽ được tự động đặt thành "Tự động
+                      (AI)".
                     </div>
                   )}
                 </FormItem>
@@ -863,11 +866,11 @@ export const CourseForm: React.FC<CourseFormProps> = ({
         <span className="text-sm text-muted-foreground mr-auto hidden md:inline-block">
           {isLoading
             ? isEditMode
-              ? "Saving changes..."
-              : "Creating..."
+              ? "Lưu thay đổi..."
+              : "Tạo..."
             : isEditMode
-            ? "Review your changes before saving."
-            : "Unsaved drafts are stored locally."}
+            ? "Xem lại những thay đổi trước khi lưu."
+            : "Các bản nháp chưa lưu sẽ được lưu trữ cục bộ."}
         </span>
         <Button
           type="submit"
@@ -877,17 +880,17 @@ export const CourseForm: React.FC<CourseFormProps> = ({
         >
           {isLoading ? (
             isEditMode ? (
-              "Saving..."
+              "Lưu..."
             ) : (
-              "Creating..."
+              "Tạo..."
             )
           ) : isEditMode ? (
             <>
-              <Save className="w-4 h-4 mr-2" /> Save Changes
+              <Save className="w-4 h-4 mr-2" /> Lưu thay đổi
             </>
           ) : (
             <>
-              <PlusCircle className="w-4 h-4 mr-2" /> Create Course
+              <PlusCircle className="w-4 h-4 mr-2" /> Tạo khóa học
             </>
           )}
         </Button>

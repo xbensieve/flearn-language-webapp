@@ -32,6 +32,7 @@ import LessonExerciseList from "./LessonExerciseList";
 interface Props {
   course: CourseDetail;
   submissionId: string;
+  submissionStatus?: string;
   onExit: () => void;
   isSubmissionReview?: boolean;
   onStatusChange?: (newStatus: "Approved" | "Rejected") => void;
@@ -68,6 +69,7 @@ const useFlattenedLessons = (units: CourseDetail["units"]) => {
 export default function CourseLearningViewer({
   course,
   submissionId,
+  submissionStatus,
   onExit,
   isSubmissionReview = true,
   onStatusChange,
@@ -83,7 +85,7 @@ export default function CourseLearningViewer({
 
   // State cho Approval/Rejection
   const [currentStatus, setCurrentStatus] = useState<string>(
-    course.courseStatus
+    submissionStatus || course.courseStatus
   );
   const [isApproveConfirmOpen, setIsApproveConfirmOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
@@ -318,6 +320,7 @@ export default function CourseLearningViewer({
         text = "Approved";
         break;
       case "PendingApproval":
+      case "Pending":
         classes += "bg-red-100 text-red-800";
         text = "Awaiting Approval";
         break;
@@ -448,7 +451,7 @@ export default function CourseLearningViewer({
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {isSubmissionReview && currentStatus === "PendingApproval" && (
+            {isSubmissionReview && currentStatus === "Pending" && (
               <div className="flex items-center gap-2 mr-1 sm:mr-0">
                 <Button
                   variant="ghost"

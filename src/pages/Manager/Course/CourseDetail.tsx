@@ -30,6 +30,9 @@ export default function CourseDetail() {
   const [submissionId] = useState<string | null>(
     location.state?.submissionId || null
   );
+  const [submissionStatus] = useState<string | null>(
+    location.state?.submissionStatus || null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -91,6 +94,7 @@ export default function CourseDetail() {
       <CourseLearningViewer
         course={reviewData}
         submissionId={submissionId || ""}
+        submissionStatus={submissionStatus || ""}
         onExit={() => setIsReviewing(false)}
       />
     );

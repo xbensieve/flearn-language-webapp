@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { GraduationCap, LogOut, Menu } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import {
   MapPin,
   Mail,
@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Loader2 } from "lucide-react";
-import LoadingScreen from "@/components/Loading/LoadingScreen";
 import { cn } from "@/lib/utils";
 import { logoutService } from "@/services/auth";
 import { unregisterWebPush } from "@/services/webPush";
@@ -32,16 +31,17 @@ const NAV_ITEMS = [
 
 export default function LearnerLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { mutate: logout, isPending: isLoggingOut } = useMutation({
     mutationFn: (refreshToken: string) => logoutService(refreshToken),
     onSuccess: () => {
-      toast.success("Đăng xuất thành công!");
       localStorage.removeItem("FLEARN_ACCESS_TOKEN");
       localStorage.removeItem("FLEARN_REFRESH_TOKEN");
       localStorage.removeItem("FLEARN_USER_ROLES");
-      window.location.href = "/login";
+      toast.success("Đăng xuất thành công!");
+      navigate("/login");
     },
     onError: (error) => {
       toast.error(error?.message || "Đăng xuất thất bại!");
@@ -49,25 +49,20 @@ export default function LearnerLayout() {
   });
 
   const handleLogout = async () => {
-    // Unregister web push before logout
     try {
       await unregisterWebPush();
     } catch (e) {
-      console.error('Failed to unregister web push:', e);
+      console.error("Failed to unregister web push:", e);
     }
-    
+
     const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
     if (refreshToken) {
-      toast.success("Đăng xuất thành công!");
       logout(refreshToken);
     } else {
       localStorage.clear();
-      toast.success("Đăng xuất thành công!");
-      window.location.href = "/login";
+      navigate("/login");
     }
   };
-
-  if (isLoggingOut) return <LoadingScreen />;
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -115,6 +110,9 @@ export default function LearnerLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50/50">
+      {isLoggingOut && (
+        <div className="fixed inset-0 z-50 bg-background/50 backdrop-blur-sm flex items-center justify-center cursor-wait"></div>
+      )}
       <header className="fixed inset-x-0 top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
           <Link

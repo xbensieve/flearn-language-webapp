@@ -16,7 +16,6 @@ import {
   Briefcase,
   Loader2,
 } from "lucide-react";
-import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,13 +75,6 @@ export default function ApplicationDetail() {
     fetchDetail();
   }, [id]);
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return format(new Date(dateStr), "dd MMM yyyy, HH:mm");
-    } catch {
-      return dateStr;
-    }
-  };
 
   const handleApprove = async () => {
     if (!application) return;
@@ -369,7 +361,7 @@ export default function ApplicationDetail() {
                           Ngày nộp
                         </span>
                         <span className="text-gray-900 font-semibold">
-                          {formatDate(application.submittedAt)}
+                          {application.submittedAt}
                         </span>
                       </div>
                     </div>
@@ -446,7 +438,7 @@ export default function ApplicationDetail() {
                         Ngày nộp
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {formatDate(application.submittedAt)}
+                        {application.submittedAt}
                       </p>
                     </div>
                   </div>
@@ -479,7 +471,7 @@ export default function ApplicationDetail() {
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
                               {application.reviewedAt
-                                ? formatDate(application.reviewedAt)
+                                ? application.reviewedAt
                                 : "Vừa rồi"}
                             </p>
                             {application.reviewer && (

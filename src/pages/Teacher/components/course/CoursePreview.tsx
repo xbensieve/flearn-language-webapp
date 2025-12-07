@@ -29,13 +29,13 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Live Preview
+          Xem trước trực tiếp
         </h3>
         <Badge
           variant="outline"
           className="animate-pulse bg-green-50 text-green-600 border-green-200"
         >
-          Preview Mode
+          Chế độ xem trước
         </Badge>
       </div>
 
@@ -51,7 +51,7 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
           ) : (
             <div className="flex flex-col items-center text-slate-400">
               <ImageIcon className="w-16 h-16 mb-2 opacity-50" />
-              <span className="text-sm font-medium">Cover Image</span>
+              <span className="text-sm font-medium">Ảnh bìa</span>
             </div>
           )}
         </div>
@@ -61,12 +61,12 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
           <div className="space-y-2">
             <h3 className="font-bold text-xl leading-tight line-clamp-2 text-gray-900 min-h-[3.5rem]">
               {values.title || (
-                <span className="text-gray-300 italic">Course Title...</span>
+                <span className="text-gray-300 italic">Tên khóa học...</span>
               )}
             </h3>
             <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem]">
               {values.description ||
-                "Your engaging course description will appear here."}
+                "Mô tả khóa học hấp dẫn của bạn sẽ xuất hiện ở đây."}
             </p>
           </div>
 
@@ -86,7 +86,7 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
               })
             ) : (
               <span className="text-xs text-gray-400 italic">
-                No topics selected
+                Không có chủ đề nào được chọn
               </span>
             )}
             {values.topicIds && values.topicIds.length > 3 && (
@@ -99,12 +99,12 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Clock className="w-4 h-4 text-blue-500" />
-              <span>{values.durationDays || 0} Days</span>
+              <span>{values.durationDays || 0} Ngày</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <BookOpen className="w-4 h-4 text-orange-500" />
               <span>
-                {values.templateId ? "Template Active" : "Custom Plan"}
+                {values.templateId ? "Mẫu đang hoạt động" : "Gói tùy chỉnh"}
               </span>
             </div>
           </div>
@@ -118,7 +118,9 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
             <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
               T
             </div>
-            <span className="text-xs font-semibold text-gray-700">Teacher</span>
+            <span className="text-xs font-semibold text-gray-700">
+              Giáo viên
+            </span>
           </div>
 
           <div className="text-right">
@@ -128,7 +130,7 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
               </span>
             ) : (
               <span className="text-lg font-bold text-green-600 block">
-                Free
+                Miễn phí
               </span>
             )}
           </div>
@@ -139,11 +141,13 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
       <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 flex gap-3 items-start">
         <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5" />
         <div>
-          <p className="text-xs font-semibold text-blue-900">Grading System</p>
+          <p className="text-xs font-semibold text-blue-900">
+            Hệ thống chấm điểm
+          </p>
           <p className="text-xs text-blue-700 mt-0.5">
             {values.gradingType === "1"
-              ? "Automatic grading by AI system."
-              : "Teacher manual review supported."}
+              ? "Hệ thống chấm điểm tự động bằng AI."
+              : "Hỗ trợ đánh giá của giáo viên."}
           </p>
         </div>
       </div>

@@ -32,7 +32,6 @@ import {
   FileText,
   Star,
   Box,
-  Clock,
   Eye,
   Archive,
   Pencil,
@@ -120,10 +119,10 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
           </div>
           <div className="flex flex-col min-w-0">
             <span className="font-medium text-sm truncate">
-              {lesson.title ?? "Untitled Lesson"}
+              {lesson.title ?? "Bài học không tên"}
             </span>
             <span className="text-xs text-muted-foreground">
-              Lesson {lesson.position ?? "-"}
+              Bài học {lesson.position ?? "-"}
             </span>
           </div>
         </div>
@@ -153,7 +152,7 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
       {isOpen && (
         <div className="p-4 border-t bg-white dark:bg-slate-950 animate-in slide-in-from-top-2 duration-200">
           <p className="text-sm text-muted-foreground mb-4">
-            {lesson.description ?? "No description provided."}
+            {lesson.description ?? "Không có mô tả được cung cấp."}
           </p>
           {lesson.content && (
             <div
@@ -184,7 +183,7 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
                   rel="noopener noreferrer"
                 >
                   <FileText className="h-4 w-4" />
-                  View Document
+                  Xem tài liệu
                 </a>
               </Button>
             )}
@@ -193,7 +192,7 @@ const LessonItem: React.FC<{ lesson: any; isEditMode?: boolean }> = ({
           <div>
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <Target className="w-4 h-4 text-primary" />
-              Exercises
+              Bài tập
             </h4>
             <ExercisesList
               lessonId={lesson.lessonID ?? ""}
@@ -235,7 +234,7 @@ export const UnitLessons: React.FC<{ unit: Unit; isEditMode?: boolean }> = ({
     return (
       <div className="flex flex-col items-center justify-center py-6 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
         <Box className="h-8 w-8 mb-2 opacity-50" />
-        <span className="text-sm">No lessons in this unit</span>
+        <span className="text-sm">Không có bài học nào trong chương này</span>
       </div>
     );
   }
@@ -303,7 +302,7 @@ const CourseDetailView: React.FC = () => {
         isPreview: false,
       }),
     onSuccess: () => {
-      notifySuccess("Unit created successfully!");
+      notifySuccess("Chương được tạo thành công!");
       setIsCreateUnitOpen(false);
       setNewUnitTitle("");
       setNewUnitDesc("");
@@ -318,7 +317,7 @@ const CourseDetailView: React.FC = () => {
   const handleCreateUnitSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUnitTitle.trim()) {
-      notifyError("Unit title is required");
+      notifyError("Tiêu đề chương là bắt buộc");
       return;
     }
     createUnit();
@@ -348,7 +347,7 @@ const CourseDetailView: React.FC = () => {
   const { mutate: submitCourse, isPending: isSubmitting } = useMutation({
     mutationFn: (cId: string) => submitCourseService(cId),
     onSuccess: () => {
-      notifySuccess("Course submitted successfully for review!");
+      notifySuccess("Khóa học đã được gửi để đánh giá thành công!");
       refetchCourse();
     },
     onError: (error: AxiosError<any>) => {
@@ -379,7 +378,7 @@ const CourseDetailView: React.FC = () => {
         <div className="text-center space-y-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground font-medium">
-            Loading course data...
+            Đang tải dữ liệu khóa học...
           </p>
         </div>
       </div>
@@ -389,9 +388,11 @@ const CourseDetailView: React.FC = () => {
   if (!course) {
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">Course not found</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Không tìm thấy khóa học
+        </h2>
         <Button onClick={() => navigate(-1)} variant="outline">
-          Go Back
+          Trở về
         </Button>
       </div>
     );
@@ -415,16 +416,16 @@ const CourseDetailView: React.FC = () => {
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Back to list</TooltipContent>
+                <TooltipContent>Quay lại danh sách</TooltipContent>
               </Tooltip>
             </TooltipProvider>
 
             <div>
               <h1 className="text-xl font-bold text-gray-900 leading-none">
-                Course Details
+                Chi tiết khóa học
               </h1>
               <p className="text-xs text-muted-foreground mt-1">
-                Manage content and settings
+                Quản lý nội dung và cài đặt
               </p>
             </div>
           </div>
@@ -463,7 +464,7 @@ const CourseDetailView: React.FC = () => {
                   onClick={handleToggleEdit}
                   className="gap-2"
                 >
-                  <Save className="h-4 w-4" /> Save
+                  <Save className="h-4 w-4" /> Lưu
                 </Button>
                 <Button
                   variant="ghost"
@@ -471,7 +472,7 @@ const CourseDetailView: React.FC = () => {
                   onClick={() => setIsEditMode(false)}
                   className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
                 >
-                  <X className="h-4 w-4" /> Cancel
+                  <X className="h-4 w-4" /> Hủy
                 </Button>
               </>
             ) : (
@@ -489,7 +490,7 @@ const CourseDetailView: React.FC = () => {
                     ) : (
                       <Check className="h-4 w-4" />
                     )}
-                    Submit
+                    Nộp
                   </Button>
                 )}
                 <Button
@@ -498,7 +499,7 @@ const CourseDetailView: React.FC = () => {
                   onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
                   className="gap-2 cursor-pointer"
                 >
-                  <Pencil className="h-4 w-4" /> Edit Details
+                  <Pencil className="h-4 w-4" /> Chỉnh sửa chi tiết
                 </Button>
               </>
             )}
@@ -512,8 +513,8 @@ const CourseDetailView: React.FC = () => {
             <AlertTitle>Action Required: Course Rejected</AlertTitle>
             <AlertDescription className="flex items-center justify-between">
               <span>
-                This course was rejected by the admin. Please review feedback
-                and update.
+                Khóa học này đã bị quản trị viên từ chối. Vui lòng xem lại phản
+                hồi và cập nhật.
               </span>
               <Button
                 size="sm"
@@ -521,7 +522,7 @@ const CourseDetailView: React.FC = () => {
                 className="ml-4 border-red-300 text-red-700 hover:bg-red-100"
                 onClick={() => navigate(`/teacher/course/${courseId}/edit`)}
               >
-                Fix Now
+                Sửa ngay
               </Button>
             </AlertDescription>
           </Alert>
@@ -587,14 +588,14 @@ const CourseDetailView: React.FC = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" /> At a Glance
+                  <Target className="w-5 h-5 text-primary" /> Thông tin chung
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-100">
                     <div className="text-xs text-blue-600 font-semibold mb-1 flex items-center gap-1">
-                      <Users className="w-3 h-3" /> Learners
+                      <Users className="w-3 h-3" /> Học viên
                     </div>
                     <div className="text-xl font-bold text-gray-800">
                       {course.learnerCount ?? 0}
@@ -602,7 +603,7 @@ const CourseDetailView: React.FC = () => {
                   </div>
                   <div className="p-3 bg-yellow-50/50 rounded-lg border border-yellow-100">
                     <div className="text-xs text-yellow-600 font-semibold mb-1 flex items-center gap-1">
-                      <Star className="w-3 h-3" /> Rating
+                      <Star className="w-3 h-3" /> Đánh giá
                     </div>
                     <div className="text-xl font-bold text-gray-800">
                       {course.averageRating ?? "N/A"}
@@ -615,24 +616,16 @@ const CourseDetailView: React.FC = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground flex items-center gap-2">
-                      <BookOpen className="w-4 h-4" /> Language
+                      <BookOpen className="w-4 h-4" /> Ngôn ngữ
                     </span>
                     <span className="font-medium">{course.language}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground flex items-center gap-2">
-                      <Calendar className="w-4 h-4" /> Duration
+                      <Calendar className="w-4 h-4" /> Thời lượng
                     </span>
                     <span className="font-medium">
-                      {course.durationDays} days
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      <Clock className="w-4 h-4" /> Est. Hours
-                    </span>
-                    <span className="font-medium">
-                      {course.estimatedHours} hrs
+                      {course.durationDays} ngày
                     </span>
                   </div>
                 </div>
@@ -642,8 +635,8 @@ const CourseDetailView: React.FC = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-primary" /> Program
-                  Info
+                  <GraduationCap className="w-5 h-5 text-primary" /> Chương
+                  trình
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -653,10 +646,10 @@ const CourseDetailView: React.FC = () => {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Badge variant="secondary">
-                    Total Units: {course.numUnits}
+                    Tổng số chương: {course.numUnits}
                   </Badge>
                   <Badge variant="secondary">
-                    Total Lessons: {course.numLessons}
+                    Tổng số bài học: {course.numLessons}
                   </Badge>
                 </div>
               </CardContent>
@@ -664,7 +657,7 @@ const CourseDetailView: React.FC = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Tags className="w-5 h-5 text-primary" /> Topics
+                  <Tags className="w-5 h-5 text-primary" /> Chủ đề
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -683,7 +676,7 @@ const CourseDetailView: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-sm text-muted-foreground italic">
-                    No topics assigned to this course.
+                    Không có chủ đề nào được giao cho khóa học này.
                   </div>
                 )}
               </CardContent>
@@ -696,24 +689,25 @@ const CourseDetailView: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Box className="w-6 h-6 text-primary" /> Curriculum
+                    <Box className="w-6 h-6 text-primary" /> Chương trình giảng
+                    dạy
                   </div>
                 </CardTitle>
                 <CardDescription>
-                  {unitsData?.length || 0} Units • Structured learning path
+                  {unitsData?.length || 0} Chương • Lộ trình học tập có cấu trúc
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {!Array.isArray(unitsData) || unitsData.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-xl border border-dashed">
                     <Box className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                    <p>No curriculum content available yet.</p>
+                    <p>Hiện chưa có nội dung chương trình giảng dạy.</p>
                     <Button
                       variant="link"
                       className="mt-2 text-primary cursor-pointer"
                       onClick={() => setIsCreateUnitOpen(true)}
                     >
-                      Create First Unit
+                      Tạo chương đầu tiên
                     </Button>
                   </div>
                 ) : (
@@ -758,9 +752,9 @@ const CourseDetailView: React.FC = () => {
       <Dialog open={isCreateUnitOpen} onOpenChange={setIsCreateUnitOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Create New Unit</DialogTitle>
+            <DialogTitle>Tạo chương mới</DialogTitle>
             <DialogDescription>
-              Add a new unit to organize your course lessons.
+              Thêm một chương mới để sắp xếp các bài học trong khóa học của bạn.
             </DialogDescription>
           </DialogHeader>
 
@@ -770,7 +764,7 @@ const CourseDetailView: React.FC = () => {
                 htmlFor="title"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Unit Title <span className="text-red-500">*</span>
+                Tiêu đề chương <span className="text-red-500">*</span>
               </label>
               <input
                 id="title"
@@ -786,13 +780,13 @@ const CourseDetailView: React.FC = () => {
                 htmlFor="desc"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Description
+                Mô tả
               </label>
               <textarea
                 id="desc"
                 rows={3}
                 className="flex w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="What will students learn in this unit?"
+                placeholder="Học viên sẽ học được gì trong bài học này?"
                 value={newUnitDesc}
                 onChange={(e) => setNewUnitDesc(e.target.value)}
               />
@@ -805,7 +799,7 @@ const CourseDetailView: React.FC = () => {
                 variant="outline"
                 onClick={() => setIsCreateUnitOpen(false)}
               >
-                Cancel
+                Hủy
               </Button>
               <div></div>
               <Button
@@ -816,7 +810,7 @@ const CourseDetailView: React.FC = () => {
                 {isCreatingUnit && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin " />
                 )}
-                Create Unit
+                Tạo chương
               </Button>
             </DialogFooter>
           </form>
@@ -828,10 +822,12 @@ const CourseDetailView: React.FC = () => {
           <DialogHeader>
             <div className="flex items-center gap-2 text-red-600 mb-2">
               <AlertCircle className="w-6 h-6" />
-              <DialogTitle className="text-xl">Submission Failed</DialogTitle>
+              <DialogTitle className="text-xl">
+                Gửi không thành công
+              </DialogTitle>
             </div>
             <DialogDescription>
-              This course does not meet the requirements for the template:
+              Khóa học này không đáp ứng các yêu cầu của mẫu:
               <span className="block font-semibold text-gray-900 mt-1">
                 {validationData?.templateName} (v
                 {validationData?.templateVersion})
@@ -844,7 +840,7 @@ const CourseDetailView: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-slate-50 p-3 rounded-lg border text-center">
                 <span className="text-xs text-muted-foreground uppercase font-bold">
-                  Units
+                  Chương
                 </span>
                 <div className="flex items-center justify-center gap-2 mt-1">
                   <span
@@ -858,13 +854,13 @@ const CourseDetailView: React.FC = () => {
                     {validationData?.currentCourse?.actualUnits}
                   </span>
                   <span className="text-muted-foreground text-sm">
-                    / {validationData?.requiredUnits} units
+                    / {validationData?.requiredUnits} chương
                   </span>
                 </div>
               </div>
               <div className="bg-slate-50 p-3 rounded-lg border text-center">
                 <span className="text-xs text-muted-foreground uppercase font-bold">
-                  Lessons
+                  Bài học
                 </span>
                 <div className="text-lg font-bold text-gray-800 mt-1">
                   {validationData?.currentCourse?.actualLessons}
@@ -872,7 +868,7 @@ const CourseDetailView: React.FC = () => {
               </div>
               <div className="bg-slate-50 p-3 rounded-lg border text-center">
                 <span className="text-xs text-muted-foreground uppercase font-bold">
-                  Exercises
+                  Bài tập
                 </span>
                 <div className="text-lg font-bold text-gray-800 mt-1">
                   {validationData?.currentCourse?.actualExercises}
@@ -885,7 +881,7 @@ const CourseDetailView: React.FC = () => {
               validationData.validationErrors.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="font-semibold flex items-center gap-2 text-red-600">
-                    <XCircle className="w-4 h-4" /> Errors (
+                    <XCircle className="w-4 h-4" /> Lỗi (
                     {validationData.validationErrors.length})
                   </h4>
                   <div className="space-y-2">
@@ -903,7 +899,7 @@ const CourseDetailView: React.FC = () => {
               validationData.validationWarnings.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="font-semibold flex items-center gap-2 text-amber-600">
-                    <AlertTriangle className="w-4 h-4" /> Warnings (
+                    <AlertTriangle className="w-4 h-4" /> Cảnh báo (
                     {validationData.validationWarnings.length})
                   </h4>
                   <div className="space-y-2">
@@ -926,7 +922,7 @@ const CourseDetailView: React.FC = () => {
               className="!text-white cursor-pointer"
               onClick={() => setIsValidationOpen(false)}
             >
-              Close and Fix
+              Đóng và sửa
             </Button>
           </DialogFooter>
         </DialogContent>

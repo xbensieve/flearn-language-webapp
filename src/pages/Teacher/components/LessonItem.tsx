@@ -230,7 +230,8 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               key: "content",
               label: (
                 <span className="flex items-center gap-2 py-2 text-sm font-medium">
-                  <FileText size={16} /> Learning Content
+                  <FileText size={16} />
+                  Nội dung học tập
                 </span>
               ),
               children: (
@@ -242,7 +243,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                           <Video size={16} />
                         </div>
                         <span className="font-semibold text-gray-900">
-                          Video Lecture
+                          Bài giảng video
                         </span>
                       </div>
                       {renderVideo(lesson.videoUrl)}
@@ -263,7 +264,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                       />
                     ) : (
                       <div className="text-center py-8 text-gray-400 italic">
-                        No content added yet.
+                        Chưa có nội dung nào được thêm vào.
                       </div>
                     )}
                   </div>
@@ -277,7 +278,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               key: "exercises",
               label: (
                 <span className="flex items-center gap-2 py-2 text-sm font-medium">
-                  <Dumbbell size={16} /> Exercises
+                  <Dumbbell size={16} /> Bài tập
                   {lesson.totalExercises > 0 && (
                     <Badge
                       count={lesson.totalExercises}
@@ -296,10 +297,10 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                   <div className="flex justify-between items-center mb-6">
                     <div>
                       <h4 className="font-bold text-gray-900">
-                        Practice Exercises
+                        Bài tập thực hành
                       </h4>
                       <p className="text-sm text-gray-500">
-                        Quizzes and assignments.
+                        Bài kiểm tra và bài tập.
                       </p>
                     </div>
                     <Button
@@ -308,7 +309,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                       onClick={() => setExerciseDrawerVisible(true)}
                       className="bg-gray-900 hover:bg-gray-800 border-none shadow-lg shadow-gray-200"
                     >
-                      Add Exercise
+                      Thêm bài tập
                     </Button>
                   </div>
                   <ExercisesList lessonId={lesson.lessonID} />

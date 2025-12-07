@@ -77,8 +77,9 @@ const CreateCoursePage: React.FC = () => {
 
       reset({ ...defaultValues, ...parsedData, image: null });
 
-      toast.info("Draft restored", {
-        description: "We restored your previous work (excluding images).",
+      toast.info("Đã khôi phục bản nháp", {
+        description:
+          "Chúng tôi đã khôi phục dữ liệu trước đó của bạn (trừ hình ảnh).",
       });
     } catch (error) {
       console.error("Failed to parse draft", error);
@@ -128,16 +129,16 @@ const CreateCoursePage: React.FC = () => {
 
       isClearingRef.current = false;
 
-      toast.success("Course Created Successfully!", {
-        description: "Your course is created.",
+      toast.success("Khóa học đã được tạo thành công!", {
+        description: "Khóa học của bạn đã được tạo.",
         duration: 4000,
       });
       navigate("/teacher/course");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Failed to create course";
-      toast.error("Submission Failed", {
+      const msg = err.response?.data?.message || "Không tạo được khóa học!";
+      toast.error("Gửi không thành công", {
         description: msg,
       });
     },
@@ -145,8 +146,8 @@ const CreateCoursePage: React.FC = () => {
   // 4. Submit Handler
   const onSubmit = (data: CourseFormValues) => {
     if (!data.image) {
-      toast.error("Missing Thumbnail", {
-        description: "Please upload a cover image for your course.",
+      toast.error("Thiếu hình ảnh", {
+        description: "Vui lòng tải lên ảnh bìa cho khóa học của bạn.",
       });
       return;
     }
@@ -179,8 +180,8 @@ const CreateCoursePage: React.FC = () => {
       isClearingRef.current = false;
     }, 0);
 
-    toast.success("Form Cleared", {
-      description: "All data has been reset to default.",
+    toast.success("Đã xóa biểu mẫu", {
+      description: "Tất cả dữ liệu đã được đặt lại về mặc định.",
     });
   };
   const imagePreviewUrl = formValues.image
@@ -206,17 +207,17 @@ const CreateCoursePage: React.FC = () => {
               <div className="flex items-center gap-2 text-blue-200 mb-2 animate-in fade-in slide-in-from-bottom-3">
                 <Sparkles className="w-5 h-5" />
                 <span className="text-sm font-medium uppercase tracking-wider">
-                  Course Creator Studio
+                  Studio sáng tạo khóa học
                 </span>
               </div>
 
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white animate-in fade-in slide-in-from-bottom-4 delay-100">
-                Create New Course
+                Tạo khóa học mới
               </h1>
 
               <p className="text-gray-300 mt-2 max-w-2xl text-lg animate-in fade-in slide-in-from-bottom-5 delay-200">
-                Design a comprehensive learning path. Craft engaging content,
-                set challenges, and inspire your students.
+                Thiết kế lộ trình học tập toàn diện. Xây dựng nội dung hấp dẫn,
+                đặt ra thử thách và truyền cảm hứng cho học sinh.
               </p>
             </div>
 
@@ -227,33 +228,33 @@ const CreateCoursePage: React.FC = () => {
                   <Button
                     variant="outline"
                     className="
-        border-white/20
-        !text-white
-        hover:bg-white/15
-        transition-all
-        backdrop-blur-md
-        bg-white/10
-        cursor-pointer
-      "
+                          border-white/20
+                          !text-white
+                          hover:bg-white/15
+                          transition-all
+                          backdrop-blur-md
+                          bg-white/10
+                          cursor-pointer
+                        "
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Discard Draft
+                    Hủy bản nháp
                   </Button>
                 </DialogTrigger>
 
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Are you absolutely sure?</DialogTitle>
+                    <DialogTitle>Bạn có chắc chắn không?</DialogTitle>
                     <DialogDescription>
-                      This will permanently delete your current draft form data.
-                      This action cannot be undone.
+                      Thao tác này sẽ xóa vĩnh viễn dữ liệu biểu mẫu nháp hiện
+                      tại của bạn. Không thể hoàn tác thao tác này.
                     </DialogDescription>
                   </DialogHeader>
 
                   <div className="flex justify-end gap-2 mt-4">
                     <DialogClose asChild>
                       <Button className="cursor-pointer" variant="outline">
-                        Cancel
+                        Đóng
                       </Button>
                     </DialogClose>
 
@@ -262,7 +263,7 @@ const CreateCoursePage: React.FC = () => {
                         onClick={handleClearForm}
                         className="bg-red-600 hover:bg-red-700 !text-white cursor-pointer"
                       >
-                        Yes, Discard
+                        Có, Hủy
                       </Button>
                     </DialogClose>
                   </div>

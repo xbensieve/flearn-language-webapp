@@ -86,7 +86,7 @@ const CourseDetail: React.FC = () => {
   const deleteUnitMutation = useMutation({
     mutationFn: (unitId: string) => deleteUnitsService({ id: unitId }),
     onSuccess: () => {
-      notifySuccess("Unit deleted successfully");
+      notifySuccess("Chương đã được xóa thành công!");
       setDeleteConfirmation({ isOpen: false, unitId: null });
       refetchUnits();
     },
@@ -110,7 +110,7 @@ const CourseDetail: React.FC = () => {
         isPreview: values.isPreview,
       }),
     onSuccess: () => {
-      message.success("Unit created successfully");
+      message.success("Chương được tạo thành công");
       setActiveKey("");
       queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       refetchUnits();
@@ -130,7 +130,7 @@ const CourseDetail: React.FC = () => {
       isPreview: boolean;
     }) => updateCourseUnitsService(values),
     onSuccess: () => {
-      notifySuccess("Unit updated successfully");
+      notifySuccess("Chương được cập nhật thành công!");
       setIsEditModalVisible(false);
       setEditingUnit(null);
       refetchUnits();
@@ -202,11 +202,11 @@ const CourseDetail: React.FC = () => {
               <div className="flex flex-col gap-2">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <AlertTriangle className="text-red-600" size={20} />
-                  Are you absolutely sure?
+                  Bạn có chắc chắn không?
                 </h3>
                 <p className="text-sm text-gray-500">
-                  This action cannot be undone. This will permanently delete the
-                  unit and remove it from our servers.
+                  Không thể hoàn tác hành động này. Thao tác này sẽ xóa vĩnh
+                  viễn chương và xóa nó khỏi máy chủ của chúng tôi.
                 </p>
               </div>
               <div className="flex justify-end gap-3 mt-2">
@@ -216,7 +216,7 @@ const CourseDetail: React.FC = () => {
                   }
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 cursor-pointer"
                 >
-                  Cancel
+                  Thoát
                 </button>
                 <div></div>
                 <button
@@ -224,7 +224,7 @@ const CourseDetail: React.FC = () => {
                   disabled={deleteUnitMutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {deleteUnitMutation.isPending ? "Deleting..." : "Continue"}
+                  {deleteUnitMutation.isPending ? "Đang xóa..." : "Tiếp tục"}
                 </button>
               </div>
             </div>
@@ -233,7 +233,7 @@ const CourseDetail: React.FC = () => {
       )}
 
       <Modal
-        title="Edit Unit Details"
+        title="Chỉnh sửa chi tiết chương"
         open={isEditModalVisible}
         onCancel={() => setIsEditModalVisible(false)}
         footer={null}
@@ -247,26 +247,26 @@ const CourseDetail: React.FC = () => {
         >
           <Form.Item
             name="title"
-            label="Unit Title"
-            rules={[{ required: true, message: "Please enter unit title" }]}
+            label="Tiêu đề chương"
+            rules={[{ required: true, message: "Vui lòng nhập tên chương" }]}
           >
-            <Input placeholder="e.g. Introduction to React" />
+            <Input placeholder="e.g. Giới thiệu tiếng Anh cơ bản" />
           </Form.Item>
-          <Form.Item name="description" label="Description">
+          <Form.Item name="description" label="Mô tả">
             <Input.TextArea
               rows={4}
-              placeholder="What will students learn in this unit?"
+              placeholder="Học viên sẽ học được gì trong bài học này?"
             />
           </Form.Item>
           <div className="flex justify-end gap-2 pt-4">
-            <Button onClick={() => setIsEditModalVisible(false)}>Cancel</Button>
+            <Button onClick={() => setIsEditModalVisible(false)}>Thoát</Button>
             <Button
               type="primary"
               htmlType="submit"
               loading={updateUnitMutation.isPending}
               className="bg-blue-600"
             >
-              Save Changes
+              Lưu thay đổi
             </Button>
           </div>
         </Form>
@@ -280,7 +280,7 @@ const CourseDetail: React.FC = () => {
             className="text-gray-500 hover:text-gray-900 flex items-center gap-2 pl-0"
           >
             <ArrowLeft size={18} />
-            <span className="font-medium">Back to Courses</span>
+            <span className="font-medium">Quay lại khóa học</span>
           </Button>
           <div className="flex gap-2">
             <Button
@@ -290,7 +290,7 @@ const CourseDetail: React.FC = () => {
               className="flex items-center gap-2 border-gray-300 shadow-sm"
             >
               <Edit size={16} />
-              Edit Course Info
+              Chỉnh sửa thông tin khóa học
             </Button>
           </div>
         </div>
@@ -333,14 +333,16 @@ const CourseDetail: React.FC = () => {
                     <Text className="block text-sm font-medium text-gray-900">
                       {course?.teacher?.name || "Instructor"}
                     </Text>
-                    <Text className="block text-xs text-gray-500">Author</Text>
+                    <Text className="block text-xs text-gray-500">
+                      Giáo viên
+                    </Text>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 flex items-center gap-2">
-                      <Users size={14} /> Learners
+                      <Users size={14} /> Học viên
                     </span>
                     <span className="font-medium text-gray-900">
                       {course.learnerCount ?? 0}
@@ -348,15 +350,15 @@ const CourseDetail: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 flex items-center gap-2">
-                      <Clock size={14} /> Duration
+                      <Clock size={14} /> Thời lượng
                     </span>
                     <span className="font-medium text-gray-900">
-                      {course.durationDays ?? 0} days
+                      {course.durationDays ?? 0} ngày
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 flex items-center gap-2">
-                      <BookOpen size={14} /> Lessons
+                      <BookOpen size={14} /> Bài học
                     </span>
                     <span className="font-medium text-gray-900">
                       {course.numLessons ?? 0}
@@ -364,7 +366,7 @@ const CourseDetail: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 flex items-center gap-2">
-                      <GraduationCap size={14} /> Level
+                      <GraduationCap size={14} /> Trình độ
                     </span>
                     <span className="font-medium text-gray-900">
                       {course?.program.level.name || "N/A"}
@@ -373,16 +375,16 @@ const CourseDetail: React.FC = () => {
                 </div>
 
                 <div className="pt-2">
-                  <div className="text-sm text-gray-500 mb-1">Price</div>
+                  <div className="text-sm text-gray-500 mb-1">Giá</div>
                   <div className="text-2xl font-bold text-gray-900">
                     {course.price ? (
                       <>
                         {course?.discountPrice
-                          ? `${course?.discountPrice.toLocaleString()} VNĐ`
-                          : `${course?.price.toLocaleString()} VNĐ`}
+                          ? `${course?.discountPrice.toLocaleString()}đ`
+                          : `${course?.price.toLocaleString()}đ`}
                       </>
                     ) : (
-                      "Free"
+                      "Miễn phí"
                     )}
                   </div>
                 </div>
@@ -391,13 +393,13 @@ const CourseDetail: React.FC = () => {
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
               <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                <LayoutDashboard size={16} /> Learning Outcomes
+                <LayoutDashboard size={16} /> Kết quả học tập
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
                 {course?.learningOutcome || "No specific outcomes defined."}
               </p>
               <Divider className="my-4" />
-              <h4 className="font-semibold text-gray-900">Topics</h4>
+              <h4 className="font-semibold text-gray-900">Chủ đề</h4>
               <div className="flex flex-wrap gap-2">
                 {course?.topics?.map((topic: any) => (
                   <Tag
@@ -415,10 +417,10 @@ const CourseDetail: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <Title level={3} className="!mb-1 text-gray-900">
-                  Curriculum
+                  Chương trình giảng dạy
                 </Title>
                 <Text className="text-gray-500">
-                  Manage units, lessons, and exercises.
+                  Quản lý các chương, bài học và bài tập.
                 </Text>
               </div>
               <Button
@@ -431,40 +433,40 @@ const CourseDetail: React.FC = () => {
                 }
                 className="bg-gray-900 hover:bg-gray-800 border-none h-10 px-5 shadow-md"
               >
-                {activeKey === "create" ? "Cancel" : "Add Unit"}
+                {activeKey === "create" ? "Thoát" : "Thêm chương"}
               </Button>
             </div>
 
             {activeKey === "create" && (
               <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg animate-in fade-in slide-in-from-top-2">
                 <h4 className="font-semibold text-gray-900 mb-4">
-                  Create New Unit
+                  Tạo chương mới
                 </h4>
                 <Form layout="vertical" onFinish={handleAddUnit}>
                   <Form.Item
                     name="title"
-                    label="Unit Title"
+                    label="Tiêu đề chương"
                     rules={[
-                      { required: true, message: "Please enter unit title" },
+                      { required: true, message: "Vui lòng nhập tên chương" },
                     ]}
                   >
                     <Input placeholder="e.g. Unit 1" size="large" />
                   </Form.Item>
-                  <Form.Item name="description" label="Description">
+                  <Form.Item name="description" label="Mô tả">
                     <Input.TextArea
                       rows={3}
-                      placeholder="What will students learn in this unit?"
+                      placeholder="Học viên sẽ học được gì trong bài học này?"
                     />
                   </Form.Item>
                   <div className="flex justify-end gap-3 pt-2">
-                    <Button onClick={() => setActiveKey("")}>Cancel</Button>
+                    <Button onClick={() => setActiveKey("")}>Thoát</Button>
                     <Button
                       type="primary"
                       htmlType="submit"
                       loading={createUnitMutation.isPending}
                       className="bg-blue-600"
                     >
-                      Create Unit
+                      Tạo chương
                     </Button>
                   </div>
                 </Form>
@@ -494,7 +496,7 @@ const CourseDetail: React.FC = () => {
                           type="dashed"
                           onClick={() => setActiveKey("create")}
                         >
-                          Create First Unit
+                          Tạo chương đầu tiên
                         </Button>
                       </div>
                     </div>
@@ -536,7 +538,7 @@ const UnitWithLessons: React.FC<{
               <h4 className="font-semibold text-gray-900 text-lg leading-tight">
                 {unit?.title || "Untitled Unit"}
               </h4>
-              <Tooltip title="Edit Unit Details">
+              <Tooltip title="Chỉnh sửa chi tiết chương">
                 <button
                   onClick={() => onEditRequest(unit)}
                   className="text-gray-400 hover:text-blue-600 transition-colors cursor-pointer"
@@ -552,18 +554,18 @@ const UnitWithLessons: React.FC<{
         </div>
 
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Tooltip title="Manage Lessons">
+          <Tooltip title="Quản lý bài học">
             <Link to={`unit/${unit?.courseUnitID}`}>
               <Button
                 size="small"
                 icon={<Edit size={14} />}
                 className="flex items-center gap-1"
               >
-                Content
+                Nội dung
               </Button>
             </Link>
           </Tooltip>
-          <Tooltip title="Delete Unit">
+          <Tooltip title="Xóa chương">
             <Button
               danger
               type="text"
@@ -583,7 +585,7 @@ const UnitWithLessons: React.FC<{
           </div>
         ) : lessons.length === 0 ? (
           <div className="py-2 pl-12 text-gray-400 text-sm italic">
-            No lessons in this unit yet.
+            Chưa có bài học nào trong chương này.
           </div>
         ) : (
           lessons.map((lesson, idx) => (
