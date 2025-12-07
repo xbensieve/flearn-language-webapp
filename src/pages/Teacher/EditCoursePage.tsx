@@ -199,7 +199,7 @@ const EditCoursePage: React.FC = () => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Failed to update course";
+      const msg = err.response?.message || "Failed to update course";
       toast.error("Update failed", { description: msg });
     },
   });
@@ -207,15 +207,15 @@ const EditCoursePage: React.FC = () => {
   const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
     mutationFn: () => deleteCourseService(id!),
     onSuccess: () => {
-      toast.success("Course deleted!", {
-        description: "The course has been permanently removed.",
+      toast.success("Khóa học đã bị xóa!", {
+        description: "Khóa học đã bị xóa vĩnh viễn.",
       });
       navigate("/teacher/course");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Cannot delete this course";
-      toast.error("Delete failed", { description: msg });
+      const msg = err.response?.data?.message || "Không thể xóa khóa học này";
+      toast.error("Xóa không thành công", { description: msg });
     },
   });
 
@@ -247,7 +247,9 @@ const EditCoursePage: React.FC = () => {
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-gray-500 font-medium">Loading course data...</p>
+          <p className="text-gray-500 font-medium">
+            Đang tải dữ liệu khóa học...
+          </p>
         </div>
       </div>
     );
@@ -279,11 +281,11 @@ const EditCoursePage: React.FC = () => {
               <div className="flex items-center gap-2 text-blue-200 mb-2">
                 <Sparkles className="w-5 h-5" />
                 <span className="text-sm font-medium uppercase tracking-wider">
-                  Edit Mode
+                  Chế độ chỉnh sửa
                 </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
-                {courseData?.title || "Edit Course"}
+                {courseData?.title || "Chỉnh sửa khóa học"}
               </h1>
             </div>
 
@@ -297,26 +299,27 @@ const EditCoursePage: React.FC = () => {
                     variant="destructive"
                     className="bg-red-500/20 hover:bg-red-600 border border-red-500/50 !text-white backdrop-blur-md cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" /> Delete Course
+                    <Trash2 className="w-4 h-4 mr-2" /> Xóa khóa học
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-red-600">
-                      <AlertTriangle className="w-5 h-5" /> Confirm Deletion
+                      <AlertTriangle className="w-5 h-5" />
+                      Xác nhận xóa
                     </DialogTitle>
                     <DialogDescription className="pt-2">
-                      Are you sure you want to delete the course{" "}
+                      Bạn có chắc chắn muốn xóa khóa học không?{" "}
                       <strong>{courseData?.title}</strong>?
                       <br />
-                      This action cannot be undone and all related student data
-                      will be lost.
+                      Không thể hoàn tác hành động này và tất cả dữ liệu sẽ bị
+                      mất.
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter className="mt-4 gap-2 sm:gap-0">
                     <DialogClose asChild>
                       <Button className="cursor-pointer" variant="outline">
-                        Cancel
+                        Thoát
                       </Button>
                     </DialogClose>
                     <div></div>
@@ -329,7 +332,7 @@ const EditCoursePage: React.FC = () => {
                       {isDeleting ? (
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                       ) : null}
-                      Delete Permanently
+                      Xóa vĩnh viễn
                     </Button>
                   </DialogFooter>
                 </DialogContent>

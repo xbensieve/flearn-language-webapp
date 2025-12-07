@@ -83,7 +83,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
       setDeletingExerciseId(null);
     },
     onSuccess: (exerciseId) => {
-      notifySuccess("Exercise deleted successfully");
+      notifySuccess("Bài tập đã được xóa thành công");
       queryClient.invalidateQueries({
         queryKey: ["exercises", selectedExercise?.lessonID],
       });
@@ -145,12 +145,14 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
 
   if (!data?.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 bg-white rounded-3xl shadow-sm border border-gray-100">
+      <div className="flex flex-col items-center justify-center py-16 bg-white rounded-md shadow-sm border border-gray-100">
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           imageStyle={{ height: 80 }}
           description={
-            <Text className="text-gray-600 mt-4 text-lg">No exercises yet</Text>
+            <Text className="text-gray-600 mt-4 text-lg">
+              Chưa có bài tập nào
+            </Text>
           }
         />
       </div>
@@ -163,10 +165,10 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
       {!readonly && (
         <div className="flex justify-between items-center">
           <Input
-            placeholder="Search exercises by title..."
+            placeholder="Tìm kiếm bài tập theo tiêu đề..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="max-w-md rounded-xl border-gray-200 focus:border-blue-500 text-base"
+            className="max-w-md rounded-md border-gray-200 focus:border-blue-500 text-base"
             size="large"
           />
         </div>
@@ -189,7 +191,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
             >
               <Card
                 hoverable
-                className="group h-full rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 overflow-hidden"
+                className="group h-full rounded-md shadow-sm hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 overflow-hidden"
                 bodyStyle={{ padding: 0 }}
               >
                 {/* Header */}
@@ -205,20 +207,20 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                       <Space size={4} wrap className="mt-2">
                         <Tag
                           color="blue"
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
+                          className="text-xs font-medium px-2 py-0.5 rounded-md"
                         >
                           {exercise.exerciseType}
                         </Tag>
                         <Tag
                           color="orange"
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
+                          className="text-xs font-medium px-2 py-0.5 rounded-md"
                         >
                           {exercise.difficulty}
                         </Tag>
                       </Space>
                     </div>
                     {exercise.mediaUrls?.length > 0 && (
-                      <div className="p-2 bg-blue-50 rounded-xl">
+                      <div className="p-2 bg-blue-50 rounded-md">
                         {exercise.mediaUrls.some((url) =>
                           url.includes("mp3")
                         ) ? (
@@ -241,10 +243,10 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                 {/* Footer */}
                 <div className="flex justify-between items-center px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500">
                   <span>
-                    Max: <strong>{exercise.maxScore}</strong>
+                    Tối đa: <strong>{exercise.maxScore}</strong>
                   </span>
                   <span>
-                    Pass: <strong>{exercise.passScore}</strong>
+                    Đạt: <strong>{exercise.passScore}</strong>
                   </span>
                 </div>
 
@@ -260,11 +262,11 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                       }}
                       className="flex-1 h-12 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium rounded-none"
                     >
-                      Preview
+                      Xem trước
                     </Button>
                   ) : (
                     <>
-                      <Tooltip title="Preview">
+                      <Tooltip title="Xem trước">
                         <Button
                           type="text"
                           icon={<EyeOutlined />}
@@ -274,20 +276,20 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                           }}
                           className="flex-1 h-12 text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium rounded-none"
                         >
-                          Preview
+                          Xem trước
                         </Button>
                       </Tooltip>
-                      <Tooltip title="Edit">
+                      <Tooltip title="Biên tập">
                         <Button
                           type="text"
                           icon={<EditOutlined />}
                           onClick={() => handleOpenDrawer(exercise, "edit")}
                           className="flex-1 h-12 text-amber-600 hover:text-amber-700 hover:bg-amber-50 font-medium rounded-none"
                         >
-                          Edit
+                          Biên tập
                         </Button>
                       </Tooltip>
-                      <Tooltip title="Delete">
+                      <Tooltip title="Xóa bỏ">
                         <Button
                           type="text"
                           icon={<DeleteOutlined />}
@@ -299,7 +301,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                             deletingExerciseId === exercise.exerciseID
                           }
                         >
-                          Delete
+                          Xóa bỏ
                         </Button>
                       </Tooltip>
                     </>
@@ -315,18 +317,20 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
         open={confirmDeleteVisible}
         onCancel={handleCancelDelete}
         onOk={handleConfirmDelete}
-        okText="Delete"
-        cancelText="Cancel"
+        okText="Xóa bỏ"
+        cancelText="Thoát"
         okButtonProps={{ danger: true, loading: isDeleting }}
         centered
         width={420}
       >
         <div className="text-center py-4">
-          <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-rose-100 rounded-md flex items-center justify-center mx-auto mb-4">
             <DeleteOutlined className="text-2xl text-rose-600" />
           </div>
-          <title className="text-gray-900 mb-2">Delete Exercise?</title>
-          <Text className="text-gray-600">This action cannot be undone.</Text>
+          <title className="text-gray-900 mb-2">Xóa bài tập?</title>
+          <Text className="text-gray-600">
+            Không thể hoàn tác hành động này.
+          </Text>
         </div>
       </Modal>
 
@@ -390,7 +394,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                           return (
                             <div
                               key={index}
-                              className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+                              className="bg-white rounded-md shadow-lg border border-gray-200 overflow-hidden"
                             >
                               {/* Header */}
                               <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
@@ -435,13 +439,13 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                                     <img
                                       src={url}
                                       alt={fileName}
-                                      className="rounded-xl shadow-xl max-h-96 object-contain border-4 border-white"
+                                      className="rounded-md shadow-xl max-h-96 object-contain border-4 border-white"
                                       style={{ maxHeight: "70vh" }}
                                     />
                                   </div>
                                 ) : isAudio ? (
                                   <div className="max-w-2xl mx-auto">
-                                    <div className="bg-white rounded-2xl shadow-inner p-6 border border-gray-200">
+                                    <div className="bg-white rounded-md shadow-inner p-6 border border-gray-200">
                                       <audio
                                         controls
                                         controlsList="nodownload"
@@ -482,31 +486,31 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                   bordered
                   column={1}
                   size="middle"
-                  className="bg-gray-50 rounded-xl"
+                  className="bg-gray-50 rounded-md"
                 >
-                  <Descriptions.Item label="Title" className="py-3">
+                  <Descriptions.Item label="Tiêu đề" className="py-3">
                     {selectedExercise.title}
                   </Descriptions.Item>
-                  <Descriptions.Item label="Prompt" className="py-3">
+                  <Descriptions.Item label="Hướng dẫn" className="py-3">
                     <div className="whitespace-pre-wrap">
                       {selectedExercise.prompt}
                     </div>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Content" className="py-3">
+                  <Descriptions.Item label="Nội dung" className="py-3">
                     <div className="whitespace-pre-wrap">
                       {selectedExercise.content}
                     </div>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Type" className="py-3">
+                  <Descriptions.Item label="Loại" className="py-3">
                     <Tag color="blue">{selectedExercise.exerciseType}</Tag>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Difficulty" className="py-3">
+                  <Descriptions.Item label="Độ khó" className="py-3">
                     <Tag color="orange">{selectedExercise.difficulty}</Tag>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Max Score" className="py-3">
+                  <Descriptions.Item label="Điểm tối đa" className="py-3">
                     <Text strong>{selectedExercise.maxScore}</Text>
                   </Descriptions.Item>
-                  <Descriptions.Item label="Pass Score" className="py-3">
+                  <Descriptions.Item label="Điểm đạt" className="py-3">
                     <Text strong>{selectedExercise.passScore}</Text>
                   </Descriptions.Item>
                 </Descriptions>

@@ -92,7 +92,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
     );
 
     return (
-      <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-900 shadow-sm border border-slate-200 mb-6 group">
+      <div className="relative w-full aspect-video rounded-md overflow-hidden bg-slate-900 shadow-sm border border-slate-200 mb-6 group">
         {yt ? (
           <iframe
             src={`https://www.youtube.com/embed/${yt[1]}`}
@@ -112,24 +112,24 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
     return (
       <div className="mt-6 pt-6 border-t border-gray-100">
         <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <Download size={16} className="text-blue-600" /> Attached Resources
+          <Download size={16} className="text-blue-600" /> Tài nguyên đính kèm
         </h4>
         <a
           href={url}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md transition-all group/doc max-w-md"
+          className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-md hover:border-blue-300 hover:bg-blue-50/30 hover:shadow-md transition-all group/doc max-w-md"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-red-50 text-red-500 flex items-center justify-center shadow-sm group-hover/doc:scale-110 transition-transform">
+            <div className="w-10 h-10 rounded-md bg-red-50 text-red-500 flex items-center justify-center shadow-sm">
               <FileText size={20} />
             </div>
             <div>
               <p className="font-medium text-gray-900 text-sm group-hover/doc:text-blue-700 transition-colors">
-                Lesson Document
+                Tài liệu bài học
               </p>
               <p className="text-xs text-gray-500 group-hover/doc:text-blue-500">
-                Click to view or download
+                Nhấp để xem hoặc tải xuống
               </p>
             </div>
           </div>
@@ -143,12 +143,12 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
   };
 
   return (
-    <div className="group bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 mb-6 overflow-hidden">
+    <div className="group bg-white border border-gray-200 rounded-md shadow-sm hover:shadow-md transition-all duration-300 mb-6 overflow-hidden">
       {/* --- HEADER --- */}
       <div className="px-6 py-5 flex items-start justify-between border-b border-gray-100 bg-white">
         <div className="flex gap-4">
           <div className="flex-shrink-0 mt-1">
-            <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-blue-200">
+            <div className="w-10 h-10 rounded-sm bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
               {lesson.position}
             </div>
           </div>
@@ -162,14 +162,14 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             </p>
             <div className="flex items-center gap-4 pt-1">
               {lesson.videoUrl && (
-                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                   <PlayCircle size={12} className="text-blue-500" /> Video
                 </div>
               )}
               {lesson.totalExercises > 0 && (
-                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                   <Dumbbell size={12} className="text-orange-500" />{" "}
-                  {lesson.totalExercises} Exercises
+                  {lesson.totalExercises}Bài tập
                 </div>
               )}
             </div>
@@ -177,7 +177,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Tooltip title="Preview Lesson">
+          <Tooltip title="Xem trước bài học">
             <Button
               type="text"
               shape="circle"
@@ -187,7 +187,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               onClick={() => setPreviewVisible(true)}
             />
           </Tooltip>
-          <Tooltip title="Edit Lesson">
+          <Tooltip title="Chỉnh sửa bài học">
             <Button
               type="text"
               shape="circle"
@@ -201,7 +201,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             />
           </Tooltip>
           <div className="w-px h-4 bg-gray-200 mx-1"></div>
-          <Tooltip title="Delete">
+          <Tooltip title="Xóa bỏ">
             <Button
               type="text"
               danger
@@ -324,7 +324,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
       <Drawer
         title={
           <div className="flex items-center gap-2 text-gray-900">
-            <Settings className="w-5 h-5 text-blue-600" /> Edit Lesson
+            <Settings className="w-5 h-5 text-blue-600" /> Chỉnh sửa bài học
           </div>
         }
         width={720}
@@ -334,9 +334,9 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           <div className="flex justify-end gap-3 px-4 py-2">
             <Button
               onClick={() => setEditDrawerVisible(false)}
-              className="rounded-lg h-10 px-6"
+              className="rounded-md h-10 px-6"
             >
-              Cancel
+              Thoát
             </Button>
             <Button
               type="primary"
@@ -344,35 +344,31 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               loading={updateLesson.isPending}
               className="rounded-lg h-10 px-6 bg-blue-600"
             >
-              Save Changes
+              Lưu thay đổi
             </Button>
           </div>
         }
       >
         <Form form={form} layout="vertical" className="space-y-6">
-          <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          <div className="bg-blue-50/50 p-4 rounded-md border border-blue-100">
             <Form.Item
               name="title"
-              label="Lesson Title"
+              label="Tiêu đề bài học"
               rules={[{ required: true }]}
             >
-              <Input size="large" className="rounded-lg" />
+              <Input size="large" className="rounded-md" />
             </Form.Item>
-            <Form.Item
-              name="description"
-              label="Short Description"
-              className="mb-0"
-            >
-              <Input.TextArea rows={2} className="rounded-lg" />
+            <Form.Item name="description" label="Mô tả ngắn" className="mb-0">
+              <Input.TextArea rows={2} className="rounded-md" />
             </Form.Item>
           </div>
 
           <Form.Item
             name="content"
-            label="Rich Content"
+            label="Nội dung"
             rules={[{ required: true }]}
           >
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="border border-gray-200 rounded-md overflow-hidden">
               <ReactQuill theme="snow" className="h-64 mb-12" />
             </div>
           </Form.Item>
@@ -383,15 +379,15 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                 <Button
                   block
                   icon={<UploadOutlined />}
-                  className="h-10 rounded-lg"
+                  className="h-10 rounded-md"
                 >
-                  Upload Video
+                  Tải video lên
                 </Button>
               </Upload>
             </Form.Item>
             <Form.Item
               name="document"
-              label="Document Resource"
+              label="Tài nguyên tài liệu"
               valuePropName="file"
             >
               <Upload
@@ -402,9 +398,9 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                 <Button
                   block
                   icon={<UploadOutlined />}
-                  className="h-10 rounded-lg"
+                  className="h-10 rounded-md"
                 >
-                  Upload Document
+                  Tải tài liệu lên
                 </Button>
               </Upload>
             </Form.Item>
@@ -421,19 +417,19 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           <div className="flex justify-end pt-2">
             <Button
               onClick={() => setPreviewVisible(false)}
-              className="rounded-lg"
+              className="rounded-md"
             >
-              Close Preview
+              Đóng bản xem trước
             </Button>
           </div>
         }
         width={900}
         centered
-        className="rounded-xl overflow-hidden"
+        className="rounded-md overflow-hidden"
       >
         <div className="p-2">
           <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
               {lesson.position}
             </div>
             <div>
@@ -447,13 +443,13 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           <div className="space-y-6">
             {/* Video in Preview */}
             {lesson.videoUrl && (
-              <div className="bg-black rounded-xl overflow-hidden shadow-lg">
+              <div className="bg-black rounded-md overflow-hidden shadow-lg">
                 {renderVideo(lesson.videoUrl)}
               </div>
             )}
 
             {/* Content in Preview */}
-            <div className="prose prose-slate max-w-none bg-gray-50/50 p-6 rounded-xl border border-gray-100">
+            <div className="prose prose-slate max-w-none bg-gray-50/50 p-6 rounded-md border border-gray-100">
               <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
             </div>
 
@@ -463,7 +459,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             {!lesson.documentUrl && !lesson.videoUrl && !lesson.content && (
               <div className="text-center py-10 text-gray-400">
                 <AlertCircle className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p>This lesson is currently empty.</p>
+                <p>Bài học này hiện đang trống.</p>
               </div>
             )}
           </div>
@@ -472,7 +468,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
 
       {/* --- 3. EXERCISE DRAWER --- */}
       <Drawer
-        title="Create Exercise"
+        title="Tạo bài tập"
         width={800}
         open={exerciseDrawerVisible}
         onClose={() => setExerciseDrawerVisible(false)}
@@ -480,7 +476,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         <ExerciseForm
           lessonId={lesson.lessonID}
           onCreated={() => {
-            message.success("Exercise added");
+            message.success("Đã thêm bài tập");
             onUpdated();
             setExerciseDrawerVisible(false);
           }}
@@ -501,12 +497,13 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         }}
         onCancel={() => setConfirmDeleteVisible(false)}
         okButtonProps={{ danger: true, className: "bg-red-600" }}
-        okText="Delete Lesson"
+        okText="Xóa bài học"
       >
         <p className="text-gray-600 mt-2">
-          Are you sure you want to delete <strong>{lesson.title}</strong>?
+          Bạn có chắc chắn muốn xóa không? <strong>{lesson.title}</strong>?
           <br />
-          This action cannot be undone and will remove all associated exercises.
+          Không thể hoàn tác hành động này và sẽ xóa tất cả các bài tập liên
+          quan.
         </p>
       </Modal>
     </div>

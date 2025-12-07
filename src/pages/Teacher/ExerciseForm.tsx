@@ -20,7 +20,6 @@ import {
   updateExerciseService,
 } from "../../services/course";
 import {
-  Type,
   HelpCircle,
   Save,
   Plus,
@@ -138,34 +137,36 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       case 1: // Repeat After Me
         return {
           accept: "audio/*",
-          label: "Audio Source",
+          label: "Nguồn âm thanh",
           isRequired: false,
-          typeError: "Only audio files (MP3, WAV) are allowed!",
-          requiredError: "Please provide an audio file (Upload or Record)!",
+          typeError: "Chỉ cho phép các tệp âm thanh (MP3, WAV)!",
+          requiredError:
+            "Vui lòng cung cấp tệp âm thanh (Tải lên hoặc Ghi âm)!",
         };
       case 2: // Picture Description
       case 3: // Story Telling
         return {
           accept: "image/*",
-          label: "Attached Images",
+          label: "Hình ảnh đính kèm",
           isRequired: true,
-          typeError: "Only image files (JPG, PNG) are allowed!",
-          requiredError: "You must upload at least one image!",
+          typeError: "Chỉ cho phép sử dụng tệp hình ảnh (JPG, PNG)!",
+          requiredError: "Bạn phải tải lên ít nhất một hình ảnh!",
         };
       case 4: // Debate
         return {
           accept: "image/*",
-          label: "Attached Images",
+          label: "Hình ảnh đính kèm",
           isRequired: false,
-          typeError: "Only image files are allowed for Debate!",
+          typeError:
+            "Chỉ được phép sử dụng tệp hình ảnh cho loại bài tập tranh luận!",
           requiredError: "",
         };
       default:
         return {
           accept: "image/*,audio/*",
-          label: "Attached Media",
+          label: "Phương tiện đính kèm",
           isRequired: false,
-          typeError: "Invalid file type",
+          typeError: "Loại tệp không hợp lệ",
           requiredError: "",
         };
     }
@@ -243,12 +244,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     mutationFn: (payload: ExercisePayload) =>
       createExerciseService(lessonId, payload),
     onSuccess: () => {
-      notifySuccess("Created exercise successfully!");
+      notifySuccess("Đã tạo bài tập thành công!");
       queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
       resetForm();
       onCreated?.();
     },
-    onError: () => message.error("Failed to create exercise"),
+    onError: () => message.error("Không tạo được bài tập!"),
   });
 
   const updateMutation = useMutation({
@@ -259,7 +260,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         payload,
       }),
     onSuccess: () => {
-      notifySuccess("Updated exercise successfully!");
+      notifySuccess("Đã cập nhật bài tập thành công!");
       queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
       onCreated?.();
     },
@@ -465,7 +466,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
     if (isAudio) {
       return (
-        <div className="flex items-center gap-3 p-3 mb-2 bg-gray-50 border border-gray-200 rounded-lg">
+        <div className="flex items-center gap-3 p-3 mb-2 bg-gray-50 border border-gray-200 rounded-md">
           <div className="flex-1 overflow-hidden">
             <div className="text-sm font-medium text-gray-700 truncate mb-1">
               {file.name}
@@ -496,45 +497,45 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         className="space-y-6"
         initialValues={{ maxScore: 100, passScore: 40, type: 1 }}
       >
-        <div className="bg-gray-50/50 p-6 rounded-xl border border-gray-100">
+        <div className="bg-gray-50/50 p-6 rounded-md border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Type size={18} className="text-blue-600" /> Question Setup
+            Thiết lập câu hỏi
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Form.Item
               name="title"
-              label="Internal Title"
-              rules={[{ required: true, message: "Please enter a title" }]}
+              label="Tiêu đề"
+              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
               className="md:col-span-2"
             >
               <Input placeholder="e.g. Grammar Check #1" />
             </Form.Item>
             <Form.Item
               name="type"
-              label="Interaction Type"
+              label="Loại bài tập"
               rules={[{ required: true }]}
             >
               <Select
                 onChange={handleTypeChange}
                 options={[
-                  { label: "Repeat After Me (Audio)", value: 1 },
-                  { label: "Picture Description (Image Required)", value: 2 },
-                  { label: "Story Telling (Image Required)", value: 3 },
-                  { label: "Debate (Image Only)", value: 4 },
+                  { label: "Lặp lại theo mẫu (Âm thanh)", value: 1 },
+                  { label: "Mô tả hình ảnh (Yêu cầu hình ảnh)", value: 2 },
+                  { label: "Kể chuyện (Cần có hình ảnh)", value: 3 },
+                  { label: "Tranh luận (Chỉ có hình ảnh)", value: 4 },
                 ]}
               />
             </Form.Item>
             <Form.Item
               name="difficulty"
-              label="Difficulty Level"
+              label="Độ khó"
               rules={[{ required: true }]}
             >
               <Select
                 options={[
-                  { label: "Easy", value: 1 },
-                  { label: "Medium", value: 2 },
-                  { label: "Hard", value: 3 },
-                  { label: "Advanced", value: 4 },
+                  { label: "Dễ", value: 1 },
+                  { label: "Trung bình", value: 2 },
+                  { label: "Khó", value: 3 },
+                  { label: "Nâng cao", value: 4 },
                 ]}
               />
             </Form.Item>
@@ -547,29 +548,29 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         <div className="space-y-4">
           <Form.Item
             name="prompt"
-            label="Student Instruction (Prompt)"
-            rules={[{ required: true, message: "Instruction is required" }]}
+            label="Hướng dẫn cho học sinh"
+            rules={[{ required: true, message: "Cần có hướng dẫn" }]}
           >
             <Input.TextArea
               rows={2}
-              placeholder="What should the student do?"
+              placeholder="Học viên nên làm gì?"
               className="bg-white"
             />
           </Form.Item>
           <Form.Item
             name="content"
-            label="Exercise Content (Context)"
-            rules={[{ required: true, message: "Content is required" }]}
+            label="Nội dung bài tập (Bối cảnh)"
+            rules={[{ required: true, message: "Nội dung là bắt buộc" }]}
           >
             <Input.TextArea
               rows={4}
-              placeholder="The main text or context for the exercise..."
+              placeholder="Văn bản chính hoặc bối cảnh cho bài tập..."
             />
           </Form.Item>
           <Form.Item
             name="expectedAnswer"
-            label="Expected Answer / Key"
-            rules={[{ required: true, message: "Answer is required" }]}
+            label="Câu trả lời mong đợi / Chìa khóa"
+            rules={[{ required: true, message: "Câu trả lời là bắt buộc" }]}
           >
             <Input.TextArea rows={2} className="font-mono text-sm bg-gray-50" />
           </Form.Item>
@@ -578,7 +579,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         <Divider />
 
         {/* --- Media Section --- */}
-        <div className="border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50/30">
+        <div className="border border-dashed border-gray-300 rounded-md p-6 bg-gray-50/30">
           <div className="flex justify-between items-center mb-4">
             <label className="text-gray-700 font-medium">
               {config.label}
@@ -597,18 +598,18 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                 buttonStyle="solid"
                 size="small"
               >
-                <Radio.Button value="upload">Upload File</Radio.Button>
-                <Radio.Button value="record">Record Voice</Radio.Button>
+                <Radio.Button value="upload">Tải tệp lên</Radio.Button>
+                <Radio.Button value="record">Ghi âm giọng nói</Radio.Button>
               </Radio.Group>
             )}
           </div>
 
           {exerciseType === 1 && audioSource === "record" ? (
-            <div className="bg-white p-6 rounded-xl border border-gray-200 text-center space-y-4">
+            <div className="bg-white p-6 rounded-md border border-gray-200 text-center space-y-4">
               {existingAudioUrl && !recordedUrl && !isRecording && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
                   <p className="text-xs font-semibold text-blue-600 mb-2 text-left uppercase">
-                    Current Audio (Will be replaced if you record)
+                    Âm thanh hiện tại (Sẽ được thay thế nếu bạn ghi âm)
                   </p>
                   <audio controls src={existingAudioUrl} className="w-full" />
                 </div>
@@ -617,18 +618,18 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
               <div className="flex flex-col items-center justify-center gap-4">
                 {isRecording ? (
                   <div className="flex items-center gap-2 text-red-500 animate-pulse font-medium">
-                    <span className="w-3 h-3 bg-red-500 rounded-full"></span>
-                    Recording... {formatTime(recordingTimer)}
+                    <span className="w-3 h-3 bg-red-500 rounded-md"></span>
+                    Đang ghi... {formatTime(recordingTimer)}
                   </div>
                 ) : recordedUrl ? (
                   <Text type="success" className="font-medium">
-                    New recording ready to submit
+                    Bản ghi âm mới đã sẵn sàng để gửi
                   </Text>
                 ) : (
                   <Text type="secondary">
                     {existingAudioUrl
-                      ? "Click microphone to replace current audio"
-                      : "Click microphone to start recording"}
+                      ? "Nhấp vào micrô để thay thế âm thanh hiện tại"
+                      : "Nhấp vào micrô để bắt đầu ghi âm"}
                   </Text>
                 )}
 
@@ -661,7 +662,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                       <audio
                         controls
                         src={recordedUrl}
-                        className="h-10 rounded-full bg-gray-100"
+                        className="h-10 rounded-md bg-gray-100"
                       />
                       <Button
                         icon={<Trash2 size={16} />}
@@ -669,13 +670,13 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                         type="text"
                         onClick={deleteRecording}
                       >
-                        Delete
+                        Xóa
                       </Button>
                       <Button
                         icon={<RefreshCcw size={16} />}
                         onClick={deleteRecording}
                       >
-                        Re-record
+                        Ghi lại
                       </Button>
                     </div>
                   )}
@@ -702,12 +703,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                   <InboxOutlined />
                 </p>
                 <p className="ant-upload-text">
-                  Click or drag files here to upload
+                  Nhấp hoặc kéo tệp vào đây để tải lên
                 </p>
                 <p className="ant-upload-hint">
                   {exerciseType === 1
-                    ? "Upload Audio Files (MP3, WAV)"
-                    : "Upload Image Files (JPG, PNG)"}
+                    ? "Tải lên tệp âm thanh (MP3, WAV)"
+                    : "Tải lên tệp hình ảnh (JPG, PNG)"}
                 </p>
               </Upload.Dragger>
             </Form.Item>
@@ -716,13 +717,13 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">Scoring</h4>
+            <h4 className="font-medium text-gray-900 mb-3">Điểm</h4>
             <div className="flex gap-4">
               <Form.Item
                 name="maxScore"
-                label="Max Score"
+                label="Điểm tối đa"
                 className="flex-1"
-                help="Fixed at 100 points"
+                help="Đã sửa ở mức 100 điểm"
               >
                 <InputNumber
                   disabled
@@ -731,12 +732,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
               </Form.Item>
               <Form.Item
                 name="passScore"
-                label="Pass Threshold"
+                label="Vượt qua ngưỡng"
                 className="flex-1"
                 rules={[
-                  { required: true, message: "Required" },
-                  { type: "number", min: 40, message: "Min 40" },
-                  { type: "number", max: 100, message: "Max 100" },
+                  { required: true, message: "Yêu cầu" },
+                  { type: "number", min: 40, message: "Tối thiểu 40" },
+                  { type: "number", max: 100, message: "Tối đa 100" },
                 ]}
               >
                 <InputNumber min={40} max={100} className="w-full" />
@@ -744,8 +745,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             </div>
           </div>
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">Assistive Text</h4>
-            <Form.Item name="hints" label="Hint for Student">
+            <h4 className="font-medium text-gray-900 mb-3">Gợi ý</h4>
+            <Form.Item name="hints" label="Gợi ý cho học viên">
               <Input
                 prefix={<HelpCircle size={14} className="text-gray-400" />}
               />
@@ -754,14 +755,14 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Form.Item name="feedbackCorrect" label="Success Message">
+          <Form.Item name="feedbackCorrect" label="Thông báo thành công">
             <Input.TextArea
               rows={2}
               className="border-green-200 focus:border-green-500"
               placeholder="Well done!"
             />
           </Form.Item>
-          <Form.Item name="feedbackIncorrect" label="Failure Message">
+          <Form.Item name="feedbackIncorrect" label="Thông báo lỗi">
             <Input.TextArea
               rows={2}
               className="border-red-200 focus:border-red-500"
@@ -772,8 +773,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
         <div className="flex justify-end pt-4 gap-3">
           {onCreated && (
-            <Button onClick={onCreated} className="h-10 px-6 rounded-lg">
-              Cancel
+            <Button onClick={onCreated} className="h-10 px-6 rounded-md">
+              Thoát
             </Button>
           )}
           <Button
@@ -781,9 +782,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             htmlType="submit"
             loading={createMutation.isPending || updateMutation.isPending}
             icon={exercise ? <Save size={16} /> : <Plus size={16} />}
-            className="h-10 px-8 bg-gray-900 hover:bg-gray-800 rounded-lg flex items-center gap-2"
+            className="h-10 px-8 bg-gray-900 hover:bg-gray-800 rounded-md flex items-center gap-2"
           >
-            {exercise ? "Save Changes" : "Create Exercise"}
+            {exercise ? "Lưu thay đổi" : "Tạo bài tập"}
           </Button>
         </div>
       </Form>

@@ -1,6 +1,5 @@
 import React from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { notifySuccess } from "@/utils/toastConfig";
 import { useNavigate } from "react-router-dom";
 import {
   Mail,
@@ -26,22 +25,19 @@ import { unregisterWebPush } from "../../services/webPush";
 
 // UI Components
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import NotificationSettings from "@/components/NotificationSettings";
+import { toast } from "sonner";
+import { useAuth } from "@/utils/AuthContext";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-
+  const { updateAuth } = useAuth();
   // --- Queries ---
   const {
     data: profileData,
@@ -50,6 +46,7 @@ const Profile: React.FC = () => {
   } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
+    refetchOnWindowFocus: false,
   });
 
   const isTeacher = profileData?.data?.roles?.includes("Teacher") || false;
@@ -69,14 +66,14 @@ const Profile: React.FC = () => {
   const isError = generalError || (isTeacher && teacherError);
 
   // --- Mutations ---
-  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+  const { mutate: logout } = useMutation({
     mutationFn: (refreshToken: string) => logoutService(refreshToken),
     onSuccess: () => handleLogoutCleanup(),
     onError: () => handleLogoutCleanup(),
   });
 
   const handleLogoutClick = () => {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
     // Unregister web push before logout
     unregisterWebPush().catch(() => {});
     if (refreshToken) {
@@ -87,11 +84,12 @@ const Profile: React.FC = () => {
   };
 
   const handleLogoutCleanup = () => {
+    toast.success("Đăng xuất thành công!");
     localStorage.removeItem("FLEARN_ACCESS_TOKEN");
     localStorage.removeItem("FLEARN_REFRESH_TOKEN");
     localStorage.removeItem("FLEARN_USER_ROLE");
     localStorage.removeItem("FLEARN_USER_ROLES");
-    notifySuccess("Logout successful");
+    updateAuth();
     navigate("/login");
   };
 
@@ -114,7 +112,7 @@ const Profile: React.FC = () => {
   };
 
   // --- Loading State ---
-  if (isLoading || isLoggingOut) {
+  if (isLoading) {
     return (
       <div className="container max-w-5xl py-10 mx-auto space-y-8">
         <div className="flex items-center space-x-4">
@@ -188,7 +186,7 @@ const Profile: React.FC = () => {
                 {isTeacher && (
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
                     <ShieldCheck className="w-4 h-4 text-green-600" />
-                    Verified
+                    Đã xác minh
                   </span>
                 )}
               </div>
@@ -201,7 +199,7 @@ const Profile: React.FC = () => {
             className="w-full md:w-auto shadow-sm cursor-pointer !text-white hover:bg-red-400"
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Logout
+            Đăng xuất
           </Button>
         </div>
 
@@ -213,7 +211,7 @@ const Profile: React.FC = () => {
           <div className="md:col-span-4 space-y-6">
             <Card className="shadow-sm border-gray-200">
               <CardHeader>
-                <CardTitle className="text-lg">Personal Information</CardTitle>
+                <CardTitle className="text-lg">Thông tin cá nhân</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -240,7 +238,7 @@ const Profile: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
-                        Phone Number
+                        Số điện thoại
                       </p>
                       <p className="text-sm font-medium text-gray-900">
                         {teacher.phoneNumber}
@@ -256,7 +254,7 @@ const Profile: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">
-                        Date of Birth
+                        Ngày sinh
                       </p>
                       <p className="text-sm font-medium text-gray-900">
                         {teacher.dateOfBirth}
@@ -272,7 +270,7 @@ const Profile: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Bell className="w-5 h-5" />
-                  Notifications
+                  Thông báo
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -294,7 +292,7 @@ const Profile: React.FC = () => {
                         {teacher.proficiencyCode}
                       </div>
                       <p className="text-xs text-muted-foreground uppercase font-semibold">
-                        Proficiency
+                        Thành thạo
                       </p>
                     </CardContent>
                   </Card>
@@ -307,7 +305,7 @@ const Profile: React.FC = () => {
                         <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                       </div>
                       <p className="text-xs text-muted-foreground uppercase font-semibold">
-                        {teacher.reviewCount} Reviews
+                        {teacher.reviewCount} Đánh giá
                       </p>
                     </CardContent>
                   </Card>
@@ -317,7 +315,7 @@ const Profile: React.FC = () => {
                         {teacher.language}
                       </div>
                       <p className="text-xs text-muted-foreground uppercase font-semibold">
-                        Language
+                        Ngôn ngữ
                       </p>
                     </CardContent>
                   </Card>
@@ -327,7 +325,7 @@ const Profile: React.FC = () => {
                 <Card className="shadow-sm">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center justify-between">
-                      Teacher Profile
+                      Hồ sơ giáo viên
                       {teacher.meetingUrl && (
                         <Button
                           size="sm"
@@ -341,7 +339,7 @@ const Profile: React.FC = () => {
                             rel="noopener noreferrer"
                           >
                             <Link2 className="w-3.5 h-3.5" />
-                            Class Link
+                            Liên kết lớp
                           </a>
                         </Button>
                       )}
@@ -351,14 +349,14 @@ const Profile: React.FC = () => {
                     <div>
                       <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
                         <Book className="w-4 h-4 text-muted-foreground" />
-                        Biography
+                        Tiểu sử
                       </h3>
                       <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">
                         {teacher.bio ? (
                           teacher.bio
                         ) : (
                           <span className="italic text-muted-foreground">
-                            This teacher has not updated their biography yet.
+                            Giáo viên này vẫn chưa cập nhật tiểu sử của mình.
                           </span>
                         )}
                       </div>
@@ -366,7 +364,7 @@ const Profile: React.FC = () => {
 
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="space-y-1">
-                        <p className="text-sm font-medium">Overall Rating</p>
+                        <p className="text-sm font-medium">Đánh giá tổng thể</p>
                         <div className="flex items-center gap-2">
                           {renderStars(teacher.averageRating || 0)}
                           <span className="text-sm font-bold ml-2">
@@ -379,7 +377,7 @@ const Profile: React.FC = () => {
                           {teacher.reviewCount}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Total Reviews
+                          Tổng số đánh giá
                         </p>
                       </div>
                     </div>
@@ -394,11 +392,12 @@ const Profile: React.FC = () => {
                     <User className="w-8 h-8 text-gray-400" />
                   </div>
                   <h3 className="text-lg font-medium text-gray-900">
-                    Welcome, {user.username}!
+                    Chào mừng, {user.username}!
                   </h3>
                   <p className="text-muted-foreground max-w-xs mx-auto">
-                    You are currently viewing this profile as a student. Your
-                    learning history and course progress will appear here.
+                    Hiện tại bạn đang xem hồ sơ này với tư cách là sinh viên.
+                    Lịch sử học tập và tiến độ khóa học của bạn sẽ được hiển thị
+                    tại đây.
                   </p>
                 </div>
               </Card>
