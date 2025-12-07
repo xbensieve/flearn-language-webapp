@@ -201,7 +201,7 @@ const PayoutManagerPage: React.FC = () => {
   const handleCreatePayout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !selectedBankId) {
-      toast.error("Please fill in all fields");
+      toast.error("Vui lòng điền vào tất cả các trường");
       return;
     }
 
@@ -209,12 +209,12 @@ const PayoutManagerPage: React.FC = () => {
 
     // Validation Logic
     if (numAmount < 100000) {
-      toast.error("Minimum withdrawal is 100,000đ");
+      toast.error("Số tiền rút tối thiểu là 100.000đ");
       return;
     }
 
     if (wallet && numAmount > wallet.availableBalance) {
-      toast.error("Insufficient available balance");
+      toast.error("Số dư khả dụng không đủ");
       return;
     }
 
@@ -224,7 +224,7 @@ const PayoutManagerPage: React.FC = () => {
         amount: numAmount,
         bankAccountId: selectedBankId,
       });
-      toast.success("Payout request submitted successfully!");
+      toast.success("Yêu cầu thanh toán đã được gửi thành công!");
 
       // Reset form & Refresh data
       setAmount("");
@@ -254,10 +254,10 @@ const PayoutManagerPage: React.FC = () => {
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Financial Overview
+            Tổng quan tài chính
           </h1>
           <p className="text-slate-500 mt-1">
-            Manage your earnings, payouts, and banking details.
+            Quản lý thu nhập, khoản chi trả và thông tin ngân hàng của bạn.
           </p>
         </div>
 
@@ -271,7 +271,7 @@ const PayoutManagerPage: React.FC = () => {
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-sm font-medium text-blue-100 uppercase tracking-wide">
-                  Available Balance
+                  Số dư khả dụng
                 </span>
               </div>
               {isLoadingWallet ? (
@@ -281,7 +281,7 @@ const PayoutManagerPage: React.FC = () => {
                   <p className="text-3xl font-bold tracking-tight">
                     {formatCurrency(wallet?.availableBalance || 0)}
                   </p>
-                  <p className="text-xs text-blue-200">Ready to withdraw</p>
+                  <p className="text-xs text-blue-200">Sẵn sàng rút tiền</p>
                 </div>
               )}
             </CardContent>
@@ -295,7 +295,7 @@ const PayoutManagerPage: React.FC = () => {
                   <Lock className="w-6 h-6" />
                 </div>
                 <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">
-                  On Hold
+                  Đang chờ
                 </span>
               </div>
               {isLoadingWallet ? (
@@ -319,7 +319,7 @@ const PayoutManagerPage: React.FC = () => {
                   <PiggyBank className="w-6 h-6" />
                 </div>
                 <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">
-                  Total Income
+                  Tổng thu nhập
                 </span>
               </div>
               {isLoadingWallet ? (
@@ -329,7 +329,7 @@ const PayoutManagerPage: React.FC = () => {
                   <p className="text-2xl font-bold text-slate-800">
                     {formatCurrency(wallet?.totalBalance || 0)}
                   </p>
-                  <p className="text-xs text-slate-400">Lifetime earnings</p>
+                  <p className="text-xs text-slate-400">Thu nhập trọn đời</p>
                 </div>
               )}
             </CardContent>
@@ -347,13 +347,13 @@ const PayoutManagerPage: React.FC = () => {
             value="overview"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
           >
-            <ArrowUpRight className="w-4 h-4" /> Request & Accounts
+            <ArrowUpRight className="w-4 h-4" /> Yêu cầu & Tài khoản
           </TabsTrigger>
           <TabsTrigger
             value="history"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
           >
-            <History className="w-4 h-4" /> Transaction History
+            <History className="w-4 h-4" /> Lịch sử giao dịch
           </TabsTrigger>
         </TabsList>
 
@@ -365,17 +365,17 @@ const PayoutManagerPage: React.FC = () => {
               <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Building2 className="w-5 h-5 text-blue-600" />
-                  Request Payout
+                  Yêu cầu thanh toán
                 </CardTitle>
                 <CardDescription>
-                  Withdraw funds to your bank account.
+                  Rút tiền vào tài khoản ngân hàng của bạn.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleCreatePayout} className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="amount" className="text-slate-700">
-                      Amount (đ)
+                      Số tiền (đ)
                     </Label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-slate-400 font-semibold">
@@ -391,23 +391,25 @@ const PayoutManagerPage: React.FC = () => {
                     </div>
                     {wallet && Number(amount) > wallet.availableBalance && (
                       <p className="text-xs text-rose-500 font-medium flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> Exceeds available
-                        balance
+                        <AlertCircle className="w-3 h-3" /> Vượt quá số dư khả
+                        dụng
                       </p>
                     )}
-                    <p className="text-xs text-slate-500">Min: 100,000 đ</p>
+                    <p className="text-xs text-slate-500">
+                      Tối thiểu: 100,000 đ
+                    </p>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="bank" className="text-slate-700">
-                      Receiving Account
+                      Tài khoản nhận
                     </Label>
                     <Select
                       value={selectedBankId}
                       onValueChange={setSelectedBankId}
                     >
                       <SelectTrigger className="bg-slate-50">
-                        <SelectValue placeholder="Select a bank" />
+                        <SelectValue placeholder="Chọn ngân hàng" />
                       </SelectTrigger>
                       <SelectContent>
                         {bankAccounts.map((acc) => (
@@ -431,7 +433,7 @@ const PayoutManagerPage: React.FC = () => {
 
                   <Button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 shadow-md transition-all active:scale-[0.98]"
+                    className="w-full bg-blue-600 hover:bg-blue-700 !text-white shadow-md transition-all active:scale-[0.98]"
                     size="lg"
                     disabled={
                       isSubmitting ||
@@ -444,7 +446,7 @@ const PayoutManagerPage: React.FC = () => {
                         : false)
                     }
                   >
-                    {isSubmitting ? "Processing..." : "Submit Request"}
+                    {isSubmitting ? "Xử lý..." : "Gửi yêu cầu"}
                   </Button>
                 </form>
               </CardContent>
@@ -454,7 +456,7 @@ const PayoutManagerPage: React.FC = () => {
             <div className="lg:col-span-2 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-slate-800">
-                  Your Bank Accounts
+                  Tài khoản ngân hàng của bạn
                 </h3>
                 <Button
                   variant="outline"
@@ -462,7 +464,7 @@ const PayoutManagerPage: React.FC = () => {
                   onClick={() => setDrawerOpen(true)}
                   className="gap-2 border-dashed border-slate-300 hover:border-slate-400"
                 >
-                  <Plus className="w-4 h-4" /> Add New
+                  <Plus className="w-4 h-4" /> Thêm mới
                 </Button>
               </div>
 
@@ -474,9 +476,11 @@ const PayoutManagerPage: React.FC = () => {
                 ) : bankAccounts.length === 0 ? (
                   <Card className="col-span-2 border-dashed bg-slate-50/50 flex flex-col items-center justify-center py-12 text-center">
                     <Building2 className="w-12 h-12 text-slate-300 mb-3" />
-                    <p className="text-slate-500">No bank accounts linked.</p>
+                    <p className="text-slate-500">
+                      Không có tài khoản ngân hàng nào được liên kết.
+                    </p>
                     <Button variant="link" onClick={() => setDrawerOpen(true)}>
-                      Add your first account
+                      Thêm tài khoản đầu tiên của bạn
                     </Button>
                   </Card>
                 ) : (
@@ -487,7 +491,7 @@ const PayoutManagerPage: React.FC = () => {
                     >
                       {acc.isDefault && (
                         <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl">
-                          DEFAULT
+                          MẶC ĐỊNH
                         </div>
                       )}
                       <CardContent className="p-5 flex flex-col gap-1">
@@ -506,7 +510,7 @@ const PayoutManagerPage: React.FC = () => {
                         </div>
                         <div className="mt-2 pt-3 border-t border-slate-100">
                           <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                            Account Number
+                            Số tài khoản
                           </p>
                           <p className="font-mono text-lg text-slate-700 tracking-wide">
                             {acc.accountNumber}
@@ -528,20 +532,21 @@ const PayoutManagerPage: React.FC = () => {
         <TabsContent value="history">
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle>Transaction History</CardTitle>
+              <CardTitle>Lịch sử giao dịch</CardTitle>
               <CardDescription>
-                View all your past payout requests and their status.
+                Xem tất cả các yêu cầu thanh toán trước đây của bạn và trạng
+                thái của chúng.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-                    <TableHead>Date</TableHead>
-                    <TableHead>Bank Info</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>Ngày</TableHead>
+                    <TableHead>Thông tin ngân hàng</TableHead>
+                    <TableHead>Số tiền</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead className="text-right">Hành động</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -574,7 +579,7 @@ const PayoutManagerPage: React.FC = () => {
                         colSpan={6}
                         className="text-center py-12 text-slate-500"
                       >
-                        No transactions found.
+                        Không tìm thấy giao dịch nào.
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -610,19 +615,19 @@ const PayoutManagerPage: React.FC = () => {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
+                                <span className="sr-only">Mở trình đơn</span>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>Hành động</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() => {
                                   setSelectedPayout(payout);
                                   setIsDetailOpen(true);
                                 }}
                               >
-                                <Eye className="mr-2 h-4 w-4" /> View Details
+                                <Eye className="mr-2 h-4 w-4" /> Xem chi tiết
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -641,16 +646,16 @@ const PayoutManagerPage: React.FC = () => {
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Payout Details</DialogTitle>
+            <DialogTitle>Chi tiết thanh toán</DialogTitle>
             <DialogDescription>
-              Transaction ID: #{selectedPayout?.payoutRequestId}
+              ID giao dịch: #{selectedPayout?.payoutRequestId}
             </DialogDescription>
           </DialogHeader>
 
           {selectedPayout && (
             <div className="grid gap-4 py-4">
               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-100">
-                <span className="text-sm text-slate-500">Amount</span>
+                <span className="text-sm text-slate-500">Số tiền</span>
                 <span className="text-xl font-bold text-slate-900">
                   {formatCurrency(selectedPayout.amount)}
                 </span>
@@ -658,12 +663,14 @@ const PayoutManagerPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-slate-500">Status</p>
+                  <p className="text-xs font-medium text-slate-500">
+                    Trạng thái
+                  </p>
                   <StatusBadge status={selectedPayout.status} />
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-slate-500">
-                    Requested Date
+                    Ngày yêu cầu
                   </p>
                   <p className="text-sm text-slate-700">
                     {formatDate(selectedPayout.requestedAt)}
@@ -673,23 +680,23 @@ const PayoutManagerPage: React.FC = () => {
 
               <div className="border-t pt-4 mt-2">
                 <h4 className="text-sm font-semibold mb-2 text-slate-900">
-                  Beneficiary Details
+                  Chi tiết người thụ hưởng
                 </h4>
                 <div className="bg-slate-50 p-3 rounded text-sm space-y-2 border border-slate-100">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Bank Name:</span>
+                    <span className="text-slate-500">Tên ngân hàng:</span>
                     <span className="font-medium">
                       {selectedPayout.bankName}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Account Number:</span>
+                    <span className="text-slate-500">Số tài khoản:</span>
                     <span className="font-mono font-medium">
                       {selectedPayout.accountNumber}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Teacher Email:</span>
+                    <span className="text-slate-500">Email giáo viên:</span>
                     <span className="font-medium">
                       {selectedPayout.teacherEmail}
                     </span>
@@ -701,7 +708,7 @@ const PayoutManagerPage: React.FC = () => {
               {selectedPayout.note && (
                 <div className="border-t pt-4">
                   <h4 className="text-sm font-semibold mb-1 text-slate-900">
-                    Admin Note
+                    Ghi chú của quản trị viên
                   </h4>
                   <div className="text-sm text-slate-600 bg-amber-50 p-3 rounded border border-amber-100 flex gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />

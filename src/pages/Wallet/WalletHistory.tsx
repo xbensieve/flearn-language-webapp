@@ -1,3 +1,4 @@
+/* eslint-disable no-irregular-whitespace */
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
@@ -7,12 +8,7 @@ import {
   type SortOption,
   type WalletTransaction,
 } from "@/services/wallet/walletService";
-import {
-  Loader2,
-  Wallet,
-  Filter,
-  FileSpreadsheet,
-} from "lucide-react";
+import { Loader2, Wallet, Filter, FileSpreadsheet } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -151,7 +147,6 @@ const WalletHistoryPage: React.FC = () => {
     }
   };
 
-
   const handleNextPage = () => {
     if (data?.meta && page < data.meta.totalPages) setPage((p) => p + 1);
   };
@@ -166,10 +161,10 @@ const WalletHistoryPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-            Wallet History
+            Lịch sử ví
           </h1>
           <p className="text-slate-500 mt-1">
-            Track your payouts, withdrawals, and refunds.
+            Theo dõi khoản thanh toán, rút ​​tiền và hoàn tiền của bạn.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -192,7 +187,7 @@ const WalletHistoryPage: React.FC = () => {
             onClick={() => navigate("/teacher/payout-request")}
             className="bg-blue-600 hover:bg-blue-700 !text-white gap-2 shadow-md cursor-pointer"
           >
-            <Wallet className="w-4 h-4" /> Withdraw Funds
+            <Wallet className="w-4 h-4" /> Rút tiền
           </Button>
         </div>
       </div>
@@ -203,7 +198,7 @@ const WalletHistoryPage: React.FC = () => {
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-500" /> Filter & Sort
+            <Filter className="w-4 h-4 text-slate-500" /> Lọc & Sắp xếp
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -213,7 +208,7 @@ const WalletHistoryPage: React.FC = () => {
               {/* Type Select */}
               <div className="w-full sm:w-[180px]">
                 <label className="text-xs font-medium text-slate-500 mb-1 block">
-                  Transaction Type
+                  Loại giao dịch
                 </label>
                 <Select
                   value={transactionType}
@@ -223,21 +218,21 @@ const WalletHistoryPage: React.FC = () => {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="All Types" />
+                    <SelectValue placeholder="Tất cả các loại" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="all">Tất cả các loại</SelectItem>
                     <SelectItem value={TransactionType.Payout.toString()}>
-                      Payout
+                      Thanh toán
                     </SelectItem>
                     <SelectItem value={TransactionType.Withdrawal.toString()}>
-                      Withdrawal
+                      Rút tiền
                     </SelectItem>
                     <SelectItem value={TransactionType.Refund.toString()}>
-                      Refund
+                      Đền bù
                     </SelectItem>
                     <SelectItem value={TransactionType.Transfer.toString()}>
-                      Transfer
+                      Chuyển khoản
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -247,7 +242,7 @@ const WalletHistoryPage: React.FC = () => {
               <div className="flex gap-2 w-full sm:w-auto">
                 <div className="flex-1">
                   <label className="text-xs font-medium text-slate-500 mb-1 block">
-                    From Date
+                    Từ ngày
                   </label>
                   <input
                     type="date"
@@ -257,7 +252,7 @@ const WalletHistoryPage: React.FC = () => {
                 </div>
                 <div className="flex-1">
                   <label className="text-xs font-medium text-slate-500 mb-1 block">
-                    To Date
+                    Đến ngày
                   </label>
                   <input
                     type="date"
@@ -271,20 +266,20 @@ const WalletHistoryPage: React.FC = () => {
             {/* Right: Sort */}
             <div className="w-full sm:w-[180px]">
               <label className="text-xs font-medium text-slate-500 mb-1 block">
-                Sort By
+                Sắp xếp theo
               </label>
               <Select
                 value={sort}
                 onValueChange={(val: SortOption) => setSort(val)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder="Sắp xếp theo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="oldest">Oldest First</SelectItem>
-                  <SelectItem value="amount_desc">Highest Amount</SelectItem>
-                  <SelectItem value="amount_asc">Lowest Amount</SelectItem>
+                  <SelectItem value="newest">Mới nhất đầu tiên</SelectItem>
+                  <SelectItem value="oldest">Cũ nhất đầu tiên</SelectItem>
+                  <SelectItem value="amount_desc">Số tiền cao nhất</SelectItem>
+                  <SelectItem value="amount_asc">Số tiền thấp nhất</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -298,14 +293,14 @@ const WalletHistoryPage: React.FC = () => {
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="min-w-[150px]">Description</TableHead>
+                <TableHead className="w-[100px]">Trạng thái</TableHead>
+                <TableHead>Loại</TableHead>
+                <TableHead className="min-w-[150px]">Mô tả</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Transaction ID
+                  ID giao dịch
                 </TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="hidden md:table-cell">Ngày</TableHead>
+                <TableHead className="text-right">Số tiền</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -313,8 +308,8 @@ const WalletHistoryPage: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center">
                     <div className="flex items-center justify-center gap-2 text-slate-500">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Loading
-                      data...
+                      <Loader2 className="h-4 w-4 animate-spin" /> Đang tải dữ
+                      liệu...
                     </div>
                   </TableCell>
                 </TableRow>
@@ -324,7 +319,7 @@ const WalletHistoryPage: React.FC = () => {
                     colSpan={6}
                     className="h-24 text-center text-red-500 font-medium"
                   >
-                    Failed to load transactions. Please try again.
+                    Không tải được giao dịch. Vui lòng thử lại.
                   </TableCell>
                 </TableRow>
               ) : data?.data.length === 0 ? (
@@ -333,7 +328,7 @@ const WalletHistoryPage: React.FC = () => {
                     colSpan={6}
                     className="h-32 text-center text-slate-500"
                   >
-                    No transactions found matching your criteria.
+                    Không tìm thấy giao dịch nào phù hợp với tiêu chí của bạn.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -394,7 +389,7 @@ const WalletHistoryPage: React.FC = () => {
         {data?.meta && (
           <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/30">
             <div className="text-sm text-slate-500">
-              Page <span className="font-medium text-slate-900">{page}</span> of{" "}
+              Trang <span className="font-medium text-slate-900">{page}</span> của{" "}
               <span className="font-medium text-slate-900">
                 {data.meta.totalPages}
               </span>
@@ -407,7 +402,7 @@ const WalletHistoryPage: React.FC = () => {
                 disabled={page <= 1 || isLoading}
                 className="h-8"
               >
-                Previous
+                Trước
               </Button>
               <Button
                 variant="outline"
@@ -416,7 +411,7 @@ const WalletHistoryPage: React.FC = () => {
                 disabled={page >= data.meta.totalPages || isLoading}
                 className="h-8"
               >
-                Next
+                Tiếp theo
               </Button>
             </div>
           </div>
