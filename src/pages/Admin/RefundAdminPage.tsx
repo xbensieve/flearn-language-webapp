@@ -182,7 +182,7 @@ const RefundAdminPage: React.FC = () => {
 
   const getColumns = (type: 'class' | 'course') => [
     {
-      title: 'Student',
+      title: 'Học viên',
       dataIndex: 'studentName',
       render: (text: string, record: RefundItem) => (
         <div>
@@ -194,20 +194,20 @@ const RefundAdminPage: React.FC = () => {
       ),
     },
     {
-      title: type === 'class' ? 'Class' : 'Course',
+      title: type === 'class' ? 'Lớp' : 'Khóa học',
       dataIndex: 'displayTitle',
       ellipsis: true,
       render: (t: string) => <span className="text-xs text-gray-500">{t || 'N/A'}</span>,
     },
     {
-      title: 'Amount',
+      title: 'Số tiền',
       dataIndex: 'refundAmount',
       render: (val: number) => (
         <span className="font-semibold text-emerald-600">{val?.toLocaleString()} ₫</span>
       ),
     },
     {
-      title: 'Request Type',
+      title: 'Loại yêu cầu',
       dataIndex: 'requestTypeText',
       ellipsis: true,
       width: 200,
@@ -231,7 +231,7 @@ const RefundAdminPage: React.FC = () => {
       },
     },
     {
-      title: 'Status',
+      title: 'Trạng thái',
       dataIndex: 'status',
       width: 110,
       render: (s: number) => {
@@ -254,7 +254,7 @@ const RefundAdminPage: React.FC = () => {
       },
     },
     {
-      title: 'Date',
+      title: 'Ngày',
       dataIndex: 'requestedAt',
       width: 100,
       render: (d: string) => <span className="text-xs text-gray-400">{parseAndFormatDate(d)}</span>,
@@ -304,7 +304,7 @@ const RefundAdminPage: React.FC = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <StatCard
-            title="New Requests"
+            title="Yêu cầu mới"
             value={pendingCount}
             icon={<ClockCircleOutlined />}
             colorClass="text-blue-600"
@@ -313,7 +313,7 @@ const RefundAdminPage: React.FC = () => {
         </Col>
         <Col xs={24} sm={8}>
           <StatCard
-            title="Processing"
+            title="Xử lý"
             value={processingCount}
             icon={<SyncOutlined spin={processingCount > 0} />}
             colorClass="text-orange-500"
@@ -322,7 +322,7 @@ const RefundAdminPage: React.FC = () => {
         </Col>
         <Col xs={24} sm={8}>
           <StatCard
-            title="Completed"
+            title="Hoàn thành"
             value={completedCount}
             icon={<CheckCircleOutlined />}
             colorClass="text-green-600"
@@ -339,7 +339,8 @@ const RefundAdminPage: React.FC = () => {
           style={{ width: 160 }}
           placeholder="All Status"
           allowClear
-          onClear={() => setStatusFilter(null)}>
+          onClear={() => setStatusFilter(null)}
+        >
           <Option value={0}>Pending</Option>
           <Option value={2}>Approved</Option>
           <Option value={3}>Rejected</Option>
@@ -351,18 +352,19 @@ const RefundAdminPage: React.FC = () => {
         <Card
           bordered={false}
           className="rounded-2xl shadow-sm border border-gray-100"
-          styles={{ body: { padding: '16px' } }}>
+          styles={{ body: { padding: "16px" } }}
+        >
           <div className="flex justify-between items-center mb-4 px-2">
             <Title level={5} className="!mb-0 !font-semibold text-gray-700">
-              Course Refund Requests
+              Yêu cầu hoàn tiền khóa học
             </Title>
             <Tag color="purple">{courseRefunds.length} requests</Tag>
           </div>
           <Table
             dataSource={courseRefunds}
-            columns={getColumns('course')}
+            columns={getColumns("course")}
             rowKey="refundRequestID"
-            pagination={{ pageSize: 8, size: 'small' }}
+            pagination={{ pageSize: 8, size: "small" }}
             size="small"
           />
         </Card>
@@ -372,29 +374,31 @@ const RefundAdminPage: React.FC = () => {
       <Card
         bordered={false}
         className="rounded-2xl shadow-sm border border-gray-100"
-        styles={{ body: { padding: '16px' } }}>
+        styles={{ body: { padding: "16px" } }}
+      >
         <div className="flex justify-between items-center mb-4 px-2">
           <Title level={5} className="!mb-0 !font-semibold text-gray-700">
-            Class Refund Requests
+            Yêu cầu hoàn tiền lớp học
           </Title>
           <Tag color="blue">{classRefunds.length} requests</Tag>
         </div>
         <Table
           dataSource={classRefunds}
-          columns={getColumns('class')}
+          columns={getColumns("class")}
           rowKey="refundRequestID"
-          pagination={{ pageSize: 8, size: 'small' }}
+          pagination={{ pageSize: 8, size: "small" }}
           size="small"
         />
       </Card>
 
       <Modal
-        title={canProcess ? 'Process Refund' : 'Refund Details'}
+        title={canProcess ? "Xử lý hoàn tiền" : "Chi tiết hoàn tiền"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
         width={520}
-        centered>
+        centered
+      >
         <Form
           form={form}
           layout="vertical"
@@ -407,39 +411,58 @@ const RefundAdminPage: React.FC = () => {
               ProofImage: v.ProofImage,
             };
             processRefundMutation.mutate(payload);
-          }}>
+          }}
+        >
           {selectedRefund && (
             <div className="mb-5 p-4 bg-gray-50 rounded-xl text-xs text-gray-600 space-y-2 border border-gray-100">
               <div className="flex justify-between">
-                <span>Student:</span>
+                <span>Học viên:</span>
                 <div className="text-right">
-                  <strong className="text-gray-800 block">{selectedRefund.studentName}</strong>
-                  <span className="text-gray-400">{selectedRefund.studentEmail}</span>
+                  <strong className="text-gray-800 block">
+                    {selectedRefund.studentName}
+                  </strong>
+                  <span className="text-gray-400">
+                    {selectedRefund.studentEmail}
+                  </span>
                 </div>
               </div>
               <div className="flex justify-between">
-                <span>Category:</span>
-                <Tag color={selectedRefund.refundCategory === 'Class' ? 'blue' : 'purple'}>
+                <span>Loại:</span>
+                <Tag
+                  color={
+                    selectedRefund.refundCategory === "Class"
+                      ? "blue"
+                      : "purple"
+                  }
+                >
                   {selectedRefund.refundCategory}
                 </Tag>
               </div>
               <div className="flex justify-between items-center">
-                <span>Request Type:</span>
-                <div 
+                <span>Loại yêu cầu:</span>
+                <div
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
-                  style={{ 
-                    backgroundColor: requestTypeMap[selectedRefund.requestType]?.bgColor || '#f3f4f6',
-                    color: requestTypeMap[selectedRefund.requestType]?.color || '#6b7280',
-                    border: `1px solid ${requestTypeMap[selectedRefund.requestType]?.color}20`
+                  style={{
+                    backgroundColor:
+                      requestTypeMap[selectedRefund.requestType]?.bgColor ||
+                      "#f3f4f6",
+                    color:
+                      requestTypeMap[selectedRefund.requestType]?.color ||
+                      "#6b7280",
+                    border: `1px solid ${
+                      requestTypeMap[selectedRefund.requestType]?.color
+                    }20`,
                   }}
                 >
-                  <span>{requestTypeMap[selectedRefund.requestType]?.label}</span>
+                  <span>
+                    {requestTypeMap[selectedRefund.requestType]?.label}
+                  </span>
                 </div>
               </div>
               <div className="flex justify-between">
                 <span>{selectedRefund.refundCategory}:</span>
                 <strong className="text-gray-800">
-                  {selectedRefund.displayTitle || 'N/A'}
+                  {selectedRefund.displayTitle || "N/A"}
                 </strong>
               </div>
               <div className="flex justify-between">
@@ -448,27 +471,33 @@ const RefundAdminPage: React.FC = () => {
                   {selectedRefund.refundAmount?.toLocaleString()} ₫
                 </strong>
               </div>
-              
+
               {/* Bank Info Section */}
               {hasBankInfo ? (
                 <>
                   <div className="flex justify-between">
-                    <span>Bank:</span>
-                    <strong className="text-gray-800">{selectedRefund.bankName}</strong>
+                    <span>Ngân hàng:</span>
+                    <strong className="text-gray-800">
+                      {selectedRefund.bankName}
+                    </strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Account Number:</span>
-                    <strong className="text-gray-800">{selectedRefund.bankAccountNumber}</strong>
+                    <span>Số tài khoản:</span>
+                    <strong className="text-gray-800">
+                      {selectedRefund.bankAccountNumber}
+                    </strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Account Holder:</span>
-                    <strong className="text-gray-800">{selectedRefund.bankAccountHolderName}</strong>
+                    <span>Chủ tài khoản:</span>
+                    <strong className="text-gray-800">
+                      {selectedRefund.bankAccountHolderName}
+                    </strong>
                   </div>
                 </>
               ) : null}
 
               <div className="pt-2 border-t border-gray-200">
-                <span className="block mb-1">Reason:</span>
+                <span className="block mb-1">Lý do:</span>
                 <p className="text-gray-800 italic">{selectedRefund.reason}</p>
               </div>
 
@@ -481,7 +510,7 @@ const RefundAdminPage: React.FC = () => {
                     <Image
                       src={selectedRefund.proofImageUrl}
                       height={150}
-                      style={{ objectFit: 'contain' }}
+                      style={{ objectFit: "contain" }}
                     />
                   </div>
                 </div>
@@ -499,24 +528,28 @@ const RefundAdminPage: React.FC = () => {
                       <WarningOutlined className="text-3xl text-amber-500" />
                       <div>
                         <div className="text-amber-800 font-semibold text-base">
-                          Waiting for Bank Information
+                          Chờ thông tin ngân hàng
                         </div>
                         <div className="text-xs text-amber-600 mt-1">
-                          The student has not provided bank account details yet. Please wait for them to update their information before processing the refund.
+                          Học viên chưa cung cấp thông tin tài khoản ngân hàng.
+                          Vui lòng đợi sinh viên cập nhật thông tin trước khi xử
+                          lý việc hoàn tiền.
                         </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Request bank update section */}
                   <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex items-center gap-2 mb-3">
                       <EditOutlined className="text-blue-500" />
-                      <span className="font-medium text-gray-700 text-sm">Request Bank Info Update</span>
+                      <span className="font-medium text-gray-700 text-sm">
+                        Yêu cầu cập nhật thông tin ngân hàng
+                      </span>
                     </div>
                     <Form.Item name="bankUpdateNote" className="mb-3">
-                      <Input.TextArea 
-                        rows={2} 
+                      <Input.TextArea
+                        rows={2}
                         placeholder="Enter note to student (e.g., Please provide correct bank account number...)"
                         className="text-sm"
                       />
@@ -526,7 +559,9 @@ const RefundAdminPage: React.FC = () => {
                       icon={<SendOutlined />}
                       loading={requestBankUpdateMutation.isPending}
                       onClick={() => {
-                        const note = form.getFieldValue('bankUpdateNote') || 'Please update your bank account information.';
+                        const note =
+                          form.getFieldValue("bankUpdateNote") ||
+                          "Please update your bank account information.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -534,8 +569,9 @@ const RefundAdminPage: React.FC = () => {
                           });
                         }
                       }}
-                      className="w-full bg-blue-500 hover:bg-blue-600">
-                      Send Notification to Student
+                      className="w-full bg-blue-500 hover:bg-blue-600"
+                    >
+                      Gửi thông báo cho học viên
                     </Button>
                   </div>
                 </div>
@@ -546,9 +582,12 @@ const RefundAdminPage: React.FC = () => {
                     <div className="flex items-start gap-2">
                       <CheckCircleOutlined className="text-blue-500 mt-0.5" />
                       <div>
-                        <p className="text-blue-700 font-medium text-xs">Class Cancelled</p>
+                        <p className="text-blue-700 font-medium text-xs">
+                          Lớp học đã bị hủy
+                        </p>
                         <p className="text-blue-600 text-[11px] mt-1">
-                          This class has been cancelled. Please process the refund for the student.
+                          Lớp học này đã bị hủy. Vui lòng xử lý việc hoàn tiền
+                          cho học viên.
                         </p>
                       </div>
                     </div>
@@ -558,11 +597,13 @@ const RefundAdminPage: React.FC = () => {
                   <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <EditOutlined className="text-orange-500" />
-                      <span className="font-medium text-gray-700 text-xs">Bank info incorrect?</span>
+                      <span className="font-medium text-gray-700 text-xs">
+                        Thông tin ngân hàng không chính xác?
+                      </span>
                     </div>
                     <Form.Item name="bankUpdateNote" className="mb-2">
-                      <Input.TextArea 
-                        rows={1} 
+                      <Input.TextArea
+                        rows={1}
                         placeholder="Note to student about incorrect bank info..."
                         className="text-xs"
                       />
@@ -572,7 +613,9 @@ const RefundAdminPage: React.FC = () => {
                       icon={<SendOutlined />}
                       loading={requestBankUpdateMutation.isPending}
                       onClick={() => {
-                        const note = form.getFieldValue('bankUpdateNote') || 'Your bank account information appears to be incorrect. Please update it.';
+                        const note =
+                          form.getFieldValue("bankUpdateNote") ||
+                          "Your bank account information appears to be incorrect. Please update it.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -580,8 +623,9 @@ const RefundAdminPage: React.FC = () => {
                           });
                         }
                       }}
-                      className="w-full text-xs">
-                      Request Bank Info Update
+                      className="w-full text-xs"
+                    >
+                      Yêu cầu cập nhật thông tin ngân hàng
                     </Button>
                   </div>
 
@@ -594,7 +638,10 @@ const RefundAdminPage: React.FC = () => {
                     label="Proof Image (Required)"
                     valuePropName="file"
                     getValueFromEvent={(e) => e && e.file}
-                    rules={[{ required: true, message: 'Please upload proof image' }]}>
+                    rules={[
+                      { required: true, message: "Please upload proof image" },
+                    ]}
+                  >
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
                       <input
                         type="file"
@@ -609,7 +656,10 @@ const RefundAdminPage: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item name="AdminNote" label="Admin Note">
-                    <Input.TextArea rows={2} placeholder="Transaction ID or notes..." />
+                    <Input.TextArea
+                      rows={2}
+                      placeholder="Transaction ID or notes..."
+                    />
                   </Form.Item>
 
                   <Button
@@ -618,9 +668,10 @@ const RefundAdminPage: React.FC = () => {
                     block
                     loading={processRefundMutation.isPending}
                     size="large"
-                    className="bg-green-600 hover:bg-green-700 shadow-md h-10 font-medium">
+                    className="bg-green-600 hover:bg-green-700 shadow-md h-10 font-medium"
+                  >
                     <CheckCircleOutlined className="mr-1" />
-                    Approve & Complete Refund
+                    Phê duyệt & Hoàn tiền
                   </Button>
                 </>
               ) : (
@@ -630,9 +681,12 @@ const RefundAdminPage: React.FC = () => {
                     <div className="flex items-start gap-2">
                       <WarningOutlined className="text-orange-500 mt-0.5" />
                       <div>
-                        <p className="text-orange-700 font-medium text-xs">Refund Request</p>
+                        <p className="text-orange-700 font-medium text-xs">
+                          Yêu cầu hoàn tiền
+                        </p>
                         <p className="text-orange-600 text-[11px] mt-1">
-                          The student has requested a refund. Please review and process accordingly.
+                          Học viên đã yêu cầu hoàn tiền. Vui lòng xem xét và xử
+                          lý theo quy định.
                         </p>
                       </div>
                     </div>
@@ -642,11 +696,13 @@ const RefundAdminPage: React.FC = () => {
                   <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <EditOutlined className="text-orange-500" />
-                      <span className="font-medium text-gray-700 text-xs">Bank info incorrect?</span>
+                      <span className="font-medium text-gray-700 text-xs">
+                        Thông tin ngân hàng không chính xác?
+                      </span>
                     </div>
                     <Form.Item name="bankUpdateNote" className="mb-2">
-                      <Input.TextArea 
-                        rows={1} 
+                      <Input.TextArea
+                        rows={1}
                         placeholder="Note to student about incorrect bank info..."
                         className="text-xs"
                       />
@@ -656,7 +712,9 @@ const RefundAdminPage: React.FC = () => {
                       icon={<SendOutlined />}
                       loading={requestBankUpdateMutation.isPending}
                       onClick={() => {
-                        const note = form.getFieldValue('bankUpdateNote') || 'Your bank account information appears to be incorrect. Please update it.';
+                        const note =
+                          form.getFieldValue("bankUpdateNote") ||
+                          "Your bank account information appears to be incorrect. Please update it.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -664,33 +722,51 @@ const RefundAdminPage: React.FC = () => {
                           });
                         }
                       }}
-                      className="w-full text-xs">
-                      Request Bank Info Update
+                      className="w-full text-xs"
+                    >
+                      Yêu cầu cập nhật thông tin ngân hàng
                     </Button>
                   </div>
 
-                  <Form.Item name="Action" label="Action" className="mb-4" initialValue="Approve">
-                    <Radio.Group buttonStyle="solid" className="w-full flex text-center">
+                  <Form.Item
+                    name="Action"
+                    label="Action"
+                    className="mb-4"
+                    initialValue="Approve"
+                  >
+                    <Radio.Group
+                      buttonStyle="solid"
+                      className="w-full flex text-center"
+                    >
                       <Radio.Button value="Approve" className="flex-1">
-                        Approve
+                        Chấp thuận
                       </Radio.Button>
                       <Radio.Button value="Reject" className="flex-1">
-                        Reject
+                        Từ chối
                       </Radio.Button>
                     </Radio.Group>
                   </Form.Item>
 
                   <Form.Item
                     noStyle
-                    shouldUpdate={(prev, current) => prev.Action !== current.Action}>
+                    shouldUpdate={(prev, current) =>
+                      prev.Action !== current.Action
+                    }
+                  >
                     {({ getFieldValue }) =>
-                      getFieldValue('Action') === 'Approve' ? (
+                      getFieldValue("Action") === "Approve" ? (
                         <Form.Item
                           name="ProofImage"
                           label="Proof Image (Required)"
                           valuePropName="file"
                           getValueFromEvent={(e) => e && e.file}
-                          rules={[{ required: true, message: 'Please upload proof image' }]}>
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please upload proof image",
+                            },
+                          ]}
+                        >
                           <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
                             <input
                               type="file"
@@ -708,12 +784,18 @@ const RefundAdminPage: React.FC = () => {
                   </Form.Item>
 
                   <Form.Item name="AdminNote" label="Admin Note">
-                    <Input.TextArea rows={2} placeholder="Transaction ID or rejection reason..." />
+                    <Input.TextArea
+                      rows={2}
+                      placeholder="Transaction ID or rejection reason..."
+                    />
                   </Form.Item>
 
                   <Form.Item
                     noStyle
-                    shouldUpdate={(prev, current) => prev.Action !== current.Action}>
+                    shouldUpdate={(prev, current) =>
+                      prev.Action !== current.Action
+                    }
+                  >
                     {({ getFieldValue }) => (
                       <Button
                         type="primary"
@@ -721,21 +803,22 @@ const RefundAdminPage: React.FC = () => {
                         block
                         loading={processRefundMutation.isPending}
                         size="large"
-                        danger={getFieldValue('Action') === 'Reject'}
+                        danger={getFieldValue("Action") === "Reject"}
                         className={`shadow-md h-10 font-medium ${
-                          getFieldValue('Action') === 'Approve' 
-                            ? 'bg-green-600 hover:bg-green-700' 
-                            : ''
-                        }`}>
-                        {getFieldValue('Action') === 'Approve' ? (
+                          getFieldValue("Action") === "Approve"
+                            ? "bg-green-600 hover:bg-green-700"
+                            : ""
+                        }`}
+                      >
+                        {getFieldValue("Action") === "Approve" ? (
                           <>
                             <CheckCircleOutlined className="mr-1" />
-                            Approve & Complete Refund
+                            Phê duyệt & Hoàn tiền
                           </>
                         ) : (
                           <>
                             <CloseCircleOutlined className="mr-1" />
-                            Reject Request
+                            Từ chối yêu cầu
                           </>
                         )}
                       </Button>
@@ -754,11 +837,13 @@ const RefundAdminPage: React.FC = () => {
                 )}
                 <div>
                   <div className="text-gray-800 font-semibold text-base">
-                    Request {statusMap[selectedRefund?.status ?? 0].label}
+                    Yêu cầu {statusMap[selectedRefund?.status ?? 0].label}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     {selectedRefund?.processedByAdminName && (
-                      <span>Processed by: {selectedRefund.processedByAdminName}</span>
+                      <span>
+                        Được xử lý bởi: {selectedRefund.processedByAdminName}
+                      </span>
                     )}
                   </div>
                 </div>

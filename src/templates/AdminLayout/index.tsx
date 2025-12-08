@@ -6,7 +6,6 @@ import {
   Avatar,
   Button,
   Dropdown,
-  Spin,
   theme,
   Typography,
 } from "antd";
@@ -27,8 +26,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
 import { unregisterWebPush } from "../../services/webPush";
-import { notifyError, notifySuccess } from "@/utils/toastConfig";
 import { ArrowLeftRight } from "lucide-react";
+import { toast } from "sonner";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -47,16 +46,16 @@ const DashboardLayout: React.FC = () => {
     refetchInterval: 60000,
   });
 
-  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+  const { mutate: logout } = useMutation({
     mutationFn: (refreshToken: string) => logoutService(refreshToken),
     onSuccess: () => {
       localStorage.removeItem("FLEARN_ACCESS_TOKEN");
       localStorage.removeItem("FLEARN_REFRESH_TOKEN");
-      notifySuccess("Logout successful");
+      toast.success("Đăng xuất thành công!");
       navigate("/login");
     },
     onError: (error: any) => {
-      notifyError(error.message);
+      toast.error(error.message);
     },
   });
 
@@ -65,9 +64,9 @@ const DashboardLayout: React.FC = () => {
     try {
       await unregisterWebPush();
     } catch (e) {
-      console.error('Failed to unregister web push:', e);
+      console.error("Failed to unregister web push:", e);
     }
-    
+
     const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
     if (refreshToken) {
       logout(refreshToken);
@@ -81,7 +80,7 @@ const DashboardLayout: React.FC = () => {
     localStorage.removeItem("FLEARN_REFRESH_TOKEN");
     localStorage.removeItem("FLEARN_USER_ROLE");
     localStorage.removeItem("FLEARN_USER_ROLES");
-    notifySuccess("Logout successful");
+    toast.success("Đăng xuất thành công!");
     navigate("/login");
   };
 
@@ -89,51 +88,55 @@ const DashboardLayout: React.FC = () => {
     {
       key: "/admin/dashboard",
       icon: <DashboardOutlined />,
-      label: "Dashboard",
+      label: "Tổng quan",
     },
     {
       type: "group",
-      label: "MANAGEMENT",
+      label: "QUẢN LÝ",
       children: [
-        { key: "/admin/users", icon: <UserOutlined />, label: "Users" },
-        { key: "/admin/staff", icon: <UserOutlined />, label: "Staff" },
+        { key: "/admin/users", icon: <UserOutlined />, label: "Người dùng" },
+        { key: "/admin/staff", icon: <UserOutlined />, label: "Nhân viên" },
 
-        { key: "/admin/courses", icon: <BookOutlined />, label: "Courses" },
+        { key: "/admin/courses", icon: <BookOutlined />, label: "Khóa học" },
         {
           key: "/admin/course-templates",
           icon: <AppstoreOutlined />,
-          label: "Templates",
+          label: "Cấu trúc",
         },
         {
           key: "/admin/programs",
           icon: <MenuFoldOutlined />,
-          label: "Programs",
+          label: "Chương trình",
         },
         {
           key: "/admin/conversation-prompts",
           icon: <CommentOutlined />,
-          label: "Prompts",
+          label: "Hướng dẫn",
         },
       ],
     },
     {
       type: "group",
-      label: "FINANCE",
+      label: "TÀI CHÍNH",
       children: [
-        { key: "/admin/refund", icon: <WalletOutlined />, label: "Refunds" },
-        { key: "/admin/payouts", icon: <WalletOutlined />, label: "Payouts" },
+        { key: "/admin/refund", icon: <WalletOutlined />, label: "Hoàn tiền" },
+        { key: "/admin/payouts", icon: <WalletOutlined />, label: "Xuất chi" },
         {
           key: "/admin/wallet-transactions",
           icon: <ArrowLeftRight />,
-          label: "Wallet Transactions",
+          label: "Giao dịch ví",
         },
       ],
     },
     {
       type: "group",
-      label: "SYSTEM",
+      label: "HỆ THỐNG",
       children: [
-        { key: "/admin/settings", icon: <SettingOutlined />, label: "Settings" },
+        {
+          key: "/admin/settings",
+          icon: <SettingOutlined />,
+          label: "Cài đặt",
+        },
       ],
     },
   ];
@@ -142,20 +145,13 @@ const DashboardLayout: React.FC = () => {
     items: [
       {
         key: "logout",
-        label: "Logout",
+        label: "Đăng xuất",
         icon: <LogoutOutlined />,
         danger: true,
         onClick: handleLogoutClick,
       },
     ],
   };
-
-  if (isLoggingOut)
-    return (
-      <div className="flex h-screen justify-center items-center">
-        <Spin size="large" />
-      </div>
-    );
 
   return (
     <Layout style={{ minHeight: "100vh" }} hasSider>
@@ -181,7 +177,7 @@ const DashboardLayout: React.FC = () => {
           </div>
           {!collapsed && (
             <span className="ml-3 text-lg font-bold text-slate-700">
-              Flearn Admin
+              FLearn Admin
             </span>
           )}
         </div>
@@ -229,7 +225,7 @@ const DashboardLayout: React.FC = () => {
                       {wallet.totalBalance?.toLocaleString("vi-VN")}
                     </Text>
                     <Text className="text-[10px] text-gray-400 font-semibold">
-                      {wallet.currency}
+                      đ
                     </Text>
                   </div>
                   <Text className="text-[10px] text-gray-400 font-medium leading-tight">
@@ -257,7 +253,7 @@ const DashboardLayout: React.FC = () => {
                 <div className="hidden md:block text-right leading-tight">
                   <div className="font-bold text-slate-700 text-sm">Admin</div>
                   <div className="text-[10px] text-slate-400 font-medium">
-                    Administrator
+                    Quản trị viên
                   </div>
                 </div>
                 <Avatar

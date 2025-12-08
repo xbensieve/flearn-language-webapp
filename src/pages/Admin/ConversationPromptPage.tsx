@@ -42,34 +42,34 @@ const ConversationPromptPage: React.FC = () => {
 
   const columns: ColumnsType<IConversationPrompt> = [
     {
-      title: 'Prompt Name',
-      dataIndex: 'promptName',
-      key: 'promptName',
+      title: "Tên",
+      dataIndex: "promptName",
+      key: "promptName",
       render: (text) => <strong>{text}</strong>,
     },
     {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
       ellipsis: true,
     },
     {
-      title: 'Status',
-      key: 'status',
+      title: "Trạng thái",
+      key: "status",
       render: (_, record) => (
         <Space>
-          <Tag color={record.isActive ? 'green' : 'default'}>
-            {record.isActive ? 'Active' : 'Inactive'}
+          <Tag color={record.isActive ? "green" : "default"}>
+            {record.isActive ? "Hoạt động" : "Không hoạt động"}
           </Tag>
-          {record.isDefault && <Tag color='blue'>Default</Tag>}
+          {record.isDefault && <Tag color="blue">Mặc định</Tag>}
         </Space>
       ),
     },
     {
-      title: 'Usage Count',
-      dataIndex: 'usageCount',
-      key: 'usageCount',
-      align: 'center',
+      title: "Số lần sử dụng",
+      dataIndex: "usageCount",
+      key: "usageCount",
+      align: "center",
       render: (count: number) => (
         <Space>
           <BarChartOutlined />
@@ -78,38 +78,38 @@ const ConversationPromptPage: React.FC = () => {
       ),
     },
     {
-      title: 'Created At',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
+      title: "Tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (value: string) => new Date(value).toLocaleDateString(),
     },
     {
-      title: 'Updated At',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
+      title: "Cập nhật",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
       render: (value: string) => new Date(value).toLocaleDateString(),
     },
     {
-      title: 'Action',
-      key: 'action',
-      align: 'center',
+      title: "Action",
+      key: "action",
+      align: "center",
       render: (_, record: IConversationPrompt) => (
         <>
-          <Tooltip title='View Details'>
+          <Tooltip title="Xem chi tiết">
             <Button
-              type='link'
+              type="link"
               icon={<EyeOutlined />}
               onClick={() => {
                 setSelectedPrompt(record);
                 setDrawerVisible(true);
               }}
             >
-              View
+              Xem
             </Button>
           </Tooltip>
-          <Tooltip title='Edit Prompt'>
+          <Tooltip title="Chỉnh sửa">
             <Button
-              type='link'
+              type="link"
               icon={<EditOutlined />}
               onClick={() => {
                 editForm.setFieldsValue(record);
@@ -117,7 +117,7 @@ const ConversationPromptPage: React.FC = () => {
                 setEditVisible(true);
               }}
             >
-              Edit
+              Sửa
             </Button>
           </Tooltip>
         </>
@@ -135,7 +135,7 @@ const ConversationPromptPage: React.FC = () => {
   const { mutate: createConversation, isPending } = useMutation({
     mutationFn: (payload: CreateConversationPromptPayload) => createConversationPrompt(payload),
     onSuccess: () => {
-      notifySuccess('New conversation prompt created!');
+      notifySuccess('Đã tạo mới!');
       setCreateVisible(false);
       form.resetFields();
     },
@@ -149,7 +149,7 @@ const ConversationPromptPage: React.FC = () => {
     mutationFn: (payload: UpdateConversationPromptPayload) =>
       updateConversationPrompt({ id: selectedPrompt.globalPromptID, payload }),
     onSuccess: () => {
-      notifySuccess('Conversation prompt updated!');
+      notifySuccess('Cập nhật thành công!');
       setEditVisible(false);
       editForm.resetFields();
     },
@@ -174,19 +174,31 @@ const ConversationPromptPage: React.FC = () => {
 
   return (
     <div>
-
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 16 }}>
+      <Space
+        style={{
+          width: "100%",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
         <Title level={3} style={{ margin: 0 }}>
           Conversation Prompts
         </Title>
-        <Button type='primary' icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>
-          Create Prompt
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setCreateVisible(true)}
+        >
+          Tạo mới
         </Button>
       </Space>
 
-    
-      <Table columns={columns} dataSource={conversationPrompts} rowKey='id' pagination={false} />
-
+      <Table
+        columns={columns}
+        dataSource={conversationPrompts}
+        rowKey="id"
+        pagination={false}
+      />
 
       <Drawer
         width={720}
@@ -196,110 +208,120 @@ const ConversationPromptPage: React.FC = () => {
       >
         {selectedPrompt && (
           <>
-            <Descriptions bordered column={1} size='small'>
-              <Descriptions.Item label='Description'>
+            <Descriptions bordered column={1} size="small">
+              <Descriptions.Item label="Mô tả">
                 {selectedPrompt.description}
               </Descriptions.Item>
-              <Descriptions.Item label='Active'>
-                {selectedPrompt.isActive ? 'Yes' : 'No'}
+              <Descriptions.Item label="Hoạt động">
+                {selectedPrompt.isActive ? "Có" : "Không"}
               </Descriptions.Item>
-              <Descriptions.Item label='Default'>
-                {selectedPrompt.isDefault ? 'Yes' : 'No'}
+              <Descriptions.Item label="Mặc định">
+                {selectedPrompt.isDefault ? "Có" : "Không"}
               </Descriptions.Item>
             </Descriptions>
 
             <Divider />
 
-            <Title level={5}>Master Prompt Template</Title>
+            <Title level={5}>Mẫu lời nhắc chính</Title>
             <Paragraph>
-              <pre style={{ whiteSpace: 'pre-wrap' }}>{selectedPrompt.masterPromptTemplate}</pre>
+              <pre style={{ whiteSpace: "pre-wrap" }}>
+                {selectedPrompt.masterPromptTemplate}
+              </pre>
             </Paragraph>
 
-            <Title level={5}>Scenario Guidelines</Title>
+            <Title level={5}>Nguyên tắc kịch bản</Title>
             <Paragraph>
-              <pre style={{ whiteSpace: 'pre-wrap' }}>{selectedPrompt.scenarioGuidelines}</pre>
+              <pre style={{ whiteSpace: "pre-wrap" }}>
+                {selectedPrompt.scenarioGuidelines}
+              </pre>
             </Paragraph>
 
-            <Title level={5}>Roleplay Instructions</Title>
+            <Title level={5}>Hướng dẫn nhập vai</Title>
             <Paragraph>
-              <pre style={{ whiteSpace: 'pre-wrap' }}>{selectedPrompt.roleplayInstructions}</pre>
+              <pre style={{ whiteSpace: "pre-wrap" }}>
+                {selectedPrompt.roleplayInstructions}
+              </pre>
             </Paragraph>
 
-            <Title level={5}>Evaluation Criteria</Title>
+            <Title level={5}>Tiêu chí đánh giá</Title>
             <Paragraph>
-              <pre style={{ whiteSpace: 'pre-wrap' }}>{selectedPrompt.evaluationCriteria}</pre>
+              <pre style={{ whiteSpace: "pre-wrap" }}>
+                {selectedPrompt.evaluationCriteria}
+              </pre>
             </Paragraph>
           </>
         )}
       </Drawer>
 
-   
       <Drawer
         width={640}
-        title='Create New Conversation Prompt'
+        title="Tạo mới"
         open={createVisible}
         onClose={() => setCreateVisible(false)}
         destroyOnClose
       >
-        <Form layout='vertical' form={form} onFinish={handleCreate}>
+        <Form layout="vertical" form={form} onFinish={handleCreate}>
           <Form.Item
-            label='Prompt Name'
-            name='promptName'
-            rules={[{ required: true, message: 'Please enter a prompt name' }]}
+            label="Tên"
+            name="promptName"
+            rules={[{ required: true, message: "Please enter a prompt name" }]}
           >
-            <Input placeholder='Enter prompt name' />
+            <Input placeholder="Nhập tên" />
           </Form.Item>
 
-          <Form.Item label='Description' name='description'>
-            <TextArea rows={2} placeholder='Enter short description' />
+          <Form.Item label="Mô tả" name="description">
+            <TextArea rows={2} placeholder="Nhập mô tả ngắn" />
           </Form.Item>
 
-          <Form.Item label='Master Prompt Template' name='masterPromptTemplate'>
-            <TextArea rows={4} placeholder='Enter master prompt template' />
+          <Form.Item label="Mẫu lời nhắc chính" name="masterPromptTemplate">
+            <TextArea rows={4} placeholder="Nhập mẫu lời nhắc chính" />
           </Form.Item>
 
-          <Form.Item label='Scenario Guidelines' name='scenarioGuidelines'>
-            <TextArea rows={4} placeholder='Enter scenario guidelines' />
+          <Form.Item label="Nguyên tắc kịch bản" name="scenarioGuidelines">
+            <TextArea rows={4} placeholder="Nhập nguyên tắc kịch bản" />
           </Form.Item>
 
           <Form.Item
-            label='Roleplay Instructions'
-            name='roleplayInstructions'
+            label="Hướng dẫn nhập vai"
+            name="roleplayInstructions"
             rules={[
-              { required: true, message: 'Please enter roleplay instructions' },
-              { max: 1000, message: 'Roleplay instructions cannot exceed 1000 characters' },
+              { required: true, message: "Vui lòng nhập hướng dẫn nhập vai" },
+              {
+                max: 1000,
+                message: "Hướng dẫn nhập vai không được vượt quá 1000 ký tự",
+              },
             ]}
           >
-            <TextArea rows={4} placeholder='Enter roleplay instructions' />
+            <TextArea rows={4} placeholder="Nhập hướng dẫn nhập vai" />
           </Form.Item>
 
-          <Form.Item label='Evaluation Criteria' name='evaluationCriteria'>
-            <TextArea rows={3} placeholder='Enter evaluation criteria' />
+          <Form.Item label="Tiêu chí đánh giá" name="evaluationCriteria">
+            <TextArea rows={3} placeholder="Nhập tiêu chí đánh giá" />
           </Form.Item>
 
           {/* Switches */}
           <Form.Item
-            label='Active Status'
-            name='isActive'
-            valuePropName='checked'
+            label="Trạng thái hoạt động"
+            name="isActive"
+            valuePropName="checked"
             initialValue={false}
           >
-            <Switch checkedChildren='Active' unCheckedChildren='Inactive' />
+            <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
           </Form.Item>
 
           <Form.Item
-            label='Default Prompt'
-            name='isDefault'
-            valuePropName='checked'
+            label="Lời nhắc mặc định"
+            name="isDefault"
+            valuePropName="checked"
             initialValue={false}
           >
-            <Switch checkedChildren='Default' unCheckedChildren='Not Default' />
+            <Switch checkedChildren="Default" unCheckedChildren="Not Default" />
           </Form.Item>
 
           <Space style={{ marginTop: 16 }}>
             <Button onClick={() => setCreateVisible(false)}>Cancel</Button>
-            <Button type='primary' htmlType='submit' loading={isPending}>
-              Save
+            <Button type="primary" htmlType="submit" loading={isPending}>
+              Lưu
             </Button>
           </Space>
         </Form>
@@ -313,43 +335,54 @@ const ConversationPromptPage: React.FC = () => {
         onClose={() => setEditVisible(false)}
         destroyOnClose
       >
-        <Form layout='vertical' form={editForm} onFinish={handleEdit}>
-          <Form.Item label='Prompt Name' name='promptName' rules={[{ required: true }]}>
+        <Form layout="vertical" form={editForm} onFinish={handleEdit}>
+          <Form.Item label="Tên" name="promptName" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item label='Description' name='description'>
+          <Form.Item label="Mô tả" name="description">
             <TextArea rows={2} />
           </Form.Item>
-          <Form.Item label='Master Prompt Template' name='masterPromptTemplate'>
+          <Form.Item label="Mẫu lời nhắc chính" name="masterPromptTemplate">
             <TextArea rows={4} />
           </Form.Item>
-          <Form.Item label='Scenario Guidelines' name='scenarioGuidelines'>
+          <Form.Item label="Nguyên tắc kịch bản" name="scenarioGuidelines">
             <TextArea rows={4} />
           </Form.Item>
           <Form.Item
-            label='Roleplay Instructions'
-            name='roleplayInstructions'
+            label="Hướng dẫn nhập vai"
+            name="roleplayInstructions"
             rules={[
-              { required: true, message: 'Please enter roleplay instructions' },
-              { max: 1000, message: 'Roleplay instructions cannot exceed 1000 characters' },
+              { required: true, message: "Vui lòng nhập hướng dẫn nhập vai" },
+              {
+                max: 1000,
+                message: "Hướng dẫn nhập vai không được vượt quá 1000 ký tự",
+              },
             ]}
           >
             <TextArea rows={4} />
           </Form.Item>
-          <Form.Item label='Evaluation Criteria' name='evaluationCriteria'>
+          <Form.Item label="Tiêu chí đánh giá" name="evaluationCriteria">
             <TextArea rows={3} />
           </Form.Item>
-          <Form.Item label='Active Status' name='isActive' valuePropName='checked'>
-            <Switch checkedChildren='Active' unCheckedChildren='Inactive' />
+          <Form.Item
+            label="Trạng thái hoạt động"
+            name="isActive"
+            valuePropName="checked"
+          >
+            <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
           </Form.Item>
-          <Form.Item label='Default Prompt' name='isDefault' valuePropName='checked'>
-            <Switch checkedChildren='Default' unCheckedChildren='Not Default' />
+          <Form.Item
+            label="Lời nhắc mặc định"
+            name="isDefault"
+            valuePropName="checked"
+          >
+            <Switch checkedChildren="Default" unCheckedChildren="Not Default" />
           </Form.Item>
 
           <Space style={{ marginTop: 16 }}>
-            <Button onClick={() => setEditVisible(false)}>Cancel</Button>
-            <Button type='primary' htmlType='submit' loading={updating}>
-              Update
+            <Button onClick={() => setEditVisible(false)}>Thoát</Button>
+            <Button type="primary" htmlType="submit" loading={updating}>
+              Cập nhật
             </Button>
           </Space>
         </Form>

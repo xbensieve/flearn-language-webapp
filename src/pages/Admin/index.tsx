@@ -151,125 +151,106 @@ const Admin: React.FC = () => {
     <div className="space-y-4">
       <div className="mb-2 flex justify-between items-center">
         <div>
-          <Title
-            level={4}
-            className="!mb-0 !font-bold text-slate-800">
-            Dashboard Overview
+          <Title level={4} className="!mb-0 !font-bold text-slate-800">
+            Tổng quan
           </Title>
           <Text className="text-slate-500 text-xs">
-            Welcome back, here is what's happening with your platform today.
+            Chào mừng bạn trở lại, sau đây là những thông tin mới nhất về nền
+            tảng của bạn ngày hôm nay.
           </Text>
         </div>
       </div>
 
       <Row gutter={[16, 16]}>
-        <Col
-          xs={24}
-          sm={12}
-          lg={4}>
+        <Col xs={24} sm={12} lg={4}>
           <StatCard
-            title="Total Employees"
+            title="Tổng số nhân viên"
             value={totalStaff}
             icon={<TeamOutlined />}
             color="#0284c7"
             bgColor="#e0f2fe"
-            subtext="Managers"
-            onClick={() => handleNavigate('/admin/staff')}
+            subtext="Người quản lý"
+            onClick={() => handleNavigate("/admin/staff")}
           />
         </Col>
 
-        <Col
-          xs={24}
-          sm={12}
-          lg={5}>
+        <Col xs={24} sm={12} lg={5}>
           <StatCard
-            title="Total Users"
+            title="Tổng số người dùng"
             value={totalUsers}
             icon={<UserOutlined />}
             color="#2563eb"
             bgColor="#dbeafe"
-            subtext={<span className="text-green-600">● {activeUsers} Active now</span>}
-            onClick={() => handleNavigate('/admin/users')}
+            subtext={
+              <span className="text-green-600">
+                ● {activeUsers} Đang hoạt động
+              </span>
+            }
+            onClick={() => handleNavigate("/admin/users")}
           />
         </Col>
 
-        <Col
-          xs={24}
-          sm={12}
-          lg={5}>
+        <Col xs={24} sm={12} lg={5}>
           <StatCard
-            title="Total Teachers"
+            title="Tổng số giáo viên"
             value={totalTeachers}
             icon={<SolutionOutlined />}
             color="#7c3aed"
             bgColor="#f3e8ff"
-            subtext="Verified Teachers"
-            onClick={() => handleNavigate('/admin/users?role=Teacher')}
+            subtext="Giáo viên đã được xác minh"
+            onClick={() => handleNavigate("/admin/users?role=Teacher")}
           />
         </Col>
 
-        <Col
-          xs={24}
-          sm={12}
-          lg={5}>
+        <Col xs={24} sm={12} lg={5}>
           <StatCard
-            title="Total Courses"
+            title="Tổng số khóa học"
             value={totalCourses}
             icon={<BookOutlined />}
             color="#0891b2"
             bgColor="#cffafe"
-            subtext="Active Programs"
-            onClick={() => handleNavigate('/admin/courses')}
+            subtext="Chương trình đang hoạt động"
+            onClick={() => handleNavigate("/admin/courses")}
           />
         </Col>
 
-        <Col
-          xs={24}
-          sm={12}
-          lg={5}>
+        <Col xs={24} sm={12} lg={5}>
           <StatCard
-            title="Refund Requests"
+            title="Yêu cầu hoàn tiền"
             value={pendingRequest}
             icon={<ClockCircleOutlined />}
             color="#ef4444"
             bgColor="#fee2e2"
-            subtext="Pending Processing"
-            onClick={() => handleNavigate('/admin/refund')}
+            subtext="Đang chờ xử lý"
+            onClick={() => handleNavigate("/admin/refund")}
           />
         </Col>
       </Row>
 
       <Row gutter={[16, 16]}>
-        <Col
-          xs={24}
-          lg={16}>
+        <Col xs={24} lg={16}>
           <Card
             bordered={false}
             className="rounded-2xl shadow-sm h-full border border-gray-100"
-            bodyStyle={{ padding: '20px' }}
+            bodyStyle={{ padding: "20px" }}
             title={
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-slate-700">
-                    User Registration Trends
+                    Xu hướng đăng ký người dùng
                   </span>
                   <AntTooltip title="Number of new users registered in the last 30 days">
                     <InfoCircleOutlined className="text-slate-400 cursor-help" />
                   </AntTooltip>
                 </div>
-                <Button
-                  type="text"
-                  icon={<MoreOutlined />}
-                  size="small"
-                />
+                <Button type="text" icon={<MoreOutlined />} size="small" />
               </div>
-            }>
-            <div style={{ height: 300, width: '100%' }}>
+            }
+          >
+            <div style={{ height: 300, width: "100%" }}>
               {chartData.length > 0 ? (
                 <ResponsiveContainer>
-                  <BarChart
-                    data={chartData}
-                    barSize={20}>
+                  <BarChart data={chartData} barSize={20}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
@@ -279,28 +260,28 @@ const Admin: React.FC = () => {
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: '#64748b', fontSize: 11 }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
                       dy={10}
                       minTickGap={15}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: '#64748b', fontSize: 11 }}
+                      tick={{ fill: "#64748b", fontSize: 11 }}
                       allowDecimals={false}
                     />
                     <Tooltip
-                      cursor={{ fill: '#f0f9ff' }}
+                      cursor={{ fill: "#f0f9ff" }}
                       contentStyle={{
-                        borderRadius: '8px',
-                        border: 'none',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                        fontSize: '12px',
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                        fontSize: "12px",
                       }}
                     />
                     <Legend
                       iconType="circle"
-                      wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                      wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }}
                     />
                     <Bar
                       name="New Signups"
@@ -320,16 +301,17 @@ const Admin: React.FC = () => {
           </Card>
         </Col>
 
-        <Col
-          xs={24}
-          lg={8}>
+        <Col xs={24} lg={8}>
           <Card
             bordered={false}
             className="rounded-2xl shadow-sm h-full border border-gray-100"
             bodyStyle={{ padding: 0 }}
             title={
-              <div className="px-5 pt-4 pb-2 text-sm font-semibold text-slate-700">New Members</div>
-            }>
+              <div className="px-5 pt-4 pb-2 text-sm font-semibold text-slate-700">
+                Thành viên mới
+              </div>
+            }
+          >
             <Table<RecentUser>
               rowKey="userID"
               columns={columns}
@@ -353,8 +335,9 @@ const Admin: React.FC = () => {
                 type="link"
                 size="small"
                 className="text-blue-600 font-medium text-xs"
-                onClick={() => handleNavigate('/admin/users')}>
-                View All Users
+                onClick={() => handleNavigate("/admin/users")}
+              >
+                Xem tất cả người dùng
               </Button>
             </div>
           </Card>

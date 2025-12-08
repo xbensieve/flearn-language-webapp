@@ -61,12 +61,12 @@ const ProgramPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'Program',
+      title: 'Chương trình',
       dataIndex: 'name',
       render: (text: string) => <span className="font-medium text-gray-700 text-sm">{text}</span>,
     },
     {
-      title: 'Status',
+      title: 'Trạng thái',
       dataIndex: 'status',
       width: 100,
       render: (val: boolean, r: any) => (
@@ -100,7 +100,7 @@ const ProgramPage: React.FC = () => {
             }}
           />
           <Popconfirm
-            title="Delete?"
+            title="Xóa?"
             onConfirm={() => deleteMutation.mutate(r.programId)}>
             <Button
               type="text"
@@ -119,19 +119,20 @@ const ProgramPage: React.FC = () => {
       <Card
         bordered={false}
         className="rounded-2xl shadow-sm border-0"
-        bodyStyle={{ padding: '20px' }}>
+        bodyStyle={{ padding: "20px" }}
+      >
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 text-xl">
               <AppstoreOutlined />
             </div>
             <div>
-              <Title
-                level={5}
-                className="!mb-0 text-gray-800">
-                Programs
+              <Title level={5} className="!mb-0 text-gray-800">
+                Chương trình
               </Title>
-              <span className="text-xs text-gray-500">Curriculum Management</span>
+              <span className="text-xs text-gray-500">
+                Quản lý chương trình giảng dạy
+              </span>
             </div>
           </div>
           <div className="flex gap-2">
@@ -140,7 +141,10 @@ const ProgramPage: React.FC = () => {
               onChange={setLanguageId}
               size="middle"
               style={{ width: 140 }}
-              options={languages?.data?.map((l: any) => ({ label: l.langName, value: l.id }))}
+              options={languages?.data?.map((l: any) => ({
+                label: l.langName,
+                value: l.id,
+              }))}
             />
             <Button
               type="primary"
@@ -149,8 +153,9 @@ const ProgramPage: React.FC = () => {
                 setEditingProgram(null);
                 setDrawerOpen(true);
               }}
-              className="bg-blue-600 hover:bg-blue-700">
-              New
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Mới
             </Button>
           </div>
         </div>
@@ -159,28 +164,35 @@ const ProgramPage: React.FC = () => {
       <Card
         bordered={false}
         className="rounded-2xl shadow-sm"
-        bodyStyle={{ padding: 0 }}>
+        bodyStyle={{ padding: 0 }}
+      >
         <Table
           rowKey="programId"
           columns={columns}
           dataSource={programs || []}
-          pagination={{ pageSize: 10, size: 'small' }}
+          pagination={{ pageSize: 10, size: "small" }}
           size="small"
           className="custom-table"
         />
       </Card>
 
       <Drawer
-        title={editingProgram ? 'Edit Program' : 'New Program'}
+        title={editingProgram ? "Chỉnh sửa chương trình" : "Tạo mới chương trình"}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={450}>
+        width={450}
+      >
         <ProgramForm
           initialValues={editingProgram}
-          languages={languages?.data.map((l) => ({ id: l.id, name: l.langName })) || []}
+          languages={
+            languages?.data.map((l) => ({ id: l.id, name: l.langName })) || []
+          }
           onSubmit={(v) =>
             editingProgram
-              ? updateMutation.mutate({ id: editingProgram.programId, payload: v })
+              ? updateMutation.mutate({
+                  id: editingProgram.programId,
+                  payload: v,
+                })
               : createMutation.mutate(v)
           }
           onCancel={() => setDrawerOpen(false)}
