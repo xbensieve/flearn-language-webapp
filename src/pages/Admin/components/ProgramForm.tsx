@@ -44,34 +44,35 @@ const ProgramForm: React.FC<ProgramFormProps> = ({
     <Form
       layout="vertical"
       form={form}
-      initialValues={initialValues || { status: true }}>
+      initialValues={initialValues || { status: true }}
+    >
       <Form.Item
         name="languageId"
-        label="Language"
-        rules={[{ required: true }]}>
-        <Select options={languages.map((l) => ({ label: l.name, value: l.id }))} />
+        label="Ngôn ngữ"
+        rules={[{ required: true }]}
+      >
+        <Select
+          options={languages.map((l) => ({ label: l.name, value: l.id }))}
+        />
       </Form.Item>
 
       <Form.Item
         name="name"
-        label="Name"
-        rules={[{ required: true, message: 'Please enter program name' }]}>
+        label="Tên"
+        rules={[{ required: true, message: "Vui lòng nhập tên chương trình" }]}
+      >
         <Input />
       </Form.Item>
 
-      <Form.Item
-        name="description"
-        label="Description">
+      <Form.Item name="description" label="Mô tả">
         <Input.TextArea rows={4} />
       </Form.Item>
 
       <Form.Item>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button
-            type="primary"
-            onClick={submit}>
-            {initialValues ? 'Update' : 'Create'}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <Button onClick={onCancel}>Thoát</Button>
+          <Button type="primary" onClick={submit}>
+            {initialValues ? "Cập nhật" : "Tạo"}
           </Button>
         </div>
       </Form.Item>

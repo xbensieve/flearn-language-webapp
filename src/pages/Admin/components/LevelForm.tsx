@@ -23,51 +23,43 @@ const LevelForm: React.FC<LevelFormProps> = ({ initialValues, onSubmit, onCancel
       form={form}
       layout="vertical"
       initialValues={initialValues}
-      onFinish={handleFinish}>
+      onFinish={handleFinish}
+    >
       <Form.Item
-        label="Name"
+        label="Tên"
         name="name"
-        rules={[{ required: true, message: 'Name is required' }]}>
+        rules={[{ required: true, message: "Tên là bắt buộc" }]}
+      >
         <Input placeholder="Enter level name (e.g., A1, B2, C1)" />
       </Form.Item>
 
       <Form.Item
-        label="Description"
+        label="Mô tả"
         name="description"
-        rules={[{ required: true, message: 'Description is required' }]}>
-        <Input.TextArea
-          rows={3}
-          placeholder="Enter level description"
-        />
+        rules={[{ required: true, message: "Mô tả là bắt buộc" }]}
+      >
+        <Input.TextArea rows={3} placeholder="Nhập mô tả trình độ" />
       </Form.Item>
 
       <Form.Item
-        label="Order Index"
+        label="Thứ tự"
         name="orderIndex"
-        rules={[{ required: true, message: 'Order index is required' }]}>
-        <InputNumber
-          min={1}
-          style={{ width: '100%' }}
-          max={100}
-        />
+        rules={[{ required: true, message: "Thứ tự là bắt buộc" }]}
+      >
+        <InputNumber min={1} style={{ width: "100%" }} max={100} />
       </Form.Item>
 
       {isEdit && (
-        <Form.Item
-          label="Status"
-          name="status"
-          valuePropName="checked">
+        <Form.Item label="Trạng thái" name="status" valuePropName="checked">
           <Switch />
         </Form.Item>
       )}
 
       <Form.Item>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <Button onClick={onCancel}>Cancel</Button>
-          <Button
-            type="primary"
-            htmlType="submit">
-            {isEdit ? 'Update' : 'Create'}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <Button onClick={onCancel}>Thoát</Button>
+          <Button type="primary" htmlType="submit">
+            {isEdit ? "Cập nhật" : "Tạo mới"}
           </Button>
         </div>
       </Form.Item>

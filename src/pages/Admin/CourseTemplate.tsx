@@ -23,7 +23,7 @@ import type { CourseTemplate, PayloadCourseTemplate } from '../../services/cours
 import { getLanguagesService } from '../../services/language';
 import { getProgramsService } from '../../services/program';
 import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { Edit, Eye, Trash2 } from 'lucide-react';
+import { Edit, Eye, PlusCircle, Trash2 } from 'lucide-react';
 
 const { Title } = Typography;
 const { Option } = Select; // ← This was missing!
@@ -65,7 +65,7 @@ const CourseTemplatesPage: React.FC = () => {
   const createMutation = useMutation({
     mutationFn: createCourseTemplateService,
     onSuccess: () => {
-      notifySuccess('Course Template created successfully!');
+      notifySuccess("Mẫu khóa học được tạo thành công!");
       form.resetFields();
       setSelectedLanguageId(undefined);
       setOpenCreateDrawer(false);
@@ -80,7 +80,7 @@ const CourseTemplatesPage: React.FC = () => {
     mutationFn: ({ templateId, data }: { templateId: string; data: PayloadCourseTemplate }) =>
       updateCourseTemplateService({ templateId, data }),
     onSuccess: () => {
-      notifySuccess('Template updated successfully!');
+      notifySuccess("Đã cập nhật mẫu thành công!");
       setOpenUpdateDrawer(false);
       refetch();
     },
@@ -92,7 +92,7 @@ const CourseTemplatesPage: React.FC = () => {
   const deleteMutation = useMutation({
     mutationFn: deleteCourseTemplateService,
     onSuccess: () => {
-      notifySuccess('Deleted successfully!');
+      notifySuccess("Đã xóa thành công!");
       refetch();
     },
   });
@@ -123,34 +123,43 @@ const CourseTemplatesPage: React.FC = () => {
 
   const columns: ColumnsType<CourseTemplate> = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Tên",
+      dataIndex: "name",
+      key: "name",
       render: (text) => <span className="font-medium">{text}</span>,
     },
     {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
       ellipsis: true,
     },
-    { title: 'Program', dataIndex: 'program', key: 'program' },
-    { title: 'Level', dataIndex: 'level', key: 'level' },
-    { title: 'Units', dataIndex: 'unitCount', key: 'unitCount' },
-    { title: 'Lessons/Unit', dataIndex: 'lessonsPerUnit', key: 'lessonsPerUnit' },
-    { title: 'Exercises/Lesson', dataIndex: 'exercisesPerLesson', key: 'exercisesPerLesson' },
+    { title: "Chương trình", dataIndex: "program", key: "program" },
+    { title: "Trình độ", dataIndex: "level", key: "level" },
+    { title: "Số chương", dataIndex: "unitCount", key: "unitCount" },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Số bài học trên chương",
+      dataIndex: "lessonsPerUnit",
+      key: "lessonsPerUnit",
+    },
+    {
+      title: "Số bài tập trên bài học",
+      dataIndex: "exercisesPerLesson",
+      key: "exercisesPerLesson",
+    },
+    {
+      title: "Hành động",
+      key: "actions",
       width: 120,
-      align: 'center' as const,
+      align: "center" as const,
       render: (_, record) => (
         <div className="flex items-center justify-center gap-3">
           {/* View */}
           <button
             onClick={() => handleViewDetail(record)}
             className="text-gray-600 hover:text-blue-600 transition-colors"
-            title="View details">
+            title="Xem chi tiết"
+          >
             <Eye className="w-4 h-4" />
           </button>
 
@@ -158,7 +167,8 @@ const CourseTemplatesPage: React.FC = () => {
           <button
             onClick={() => handleEdit(record)}
             className="text-gray-600 hover:text-blue-600 transition-colors"
-            title="Edit">
+            title="Chỉnh sửa"
+          >
             <Edit className="w-4 h-4" />
           </button>
 
@@ -166,7 +176,8 @@ const CourseTemplatesPage: React.FC = () => {
           <button
             onClick={() => handleDelete(record.templateId)}
             className="text-gray-600 hover:text-red-600 transition-colors"
-            title="Delete">
+            title="Xóa"
+          >
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -177,16 +188,15 @@ const CourseTemplatesPage: React.FC = () => {
   return (
     <>
       <div className="flex justify-between items-center mb-6">
-        <Title
-          level={3}
-          className="!mb-0">
-          Course Templates
+        <Title level={3} className="!mb-0">
+          Mẫu khóa học
         </Title>
         <Button
           type="primary"
-          size="large"
-          onClick={() => setOpenCreateDrawer(true)}>
-          + Create Template
+          size="middle"
+          onClick={() => setOpenCreateDrawer(true)}
+        >
+          <PlusCircle width={20} height={20} /> Tạo mẫu
         </Button>
       </div>
 
@@ -208,25 +218,32 @@ const CourseTemplatesPage: React.FC = () => {
 
       {/* Detail Drawer */}
       <Drawer
-        title={selectedTemplate?.name || 'Template Detail'}
+        title={selectedTemplate?.name || "Template Detail"}
         width={500}
         open={openDetailDrawer}
-        onClose={() => setOpenDetailDrawer(false)}>
+        onClose={() => setOpenDetailDrawer(false)}
+      >
         {selectedTemplate && (
-          <Descriptions
-            column={1}
-            bordered>
-            <Descriptions.Item label="Name">{selectedTemplate.name}</Descriptions.Item>
-            <Descriptions.Item label="Description">
-              {selectedTemplate.description || '-'}
+          <Descriptions column={1} bordered>
+            <Descriptions.Item label="Tên">
+              {selectedTemplate.name}
             </Descriptions.Item>
-            <Descriptions.Item label="Program">{selectedTemplate.program}</Descriptions.Item>
-            <Descriptions.Item label="Level">{selectedTemplate.level}</Descriptions.Item>
-            <Descriptions.Item label="Units">{selectedTemplate.unitCount}</Descriptions.Item>
-            <Descriptions.Item label="Lessons/Unit">
+            <Descriptions.Item label="Mô tả">
+              {selectedTemplate.description || "-"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Chương trình">
+              {selectedTemplate.program}
+            </Descriptions.Item>
+            <Descriptions.Item label="Trình độ">
+              {selectedTemplate.level}
+            </Descriptions.Item>
+            <Descriptions.Item label="Số chương">
+              {selectedTemplate.unitCount}
+            </Descriptions.Item>
+            <Descriptions.Item label="Số bài học/ chương">
               {selectedTemplate.lessonsPerUnit}
             </Descriptions.Item>
-            <Descriptions.Item label="Exercises/Lesson">
+            <Descriptions.Item label="Số bài tập/ bài học">
               {selectedTemplate.exercisesPerLesson}
             </Descriptions.Item>
           </Descriptions>
@@ -235,7 +252,7 @@ const CourseTemplatesPage: React.FC = () => {
 
       {/* Create Drawer - NOW FULLY WORKING */}
       <Drawer
-        title="Create New Course Template"
+        title="Tạo mẫu khóa học mới"
         width={700}
         open={openCreateDrawer}
         onClose={() => {
@@ -243,40 +260,34 @@ const CourseTemplatesPage: React.FC = () => {
           form.resetFields();
           setSelectedLanguageId(undefined);
         }}
-        destroyOnClose>
+        destroyOnClose
+      >
         <Form
           form={form}
           layout="vertical"
-          onFinish={(v) => createMutation.mutate(v as PayloadCourseTemplate)}>
-          <Form.Item
-            label="Template Name"
-            name="name"
-            rules={[{ required: true }]}>
+          onFinish={(v) => createMutation.mutate(v as PayloadCourseTemplate)}
+        >
+          <Form.Item label="Tên mẫu" name="name" rules={[{ required: true }]}>
             <Input placeholder="e.g., Beginner Communication Template" />
           </Form.Item>
 
-          <Form.Item
-            label="Description"
-            name="description">
-            <Input.TextArea
-              rows={3}
-              placeholder="Optional description..."
-            />
+          <Form.Item label="Mô tả" name="description">
+            <Input.TextArea rows={3} placeholder="Optional description..." />
           </Form.Item>
 
           <Form.Item
-            label="Language"
+            label="Ngôn ngữ"
             name="languageId"
-            rules={[{ required: true }]}>
+            rules={[{ required: true }]}
+          >
             <Select
-              placeholder="Select language"
+              placeholder="Chọn ngôn ngữ"
               loading={languagesLoading}
               onChange={handleLanguageChange}
-              allowClear>
+              allowClear
+            >
               {languagesData?.map((lang) => (
-                <Option
-                  key={lang.id}
-                  value={lang.id}>
+                <Option key={lang.id} value={lang.id}>
                   {lang.langName} ({lang.langCode.toUpperCase()})
                 </Option>
               ))}
@@ -284,19 +295,19 @@ const CourseTemplatesPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Program"
+            label="Chương trình"
             name="programId"
-            rules={[{ required: true }]}>
+            rules={[{ required: true }]}
+          >
             <Select
-              placeholder="First select a language"
+              placeholder="Đầu tiên chọn một ngôn ngữ"
               loading={programsLoading}
               disabled={!selectedLanguageId}
               onChange={handleProgramChange}
-              allowClear>
+              allowClear
+            >
               {programsData?.map((p) => (
-                <Option
-                  key={p.programId}
-                  value={p.programId}>
+                <Option key={p.programId} value={p.programId}>
                   {p.name}
                   {p.description && ` - ${p.description}`}
                 </Option>
@@ -305,19 +316,19 @@ const CourseTemplatesPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            label="Level"
+            label="Trình độ"
             name="levelId"
-            rules={[{ required: true }]}>
+            rules={[{ required: true }]}
+          >
             <Select
-              placeholder="First select a program"
-              disabled={!programIdWatch}>
+              placeholder="Đầu tiên chọn một chương trình"
+              disabled={!programIdWatch}
+            >
               {programIdWatch &&
                 (programsData || [])
                   .find((p) => p.programId === programIdWatch)
                   ?.levels.map((level) => (
-                    <Option
-                      key={level.levelId}
-                      value={level.levelId}>
+                    <Option key={level.levelId} value={level.levelId}>
                       {level.name} - {level.description}
                     </Option>
                   ))}
@@ -326,37 +337,28 @@ const CourseTemplatesPage: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-6">
             <Form.Item
-              label="Number of Units"
+              label="Số lượng chương"
               name="unitCount"
               initialValue={12}
-              rules={[{ required: true }]}>
-              <InputNumber
-                min={1}
-                max={100}
-                className="w-full"
-              />
+              rules={[{ required: true }]}
+            >
+              <InputNumber min={1} max={100} className="w-full" />
             </Form.Item>
             <Form.Item
-              label="Lessons per Unit"
+              label="Bài học mỗi chương"
               name="lessonsPerUnit"
               initialValue={6}
-              rules={[{ required: true }]}>
-              <InputNumber
-                min={1}
-                max={30}
-                className="w-full"
-              />
+              rules={[{ required: true }]}
+            >
+              <InputNumber min={1} max={30} className="w-full" />
             </Form.Item>
             <Form.Item
-              label="Exercises per Lesson"
+              label="Bài tập mỗi bài học"
               name="exercisesPerLesson"
               initialValue={10}
-              rules={[{ required: true }]}>
-              <InputNumber
-                min={1}
-                max={50}
-                className="w-full"
-              />
+              rules={[{ required: true }]}
+            >
+              <InputNumber min={1} max={50} className="w-full" />
             </Form.Item>
           </div>
 
@@ -366,8 +368,9 @@ const CourseTemplatesPage: React.FC = () => {
               htmlType="submit"
               loading={createMutation.isPending}
               block
-              size="large">
-              Create Template
+              size="middle"
+            >
+              Tạo mẫu
             </Button>
           </Form.Item>
         </Form>
@@ -375,27 +378,34 @@ const CourseTemplatesPage: React.FC = () => {
 
       {/* Update Drawer (simple for now) */}
       <Drawer
-        title={`Update: ${selectedTemplate?.name || ''}`}
+        title={`Cập nhật: ${selectedTemplate?.name || ""}`}
         width={600}
         open={openUpdateDrawer}
-        onClose={() => setOpenUpdateDrawer(false)}>
+        onClose={() => setOpenUpdateDrawer(false)}
+      >
         {selectedTemplate && (
           <Form
             layout="vertical"
             onFinish={(v) =>
-              updateMutation.mutate({ templateId: selectedTemplate.templateId, data: v })
-            }>
+              updateMutation.mutate({
+                templateId: selectedTemplate.templateId,
+                data: v,
+              })
+            }
+          >
             <Form.Item
-              label="Name"
+              label="Tên"
               name="name"
               initialValue={selectedTemplate.name}
-              rules={[{ required: true }]}>
+              rules={[{ required: true }]}
+            >
               <Input />
             </Form.Item>
             <Form.Item
-              label="Description"
+              label="Mô tả"
               name="description"
-              initialValue={selectedTemplate.description}>
+              initialValue={selectedTemplate.description}
+            >
               <Input.TextArea rows={3} />
             </Form.Item>
             {/* You can enhance this later with dropdowns */}
@@ -403,8 +413,9 @@ const CourseTemplatesPage: React.FC = () => {
               <Button
                 type="primary"
                 htmlType="submit"
-                loading={updateMutation.isPending}>
-                Update
+                loading={updateMutation.isPending}
+              >
+                Cập nhật
               </Button>
             </Form.Item>
           </Form>

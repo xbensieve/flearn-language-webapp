@@ -21,7 +21,7 @@ const StaffPage: React.FC = () => {
   const changePassMutation = useMutation({
     mutationFn: changeStaffPasswordService,
     onSuccess: () => {
-      notifySuccess('Password changed successfully!'); 
+      notifySuccess("Đã thay đổi mật khẩu thành công!"); 
       setModalOpen(false);
       form.resetFields();
     },
@@ -48,7 +48,7 @@ const StaffPage: React.FC = () => {
 
   const columns = [
     {
-      title: 'Staff',
+      title: 'Nhân viên',
       dataIndex: 'userName',
       render: (text: string, record: Staff) => (
         <div className="flex items-center gap-3">
@@ -63,19 +63,19 @@ const StaffPage: React.FC = () => {
       ),
     },
     {
-      title: 'Roles',
+      title: 'Vai trò',
       dataIndex: 'roles',
       render: (roles: string[]) => (
         <Tag color="purple" className="rounded-full px-2 border-0 bg-purple-50 text-purple-700">{roles[0]}</Tag>
       ),
     },
     {
-      title: 'Joined',
+      title: 'Đã tham gia',
       dataIndex: 'createdAt',
       render: (date: string) => <Text className="text-xs text-gray-500">{new Date(date).toLocaleDateString()}</Text>,
     },
     {
-      title: 'Action',
+      title: 'Hành động',
       render: (_: any, record: Staff) => (
         <Button 
           size="small" 
@@ -83,7 +83,7 @@ const StaffPage: React.FC = () => {
           onClick={() => handleOpenChangePass(record)}
           className="text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
         >
-          Change Password
+          Đổi mật khẩu
         </Button>
       ),
     },
@@ -91,18 +91,25 @@ const StaffPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card bordered={false} className="rounded-2xl shadow-sm border border-gray-100">
+      <Card
+        bordered={false}
+        className="rounded-2xl shadow-sm border border-gray-100"
+      >
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
-             <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
-                <TeamOutlined className="text-xl" />
-             </div>
-             <div>
-               <Title level={4} className="!mb-0 !font-bold text-gray-800">Staff Management</Title>
-               <Text className="text-xs text-gray-500">Manage system administrators and staff</Text>
-             </div>
+            <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
+              <TeamOutlined className="text-xl" />
+            </div>
+            <div>
+              <Title level={4} className="!mb-0 !font-bold text-gray-800">
+                Quản lý nhân viên
+              </Title>
+              <Text className="text-xs text-gray-500">
+                Quản lý quản trị viên hệ thống và nhân viên
+              </Text>
+            </div>
           </div>
-          <Button onClick={() => refetch()}>Refresh</Button>
+          <Button onClick={() => refetch()}>Làm mới</Button>
         </div>
         <Table
           columns={columns}
@@ -115,7 +122,7 @@ const StaffPage: React.FC = () => {
       </Card>
 
       <Modal
-        title={`Change Password for ${selectedStaff?.userName}`}
+        title={`Thay đổi mật khẩu cho ${selectedStaff?.userName}`}
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
@@ -124,33 +131,50 @@ const StaffPage: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item
             name="newPassword"
-            label="New Password"
-            rules={[{ required: true, min: 6, message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character ' }]}
+            label="Mật khẩu mới"
+            rules={[
+              {
+                required: true,
+                min: 6,
+                message:
+                  "Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt",
+              },
+            ]}
           >
-            <Input.Password placeholder="Enter new password" />
+            <Input.Password placeholder="Nhập mật khẩu mới" />
           </Form.Item>
           <Form.Item
             name="confirmNewPassword"
-            label="Confirm Password"
-            dependencies={['newPassword']}
+            label="Xác nhận mật khẩu"
+            dependencies={["newPassword"]}
             rules={[
-              { required: true, message: 'Please confirm your password!' },
+              {
+                required: true,
+                message: "Vui lòng xác nhận mật khẩu của bạn!",
+              },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
+                  if (!value || getFieldValue("newPassword") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Passwords do not match!'));
+                  return Promise.reject(new Error("Mật khẩu không khớp!"));
                 },
               }),
             ]}
           >
-            <Input.Password placeholder="Confirm new password" />
+            <Input.Password placeholder="Xác nhận mật khẩu mới" />
           </Form.Item>
           <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => setModalOpen(false)} className="rounded-lg">Cancel</Button>
-            <Button type="primary" htmlType="submit" loading={changePassMutation.isPending} className="bg-blue-600 rounded-lg shadow-md">
-              Change Password
+            <Button onClick={() => setModalOpen(false)} className="rounded-lg">
+              Thoát
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={changePassMutation.isPending}
+              className="bg-blue-600 rounded-lg shadow-md"
+            >
+              Thay đổi mật khẩu
             </Button>
           </div>
         </Form>
