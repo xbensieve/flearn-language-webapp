@@ -7,6 +7,7 @@ export interface Class {
   startDateTime: string;
   endDateTime: string;
   capacity: number;
+  minStudents: number;
   pricePerStudent: number;
   googleMeetLink: string;
   status: string;
@@ -18,11 +19,36 @@ export interface Class {
 export interface CreateClassRequest {
   title: string;
   description: string;
-  languageID: string;
   classDate: string;
   startTime: string;
   durationMinutes: number;
   pricePerStudent: number;
-  googleMeetLink: string;
+  minStudents: number;
+  capacity: number;
   programAssignmentId: string;
+}
+
+export interface ClassEnrollment {
+  enrollmentID: string;
+  classID: string;
+  studentID: string;
+  userName: string;
+  studentEmail: string;
+  amountPaid: number;
+  paymentTransactionId: string;
+  status: 'Paid' | 'Pending' | 'Refunded';
+  enrolledAt: string;
+  updatedAt: string;
+}
+
+export interface ClassEnrollmentResponse {
+  success: boolean;
+  message: string;
+  data: ClassEnrollment[];
+  total: number;
+  statistics: {
+    totalEnrollments: number;
+    paidEnrollments: number;
+    pendingEnrollments: number;
+  };
 }
