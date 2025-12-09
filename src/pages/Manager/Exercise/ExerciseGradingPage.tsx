@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import {
   Search,
@@ -24,10 +24,8 @@ import {
 import { exerciseGradingService } from "@/services/exerciseGrading/exerciseGradingService";
 import type {
   Assignment,
-  FilterOptions,
   AssignmentQueryParams,
   AIFeedbackData,
-  EligibleTeacher,
 } from "@/types/exerciseGrading";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
@@ -71,6 +69,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DateRangePicker from "./DateRangePicker";
 import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Hook useDebounce đơn giản để tránh gọi API quá nhiều khi search
 function useDebounce<T>(value: T, delay: number): T {
@@ -87,16 +86,9 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export default function ExerciseGradingPage() {
-  const [loading, setLoading] = useState(false);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [meta, setMeta] = useState({ page: 1, totalPages: 1, totalItems: 0 });
-  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(
-    null
-  );
+  const queryClient = useQueryClient();
 
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<Assignment | null>(null);
-
+  // --- Query Params State ---
   const [queryParams, setQueryParams] = useState<AssignmentQueryParams>({
     Page: 1,
     PageSize: 10,
@@ -107,53 +99,64 @@ export default function ExerciseGradingPage() {
     ToDate: undefined,
   });
 
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<Assignment | null>(null);
   const [clientSearch, setClientSearch] = useState("");
   const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
 
-  // --- States for Reassign Feature ---
+  // --- QUERY 1: Filters (Cache lâu vì ít thay đổi) ---
+  const { data: filterOptions } = useQuery({
+    queryKey: ["grading-filters"],
+    queryFn: () => exerciseGradingService.getFilters(),
+    staleTime: 60 * 60 * 1000, // 1 giờ
+  });
+
+  // --- QUERY 2: Assignments List (Main Data) ---
+  const { data: assignmentsData, isLoading: loading } = useQuery({
+    queryKey: ["grading-assignments", queryParams], // Tự động refetch khi queryParams đổi
+    queryFn: () => exerciseGradingService.getAssignments(queryParams),
+    staleTime: 2 * 60 * 1000, // 2 phút
+  });
+
+  const assignments = assignmentsData?.data || [];
+  const meta = assignmentsData?.meta || {
+    page: 1,
+    totalPages: 1,
+    totalItems: 0,
+  };
+
+  // --- Reassign Feature States ---
   const [isReassignDialogOpen, setIsReassignDialogOpen] = useState(false);
   const [teacherSearchTerm, setTeacherSearchTerm] = useState("");
   const debouncedTeacherSearch = useDebounce(teacherSearchTerm, 500);
-  const [eligibleTeachers, setEligibleTeachers] = useState<EligibleTeacher[]>(
-    []
-  );
-  const [loadingTeachers, setLoadingTeachers] = useState(false);
   const [selectedNewTeacher, setSelectedNewTeacher] = useState<string | null>(
     null
   );
   const [isPollingAI, setIsPollingAI] = useState(false);
-  // --- Initial Data Fetching ---
 
-  useEffect(() => {
-    const fetchFilters = async () => {
-      try {
-        const data = await exerciseGradingService.getFilters();
-        setFilterOptions(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchFilters();
-  }, []);
+  // --- QUERY 3: Eligible Teachers (Chỉ fetch khi mở dialog) ---
+  const { data: eligibleTeachersResponse, isLoading: loadingTeachers } =
+    useQuery({
+      queryKey: [
+        "eligible-teachers",
+        selectedAssignment?.exerciseSubmissionId,
+        debouncedTeacherSearch,
+      ],
+      queryFn: () =>
+        exerciseGradingService.getEligibleTeachers(
+          selectedAssignment!.exerciseSubmissionId,
+          debouncedTeacherSearch,
+          1,
+          10
+        ),
+      enabled: !!isReassignDialogOpen && !!selectedAssignment, // Chỉ chạy khi mở dialog
+      staleTime: 5 * 60 * 1000,
+    });
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await exerciseGradingService.getAssignments(queryParams);
-      setAssignments(response.data);
-      setMeta(response.meta);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [queryParams]);
+  const eligibleTeachers = eligibleTeachersResponse?.data || [];
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
+  // --- Date Range Effect ---
   useEffect(() => {
     if (dateRange.from) {
       setQueryParams((prev) => ({
@@ -170,63 +173,34 @@ export default function ExerciseGradingPage() {
     }
   }, [dateRange]);
 
-  // --- Reassign Logic ---
+  // --- Mutations (Thay đổi dữ liệu) ---
+  const assignTeacherMutation = useMutation({
+    mutationFn: (teacherId: string) =>
+      exerciseGradingService.assignTeacher(
+        selectedAssignment!.exerciseSubmissionId,
+        teacherId
+      ),
+    onSuccess: () => {
+      toast.success("Đã phân công lại thành công!");
+      setIsReassignDialogOpen(false);
+      setSelectedAssignment(null);
+      queryClient.invalidateQueries({ queryKey: ["grading-assignments"] }); // Refresh list
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.message || "Không thể phân công lại giáo viên"
+      );
+    },
+  });
 
-  // Khi mở dialog hoặc thay đổi search term thì gọi API tìm giáo viên
-  useEffect(() => {
-    if (!isReassignDialogOpen || !selectedAssignment) return;
-
-    const fetchTeachers = async () => {
-      setLoadingTeachers(true);
-      try {
-        // Mặc định lấy page 1, size 10
-        const res = await exerciseGradingService.getEligibleTeachers(
-          selectedAssignment.exerciseSubmissionId, // exerciseSubmissionId (map tạm từ assignmentId)
-          debouncedTeacherSearch,
-          1,
-          10
-        );
-        setEligibleTeachers(res.data || []);
-      } catch (error) {
-        console.error("Failed to fetch eligible teachers", error);
-        toast.error("Failed to load eligible teachers");
-      } finally {
-        setLoadingTeachers(false);
-      }
-    };
-
-    fetchTeachers();
-  }, [isReassignDialogOpen, debouncedTeacherSearch, selectedAssignment]);
+  const handleConfirmReassign = () => {
+    if (selectedNewTeacher) assignTeacherMutation.mutate(selectedNewTeacher);
+  };
 
   const handleOpenReassignDialog = () => {
     setTeacherSearchTerm("");
     setSelectedNewTeacher(null);
     setIsReassignDialogOpen(true);
-  };
-
-  const handleConfirmReassign = async () => {
-    if (!selectedAssignment || !selectedNewTeacher) return;
-
-    try {
-      setLoading(true);
-      await exerciseGradingService.assignTeacher(
-        selectedAssignment.exerciseSubmissionId,
-        selectedNewTeacher
-      );
-      toast.success("Đã phân công lại thành công!");
-
-      setIsReassignDialogOpen(false);
-      setSelectedAssignment(null); // Đóng sheet chi tiết
-      fetchData(); // Refresh lại danh sách assignment
-    } catch (error) {
-      console.error("Failed to reassign teacher", error);
-      toast.error(
-        (error as any).response?.data?.message ||
-          "Không thể phân công lại giáo viên"
-      );
-    } finally {
-      setLoading(false);
-    }
   };
 
   // --- Handlers ---
@@ -247,62 +221,45 @@ export default function ExerciseGradingPage() {
     }));
   };
 
-  // --- LOGIC POLLING ---
+  // --- LOGIC POLLING (Giữ nguyên logic tay vì custom stop condition phức tạp) ---
+  // Bạn có thể dùng useQuery với refetchInterval, nhưng cách này đang ổn cho logic cụ thể
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
-
     if (isPollingAI && selectedAssignment) {
-      // Bắt đầu gọi API mỗi 3 giây
       intervalId = setInterval(async () => {
         try {
           const statusData = await exerciseGradingService.getGradingStatus(
             selectedAssignment.exerciseSubmissionId
           );
-
-          // Kiểm tra xem đã có kết quả chưa (Điểm > 0 hoặc Status không còn là Pending/Processing)
-          // Lưu ý: Logic này tùy thuộc vào cách Backend trả về status khi đang chấm
           const isFinished =
             statusData.aiScore > 0 ||
             (statusData.status !== "PendingAIReview" &&
               statusData.status !== "Pending");
 
           if (isFinished) {
-            // 1. Dừng polling
             setIsPollingAI(false);
             toast.success("AI Grading Completed!");
-
-            // 2. Cập nhật lại selectedAssignment với dữ liệu mới để UI tự render lại điểm
             setSelectedAssignment((prev) => {
               if (!prev) return null;
-              return {
-                ...prev,
-                aiScore: statusData.aiScore,
-                aiFeedback: statusData.aiFeedback,
-                status: statusData.status,
-                finalScore: statusData.finalScore ?? prev.finalScore,
-                // Parse lại recognized text nếu cần thiết từ feedback
-              };
+              return { ...prev, ...statusData };
             });
-
-            // 3. Refresh lại danh sách tổng bên ngoài để đồng bộ
-            fetchData();
+            // Refresh lại list bên ngoài
+            queryClient.invalidateQueries({
+              queryKey: ["grading-assignments"],
+            });
           }
         } catch (error) {
           console.error("Polling error", error);
-          // Nếu lỗi liên tục thì có thể cân nhắc dừng polling sau X lần
         }
-      }, 3000); // 3 giây gọi 1 lần
+      }, 3000);
     }
-
-    // Cleanup khi unmount hoặc tắt polling
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [isPollingAI, selectedAssignment, fetchData]);
+  }, [isPollingAI, selectedAssignment, queryClient]);
 
   const handleRetryAI = async () => {
     if (!selectedAssignment) return;
-
     try {
       setIsPollingAI(true);
       await exerciseGradingService.retryAIGrading(
@@ -310,13 +267,14 @@ export default function ExerciseGradingPage() {
       );
       toast.info("AI is grading... Please wait.");
     } catch (error: any) {
-      setIsPollingAI(false); // Tắt loading nếu trigger thất bại
-      const msg =
-        error?.response?.data?.message || "Failed to trigger AI retry";
-      toast.error(msg);
+      setIsPollingAI(false);
+      toast.error(
+        error?.response?.data?.message || "Failed to trigger AI retry"
+      );
     }
   };
-  // --- Client-Side Logic ---
+
+  // --- Client-Side Processing for Display ---
   const processedAssignments = useMemo(() => {
     let result = [...assignments];
     if (clientSearch.trim()) {
@@ -331,6 +289,7 @@ export default function ExerciseGradingPage() {
       );
     }
     result.sort((a, b) => {
+      // ... logic sort cũ
       const parseDate = (dateStr: string) => {
         const [datePart, timePart] = dateStr.split(" ");
         const [day, month, year] = datePart.split("-");
@@ -343,9 +302,8 @@ export default function ExerciseGradingPage() {
     return result;
   }, [assignments, clientSearch, sortOrder]);
 
-  // --- Render Helpers ---
-
   const getStatusColor = (status: string) => {
+    /* Giữ nguyên */
     switch (status) {
       case "Assigned":
         return "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200";
@@ -362,7 +320,7 @@ export default function ExerciseGradingPage() {
     try {
       return JSON.parse(jsonString);
     } catch (e) {
-      console.error("Failed to parse AI feedback JSON:", e);
+      console.log(e);
       return null;
     }
   };

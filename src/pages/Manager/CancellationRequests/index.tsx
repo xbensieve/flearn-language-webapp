@@ -72,6 +72,8 @@ export default function CancellationRequests() {
   } = useQuery({
     queryKey: ["cancellation-requests"],
     queryFn: () => managerDashboardService.getPendingCancellationRequests(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 
   const requests = cancellationData?.data || [];
