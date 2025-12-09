@@ -5,14 +5,13 @@ import {
   Row,
   Col,
   Button,
-  // Empty,
   Spin,
   Select,
-  Space,
   Tag,
   Pagination,
   Progress,
   Badge,
+  Tooltip,
 } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -27,24 +26,50 @@ import {
   TeamOutlined,
   FilterOutlined,
   RocketOutlined,
+  StarFilled,
+  ThunderboltFilled,
+  FireFilled,
 } from '@ant-design/icons';
-import { formatStatusLabel } from '../../utils/mapping';
 import type { Class } from '../../services/class/type';
 import CreateClassForm from './components/CreateClassForm';
-import { Book } from 'lucide-react';
+import { GraduationCap, Sparkles } from 'lucide-react';
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
 
 const statusOptions = [
-  { value: '', label: 'All Classes' },
-  { value: 'Draft', label: 'Draft' },
-  { value: 'Published', label: 'Published' },
+  { value: '', label: 'Tất cả lớp học', icon: <BookOutlined /> },
+  { value: 'Draft', label: 'Bản nháp', color: '#8b5cf6' },
+  { value: 'Published', label: 'Đã xuất bản', color: '#10b981' },
+  { value: 'PendingCancel', label: 'Chờ hủy', color: '#f59e0b' },
+  { value: 'Cancelled', label: 'Đã hủy', color: '#ef4444' },
 ];
 
-const statusColors: Record<string, string> = {
-  Draft: '#bfbfbf',
-  Published: '#bfbfbf',
+const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
+  Draft: { 
+    label: 'Bản nháp', 
+    color: '#8b5cf6', 
+    bgColor: 'bg-violet-50',
+    icon: <ThunderboltFilled className="text-violet-500" />
+  },
+  Published: { 
+    label: 'Đang hoạt động', 
+    color: '#10b981', 
+    bgColor: 'bg-emerald-50',
+    icon: <StarFilled className="text-emerald-500" />
+  },
+  PendingCancel: { 
+    label: 'Chờ hủy', 
+    color: '#f59e0b', 
+    bgColor: 'bg-amber-50',
+    icon: <FireFilled className="text-amber-500" />
+  },
+  Cancelled: { 
+    label: 'Đã hủy', 
+    color: '#ef4444', 
+    bgColor: 'bg-red-50',
+    icon: null
+  },
 };
 
 const MyClasses: React.FC = () => {
@@ -78,77 +103,109 @@ const MyClasses: React.FC = () => {
     return Math.round((current / capacity) * 100);
   };
 
+  const getStatusLabel = (statusKey: string) => {
+    return statusConfig[statusKey]?.label || statusKey;
+  };
+
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-gray-50">
-        <Spin
-          size="large"
-          indicator={
-            <LoadingOutlined
-              className="text-5xl text-gray-500"
-              spin
+      <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gradient-to-br from-violet-50 via-blue-50 to-indigo-100">
+        <div className="relative">
+          <div className="absolute inset-0 animate-ping bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full opacity-20 scale-150"></div>
+          <div className="relative p-6 bg-white rounded-3xl shadow-2xl">
+            <Spin
+              size="large"
+              indicator={
+                <LoadingOutlined
+                  className="text-5xl text-violet-600"
+                  spin
+                />
+              }
             />
-          }
-        />
-        <Text className="mt-6 text-gray-600 text-lg font-medium">Loading your classes...</Text>
+          </div>
+        </div>
+        <Text className="mt-8 text-gray-600 text-xl font-medium animate-pulse">
+          Đang tải danh sách lớp học...
+        </Text>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header Card */}
-        <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+        {/* Header Section */}
+        <div className="relative bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-xl shadow-violet-100/50 mb-8">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-violet-400/10 to-indigo-400/10 rounded-full -mr-40 -mt-40"></div>
+          <div className="absolute bottom-0 left-0 w-60 h-60 bg-gradient-to-tr from-blue-400/10 to-cyan-400/10 rounded-full -ml-30 -mb-30"></div>
+          
           {/* Title Bar */}
-          <div className="flex items-center gap-3 p-6 border-b border-gray-200">
-            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-              <Book
-                size={24}
-                className="text-gray-700"
-              />
+          <div className="relative flex items-center gap-4 p-6 border-b border-gray-100/80">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40"></div>
+              <div className="relative w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+                <GraduationCap size={28} className="text-white" />
+              </div>
             </div>
-            <Title
-              level={3}
-              className="m-0 text-gray-900 font-semibold text-xl">
-              My Classes
-            </Title>
+            <div>
+              <Title level={2} className="!m-0 !text-gray-900 !font-bold !text-2xl flex items-center gap-2">
+                Quản lý lớp học
+                <Sparkles size={20} className="text-amber-500" />
+              </Title>
+              <Text className="text-gray-500 text-sm">Tạo và quản lý các lớp học trực tuyến của bạn</Text>
+            </div>
           </div>
 
           {/* Stats + Controls */}
-          <div className="p-5 bg-white">
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-5">
-              <div className="text-center sm:text-left">
-                <div className="text-3xl font-bold text-gray-900">{classes.length}</div>
-                <div className="text-gray-500 text-sm mt-1">
-                  {status ? `${formatStatusLabel(status)} Classes` : 'Total Classes'}
+          <div className="relative p-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+              {/* Stats */}
+              <div className="flex items-center gap-6">
+                <div className="text-center px-6 py-3 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border border-violet-100">
+                  <div className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+                    {classes.length}
+                  </div>
+                  <div className="text-gray-500 text-sm mt-1 font-medium">
+                    {status ? getStatusLabel(status) : 'Tổng số lớp'}
+                  </div>
+                </div>
+                
+                <div className="hidden md:flex items-center gap-3">
+                  {[
+                    { icon: <StarFilled className="text-emerald-500" />, label: 'Đang hoạt động', count: classes.filter(c => c.status === 'Published').length },
+                    { icon: <ThunderboltFilled className="text-violet-500" />, label: 'Bản nháp', count: classes.filter(c => c.status === 'Draft').length },
+                  ].map((stat, idx) => (
+                    <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
+                      {stat.icon}
+                      <span className="text-gray-600 text-sm">{stat.count}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              <Space
-                size="middle"
-                className="flex flex-wrap justify-center sm:justify-end gap-3">
+              {/* Controls */}
+              <div className="flex flex-wrap items-center gap-3">
                 <Select
                   value={status}
                   onChange={handleStatusChange}
                   style={{ width: 200 }}
                   size="large"
-                  placeholder="Filter by status"
-                  suffixIcon={<FilterOutlined className="text-gray-500" />}
-                  className="rounded-xl">
+                  placeholder="Lọc theo trạng thái"
+                  suffixIcon={<FilterOutlined className="text-violet-500" />}
+                  className="rounded-xl shadow-sm"
+                  popupClassName="rounded-xl">
                   {statusOptions.map((s) => (
-                    <Option
-                      key={s.value}
-                      value={s.value}>
-                      <Space size={6}>
+                    <Option key={s.value} value={s.value}>
+                      <div className="flex items-center gap-2">
                         {s.value && (
                           <Badge
-                            color={statusColors[s.value]}
+                            color={s.color}
                             style={{ width: 8, height: 8 }}
                           />
                         )}
                         <span className="font-medium text-gray-700">{s.label}</span>
-                      </Space>
+                      </div>
                     </Option>
                   ))}
                 </Select>
@@ -158,90 +215,61 @@ const MyClasses: React.FC = () => {
                   icon={<PlusOutlined />}
                   onClick={() => setIsCreateModalVisible(true)}
                   size="large"
-                  className="h-12 px-6 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 border-0 shadow-sm">
-                  Create New Class
+                  className="h-12 px-8 rounded-2xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-lg shadow-violet-200 hover:shadow-xl hover:shadow-violet-300 transition-all duration-300">
+                  Tạo lớp học mới
                 </Button>
-              </Space>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Classes Grid */}
         {classes.length > 0 ? (
-          <div className="mt-6">
+          <div>
             <Row gutter={[24, 24]}>
               {classes.map((cls: Class) => {
                 const enrollmentPercentage = calculateEnrollmentPercentage(
                   cls.currentEnrollments,
                   cls.capacity
                 );
+                const statusInfo = statusConfig[cls.status] || { label: cls.status, color: '#9ca3af', bgColor: 'bg-gray-50' };
 
                 return (
-                  <Col
-                    key={cls.classID}
-                    xs={24}
-                    sm={12}
-                    lg={8}>
+                  <Col key={cls.classID} xs={24} sm={12} lg={8}>
                     <Card
                       hoverable
-                      bodyStyle={{ padding: 0 }}
-                      style={{
-                        height: '100%',
-                        borderRadius: 18,
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)',
-                        overflow: 'hidden',
-                        backgroundColor: '#ffffff',
-                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                      }}>
-                      {/* Header */}
-                      <div
-                        style={{
-                          padding: 20,
-                          backgroundColor: '#ffffff',
-                          borderBottom: '1px solid #e5e7eb',
-                        }}>
-                        <div
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            marginBottom: 12,
-                          }}>
+                      className="h-full rounded-3xl border-0 shadow-lg shadow-gray-100/80 hover:shadow-2xl hover:shadow-violet-100/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden group"
+                      styles={{ body: { padding: 0 } }}>
+                      
+                      {/* Card Header with Gradient */}
+                      <div className={`relative p-6 ${statusInfo.bgColor}`}>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full -mr-16 -mt-16"></div>
+                        
+                        <div className="relative flex justify-between items-start mb-4">
                           <Tag
-                            color="default"
-                            style={{
-                              padding: '4px 12px',
-                              borderRadius: 999,
-                              fontSize: 11,
-                              fontWeight: 500,
-                              border: '1px solid #d4d4d4',
+                            className="px-4 py-1.5 rounded-full text-xs font-semibold border-0 shadow-sm"
+                            style={{ 
+                              backgroundColor: statusInfo.color + '15',
+                              color: statusInfo.color,
                             }}>
-                            {formatStatusLabel(cls.status)}
+                            <span className="flex items-center gap-1.5">
+                              {statusInfo.icon}
+                              {statusInfo.label}
+                            </span>
                           </Tag>
-
-                          <div
-                            style={{
-                              padding: 8,
-                              backgroundColor: '#ffffff',
-                              borderRadius: 10,
-                              border: '1px solid #e5e7eb',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}>
-                            <BookOutlined style={{ color: '#4b5563', fontSize: 16 }} />
-                          </div>
+                          
+                          <Tooltip title="Chi tiết lớp học">
+                            <div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
+                                 onClick={() => navigate(`${cls.classID}`)}>
+                              <BookOutlined className="text-gray-500 text-lg" />
+                            </div>
+                          </Tooltip>
                         </div>
 
                         <Title
                           level={4}
+                          className="!m-0 !text-gray-900 !font-bold !leading-snug"
                           style={{
-                            margin: 0,
-                            fontSize: 16,
-                            fontWeight: 600,
-                            color: '#111827',
-                            lineHeight: 1.4,
                             overflow: 'hidden',
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
@@ -250,169 +278,112 @@ const MyClasses: React.FC = () => {
                           {cls.title}
                         </Title>
 
-                        <Text
-                          style={{
-                            display: 'block',
-                            marginTop: 4,
-                            fontSize: 13,
-                            color: '#6b7280',
-                          }}>
-                          {cls.languageName}
+                        <Text className="block mt-2 text-gray-500 font-medium text-sm">
+                          🌐 {cls.languageName}
                         </Text>
                       </div>
 
-                      {/* Body */}
-                      <div
-                        style={{
-                          padding: 20,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 14,
-                        }}>
+                      {/* Card Body */}
+                      <div className="p-6 space-y-5">
                         <Paragraph
                           ellipsis={{ rows: 2 }}
-                          style={{
-                            margin: 0,
-                            fontSize: 13,
-                            lineHeight: 1.6,
-                            color: '#4b5563',
-                            minHeight: '3rem',
-                          }}>
+                          className="!m-0 text-gray-600 text-sm leading-relaxed min-h-[2.8rem]">
                           {cls.description}
                         </Paragraph>
 
-                        {/* Info Blocks */}
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 12,
-                          }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: 12,
-                              borderRadius: 12,
-                              backgroundColor: '#f9fafb',
-                              border: '1px solid #e5e7eb',
-                            }}>
-                            <CalendarOutlined
-                              style={{
-                                color: '#6b7280',
-                                marginRight: 12,
-                                fontSize: 16,
-                              }}
-                            />
-                            <div style={{ flex: 1 }}>
-                              <Text
-                                style={{
-                                  fontSize: 11,
-                                  color: '#9ca3af',
-                                  display: 'block',
-                                  marginBottom: 2,
-                                }}>
-                                Duration
-                              </Text>
-                              <Text
-                                style={{
-                                  fontSize: 13,
-                                  fontWeight: 500,
-                                  color: '#1f2933',
-                                }}>
-                                {new Date(cls.startDateTime).toLocaleDateString('en-GB')} -{' '}
-                                {new Date(cls.endDateTime).toLocaleDateString('en-GB')}
+                        {/* Schedule Info */}
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3 p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100/50">
+                            <div className="p-2 bg-white rounded-lg shadow-sm">
+                              <CalendarOutlined className="text-blue-600 text-base" />
+                            </div>
+                            <div className="flex-1">
+                              <Text className="text-gray-400 text-xs block mb-0.5">Lịch học</Text>
+                              <Text className="text-gray-800 font-semibold text-sm">
+                                {new Date(cls.startDateTime).toLocaleDateString('vi-VN')}
                               </Text>
                             </div>
                           </div>
 
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              padding: 12,
-                              borderRadius: 12,
-                              backgroundColor: '#f9fafb',
-                              border: '1px solid #e5e7eb',
-                            }}>
-                            <ClockCircleOutlined
-                              style={{
-                                color: '#6b7280',
-                                marginRight: 12,
-                                fontSize: 16,
-                              }}
-                            />
-                            <div style={{ flex: 1 }}>
-                              <Text
-                                style={{
-                                  fontSize: 11,
-                                  color: '#9ca3af',
-                                  display: 'block',
-                                  marginBottom: 2,
-                                }}>
-                                Time
-                              </Text>
-                              <Text
-                                style={{
-                                  fontSize: 13,
-                                  fontWeight: 500,
-                                  color: '#1f2933',
-                                }}>
-                                {new Date(cls.startDateTime).toLocaleTimeString([], {
+                          <div className="flex items-center gap-3 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100/50">
+                            <div className="p-2 bg-white rounded-lg shadow-sm">
+                              <ClockCircleOutlined className="text-amber-600 text-base" />
+                            </div>
+                            <div className="flex-1">
+                              <Text className="text-gray-400 text-xs block mb-0.5">Thời gian</Text>
+                              <Text className="text-gray-800 font-semibold text-sm">
+                                {new Date(cls.startDateTime).toLocaleTimeString('vi-VN', {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                 })}{' '}
                                 -{' '}
-                                {new Date(cls.endDateTime).toLocaleTimeString([], {
+                                {new Date(cls.endDateTime).toLocaleTimeString('vi-VN', {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                 })}
                               </Text>
                             </div>
                           </div>
+                        </div>
 
-                          {/* Enrollment */}
-                          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                            <div className="flex justify-between items-center mb-2">
-                              <Space size={6}>
-                                <TeamOutlined className="text-gray-600 text-base" />
-                                <Text className="font-medium text-gray-800">Enrollments</Text>
-                              </Space>
-                              <Text className="font-medium text-gray-700 text-sm">
-                                {cls.currentEnrollments} / {cls.capacity}
-                              </Text>
+                        {/* Enrollment Progress */}
+                        <div className="p-4 bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl border border-violet-100/50">
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="flex items-center gap-2">
+                              <TeamOutlined className="text-violet-600 text-base" />
+                              <Text className="font-semibold text-gray-700 text-sm">Học viên đăng ký</Text>
                             </div>
-                            <Progress
-                              percent={enrollmentPercentage}
-                              strokeColor="#8c8c8c"
-                              trailColor="#e5e5e5"
-                              showInfo={false}
-                              strokeWidth={8}
-                              className="mb-1"
-                            />
-                            <Text className="text-xs text-gray-500">
-                              {enrollmentPercentage}% filled
+                            <Text className="font-bold text-violet-700">
+                              {cls.currentEnrollments}/{cls.capacity}
                             </Text>
+                          </div>
+                          <Progress
+                            percent={enrollmentPercentage}
+                            strokeColor={{
+                              '0%': '#8b5cf6',
+                              '100%': '#6366f1',
+                            }}
+                            trailColor="#e9d5ff"
+                            showInfo={false}
+                            strokeWidth={10}
+                            className="!mb-2"
+                          />
+                          <div className="flex justify-between items-center">
+                            <Text className="text-xs text-gray-500">
+                              Còn {cls.capacity - cls.currentEnrollments} chỗ trống
+                            </Text>
+                            <Tag
+                              color={
+                                enrollmentPercentage >= 80
+                                  ? 'red'
+                                  : enrollmentPercentage >= 50
+                                  ? 'orange'
+                                  : 'green'
+                              }
+                              className="rounded-full text-xs font-medium border-0">
+                              {enrollmentPercentage}%
+                            </Tag>
                           </div>
                         </div>
 
-                        {/* Price + Action */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                        {/* Price & Action */}
+                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                           <div>
-                            <Text className="text-xs text-gray-500 block mb-1">
-                              Price per student
-                            </Text>
-                            <div className="text-xl font-bold text-gray-900">
-                              {cls.pricePerStudent.toLocaleString('vi-VN')} đ
+                            <Text className="text-xs text-gray-400 block mb-1">Học phí</Text>
+                            <div className="flex items-baseline gap-1">
+                              <Text className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                                {cls.pricePerStudent.toLocaleString('vi-VN')}
+                              </Text>
+                              <Text className="text-gray-500 text-sm font-medium">đ</Text>
                             </div>
                           </div>
                           <Button
-                            type="default"
+                            type="primary"
                             icon={<EyeOutlined />}
                             onClick={() => navigate(`${cls.classID}`)}
                             size="large"
-                            className="rounded-xl font-medium border-gray-300 hover:border-gray-400">
-                            View
+                            className="rounded-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-md hover:shadow-lg transition-all">
+                            Xem chi tiết
                           </Button>
                         </div>
                       </div>
@@ -423,46 +394,45 @@ const MyClasses: React.FC = () => {
             </Row>
 
             {/* Pagination */}
-            <div className="flex justify-center mt-10">
+            <div className="flex justify-center mt-12">
               <Pagination
                 current={page}
                 pageSize={pageSize}
-                // total={data?.total}
                 onChange={handlePageChange}
                 showSizeChanger={false}
-                className="bg-white px-6 py-3 rounded-2xl shadow-md border border-gray-200"
+                className="bg-white px-8 py-4 rounded-2xl shadow-lg shadow-gray-100/80 border border-gray-100"
               />
             </div>
           </div>
         ) : (
           /* Empty State */
-          <div className="mt-6 bg-white rounded-3xl shadow-lg p-12 text-center border border-gray-200">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
-              <RocketOutlined className="text-5xl text-gray-600" />
+          <div className="bg-white rounded-3xl shadow-xl shadow-violet-100/50 p-16 text-center border border-gray-100">
+            <div className="relative inline-block mb-8">
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-400 to-indigo-500 rounded-full blur-2xl opacity-20 scale-150"></div>
+              <div className="relative w-32 h-32 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center">
+                <RocketOutlined className="text-6xl text-violet-600" />
+              </div>
             </div>
-            <Title
-              level={3}
-              className="text-gray-900 mb-3 font-semibold">
-              No Classes Yet
+            <Title level={2} className="!text-gray-900 !mb-4 !font-bold">
+              Chưa có lớp học nào
             </Title>
-            <Text className="text-gray-600 max-w-md mx-auto block mb-8 text-base leading-relaxed">
-              Start your teaching journey by creating your first class. Share your knowledge and
-              inspire students!
+            <Text className="text-gray-500 max-w-lg mx-auto block mb-10 text-lg leading-relaxed">
+              Bắt đầu hành trình giảng dạy của bạn bằng cách tạo lớp học đầu tiên. 
+              Chia sẻ kiến thức và truyền cảm hứng cho học viên!
             </Text>
-            {/* <Button
+            <Button
               type="primary"
               icon={<PlusOutlined />}
               onClick={() => setIsCreateModalVisible(true)}
               size="large"
-              className="h-14 px-10 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 border-0 shadow-md"
-            >
-              Create Your First Class
-            </Button> */}
+              className="h-14 px-12 rounded-2xl font-bold text-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-xl shadow-violet-200 hover:shadow-2xl hover:shadow-violet-300 transition-all duration-300">
+              Tạo lớp học đầu tiên
+            </Button>
           </div>
         )}
       </div>
 
-      {/* Modal */}
+      {/* Create Class Modal */}
       <CreateClassForm
         visible={isCreateModalVisible}
         onClose={() => setIsCreateModalVisible(false)}
