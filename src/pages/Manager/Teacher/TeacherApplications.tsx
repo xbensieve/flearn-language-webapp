@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   Filter,
@@ -37,14 +37,12 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 import {
   applicationService,
-  type TeacherApplication,
   type ApplicationQueryParams,
 } from "@/services/teacher/applicationService";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 export default function TeacherApplications() {
-  const [applications, setApplications] = useState<TeacherApplication[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   // Filters & UI state
@@ -58,35 +56,21 @@ export default function TeacherApplications() {
   const [page, setPage] = useState(1);
   const pageSize = 15;
 
-  // Fetch data (server-side pagination + filter by status)
-  const fetchApplications = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: ApplicationQueryParams = {
-        Page: 1,
-        PageSize: 50,
-        status: statusFilter !== "all" ? statusFilter : undefined,
-      };
+const { data: applications = [], isLoading } = useQuery({
+  queryKey: ["teacher-applications", statusFilter], // Key thay đổi theo filter
+  queryFn: async () => {
+    const params: ApplicationQueryParams = {
+      Page: 1,
+      PageSize: 50, // Bạn đang fetch cứng 50
+      status: statusFilter !== "all" ? statusFilter : undefined,
+    };
+    const response = await applicationService.getApplications(params);
+    return response?.data || [];
+  },
+  staleTime: 2 * 60 * 1000, // Cache trong 2 phút
+  placeholderData: (previousData) => previousData, // Giữ dữ liệu cũ khi đổi filter để tránh nháy
+});
 
-      const response = await applicationService.getApplications(params);
-      if (response?.data) {
-        setApplications(response.data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch applications:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [statusFilter]);
-
-  useEffect(() => {
-    fetchApplications();
-  }, [fetchApplications]);
-
-  // Reset page khi thay đổi filter/search/sort
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, statusFilter, sortOption]);
 
   const parseVietnameseDate = (dateString: string): number => {
     const parts = dateString.split(" ");
@@ -257,7 +241,7 @@ export default function TeacherApplications() {
 
         {/* Table */}
         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-          {loading ? (
+          {isLoading ? (
             <div className="divide-y divide-slate-100">
               {[...Array(10)].map((_, i) => (
                 <div key={i} className="p-6">

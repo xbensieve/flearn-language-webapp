@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -24,16 +24,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { courseService } from "@/services/course/courseService";
 import type { CourseSubmission, SubmissionStatus } from "@/types/course";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Courses() {
   const navigate = useNavigate();
 
-  const [allSubmissions, setAllSubmissions] = useState<CourseSubmission[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  // Filters state
   const [page, setPage] = useState(1);
   const pageSize = 9;
-
   const [sortBy, setSortBy] = useState<
     "newest" | "oldest" | "atoz" | "ztoa" | "price-asc" | "price-desc"
   >("newest");
@@ -44,25 +42,28 @@ export default function Courses() {
   const [levelFilter, setLevelFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await courseService.getSubmissions({
+  // --- REFACTOR: Thay thế useEffect/fetchData bằng useQuery ---
+  const { data: response, isLoading: loading } = useQuery({
+    queryKey: ["courses-submissions", statusFilter], // Key thay đổi khi filter status đổi
+    queryFn: () =>
+      courseService.getSubmissions({
         Page: 1,
-        PageSize: 500,
+        PageSize: 500, // Vẫn giữ logic lấy 500 items
         status: statusFilter === "all" ? undefined : statusFilter,
-      });
-      setAllSubmissions(res.data);
-    } catch (error) {
-      console.error("Failed to load courses", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [statusFilter]);
+      }),
+    staleTime: 5 * 60 * 1000, // Cache 5 phút. Quay lại trang này sẽ hiển thị ngay lập tức.
+    placeholderData: (previousData) => previousData, // Giữ data cũ khi đổi statusFilter để không bị nháy
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const allSubmissions = response?.data || [];
+
+  // Reset page khi filter đổi (giữ nguyên logic cũ)
+  // Lưu ý: Với useQuery, logic này nên đặt trong useEffect lắng nghe các state filter
+  useMemo(() => {
+    // Side effect nhẹ để reset page khi filter đổi
+    // Thực ra tốt hơn là setPage(1) ngay tại sự kiện onChange của các filter input
+  }, [searchTerm, levelFilter, priceFilter, sortBy, statusFilter]);
+
 
   useEffect(() => {
     setPage(1);

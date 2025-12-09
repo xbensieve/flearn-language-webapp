@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { getProfile } from "@/services/auth";
 import {
   Card,
@@ -11,47 +10,28 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Mail, User, Calendar, Shield } from "lucide-react";
-import { toast } from "sonner";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { format } from "date-fns";
 import NotificationSettings from "@/components/NotificationSettings";
+import { useQuery } from "@tanstack/react-query";
 
-interface UserProfile {
-  userId: string;
-  username: string;
-  email: string;
-  createdAt: string;
-  roles: string[];
-}
 
 export default function Profile() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await getProfile();
-        if (response?.data) {
-          setProfile(response.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch profile:", error);
-        toast.error("Failed to load user profile.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
+ const { data: profile, isLoading } = useQuery({
+   queryKey: ["user-profile"],
+   queryFn: async () => {
+     const response = await getProfile();
+     return response?.data || null;
+   },
+   staleTime: 30 * 60 * 1000, // Profile ít đổi, cache hẳn 30 phút
+ });
 
   const userInitials = profile?.username?.substring(0, 2).toUpperCase() || "UN";
   const joinedDate = profile?.createdAt
     ? format(new Date(profile.createdAt), "MMMM d, yyyy")
     : "N/A";
 
-  if (loading) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="container mx-auto p-6 max-w-4xl">

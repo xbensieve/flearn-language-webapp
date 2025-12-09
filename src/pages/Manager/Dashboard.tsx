@@ -1,11 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { managerDashboardService } from "@/services/manager/managerDashboard.service";
-import type {
-  DashboardOverviewResponse,
-  EngagementResponse,
-  ContentEffectivenessResponse,
-} from "@/types/dashboard";
 import {
   Card,
   CardContent,
@@ -21,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Users,
@@ -30,7 +24,6 @@ import {
   TrendingDown,
   TrendingUp,
   Calendar,
-  Filter,
   ArrowRight,
 } from "lucide-react";
 import {
@@ -45,6 +38,7 @@ import {
   Bar,
 } from "recharts";
 import dayjs from "dayjs";
+import { useQuery } from "@tanstack/react-query";
 
 // --- Helpers ---
 const formatCurrency = (value: number) =>
@@ -68,58 +62,47 @@ const CustomTooltip = ({ active, payload, label, formatter }: any) => {
 };
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(true);
-
   const [dateRange, setDateRange] = useState({
     startDate: dayjs().subtract(10, "day").format("YYYY-MM-DD"),
     endDate: dayjs().format("YYYY-MM-DD"),
   });
   const [topContent, setTopContent] = useState(10);
 
-  const [overview, setOverview] = useState<DashboardOverviewResponse | null>(
-    null
-  );
-  const [engagement, setEngagement] = useState<EngagementResponse | null>(null);
-  const [contentStats, setContentStats] = useState<
-    ContentEffectivenessResponse[]
-  >([]);
+  const { data: overview, isLoading: isLoadingOverview } = useQuery({
+    queryKey: ["dashboard-overview", dateRange], // Cache key phụ thuộc vào dateRange
+    queryFn: () =>
+      managerDashboardService.getOverview(
+        dateRange.startDate,
+        dateRange.endDate
+      ),
+    staleTime: 5 * 60 * 1000, // Dữ liệu coi là mới trong 5 phút
+  });
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [overviewRes, engagementRes, contentRes] = await Promise.all([
-        managerDashboardService.getOverview(
-          dateRange.startDate,
-          dateRange.endDate
-        ),
-        managerDashboardService.getEngagement(
-          dateRange.startDate,
-          dateRange.endDate
-        ),
-        managerDashboardService.getContentEffectiveness(topContent),
-      ]);
+  const { data: engagement, isLoading: isLoadingEngagement } = useQuery({
+    queryKey: ["dashboard-engagement", dateRange],
+    queryFn: () =>
+      managerDashboardService.getEngagement(
+        dateRange.startDate,
+        dateRange.endDate
+      ),
+    staleTime: 5 * 60 * 1000,
+  });
 
-      setOverview(overviewRes);
-      setEngagement(engagementRes);
-      setContentStats(contentRes);
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: contentStats = [], isLoading: isLoadingContent } = useQuery({
+    queryKey: ["dashboard-content", topContent], // Cache key phụ thuộc vào topContent
+    queryFn: () => managerDashboardService.getContentEffectiveness(topContent),
+    staleTime: 5 * 60 * 1000,
+  });
 
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dateRange, topContent]);
+  const isLoading =
+    isLoadingOverview || isLoadingEngagement || isLoadingContent;
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setDateRange((prev) => ({ ...prev, [name]: value }));
   };
 
-  if (loading && !overview) {
+  if (isLoading && !overview) {
     return (
       <DashboardLayout>
         <div className="min-h-screen w-full space-y-8 p-6">
@@ -261,16 +244,6 @@ export default function Dashboard() {
                 <option value={20}>Top 20</option>
               </select>
             </div>
-
-            {/* Button */}
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-8 px-2 justify-self-end"
-              onClick={fetchData}
-            >
-              <Filter className="h-4 w-4 text-muted-foreground" />
-            </Button>
           </div>
         </div>
 
