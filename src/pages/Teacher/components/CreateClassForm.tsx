@@ -11,26 +11,29 @@ import {
   Row,
   Col,
   Typography,
-  Divider,
+  Card,
+  Tooltip,
 } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-// import { getLanguagesService } from '../../../services/language';
 import { createClassService } from '../../../services/class';
 import type { CreateClassRequest } from '../../../services/class/type';
 import dayjs from 'dayjs';
 import {
   BookOutlined,
-  // GlobalOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
   DollarOutlined,
-  // VideoCameraOutlined,
   FileTextOutlined,
   RocketOutlined,
+  TeamOutlined,
+  UserOutlined,
+  InfoCircleOutlined,
+  StarFilled,
 } from '@ant-design/icons';
 
 import { notifyError, notifySuccess } from '../../../utils/toastConfig';
 import { getTeachingProgramService } from '@/services/course';
+import { GraduationCap, Sparkles, Users, Wallet, Calendar, Clock } from 'lucide-react';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -44,12 +47,6 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
-  // const { data: languages, isLoading: isLoadingLanguages } = useQuery({
-  //   queryKey: ['languages'],
-  //   queryFn: getLanguagesService,
-  // });
-
-  // Inside your CreateClassForm component
   const { data: programsRes, isLoading: isLoadingPrograms } = useQuery({
     queryKey: ['teaching-programs'],
     queryFn: () => getTeachingProgramService({ pageNumber: 1, pageSize: 1000 }),
@@ -59,38 +56,52 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
   const { mutate: createClass, isPending: isCreating } = useMutation({
     mutationFn: (data: CreateClassRequest) => createClassService(data),
     onSuccess: (res) => {
-      notifySuccess(res.message || 'Class created successfully!');
+      notifySuccess(res.message || 'Tạo lớp học thành công!');
       form.resetFields();
       onClose();
       queryClient.invalidateQueries({ queryKey: ['classes'] });
     },
     onError: (error: any) => {
-      notifyError(error.response?.data?.message || 'Failed to create class.');
+      notifyError(error.response?.data?.message || 'Không thể tạo lớp học. Vui lòng thử lại.');
     },
   });
 
   const onFinish = (values: any) => {
     const classData: CreateClassRequest = {
-      ...values,
+      title: values.title,
+      description: values.description,
       classDate: values.classDate.format('YYYY-MM-DD'),
       startTime: values.startTime.format('HH:mm:ss'),
+      durationMinutes: values.durationMinutes,
+      pricePerStudent: values.pricePerStudent,
+      minStudents: values.minStudents,
+      capacity: values.capacity,
       programAssignmentId: values.programAssignmentId,
     };
     createClass(classData);
   };
 
+  // Watch values for validation and display
+  const minStudents = Form.useWatch('minStudents', form);
+  const pricePerStudent = Form.useWatch('pricePerStudent', form);
+  const capacity = Form.useWatch('capacity', form);
+
   return (
     <Modal
       title={
-        <div className="flex items-center space-x-3 py-2">
-          <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl">
-            <RocketOutlined className="text-white text-xl" />
+        <div className="flex items-center gap-4 py-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40"></div>
+            <div className="relative p-4 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl shadow-xl">
+              <GraduationCap size={28} className="text-white" />
+            </div>
           </div>
           <div>
-            <div className="text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-              Create New Class
+            <div className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              Tạo lớp học mới
+              <Sparkles size={20} className="text-amber-500" />
             </div>
-            <Text className="text-gray-500 text-sm">Fill in the details to launch your class</Text>
+            <Text className="text-gray-500 text-sm">Khởi tạo lớp học trực tuyến của bạn</Text>
           </div>
         </div>
       }
@@ -101,179 +112,207 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
       }}
       onOk={() => form.submit()}
       confirmLoading={isCreating}
-      width={800}
-      okText="Create Class"
-      cancelText="Cancel"
+      width={950}
+      okText="Tạo lớp học"
+      cancelText="Hủy bỏ"
       okButtonProps={{
         className:
-          'bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 border-0 shadow-lg h-10 px-6 font-semibold',
+          'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-lg shadow-violet-200 h-12 px-10 font-bold rounded-xl',
         icon: <RocketOutlined />,
       }}
       cancelButtonProps={{
-        className: 'h-10 px-6',
+        className: 'h-12 px-8 rounded-xl hover:border-gray-400 font-medium',
       }}
       styles={{
         header: {
-          borderBottom: '1px solid #e5e7eb',
-          paddingBottom: '16px',
+          borderBottom: '1px solid #f1f5f9',
+          paddingBottom: '20px',
+          background: 'linear-gradient(to right, #faf5ff, #eef2ff)',
+          borderRadius: '24px 24px 0 0',
         },
         body: {
           paddingTop: '24px',
+          background: '#fafbfc',
         },
-      }}>
+        content: {
+          borderRadius: '24px',
+          overflow: 'hidden',
+        },
+      }}
+      className="create-class-modal">
       <Form
         form={form}
         layout="vertical"
-        onFinish={onFinish}>
+        onFinish={onFinish}
+        initialValues={{
+          pricePerStudent: 100000,
+          minStudents: 5,
+          capacity: 30,
+          durationMinutes: 60,
+        }}>
+        
         {/* Basic Information Section */}
-        <div className="mb-6">
-          <div className="flex items-center mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg mr-3">
-              <BookOutlined className="text-blue-700 text-lg" />
+        <Card
+          className="mb-6 shadow-lg border-0 rounded-2xl overflow-hidden"
+          styles={{
+            header: {
+              background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+              borderBottom: 'none',
+              padding: '20px 24px',
+            },
+            body: {
+              padding: '24px',
+            },
+          }}
+          title={
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-md">
+                <BookOutlined className="text-white text-lg" />
+              </div>
+              <div>
+                <Text className="text-lg font-bold text-gray-900 block">Thông tin cơ bản</Text>
+                <Text className="text-gray-500 text-xs">Điền thông tin chính của lớp học</Text>
+              </div>
             </div>
-            <Text className="text-base font-semibold text-gray-800">Basic Information</Text>
-          </div>
-
+          }>
           <Form.Item
             name="title"
             label={
-              <span className="text-gray-700 font-medium">
-                <FileTextOutlined className="mr-2" />
-                Class Title
+              <span className="text-gray-700 font-semibold flex items-center gap-2">
+                <FileTextOutlined className="text-violet-600" />
+                Tên lớp học
               </span>
             }
-            rules={[{ required: true, message: 'Please enter a title' }]}>
+            rules={[
+              { required: true, message: 'Vui lòng nhập tên lớp học' },
+              { min: 5, message: 'Tên lớp học phải có ít nhất 5 ký tự' },
+            ]}>
             <Input
-              placeholder="e.g., Advanced English Conversation"
+              placeholder="VD: Tiếng Anh giao tiếp nâng cao - Chủ đề kinh doanh"
               size="large"
-              className="rounded-lg"
+              className="rounded-xl border-gray-200 hover:border-violet-400 focus:border-violet-500 h-12"
             />
           </Form.Item>
 
           <Form.Item
             name="description"
             label={
-              <span className="text-gray-700 font-medium">
-                <FileTextOutlined className="mr-2" />
-                Description
+              <span className="text-gray-700 font-semibold flex items-center gap-2">
+                <FileTextOutlined className="text-violet-600" />
+                Mô tả lớp học
               </span>
             }
-            rules={[{ required: true, message: 'Please enter a description' }]}>
+            rules={[
+              { required: true, message: 'Vui lòng nhập mô tả' },
+              { min: 20, message: 'Mô tả phải có ít nhất 20 ký tự' },
+            ]}>
             <TextArea
               rows={4}
-              placeholder="Describe what students will learn in this class..."
-              className="rounded-lg"
+              placeholder="Mô tả chi tiết nội dung học, đối tượng phù hợp, yêu cầu tiên quyết và những gì học viên sẽ đạt được sau khóa học..."
+              className="rounded-xl border-gray-200 hover:border-violet-400 focus:border-violet-500"
+              showCount
+              maxLength={500}
             />
           </Form.Item>
 
           <Form.Item
             name="programAssignmentId"
             label={
-              <span className="text-gray-700 font-medium">
-                <BookOutlined className="mr-2" />
-                Teaching Program
+              <span className="text-gray-700 font-semibold flex items-center gap-2">
+                <BookOutlined className="text-violet-600" />
+                Chương trình giảng dạy
               </span>
             }
-            rules={[{ required: true, message: 'Please select a teaching program' }]}>
+            rules={[{ required: true, message: 'Vui lòng chọn chương trình giảng dạy' }]}>
             <Select
               showSearch
               loading={isLoadingPrograms}
-              placeholder="Search and select a teaching program"
+              placeholder="Tìm và chọn chương trình giảng dạy"
               size="large"
-              className="rounded-lg"
-              optionFilterProp="children"
+              className="rounded-xl"
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+              }
               options={programsRes?.map((program) => ({
                 value: program.programAssignmentId,
                 label: `${program.programName} - ${program.levelName}`,
               }))}
             />
           </Form.Item>
-
-          {/* <Form.Item
-            name="languageID"
-            label={
-              <span className="text-gray-700 font-medium">
-                <GlobalOutlined className="mr-2" />
-                Language
-              </span>
-            }
-            rules={[{ required: true, message: 'Please select a language' }]}>
-            <Select
-              loading={isLoadingLanguages}
-              placeholder="Select teaching language"
-              size="large"
-              className="rounded-lg">
-              {languages?.data.map((lang) => (
-                <Select.Option
-                  key={lang.id}
-                  value={lang.id}>
-                  {lang.langName}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item> */}
-        </div>
-
-        <Divider className="my-6" />
+        </Card>
 
         {/* Schedule Section */}
-        <div className="mb-6">
-          <div className="flex items-center mb-4">
-            <div className="p-2 bg-indigo-100 rounded-lg mr-3">
-              <CalendarOutlined className="text-indigo-700 text-lg" />
+        <Card
+          className="mb-6 shadow-lg border-0 rounded-2xl overflow-hidden"
+          styles={{
+            header: {
+              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+              borderBottom: 'none',
+              padding: '20px 24px',
+            },
+            body: {
+              padding: '24px',
+            },
+          }}
+          title={
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-md">
+                <Calendar size={18} className="text-white" />
+              </div>
+              <div>
+                <Text className="text-lg font-bold text-gray-900 block">Lịch học & Thời lượng</Text>
+                <Text className="text-gray-500 text-xs">Thiết lập thời gian tổ chức lớp học</Text>
+              </div>
             </div>
-            <Text className="text-base font-semibold text-gray-800">Schedule & Duration</Text>
-          </div>
-
-          <Row gutter={16}>
-            <Col
-              xs={24}
-              md={12}>
+          }>
+          <Row gutter={24}>
+            <Col xs={24} md={12}>
               <Form.Item
                 name="classDate"
                 label={
-                  <span className="text-gray-700 font-medium">
-                    <CalendarOutlined className="mr-2" />
-                    Class Date
+                  <span className="text-gray-700 font-semibold flex items-center gap-2">
+                    <CalendarOutlined className="text-amber-600" />
+                    Ngày học
                   </span>
                 }
                 rules={[
-                  { required: true, message: 'Please select a date' },
+                  { required: true, message: 'Vui lòng chọn ngày' },
                   {
                     validator: (_, value) => {
                       if (value && value.isBefore(dayjs().add(7, 'day'))) {
-                        return Promise.reject('Class date must be at least 7 days from now');
+                        return Promise.reject('Ngày học phải cách ít nhất 7 ngày kể từ hôm nay');
                       }
                       return Promise.resolve();
                     },
                   },
                 ]}>
                 <DatePicker
-                  className="w-full rounded-lg"
+                  className="w-full rounded-xl border-gray-200 hover:border-amber-400 h-12"
                   size="large"
                   format="DD/MM/YYYY"
-                  placeholder="Select date"
+                  placeholder="Chọn ngày học"
+                  disabledDate={(current) => current && current < dayjs().add(6, 'day')}
                 />
               </Form.Item>
             </Col>
 
-            <Col
-              xs={24}
-              md={12}>
+            <Col xs={24} md={12}>
               <Form.Item
                 name="startTime"
                 label={
-                  <span className="text-gray-700 font-medium">
-                    <ClockCircleOutlined className="mr-2" />
-                    Start Time
+                  <span className="text-gray-700 font-semibold flex items-center gap-2">
+                    <Clock size={16} className="text-amber-600" />
+                    Giờ bắt đầu
                   </span>
                 }
-                rules={[{ required: true, message: 'Please select a time' }]}>
+                rules={[{ required: true, message: 'Vui lòng chọn giờ' }]}>
                 <TimePicker
                   format="HH:mm"
-                  className="w-full rounded-lg"
+                  className="w-full rounded-xl border-gray-200 hover:border-amber-400 h-12"
                   size="large"
-                  placeholder="Select time"
+                  placeholder="Chọn giờ"
+                  minuteStep={15}
                 />
               </Form.Item>
             </Col>
@@ -282,132 +321,210 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose }) =
           <Form.Item
             name="durationMinutes"
             label={
-              <span className="text-gray-700 font-medium">
-                <ClockCircleOutlined className="mr-2" />
-                Duration
+              <span className="text-gray-700 font-semibold flex items-center gap-2">
+                <ClockCircleOutlined className="text-amber-600" />
+                Thời lượng buổi học
               </span>
             }
-            rules={[{ required: true, message: 'Please select a duration' }]}>
+            rules={[{ required: true, message: 'Vui lòng chọn thời lượng' }]}>
             <Select
-              placeholder="Select class duration"
+              placeholder="Chọn thời lượng"
               size="large"
-              className="rounded-lg">
+              className="rounded-xl">
+              <Select.Option value={30}>
+                <div className="flex items-center justify-between py-1">
+                  <span className="font-semibold">30 phút</span>
+                  <Text type="secondary" className="text-xs bg-gray-100 px-3 py-1 rounded-full font-medium">
+                    Nhanh
+                  </Text>
+                </div>
+              </Select.Option>
               <Select.Option value={45}>
-                <div className="flex items-center justify-between">
-                  <span>45 minutes</span>
-                  <Text
-                    type="secondary"
-                    className="text-xs">
-                    Quick session
+                <div className="flex items-center justify-between py-1">
+                  <span className="font-semibold">45 phút</span>
+                  <Text type="secondary" className="text-xs bg-gray-100 px-3 py-1 rounded-full font-medium">
+                    Ngắn
                   </Text>
                 </div>
               </Select.Option>
               <Select.Option value={60}>
-                <div className="flex items-center justify-between">
-                  <span>60 minutes</span>
-                  <Text
-                    type="secondary"
-                    className="text-xs">
-                    Standarded
-                  </Text>
+                <div className="flex items-center justify-between py-1">
+                  <span className="font-semibold">60 phút</span>
+                  <span className="text-xs bg-violet-100 text-violet-700 px-3 py-1 rounded-full font-bold flex items-center gap-1">
+                    <StarFilled className="text-amber-500" /> Đề xuất
+                  </span>
                 </div>
               </Select.Option>
               <Select.Option value={90}>
-                <div className="flex items-center justify-between">
-                  <span>90 minutes</span>
-                  <Text
-                    type="secondary"
-                    className="text-xs">
-                    Extended
+                <div className="flex items-center justify-between py-1">
+                  <span className="font-semibold">90 phút</span>
+                  <Text type="secondary" className="text-xs bg-gray-100 px-3 py-1 rounded-full font-medium">
+                    Mở rộng
                   </Text>
                 </div>
               </Select.Option>
               <Select.Option value={120}>
-                <div className="flex items-center justify-between">
-                  <span>120 minutes</span>
-                  <Text
-                    type="secondary"
-                    className="text-xs">
-                    Deep dive
+                <div className="flex items-center justify-between py-1">
+                  <span className="font-semibold">120 phút</span>
+                  <Text type="secondary" className="text-xs bg-gray-100 px-3 py-1 rounded-full font-medium">
+                    Chuyên sâu
                   </Text>
                 </div>
               </Select.Option>
             </Select>
           </Form.Item>
-        </div>
+        </Card>
 
-        <Divider className="my-6" />
-
-        {/* Pricing & Meeting Link Section */}
-        <div className="mb-2">
-          <div className="flex items-center mb-4">
-            <div className="p-2 bg-green-100 rounded-lg mr-3">
-              <DollarOutlined className="text-green-700 text-lg" />
+        {/* Capacity & Pricing Section */}
+        <Card
+          className="mb-6 shadow-lg border-0 rounded-2xl overflow-hidden"
+          styles={{
+            header: {
+              background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+              borderBottom: 'none',
+              padding: '20px 24px',
+            },
+            body: {
+              padding: '24px',
+            },
+          }}
+          title={
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl shadow-md">
+                <Users size={18} className="text-white" />
+              </div>
+              <div>
+                <Text className="text-lg font-bold text-gray-900 block">Sức chứa & Học phí</Text>
+                <Text className="text-gray-500 text-xs">Cấu hình số lượng học viên và giá</Text>
+              </div>
             </div>
-            <Text className="text-base font-semibold text-gray-800">Pricing & Meeting Details</Text>
-          </div>
-
-          <Row gutter={16}>
-            <Col
-              xs={24}
-              md={12}>
+          }>
+          <Row gutter={24}>
+            <Col xs={24} md={8}>
               <Form.Item
-                name="pricePerStudent"
+                name="minStudents"
                 label={
-                  <span className="text-gray-700 font-medium">
-                    <DollarOutlined className="mr-2" />
-                    Price per Student (VNĐ)
+                  <span className="text-gray-700 font-semibold flex items-center gap-2">
+                    <UserOutlined className="text-emerald-600" />
+                    Tối thiểu
+                    <Tooltip title="Lớp học chỉ được mở khi đạt số học viên tối thiểu">
+                      <InfoCircleOutlined className="text-gray-400 cursor-help" />
+                    </Tooltip>
                   </span>
                 }
-                initialValue={100000}
-                rules={[{ required: true, message: 'Please enter a price' }]}>
-                <InputNumber<number>
-                  min={0}
-                  className="rounded-lg"
+                rules={[
+                  { required: true, message: 'Bắt buộc' },
+                  { type: 'number', min: 1, message: 'Tối thiểu 1' },
+                ]}>
+                <InputNumber
+                  min={1}
+                  max={100}
+                  className="w-full rounded-xl"
                   size="large"
-                  style={{ width: '100%' }}
-                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(value) => Number(value?.replace(/[.,]/g, '') || 0)}
-                  placeholder="Enter price"
+                  placeholder="VD: 5"
+                  addonAfter="người"
                 />
               </Form.Item>
             </Col>
 
-            {/* <Col
-              xs={24}
-              md={12}>
+            <Col xs={24} md={8}>
               <Form.Item
-                name="googleMeetLink"
+                name="capacity"
                 label={
-                  <span className="text-gray-700 font-medium">
-                    <VideoCameraOutlined className="mr-2" />
-                    Google Meet Link
+                  <span className="text-gray-700 font-semibold flex items-center gap-2">
+                    <TeamOutlined className="text-emerald-600" />
+                    Tối đa
+                    <Tooltip title="Số học viên tối đa có thể đăng ký">
+                      <InfoCircleOutlined className="text-gray-400 cursor-help" />
+                    </Tooltip>
                   </span>
                 }
                 rules={[
+                  { required: true, message: 'Bắt buộc' },
                   {
-                    required: true,
-                    message: 'Please enter a Google Meet link',
+                    type: 'number',
+                    min: minStudents || 1,
+                    message: `Phải ≥ ${minStudents || 1}`,
                   },
-                  { type: 'url', message: 'Please enter a valid URL' },
+                  { type: 'number', max: 100, message: 'Tối đa 100' },
                 ]}>
-                <Input
-                  placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                <InputNumber
+                  min={minStudents || 1}
+                  max={100}
+                  className="w-full rounded-xl"
                   size="large"
-                  className="rounded-lg"
+                  placeholder="VD: 30"
+                  addonAfter="người"
                 />
               </Form.Item>
-            </Col> */}
-          </Row>
-        </div>
+            </Col>
 
-        {/* Helper Text */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4">
-          <Text className="text-blue-800 text-sm">
-            <BookOutlined className="mr-2" />
-            <strong>Note:</strong> Your class will be created as a draft. You can review and publish
-            it later from the class details page.
-          </Text>
+            <Col xs={24} md={8}>
+              <Form.Item
+                name="pricePerStudent"
+                label={
+                  <span className="text-gray-700 font-semibold flex items-center gap-2">
+                    <Wallet size={16} className="text-emerald-600" />
+                    Học phí
+                  </span>
+                }
+                rules={[
+                  { required: true, message: 'Bắt buộc' },
+                  { type: 'number', min: 10000, message: 'Tối thiểu 10.000đ' },
+                ]}>
+                <InputNumber<number>
+                  min={10000}
+                  step={10000}
+                  className="w-full rounded-xl"
+                  size="large"
+                  formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                  parser={(value) => Number(value?.replace(/[.,]/g, '') || 0)}
+                  placeholder="Nhập học phí"
+                  addonAfter="VNĐ"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Revenue Preview */}
+          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 rounded-2xl p-5 mt-4 border border-emerald-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-100 rounded-xl">
+                  <DollarOutlined className="text-emerald-600 text-lg" />
+                </div>
+                <div>
+                  <Text className="text-gray-600 font-medium block">Doanh thu tiềm năng</Text>
+                  <Text className="text-gray-400 text-xs">Khi đầy lớp</Text>
+                </div>
+              </div>
+              <div className="text-right">
+                <Text className="text-2xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  {new Intl.NumberFormat('vi-VN').format(
+                    (pricePerStudent || 100000) * (capacity || 30)
+                  )}
+                </Text>
+                <Text className="text-emerald-600 font-bold text-sm ml-1">VNĐ</Text>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Info Note */}
+        <div className="bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-50 border border-violet-200 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-violet-100 rounded-xl">
+              <InfoCircleOutlined className="text-violet-600 text-lg" />
+            </div>
+            <div>
+              <Text className="text-violet-900 font-bold block mb-2 text-base">Lưu ý quan trọng</Text>
+              <Text className="text-violet-700 text-sm leading-relaxed">
+                Lớp học sẽ được tạo ở trạng thái <strong>Bản nháp</strong>. Bạn có thể xem lại và <strong>Xuất bản</strong>{' '}
+                từ trang chi tiết lớp học. Học viên chỉ có thể đăng ký sau khi lớp được xuất bản. 
+                Lớp học chỉ diễn ra khi đạt số học viên tối thiểu trước ngày khai giảng.
+              </Text>
+            </div>
+          </div>
         </div>
       </Form>
     </Modal>

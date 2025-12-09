@@ -1,5 +1,5 @@
 import api from "../../config/axios";
-import type { Class, CreateClassRequest } from "./type";
+import type { Class, CreateClassRequest, ClassEnrollmentResponse } from "./type";
 
 export const getClassesService = async (params: {
   page?: number;
@@ -38,5 +38,10 @@ export const deleteClassService = async (classId: string, reason: string) => {
   const res = await api.delete(`teacher/classes/${classId}`, {
     data: { reason },
   });
+  return res.data;
+};
+
+export const getClassEnrollmentsService = async (classId: string) => {
+  const res = await api.get<ClassEnrollmentResponse>(`teacher/classes/${classId}/enrollments`);
   return res.data;
 };
