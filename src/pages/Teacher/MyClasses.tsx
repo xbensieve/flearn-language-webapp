@@ -29,6 +29,7 @@ import {
   StarFilled,
   ThunderboltFilled,
   FireFilled,
+  TrophyOutlined,
 } from '@ant-design/icons';
 import type { Class } from '../../services/class/type';
 import CreateClassForm from './components/CreateClassForm';
@@ -41,34 +42,62 @@ const statusOptions = [
   { value: '', label: 'Tất cả lớp học', icon: <BookOutlined /> },
   { value: 'Draft', label: 'Bản nháp', color: '#8b5cf6' },
   { value: 'Published', label: 'Đã xuất bản', color: '#10b981' },
+  { value: 'InProgress', label: 'Đang diễn ra', color: '#3b82f6' },
+  { value: 'Finished', label: 'Đã kết thúc', color: '#6366f1' },
+  { value: 'Completed_PendingPayout', label: 'Chờ thanh toán', color: '#f59e42' },
+  { value: 'Completed_Paid', label: 'Đã thanh toán GV', color: '#22d3ee' },
   { value: 'PendingCancel', label: 'Chờ hủy', color: '#f59e0b' },
   { value: 'Cancelled', label: 'Đã hủy', color: '#ef4444' },
 ];
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
-  Draft: { 
-    label: 'Bản nháp', 
-    color: '#8b5cf6', 
+  Draft: {
+    label: 'Bản nháp',
+    color: '#8b5cf6',
     bgColor: 'bg-violet-50',
-    icon: <ThunderboltFilled className="text-violet-500" />
+    icon: <ThunderboltFilled className="text-violet-500" />,
   },
-  Published: { 
-    label: 'Đang hoạt động', 
-    color: '#10b981', 
+  Published: {
+    label: 'Đã xuất bản',
+    color: '#10b981',
     bgColor: 'bg-emerald-50',
-    icon: <StarFilled className="text-emerald-500" />
+    icon: <StarFilled className="text-emerald-500" />,
   },
-  PendingCancel: { 
-    label: 'Chờ hủy', 
-    color: '#f59e0b', 
+  InProgress: {
+    label: 'Đang diễn ra',
+    color: '#3b82f6',
+    bgColor: 'bg-blue-50',
+    icon: <ThunderboltFilled className="text-blue-500" />,
+  },
+  Finished: {
+    label: 'Đã kết thúc',
+    color: '#6366f1',
+    bgColor: 'bg-indigo-50',
+    icon: <TrophyOutlined className="text-indigo-500" />,
+  },
+  Completed_PendingPayout: {
+    label: 'Chờ thanh toán',
+    color: '#f59e42',
+    bgColor: 'bg-amber-100',
+    icon: <ThunderboltFilled className="text-amber-500" />,
+  },
+  Completed_Paid: {
+    label: 'Đã thanh toán GV',
+    color: '#22d3ee',
+    bgColor: 'bg-cyan-100',
+    icon: <StarFilled className="text-cyan-500" />,
+  },
+  PendingCancel: {
+    label: 'Chờ hủy',
+    color: '#f59e0b',
     bgColor: 'bg-amber-50',
-    icon: <FireFilled className="text-amber-500" />
+    icon: <FireFilled className="text-amber-500" />,
   },
-  Cancelled: { 
-    label: 'Đã hủy', 
-    color: '#ef4444', 
+  Cancelled: {
+    label: 'Đã hủy',
+    color: '#ef4444',
     bgColor: 'bg-red-50',
-    icon: null
+    icon: null,
   },
 };
 

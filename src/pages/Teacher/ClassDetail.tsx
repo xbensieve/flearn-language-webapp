@@ -57,9 +57,33 @@ const statusConfig: Record<string, { label: string; color: string; bgGradient: s
     icon: <ThunderboltFilled />,
   },
   Published: {
-    label: 'Đang hoạt động',
+    label: 'Đã xuất bản',
     color: '#10b981',
     bgGradient: 'from-emerald-500 via-teal-500 to-cyan-600',
+    icon: <StarFilled />,
+  },
+  InProgress: {
+    label: 'Đang diễn ra',
+    color: '#3b82f6',
+    bgGradient: 'from-blue-500 via-blue-400 to-blue-300',
+    icon: <ThunderboltFilled />,
+  },
+  Finished: {
+    label: 'Đã kết thúc',
+    color: '#6366f1',
+    bgGradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
+    icon: <TrophyOutlined />,
+  },
+  Completed_PendingPayout: {
+    label: 'Chờ thanh toán',
+    color: '#f59e42',
+    bgGradient: 'from-amber-400 via-amber-300 to-amber-200',
+    icon: <ThunderboltFilled />,
+  },
+  Completed_Paid: {
+    label: 'Đã thanh toán GV',
+    color: '#22d3ee',
+    bgGradient: 'from-cyan-400 via-cyan-300 to-cyan-200',
     icon: <StarFilled />,
   },
   PendingCancel: {
