@@ -14,6 +14,7 @@ import {
 } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import ReactQuill from "react-quill-new";
+import "@/index.css";
 import "react-quill-new/dist/quill.snow.css";
 import { useUpdateLesson } from "../helpers";
 import type { Lesson } from "../../../services/course/type";
@@ -36,6 +37,13 @@ interface Props {
   onUpdated: () => void;
   onDeleted: (id: string) => void;
 }
+
+const normFile = (e: any) => {
+  if (Array.isArray(e)) {
+    return e;
+  }
+  return e?.fileList;
+};
 
 const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
   const [editDrawerVisible, setEditDrawerVisible] = useState(false);
@@ -78,9 +86,18 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
     formData.append("Title", values.title);
     formData.append("Description", values.description || "");
     formData.append("Content", values.content || "");
-    if (values.video?.file) formData.append("VideoFile", values.video.file);
-    if (values.document?.file)
-      formData.append("DocumentFile", values.document.file);
+    if (values.video && values.video.length > 0) {
+      const file = values.video[0];
+      if (file.originFileObj) {
+        formData.append("VideoFile", file.originFileObj);
+      }
+    }
+    if (values.document && values.document.length > 0) {
+      const file = values.document[0];
+      if (file.originFileObj) {
+        formData.append("DocumentFile", file.originFileObj);
+      }
+    }
     updateLesson.mutate({ id: lesson.lessonID, formData });
   };
 
@@ -368,13 +385,19 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             label="Nội dung"
             rules={[{ required: true }]}
           >
-            <div className="border border-gray-200 rounded-md overflow-hidden">
-              <ReactQuill theme="snow" className="h-64 mb-12" />
-            </div>
+            <ReactQuill
+              theme="snow"
+              className="h-64 mb-12 border border-gray-200 rounded-md overflow-hidden bg-white"
+            />
           </Form.Item>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Form.Item name="video" label="Video Resource" valuePropName="file">
+            <Form.Item
+              name="video"
+              label="Video Resource"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+            >
               <Upload beforeUpload={() => false} maxCount={1} accept="video/*">
                 <Button
                   block
@@ -388,7 +411,8 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             <Form.Item
               name="document"
               label="Tài nguyên tài liệu"
-              valuePropName="file"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
             >
               <Upload
                 beforeUpload={() => false}
