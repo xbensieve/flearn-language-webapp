@@ -1,10 +1,10 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../../utils/AuthContext';
-
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../../../utils/AuthContext";
+import LoadingScreen from "../../../components/Loading/LoadingScreen";
 const PrivateRoute: React.FC<{
   children: React.ReactNode;
-  allowedRoles: ('admin' | 'manager' | 'teacher' | 'learner')[];
+  allowedRoles: ("admin" | "manager" | "teacher" | "learner")[];
 }> = ({ children, allowedRoles }) => {
   const { auth } = useAuth();
   const { isAuthenticated, roles, loading } = auth;
@@ -19,28 +19,18 @@ const PrivateRoute: React.FC<{
   */
 
   if (loading) {
-    return <div>Loading...</div>; 
+    return <LoadingScreen />;
   }
 
   if (!isAuthenticated) {
-    return (
-      <Navigate
-        to="/login"
-        replace
-      />
-    );
+    return <Navigate to="/login" replace />;
   }
 
   if (roles && roles.some((role) => allowedRoles.includes(role))) {
     return <>{children}</>;
   }
 
-  return (
-    <Navigate
-      to="/login"
-      replace
-    />
-  );
+  return <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;
