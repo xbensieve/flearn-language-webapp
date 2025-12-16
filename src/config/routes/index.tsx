@@ -59,6 +59,7 @@ import TeacherPayoutPage from "../../pages/Teacher/TeacherPayoutPage";
 import WalletHistoryPage from "@/pages/Wallet/WalletHistory";
 import CreateCoursePage from "@/pages/Teacher/Course/CreateCoursePage";
 import PayoutManagerPage from "@/pages/Teacher/Finance/PayoutManagerPage";
+import TopicPage from "@/pages/Admin/topics";
 
 // Lấy biến môi trường (Mặc định là learner nếu không set)
 const APP_MODE = import.meta.env.VITE_APP_MODE || "learner";
@@ -134,6 +135,7 @@ const systemRoutes: RouteObject[] = [
       { path: "courses", element: <CoursesPage /> },
       { path: "wallet-transactions", element: <WalletHistoryPage /> },
       { path: "settings", element: <AdminSettingsPage /> },
+      { path: "topics", element: <TopicPage /> },
     ],
   },
   // --- MANAGER ROUTES ---
