@@ -23,21 +23,25 @@ const NotificationSettings: React.FC = () => {
 
   // Check if in incognito/private mode
   const [isIncognito, setIsIncognito] = React.useState(false);
-  
+
   React.useEffect(() => {
     // Detect incognito mode
     const checkIncognito = async () => {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const fs = (navigator as any).webkitTemporaryStorage;
         if (fs) {
-          fs.queryUsageAndQuota((_used: number, quota: number) => {
-            // In incognito, quota is usually very limited (< 120MB)
-            if (quota < 120000000) {
-              setIsIncognito(true);
-            }
-          }, () => {});
+          fs.queryUsageAndQuota(
+            (_used: number, quota: number) => {
+              // In incognito, quota is usually very limited (< 120MB)
+              if (quota < 120000000) {
+                setIsIncognito(true);
+              }
+            },
+            () => {}
+          );
         }
-        
+
         // Alternative check using storage estimate
         if ('storage' in navigator && 'estimate' in navigator.storage) {
           const estimate = await navigator.storage.estimate();
@@ -66,10 +70,10 @@ const NotificationSettings: React.FC = () => {
       // Check status first
       const status = await getWebPushStatus();
       console.log('Web Push Status:', status);
-      
+
       const response = await testWebPush();
       console.log('Test response:', response);
-      
+
       // Show a local notification immediately as feedback
       if ('Notification' in window && Notification.permission === 'granted') {
         if ('serviceWorker' in navigator) {
@@ -92,31 +96,39 @@ const NotificationSettings: React.FC = () => {
   const getStatusTag = () => {
     if (!isSupported) {
       return (
-        <Tag icon={<CloseCircleOutlined />} color="error">
-          Not Supported
+        <Tag
+          icon={<CloseCircleOutlined />}
+          color="error">
+          Chưa hỗ trợ
         </Tag>
       );
     }
 
     if (permissionStatus === 'denied') {
       return (
-        <Tag icon={<WarningOutlined />} color="warning">
-          Blocked
+        <Tag
+          icon={<WarningOutlined />}
+          color="warning">
+          Khóa
         </Tag>
       );
     }
 
     if (isEnabled) {
       return (
-        <Tag icon={<CheckCircleOutlined />} color="success">
-          Enabled
+        <Tag
+          icon={<CheckCircleOutlined />}
+          color="success">
+          Bật
         </Tag>
       );
     }
 
     return (
-      <Tag icon={<BellOutlined />} color="default">
-        Disabled
+      <Tag
+        icon={<BellOutlined />}
+        color="default">
+        Tắt
       </Tag>
     );
   };
@@ -128,20 +140,21 @@ const NotificationSettings: React.FC = () => {
           <Space>
             <WarningOutlined className="text-gray-500" />
             <span className="text-gray-600 text-xs">
-              Notifications don't work in incognito/private mode. Please use a normal browser window.
+              Notifications don't work in incognito/private mode. Please use a normal browser
+              window.
             </span>
           </Space>
         </div>
       )}
-      
+
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-sm text-gray-900">Desktop Notifications</span>
+            <span className="font-medium text-sm text-gray-900">Nhận thông báo</span>
             {getStatusTag()}
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Receive notifications even when browser is closed
+            Nhận thông báo ngay cả khi trình duyệt đã đóng
           </p>
         </div>
         <Switch
