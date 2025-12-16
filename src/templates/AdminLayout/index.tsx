@@ -1,15 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
-import {
-  Layout,
-  Menu,
-  Avatar,
-  Button,
-  Dropdown,
-  theme,
-  Typography,
-} from "antd";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from 'react';
+import { Layout, Menu, Avatar, Button, Dropdown, theme, Typography } from 'antd';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   DashboardOutlined,
   LogoutOutlined,
@@ -21,13 +13,13 @@ import {
   BookOutlined,
   UserOutlined,
   SettingOutlined,
-} from "@ant-design/icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { logoutService } from "../../services/auth";
-import { getAdminWalletService } from "../../services/payout";
-import { unregisterWebPush } from "../../services/webPush";
-import { ArrowLeftRight } from "lucide-react";
-import { toast } from "sonner";
+} from '@ant-design/icons';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { logoutService } from '../../services/auth';
+import { getAdminWalletService } from '../../services/payout';
+import { unregisterWebPush } from '../../services/webPush';
+import { ArrowLeftRight } from 'lucide-react';
+import { toast } from 'sonner';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -41,7 +33,7 @@ const DashboardLayout: React.FC = () => {
   } = theme.useToken();
 
   const { data: wallet } = useQuery({
-    queryKey: ["admin-wallet"],
+    queryKey: ['admin-wallet'],
     queryFn: getAdminWalletService,
     refetchInterval: 60000,
   });
@@ -49,10 +41,10 @@ const DashboardLayout: React.FC = () => {
   const { mutate: logout } = useMutation({
     mutationFn: (refreshToken: string) => logoutService(refreshToken),
     onSuccess: () => {
-      localStorage.removeItem("FLEARN_ACCESS_TOKEN");
-      localStorage.removeItem("FLEARN_REFRESH_TOKEN");
-      toast.success("Đăng xuất thành công!");
-      navigate("/login");
+      localStorage.removeItem('FLEARN_ACCESS_TOKEN');
+      localStorage.removeItem('FLEARN_REFRESH_TOKEN');
+      toast.success('Đăng xuất thành công!');
+      navigate('/login');
     },
     onError: (error: any) => {
       toast.error(error.message);
@@ -64,10 +56,10 @@ const DashboardLayout: React.FC = () => {
     try {
       await unregisterWebPush();
     } catch (e) {
-      console.error("Failed to unregister web push:", e);
+      console.error('Failed to unregister web push:', e);
     }
 
-    const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
+    const refreshToken = localStorage.getItem('FLEARN_REFRESH_TOKEN');
     if (refreshToken) {
       logout(refreshToken);
     } else {
@@ -76,66 +68,66 @@ const DashboardLayout: React.FC = () => {
   };
 
   const handleLogoutCleanup = () => {
-    localStorage.removeItem("FLEARN_ACCESS_TOKEN");
-    localStorage.removeItem("FLEARN_REFRESH_TOKEN");
-    localStorage.removeItem("FLEARN_USER_ROLE");
-    localStorage.removeItem("FLEARN_USER_ROLES");
-    toast.success("Đăng xuất thành công!");
-    navigate("/login");
+    localStorage.removeItem('FLEARN_ACCESS_TOKEN');
+    localStorage.removeItem('FLEARN_REFRESH_TOKEN');
+    localStorage.removeItem('FLEARN_USER_ROLE');
+    localStorage.removeItem('FLEARN_USER_ROLES');
+    toast.success('Đăng xuất thành công!');
+    navigate('/login');
   };
 
   const menuItems = [
     {
-      key: "/admin/dashboard",
+      key: '/admin/dashboard',
       icon: <DashboardOutlined />,
-      label: "Tổng quan",
+      label: 'Tổng quan',
     },
     {
-      type: "group",
-      label: "QUẢN LÝ",
+      type: 'group',
+      label: 'QUẢN LÝ',
       children: [
-        { key: "/admin/users", icon: <UserOutlined />, label: "Người dùng" },
-        { key: "/admin/staff", icon: <UserOutlined />, label: "Nhân viên" },
+        { key: '/admin/users', icon: <UserOutlined />, label: 'Người dùng' },
+        { key: '/admin/staff', icon: <UserOutlined />, label: 'Nhân viên' },
 
-        { key: "/admin/courses", icon: <BookOutlined />, label: "Khóa học" },
+        { key: '/admin/courses', icon: <BookOutlined />, label: 'Khóa học' },
         {
-          key: "/admin/course-templates",
+          key: '/admin/course-templates',
           icon: <AppstoreOutlined />,
-          label: "Cấu trúc",
+          label: 'Cấu trúc',
         },
         {
-          key: "/admin/programs",
+          key: '/admin/programs',
           icon: <MenuFoldOutlined />,
-          label: "Chương trình",
+          label: 'Chương trình',
         },
         {
-          key: "/admin/conversation-prompts",
+          key: '/admin/conversation-prompts',
           icon: <CommentOutlined />,
-          label: "Hướng dẫn",
+          label: 'Hướng dẫn',
         },
       ],
     },
     {
-      type: "group",
-      label: "TÀI CHÍNH",
+      type: 'group',
+      label: 'TÀI CHÍNH',
       children: [
-        { key: "/admin/refund", icon: <WalletOutlined />, label: "Hoàn tiền" },
-        { key: "/admin/payouts", icon: <WalletOutlined />, label: "Xuất chi" },
+        { key: '/admin/refund', icon: <WalletOutlined />, label: 'Hoàn tiền' },
+        { key: '/admin/payouts', icon: <WalletOutlined />, label: 'Xuất chi' },
         {
-          key: "/admin/wallet-transactions",
+          key: '/admin/wallet-transactions',
           icon: <ArrowLeftRight />,
-          label: "Giao dịch ví",
+          label: 'Giao dịch ví',
         },
       ],
     },
     {
-      type: "group",
-      label: "HỆ THỐNG",
+      type: 'group',
+      label: 'HỆ THỐNG',
       children: [
         {
-          key: "/admin/settings",
+          key: '/admin/settings',
           icon: <SettingOutlined />,
-          label: "Cài đặt",
+          label: 'Cài đặt',
         },
       ],
     },
@@ -144,8 +136,8 @@ const DashboardLayout: React.FC = () => {
   const userMenu = {
     items: [
       {
-        key: "logout",
-        label: "Đăng xuất",
+        key: 'logout',
+        label: 'Đăng xuất',
         icon: <LogoutOutlined />,
         danger: true,
         onClick: handleLogoutClick,
@@ -154,7 +146,9 @@ const DashboardLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }} hasSider>
+    <Layout
+      style={{ minHeight: '100vh' }}
+      hasSider>
       <Sider
         trigger={null}
         collapsible
@@ -162,23 +156,20 @@ const DashboardLayout: React.FC = () => {
         width={230}
         theme="light"
         style={{
-          overflow: "auto",
-          height: "100vh",
-          position: "fixed",
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
           left: 0,
           top: 0,
           bottom: 0,
           zIndex: 20,
-        }}
-      >
+        }}>
         <div className="h-16 flex items-center justify-center border-b border-gray-50">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
             F
           </div>
           {!collapsed && (
-            <span className="ml-3 text-lg font-bold text-slate-700">
-              FLearn Admin
-            </span>
+            <span className="ml-3 text-lg font-bold text-slate-700">FLearn Admin</span>
           )}
         </div>
 
@@ -195,15 +186,13 @@ const DashboardLayout: React.FC = () => {
       <Layout
         style={{
           marginLeft: collapsed ? 80 : 230,
-          transition: "all 0.2s",
-          minHeight: "100vh",
-          background: "#f8fafc",
-        }}
-      >
+          transition: 'all 0.2s',
+          minHeight: '100vh',
+          background: '#f8fafc',
+        }}>
         <Header
-          style={{ background: colorBgContainer, padding: "0 24px" }}
-          className="sticky top-0 z-10 flex justify-between items-center h-16 shadow-sm border-b border-gray-100"
-        >
+          style={{ background: colorBgContainer, padding: '0 24px' }}
+          className="sticky top-0 z-10 flex justify-between items-center h-16 shadow-sm border-b border-gray-100">
           <div className="flex items-center">
             <Button
               type="text"
@@ -222,18 +211,16 @@ const DashboardLayout: React.FC = () => {
                 <div className="flex flex-col justify-center">
                   <div className="flex items-baseline gap-1">
                     <Text className="text-sm font-extrabold text-gray-800 font-sans">
-                      {wallet.totalBalance?.toLocaleString("vi-VN")}
+                      {wallet.totalBalance?.toLocaleString('vi-VN')}
                     </Text>
-                    <Text className="text-[10px] text-gray-400 font-semibold">
-                      đ
-                    </Text>
+                    <Text className="text-[10px] text-gray-400 font-semibold">đ</Text>
                   </div>
                   <Text className="text-[10px] text-gray-400 font-medium leading-tight">
-                    (Avail:{" "}
+                    (Khả dụng:{' '}
                     <span className="text-emerald-500 font-bold">
                       {wallet.availableBalance?.toLocaleString()}
-                    </span>{" "}
-                    - Hold:{" "}
+                    </span>{' '}
+                    - Số dư:{' '}
                     <span className="text-amber-500 font-bold">
                       {wallet.holdBalance?.toLocaleString()}
                     </span>
@@ -246,15 +233,12 @@ const DashboardLayout: React.FC = () => {
             {/* User Dropdown (Chỉ còn Avatar) */}
             <Dropdown
               menu={userMenu as any}
-              trigger={["click"]}
-              placement="bottomRight"
-            >
+              trigger={['click']}
+              placement="bottomRight">
               <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 py-1 px-2 rounded-full transition-colors">
                 <div className="hidden md:block text-right leading-tight">
                   <div className="font-bold text-slate-700 text-sm">Admin</div>
-                  <div className="text-[10px] text-slate-400 font-medium">
-                    Quản trị viên
-                  </div>
+                  <div className="text-[10px] text-slate-400 font-medium">Quản trị viên</div>
                 </div>
                 <Avatar
                   src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin"
@@ -266,7 +250,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         </Header>
 
-        <Content style={{ padding: "24px", overflow: "initial" }}>
+        <Content style={{ padding: '24px', overflow: 'initial' }}>
           <Outlet />
         </Content>
       </Layout>
