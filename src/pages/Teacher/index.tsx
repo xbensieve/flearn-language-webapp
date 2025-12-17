@@ -701,11 +701,19 @@ const TeacherApplicationPage: React.FC = () => {
                     { required: true, message: "Số điện thoại là bắt buộc" },
                     {
                       validator: (_, value) => {
-                        if (!value) return Promise.reject();
+                        // Nếu không có giá trị thì bỏ qua (đã có rule required lo)
+                        if (!value) return Promise.resolve();
+
+                        // Lấy toàn bộ số (bỏ dấu +, khoảng trắng)
                         const digits = value.replace(/\D/g, "");
-                        const isVN =
-                          /^0\d{9}$/.test(digits) || /^84\d{9}$/.test(digits);
-                        if (!isVN) {
+
+                        // Logic validate:
+                        // 1. Đầu số 84: tổng phải là 11 số (84 + 9 số)
+                        // 2. Đầu số 0: tổng phải là 10 số (0 + 9 số)
+                        const isValid =
+                          /^84\d{9}$/.test(digits) || /^0\d{9}$/.test(digits);
+
+                        if (!isValid) {
                           return Promise.reject(
                             "Vui lòng nhập số điện thoại Việt Nam hợp lệ"
                           );
@@ -719,20 +727,37 @@ const TeacherApplicationPage: React.FC = () => {
                   <Input
                     placeholder="+84 901 234 567"
                     className="h-11"
-                    maxLength={14}
+                    maxLength={16}
                     onChange={(e) => {
-                      let val = e.target.value.replace(/\D/g, "");
-                      if (val.startsWith("0") && val.length > 1) {
-                        val = "84" + val.slice(1);
+                      const val = e.target.value;
+                      let digits = val.replace(/\D/g, "");
+
+                      if (digits.startsWith("0")) {
+                        digits = "84" + digits.slice(1);
                       }
-                      if (val.startsWith("84") && val.length > 2) {
-                        val =
-                          "+84 " +
-                          val
-                            .slice(2)
-                            .replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
+
+                      if (digits.startsWith("84")) {
+                        digits = digits.slice(0, 11);
+
+                        let formatted = "+84";
+                        const rest = digits.slice(2);
+
+                        if (rest.length > 0) {
+                          formatted += " " + rest.substring(0, 3);
+                        }
+                        if (rest.length > 3) {
+                          formatted += " " + rest.substring(3, 6);
+                        }
+                        if (rest.length > 6) {
+                          formatted += " " + rest.substring(6, 9);
+                        }
+
+                        form.setFieldsValue({ PhoneNumber: formatted });
+
+                        form.validateFields(["PhoneNumber"]);
+                      } else {
+                        form.setFieldsValue({ PhoneNumber: val });
                       }
-                      form.setFieldsValue({ PhoneNumber: val });
                     }}
                   />
                 </Form.Item>

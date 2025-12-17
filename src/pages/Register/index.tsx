@@ -87,16 +87,28 @@ const Register: React.FC = () => {
   useEffect(() => {
     const savedStep = localStorage.getItem('registerStep');
     const savedEmail = localStorage.getItem('userEmail');
-    if (savedStep === 'verify' && savedEmail) {
-      setStep('verify');
-      setUserEmail(savedEmail);
-    }
+    const expiryStr = localStorage.getItem("otpExpiry");
 
-    const expiryStr = localStorage.getItem('otpExpiry');
-    if (expiryStr) {
-      const diff = Math.floor((parseInt(expiryStr) - Date.now()) / 1000);
-      if (diff > 0) setTimeLeft(diff);
-    }
+    const now = Date.now();
+
+   if (
+     savedStep === "verify" &&
+     savedEmail &&
+     expiryStr &&
+     parseInt(expiryStr) > now
+   ) {
+     setStep("verify");
+     setUserEmail(savedEmail);
+
+     const diff = Math.floor((parseInt(expiryStr) - now) / 1000);
+     if (diff > 0) setTimeLeft(diff);
+   } else {
+     localStorage.removeItem("otpExpiry");
+     localStorage.removeItem("registerStep");
+     localStorage.removeItem("userEmail");
+     setStep("register");
+     setTimeLeft(0);
+   }
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
