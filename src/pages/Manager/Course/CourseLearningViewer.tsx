@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Menu,
   X,
@@ -74,6 +75,7 @@ export default function CourseLearningViewer({
   isSubmissionReview = true,
   onStatusChange,
 }: Props) {
+  const queryClient = useQueryClient();
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [lessonData, setLessonData] = useState<LessonDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -174,6 +176,9 @@ export default function CourseLearningViewer({
     setIsProcessingAction(true);
     try {
       await courseService.approveCourse(submissionId);
+      await queryClient.invalidateQueries({
+        queryKey: ["courses-submissions"],
+      });
       setCurrentStatus("Approved");
       onStatusChange?.("Approved");
       setIsApproveConfirmOpen(false);
@@ -214,6 +219,9 @@ export default function CourseLearningViewer({
     setIsProcessingAction(true);
     try {
       await courseService.rejectCourse(submissionId, rejectReason.trim());
+      await queryClient.invalidateQueries({
+        queryKey: ["courses-submissions"],
+      });
       setCurrentStatus("Rejected");
       onStatusChange?.("Rejected");
       setIsRejectModalOpen(false);
