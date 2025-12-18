@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Typography,
   Spin,
-  Select,
   Space,
   Tag,
   Button,
   Row,
   Col,
   Progress,
-  Badge,
   message,
   Alert,
   Modal,
@@ -21,15 +19,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   getClassByIdService,
-  publishClassService,
   requestCancelClassService,
   deleteClassService,
+  updateClassService,
 } from '../../services/class';
+import EditClassModal from './components/EditClassModal';
 import {
   LoadingOutlined,
   ArrowLeftOutlined,
   EditOutlined,
-  SaveOutlined,
   CloseOutlined,
   BookOutlined,
   CheckCircleOutlined,
@@ -43,10 +41,10 @@ import {
   TrophyOutlined,
 } from '@ant-design/icons';
 import ClassEnrollmentList from './components/ClassEnrollmentList';
-import { Sparkles, GraduationCap, Users, Wallet, Video, Calendar } from 'lucide-react';
+import { GraduationCap, Users, Wallet, Video, Calendar } from 'lucide-react';
 
 const { Title, Text, Paragraph } = Typography;
-const { Option } = Select;
+
 const { TextArea } = Input;
 
 const statusConfig: Record<string, { label: string; color: string; bgGradient: string; icon: React.ReactNode }> = {
@@ -104,9 +102,34 @@ const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isEditingStatus, setIsEditingStatus] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState<string | undefined>(undefined);
+
+  // Edit modal state
+  const [editModal, setEditModal] = useState(false);
+  const [updating, setUpdating] = useState(false);
+
+  const handleEditSubmit = (values: Partial<any>) => {
+    if (!classData) return Promise.reject(new Error('No class selected'));
+    setUpdating(true);
+
+    const updateData: Partial<any> = { ...values };
+    const statusVal = (classData.status || '').toString().toLowerCase();
+    if (statusVal === 'cancelled' || statusVal === 'canceled') {
+      (updateData as any).status = 'Draft';
+    }
+
+    return updateClassService(classData.classID, updateData)
+      .then((res) => {
+        message.success(res.message || 'Cập nhật lớp học thành công');
+        setEditModal(false);
+        refetch();
+        queryClient.invalidateQueries({ queryKey: ['class', id] });
+        return res;
+      })
+      .catch((err: any) => {
+        throw err;
+      })
+      .finally(() => setUpdating(false));
+  };
 
   // Cancel request modal state
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -126,57 +149,8 @@ const ClassDetail: React.FC = () => {
 
   const classData = data?.data;
 
-  useEffect(() => {
-    if (classData) {
-      setCurrentStatus(classData.status);
-    }
-  }, [classData]);
 
-  const handleStatusEdit = () => {
-    setIsEditingStatus(true);
-  };
 
-  const handleStatusCancel = () => {
-    setIsEditingStatus(false);
-    if (classData) {
-      setCurrentStatus(classData.status);
-    }
-  };
-
-  const handleStatusSave = async () => {
-    if (currentStatus === classData?.status) {
-      setIsEditingStatus(false);
-      return;
-    }
-
-    setIsSaving(true);
-
-    if (currentStatus === 'Published') {
-      try {
-        const res = await publishClassService(id!);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        message.success({
-          content: res.message || 'Xuất bản lớp học thành công!',
-          duration: 3,
-          icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
-        });
-        await refetch();
-        queryClient.invalidateQueries({ queryKey: ['class', id] });
-        setIsEditingStatus(false);
-      } catch (error: any) {
-        message.error({
-          content: error.response?.data?.message || 'Không thể xuất bản lớp học. Vui lòng thử lại.',
-          duration: 4,
-        });
-        setCurrentStatus(classData?.status);
-      } finally {
-        setIsSaving(false);
-      }
-    } else {
-      setIsSaving(false);
-      setIsEditingStatus(false);
-    }
-  };
 
   // Handle request cancel class
   const handleRequestCancel = async () => {
@@ -302,13 +276,22 @@ const ClassDetail: React.FC = () => {
 
   const statusInfo = statusConfig[classData.status] || statusConfig.Draft;
   const enrollmentPercentage = Math.round((classData.currentEnrollments / classData.capacity) * 100);
-  const isPublished = classData.status === 'Published';
-  const isDraft = classData.status === 'Draft';
-  const isCancelled = classData.status === 'Cancelled';
-  const isPendingCancel = classData.status === 'PendingCancel';
-  const canEditStatus = isDraft && !isCancelled && !isPendingCancel;
+
+  const statusValue = (classData?.status || '').toString();
+  const normalizedStatus = statusValue.toLowerCase();
+  const isPublished = normalizedStatus === 'published';
+  const isDraft = normalizedStatus === 'draft';
+  const isCancelled = normalizedStatus === 'cancelled' || normalizedStatus === 'canceled';
+  const isPendingCancel = ['pendingcancel', 'pending_cancel', 'pendingcancel'].includes(normalizedStatus);
+
   const canDelete = (isDraft || isMoreThan3DaysAway()) && !isCancelled && !isPendingCancel;
   const canRequestCancel = isPublished && !isMoreThan3DaysAway() && !isCancelled && !isPendingCancel;
+
+  const isEditable = (s?: string) => {
+    if (!s) return false;
+    const n = s.toLowerCase();
+    return n === 'draft' || n === 'cancelled' || n === 'canceled';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-8 px-4">
@@ -325,6 +308,23 @@ const ClassDetail: React.FC = () => {
 
           {/* Action Buttons */}
           <Space wrap>
+            {isEditable(classData.status) && (
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => setEditModal(true)}
+                size="large"
+                className="bg-white text-violet-700 font-bold rounded-xl h-12 px-6 shadow-md">
+                Sửa
+              </Button>
+            )}
+                  {/* Edit Class Modal */}
+                  <EditClassModal
+                    visible={editModal}
+                    onClose={() => setEditModal(false)}
+                    onSubmit={handleEditSubmit}
+                    initialValues={classData || {}}
+                    loading={updating}
+                  />
             {canRequestCancel && (
               <Button
                 icon={<StopOutlined />}
@@ -362,109 +362,29 @@ const ClassDetail: React.FC = () => {
 
         {/* Hero Header Card */}
         <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden mb-8">
-          <div className={`relative bg-gradient-to-r ${statusInfo.bgGradient} p-8 sm:p-10`}>
-            {/* Decorative Elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full -mr-48 -mt-48"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-10 rounded-full -ml-32 -mb-32"></div>
-            <div className="absolute top-1/2 left-1/2 w-32 h-32 bg-white opacity-5 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-
-            <div className="relative z-10">
-              {/* Status & Edit Controls */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
-                    <GraduationCap size={28} className="text-white" />
-                  </div>
-                  <div>
-                    <Text className="text-white/70 text-sm block">Chi tiết lớp học</Text>
-                    <div className="flex items-center gap-2">
-                      <Sparkles size={16} className="text-amber-300" />
-                      <Text className="text-white font-medium">FLearn</Text>
-                    </div>
-                  </div>
+          <div className="bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-600 p-10 sm:p-12 text-white relative overflow-hidden rounded-3xl">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white opacity-6 rounded-full -mr-24 -mt-24"></div>
+            <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
+              <div className="max-w-3xl">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-3 bg-white/20 rounded-xl"><GraduationCap size={20} className="text-white" /></div>
+                  <div className="text-sm text-white/80">Chi tiết lớp học · FLearn</div>
                 </div>
-
-                {!isEditingStatus ? (
-                  <Space size="middle" wrap>
-                    <Tag
-                      className="px-5 py-2 rounded-xl text-sm font-bold border-0 shadow-lg"
-                      style={{
-                        backgroundColor: 'rgba(255,255,255,0.25)',
-                        color: 'white',
-                        backdropFilter: 'blur(10px)',
-                      }}>
-                      <span className="flex items-center gap-2">
-                        {statusInfo.icon}
-                        {statusInfo.label}
-                      </span>
-                    </Tag>
-                    {canEditStatus && (
-                      <Button
-                        icon={<EditOutlined />}
-                        onClick={handleStatusEdit}
-                        size="large"
-                        className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30 rounded-xl font-medium h-10">
-                        Chỉnh sửa
-                      </Button>
-                    )}
-                  </Space>
-                ) : (
-                  <Space size="middle" wrap>
-                    <Select
-                      value={currentStatus}
-                      onChange={(value) => setCurrentStatus(value)}
-                      size="large"
-                      className="w-44"
-                      disabled={isSaving}>
-                      <Option value="Draft">
-                        <Badge color="#8b5cf6" className="mr-2" />
-                        Bản nháp
-                      </Option>
-                      <Option value="Published">
-                        <Badge color="#10b981" className="mr-2" />
-                        Xuất bản
-                      </Option>
-                    </Select>
-                    <Button
-                      icon={<SaveOutlined />}
-                      onClick={handleStatusSave}
-                      type="primary"
-                      size="large"
-                      className="bg-emerald-500 hover:bg-emerald-600 border-0 shadow-lg rounded-xl font-semibold h-10"
-                      loading={isSaving}
-                      disabled={isSaving}>
-                      Lưu
-                    </Button>
-                    <Button
-                      icon={<CloseOutlined />}
-                      onClick={handleStatusCancel}
-                      size="large"
-                      className="bg-white/20 backdrop-blur-sm text-white border-white/30 hover:bg-white/30 rounded-xl h-10"
-                      disabled={isSaving}>
-                      Hủy
-                    </Button>
-                  </Space>
-                )}
+                <Title level={1} className="!text-white !mb-4 !text-3xl sm:!text-4xl !font-bold !leading-tight">{classData.title}</Title>
+                <Paragraph className="text-white/90 text-lg mb-6 leading-relaxed max-w-3xl">{classData.description}</Paragraph>
+                <div className="flex flex-wrap gap-3">
+                  <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">{classData.languageName}</span>
+                  <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">{classData.currentEnrollments}/{classData.capacity} học viên</span>
+                  <Tag className="bg-white/20 text-white border-0">{statusInfo.label}</Tag>
+                </div>
               </div>
 
-              {/* Title & Description */}
-              <Title level={1} className="!text-white !mb-4 !text-3xl sm:!text-4xl !font-bold !leading-tight">
-                {classData.title}
-              </Title>
-              <Paragraph className="text-white/90 text-lg mb-0 leading-relaxed max-w-3xl">
-                {classData.description}
-              </Paragraph>
-
-              {/* Quick Stats */}
-              <div className="flex flex-wrap gap-4 mt-8">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-xl">
-                  <GlobalOutlined className="text-white" />
-                  <Text className="text-white font-medium">{classData.languageName}</Text>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-xl">
-                  <Users size={16} className="text-white" />
-                  <Text className="text-white font-medium">{classData.currentEnrollments}/{classData.capacity} học viên</Text>
-                </div>
+              <div className="flex items-center gap-3">
+                {(isDraft || isCancelled) && (
+                  <Button icon={<EditOutlined />} onClick={() => setEditModal(true)} className="bg-white text-violet-700 font-bold rounded-xl h-12 px-6">Sửa</Button>
+                )}
+                {canRequestCancel && (<Button icon={<StopOutlined />} onClick={() => setIsCancelModalOpen(true)} className="bg-amber-500 text-white rounded-xl h-12 px-6">Yêu cầu hủy</Button>)}
+                {canDelete && (<Button danger onClick={() => setIsDeleteModalOpen(true)} className="rounded-xl h-12 px-6">Xóa</Button>)}
               </div>
             </div>
           </div>
@@ -506,35 +426,21 @@ const ClassDetail: React.FC = () => {
                     <Text className="text-gray-900 font-bold text-base">Lịch học</Text>
                   </div>
                   <Row gutter={16}>
-                    <Col span={12}>
-                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border border-blue-100">
-                        <Text className="text-xs text-gray-500 block mb-2 uppercase tracking-wide font-medium">Bắt đầu</Text>
-                        <Text className="text-gray-900 font-bold text-lg block">
-                          {new Date(classData.startDateTime).toLocaleDateString('vi-VN')}
-                        </Text>
-                        <Text className="text-blue-600 font-semibold">
-                          {new Date(classData.startDateTime).toLocaleTimeString('vi-VN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </Text>
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-100">
-                        <Text className="text-xs text-gray-500 block mb-2 uppercase tracking-wide font-medium">Kết thúc</Text>
-                        <Text className="text-gray-900 font-bold text-lg block">
-                          {new Date(classData.endDateTime).toLocaleDateString('vi-VN')}
-                        </Text>
-                        <Text className="text-emerald-600 font-semibold">
-                          {new Date(classData.endDateTime).toLocaleTimeString('vi-VN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </Text>
-                      </div>
-                    </Col>
-                  </Row>
+                  <Col span={12}>
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <div className="text-xs text-gray-400 uppercase mb-2 font-semibold">Bắt đầu</div>
+                      <div className="font-bold text-lg">{new Date(classData.startDateTime).toLocaleDateString('vi-VN')}</div>
+                      <div className="text-sm text-gray-500 mt-1">{new Date(classData.startDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                      <div className="text-xs text-gray-400 uppercase mb-2 font-semibold">Kết thúc</div>
+                      <div className="font-bold text-lg">{new Date(classData.endDateTime).toLocaleDateString('vi-VN')}</div>
+                      <div className="text-sm text-gray-500 mt-1">{new Date(classData.endDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                    </div>
+                  </Col>
+                </Row>
                 </div>
 
                 {/* Google Meet Link */}
@@ -577,11 +483,9 @@ const ClassDetail: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-center mb-6 p-6 bg-white/50 rounded-2xl">
+                <div className="text-center mb-6 p-6 bg-white rounded-2xl shadow-sm">
                   <div className="flex items-baseline justify-center gap-2">
-                    <Text className="text-6xl font-black bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                      {classData.currentEnrollments}
-                    </Text>
+                    <Text className="text-5xl sm:text-6xl font-black text-violet-700">{classData.currentEnrollments}</Text>
                     <Text className="text-3xl text-gray-400 font-medium">/</Text>
                     <Text className="text-3xl font-bold text-gray-600">{classData.capacity}</Text>
                   </div>
@@ -599,21 +503,10 @@ const ClassDetail: React.FC = () => {
                   className="mb-4"
                   format={() => null}
                 />
-                <div className="flex justify-between items-center">
-                  <Text className="text-gray-600 font-medium">
-                    Còn <span className="text-violet-600 font-bold">{classData.capacity - classData.currentEnrollments}</span> chỗ trống
-                  </Text>
-                  <Tag
-                    color={
-                      enrollmentPercentage >= 80
-                        ? 'red'
-                        : enrollmentPercentage >= 50
-                        ? 'orange'
-                        : 'green'
-                    }
-                    className="px-4 py-1.5 rounded-full font-bold text-sm border-0">
-                    {enrollmentPercentage}% đã đăng ký
-                  </Tag>
+
+                <div className="flex items-center justify-between gap-3">
+                  <Button type="primary" className="rounded-xl px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 border-0 shadow-md">Xem học viên</Button>
+                  <Tag className="rounded-full text-sm font-medium border-0">Còn <span className="font-bold">{classData.capacity - classData.currentEnrollments}</span> chỗ trống</Tag>
                 </div>
               </Card>
 

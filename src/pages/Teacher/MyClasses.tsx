@@ -12,6 +12,7 @@ import {
   Progress,
   Badge,
   Tooltip,
+  message,
 } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +34,8 @@ import {
 } from '@ant-design/icons';
 import type { Class } from '../../services/class/type';
 import CreateClassForm from './components/CreateClassForm';
+import EditClassModal from './components/EditClassModal';
+import { updateClassService } from '../../services/class';
 import { GraduationCap, Sparkles } from 'lucide-react';
 
 const { Title, Paragraph, Text } = Typography;
@@ -101,11 +104,14 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
   },
 };
 
+
 const MyClasses: React.FC = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<string>('');
   const [page, setPage] = useState(1);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const [editModal, setEditModal] = useState<{ visible: boolean; classData?: Class }>({ visible: false });
+  const [updating, setUpdating] = useState(false);
   const pageSize = 9;
 
   const { data, isLoading, refetch } = useQuery({
@@ -125,6 +131,34 @@ const MyClasses: React.FC = () => {
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+  };
+
+  const handleEditClick = (cls: Class) => {
+    setEditModal({ visible: true, classData: cls });
+  };
+
+  const handleEditSubmit = (values: Partial<Class>) => {
+    if (!editModal.classData) return Promise.reject(new Error('No class selected'));
+    setUpdating(true);
+
+    const updateData: Partial<any> = { ...values };
+    const statusVal = (editModal.classData.status || '').toString().toLowerCase();
+    if (statusVal === 'cancelled' || statusVal === 'canceled') {
+      (updateData as any).status = 'Draft';
+    }
+
+    return updateClassService(editModal.classData.classID, updateData)
+      .then((res) => {
+        message.success(res.message || 'Cập nhật lớp học thành công');
+        setEditModal({ visible: false });
+        refetch();
+        return res;
+      })
+      .catch((err: any) => {
+        // rethrow so modal can handle field errors
+        throw err;
+      })
+      .finally(() => setUpdating(false));
   };
 
   const calculateEnrollmentPercentage = (current: number, capacity: number) => {
@@ -293,6 +327,26 @@ const MyClasses: React.FC = () => {
                               <BookOutlined className="text-gray-500 text-lg" />
                             </div>
                           </Tooltip>
+                          {((cls.status || '').toString().toLowerCase() === 'draft' || (cls.status || '').toString().toLowerCase() === 'cancelled' || (cls.status || '').toString().toLowerCase() === 'canceled') && (
+                            <Tooltip title="Chỉnh sửa lớp học">
+                              <Button
+                                size="small"
+                                type="default"
+                                className="ml-2 bg-white shadow-sm"
+                                onClick={e => { e.stopPropagation(); handleEditClick(cls); }}
+                              >
+                                Sửa
+                              </Button>
+                            </Tooltip>
+                          )}
+                              {/* Edit Class Modal */}
+                              <EditClassModal
+                                visible={editModal.visible}
+                                onClose={() => setEditModal({ visible: false })}
+                                onSubmit={handleEditSubmit}
+                                initialValues={editModal.classData || {}}
+                                loading={updating}
+                              />
                         </div>
 
                         <Title
@@ -465,6 +519,7 @@ const MyClasses: React.FC = () => {
       <CreateClassForm
         visible={isCreateModalVisible}
         onClose={() => setIsCreateModalVisible(false)}
+        onCreated={() => refetch()}
       />
     </div>
   );
