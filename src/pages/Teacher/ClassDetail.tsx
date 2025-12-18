@@ -22,6 +22,7 @@ import {
   requestCancelClassService,
   deleteClassService,
   updateClassService,
+  getClassAssignmentsService,
 } from '../../services/class';
 import EditClassModal from './components/EditClassModal';
 import {
@@ -33,6 +34,7 @@ import {
   GlobalOutlined,
   DeleteOutlined,
   StopOutlined,
+  EditOutlined,
   ExclamationCircleOutlined,
   StarFilled,
   ThunderboltFilled,
@@ -148,6 +150,30 @@ const ClassDetail: React.FC = () => {
 
   const classData = data?.data;
 
+  // Program assignments list for mapping programAssignmentId -> name/level
+  const [programsRes, setProgramsRes] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await getClassAssignmentsService();
+        if (!mounted) return;
+        setProgramsRes(res.data || []);
+      } catch (err) {
+        console.error('Failed to load program assignments', err);
+      }
+    })();
+    return () => { mounted = false };
+  }, [id]);
+
+  const getProgramLabel = (assignmentId?: string) => {
+    if (!assignmentId) return null;
+    const found = programsRes.find((p: any) => p.programAssignmentId === assignmentId);
+    if (found) return `${found.programName} - ${found.levelName}`;
+    return null;
+  };
+
+  const programLabel = getProgramLabel((classData as any)?.programAssignmentId) || (classData as any)?.programName ? `${(classData as any).programName}${(classData as any).levelName ? ' - ' + (classData as any).levelName : ''}` : null;
 
 
 
@@ -299,6 +325,16 @@ const ClassDetail: React.FC = () => {
 
           {/* Action Buttons */}
           <Space wrap>
+            {(normalizedStatus === 'draft' || isCancelled) && (
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => setEditModal(true)}
+                size="large"
+                className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border-0 font-medium h-12 px-6">
+                Sửa
+              </Button>
+            )}
+
                   {/* Edit Class Modal (still mounted to allow programmatic open) */}
                   <EditClassModal
                     visible={editModal}
@@ -346,6 +382,7 @@ const ClassDetail: React.FC = () => {
                 <Paragraph className="text-white/90 text-lg mb-6 leading-relaxed max-w-3xl">{classData.description}</Paragraph>
                 <div className="flex flex-wrap gap-3">
                   <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">{classData.languageName}</span>
+                  {programLabel && <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">📚 {programLabel}</span>}
                   <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">{classData.currentEnrollments}/{classData.capacity} học viên</span>
                   <Tag className="bg-white/20 text-white border-0">{statusInfo.label}</Tag>
                 </div>

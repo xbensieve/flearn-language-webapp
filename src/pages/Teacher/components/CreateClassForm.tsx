@@ -3,7 +3,8 @@ import { Modal, Form, Input, InputNumber, DatePicker, TimePicker, Select, Row, C
 import { RocketOutlined, DollarOutlined, InfoCircleOutlined, CalendarOutlined, ClockCircleOutlined, FileTextOutlined, UserOutlined, TeamOutlined, BookOutlined, StarFilled } from '@ant-design/icons';
 import { GraduationCap, Sparkles, Wallet, Clock, Calendar, Users } from 'lucide-react';
 import dayjs from 'dayjs';
-import { createClassService } from '../../../services/class';
+import { createClassService, getClassAssignmentsService } from '../../../services/class';
+import type { ProgramAssignment } from '@/types/createCourse';
 
 const { Text } = Typography;
 
@@ -16,9 +17,28 @@ interface CreateClassFormProps {
 const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onCreated }) => {
   const [form] = Form.useForm();
   const [isCreating, setIsCreating] = useState(false);
-  const [programsRes] = useState<any[]>([]);
-  const isLoadingPrograms = false;
+  const [programsRes, setProgramsRes] = useState<ProgramAssignment[]>([]);
+  const [isLoadingPrograms, setIsLoadingPrograms] = useState<boolean>(true);
   const { TextArea } = Input;
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setIsLoadingPrograms(true);
+        const res = await getClassAssignmentsService();
+        if (!mounted) return;
+        setProgramsRes(res.data || []);
+      } catch (err) {
+        console.error('Failed to load programs', err);
+      } finally {
+        if (mounted) setIsLoadingPrograms(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Lấy giá trị realtime cho preview
   const formValues = Form.useWatch([], form) || {};

@@ -16,7 +16,7 @@ import {
 } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getClassesService } from '../../services/class';
+import { getClassesService, getClassAssignmentsService } from '../../services/class';
 import {
   PlusOutlined,
   EyeOutlined,
@@ -122,6 +122,30 @@ const MyClasses: React.FC = () => {
   });
 
   const classes = data?.data ?? [];
+
+  // Program assignments mapping for displaying program name/level on cards
+  const [programsRes, setProgramsRes] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await getClassAssignmentsService();
+        if (!mounted) return;
+        setProgramsRes(res.data || []);
+      } catch (err) {
+        console.error('Failed to load program assignments', err);
+      }
+    })();
+    return () => { mounted = false };
+  }, []);
+
+  const getProgramLabel = (assignmentId?: string) => {
+    if (!assignmentId) return null;
+    const found = programsRes.find((p: any) => p.programAssignmentId === assignmentId);
+    if (found) return `${found.programName} - ${found.levelName}`;
+    return null;
+  };
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
@@ -361,9 +385,14 @@ const MyClasses: React.FC = () => {
                           {cls.title}
                         </Title>
 
-                        <Text className="block mt-2 text-gray-500 font-medium text-sm">
-                          🌐 {cls.languageName}
-                        </Text>
+                        <div className="mt-2">
+                          <Text className="block text-gray-500 font-medium text-sm">🌐 {cls.languageName}</Text>
+                          {getProgramLabel((cls as any).programAssignmentId) ? (
+                            <Text className="block text-sm text-gray-600 mt-1">📚 {getProgramLabel((cls as any).programAssignmentId)}</Text>
+                          ) : (cls as any).programName ? (
+                            <Text className="block text-sm text-gray-600 mt-1">📚 {(cls as any).programName}{(cls as any).levelName ? ` - ${(cls as any).levelName}` : ''}</Text>
+                          ) : null}
+                        </div>
                       </div>
 
                       {/* Card Body */}
