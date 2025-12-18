@@ -27,7 +27,6 @@ import EditClassModal from './components/EditClassModal';
 import {
   LoadingOutlined,
   ArrowLeftOutlined,
-  EditOutlined,
   CloseOutlined,
   BookOutlined,
   CheckCircleOutlined,
@@ -280,18 +279,10 @@ const ClassDetail: React.FC = () => {
   const statusValue = (classData?.status || '').toString();
   const normalizedStatus = statusValue.toLowerCase();
   const isPublished = normalizedStatus === 'published';
-  const isDraft = normalizedStatus === 'draft';
   const isCancelled = normalizedStatus === 'cancelled' || normalizedStatus === 'canceled';
   const isPendingCancel = ['pendingcancel', 'pending_cancel', 'pendingcancel'].includes(normalizedStatus);
 
-  const canDelete = (isDraft || isMoreThan3DaysAway()) && !isCancelled && !isPendingCancel;
   const canRequestCancel = isPublished && !isMoreThan3DaysAway() && !isCancelled && !isPendingCancel;
-
-  const isEditable = (s?: string) => {
-    if (!s) return false;
-    const n = s.toLowerCase();
-    return n === 'draft' || n === 'cancelled' || n === 'canceled';
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-8 px-4">
@@ -308,16 +299,7 @@ const ClassDetail: React.FC = () => {
 
           {/* Action Buttons */}
           <Space wrap>
-            {isEditable(classData.status) && (
-              <Button
-                icon={<EditOutlined />}
-                onClick={() => setEditModal(true)}
-                size="large"
-                className="bg-white text-violet-700 font-bold rounded-xl h-12 px-6 shadow-md">
-                Sửa
-              </Button>
-            )}
-                  {/* Edit Class Modal */}
+                  {/* Edit Class Modal (still mounted to allow programmatic open) */}
                   <EditClassModal
                     visible={editModal}
                     onClose={() => setEditModal(false)}
@@ -332,16 +314,6 @@ const ClassDetail: React.FC = () => {
                 size="large"
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium h-12 px-6">
                 Yêu cầu hủy lớp
-              </Button>
-            )}
-            {canDelete && (
-              <Button
-                icon={<DeleteOutlined />}
-                onClick={() => setIsDeleteModalOpen(true)}
-                size="large"
-                danger
-                className="shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium h-12 px-6">
-                Xóa lớp học
               </Button>
             )}
           </Space>
@@ -380,11 +352,7 @@ const ClassDetail: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                {(isDraft || isCancelled) && (
-                  <Button icon={<EditOutlined />} onClick={() => setEditModal(true)} className="bg-white text-violet-700 font-bold rounded-xl h-12 px-6">Sửa</Button>
-                )}
                 {canRequestCancel && (<Button icon={<StopOutlined />} onClick={() => setIsCancelModalOpen(true)} className="bg-amber-500 text-white rounded-xl h-12 px-6">Yêu cầu hủy</Button>)}
-                {canDelete && (<Button danger onClick={() => setIsDeleteModalOpen(true)} className="rounded-xl h-12 px-6">Xóa</Button>)}
               </div>
             </div>
           </div>
