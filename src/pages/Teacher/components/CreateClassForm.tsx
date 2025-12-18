@@ -539,6 +539,12 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
                 <span className="block text-xs text-gray-400 mb-1">Mô tả</span>
                 <span className="text-gray-700 text-sm line-clamp-3">{formValues.description || 'Mô tả lớp học hấp dẫn của bạn sẽ xuất hiện ở đây.'}</span>
               </div>
+
+              <div className="mb-3">
+                <div className="text-xs text-gray-400">Chương trình</div>
+                <div className="font-medium text-sm text-gray-700">{(programsRes.find(p => p.programAssignmentId === formValues.programAssignmentId) ? `${programsRes.find(p => p.programAssignmentId === formValues.programAssignmentId)?.programName} - ${programsRes.find(p => p.programAssignmentId === formValues.programAssignmentId)?.levelName}` : (formValues.programName ? `${formValues.programName}${formValues.levelName ? ' - ' + formValues.levelName : ''}` : 'Chưa chọn'))}</div>
+              </div>
+
               <div className="mb-2">
                 <span className="block text-xs text-gray-400 mb-1">Ngày học</span>
                 <span className="font-medium text-gray-800">{formValues.classDate ? formValues.classDate.format('DD/MM/YYYY') : '--/--/----'}</span>
