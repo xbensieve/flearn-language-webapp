@@ -1,8 +1,10 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber, DatePicker, Card, message } from 'antd';
+import { Modal, Form, Input, InputNumber, DatePicker, Select, Card, message } from 'antd';
 import dayjs from 'dayjs';
 import { GraduationCap } from 'lucide-react';
 import type { Class } from '@/services/class/type';
+import { getClassAssignmentsService } from '../../../services/class';
+import type { ProgramAssignment } from '@/types/createCourse';
 
 interface EditClassModalProps {
   visible: boolean;
@@ -26,6 +28,29 @@ const EditClassModal: React.FC<EditClassModalProps> = ({ visible, onClose, onSub
   }, [visible, initialValues, form]);
 
   const [submitting, setSubmitting] = React.useState(false);
+
+  const [programsRes, setProgramsRes] = React.useState<ProgramAssignment[]>([]);
+  const [isLoadingPrograms, setIsLoadingPrograms] = React.useState<boolean>(true);
+
+  React.useEffect(() => {
+    let mounted = true;
+    if (!visible) return;
+    (async () => {
+      try {
+        setIsLoadingPrograms(true);
+        const res = await getClassAssignmentsService();
+        if (!mounted) return;
+        setProgramsRes(res.data || []);
+      } catch (err) {
+        console.error('Failed to load programs', err);
+      } finally {
+        if (mounted) setIsLoadingPrograms(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [visible]);
 
   const handleOk = async () => {
     try {
@@ -115,6 +140,23 @@ const EditClassModal: React.FC<EditClassModalProps> = ({ visible, onClose, onSub
               <Input.TextArea rows={4} className="rounded-xl" placeholder="Mô tả ngắn về lớp" />
             </Form.Item>
 
+            <Form.Item
+              name="programAssignmentId"
+              label="Chương trình giảng dạy"
+              rules={[{ required: true, message: 'Vui lòng chọn chương trình giảng dạy' }]}
+            >
+              <Select
+                showSearch
+                loading={isLoadingPrograms}
+                placeholder="Tìm và chọn chương trình giảng dạy"
+                size="large"
+                className="rounded-xl"
+                optionFilterProp="label"
+                filterOption={(input, option) => (option?.label as string)?.toLowerCase().includes(input.toLowerCase())}
+                options={programsRes?.map((program) => ({ value: program.programAssignmentId, label: `${program.programName} - ${program.levelName}` }))}
+              />
+            </Form.Item>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Form.Item name="startDateTime" label="Ngày bắt đầu" rules={[{ required: true, message: 'Chọn ngày bắt đầu' }]}>
                 <DatePicker showTime format="DD/MM/YYYY HH:mm" className="w-full rounded-xl h-12" />
@@ -175,7 +217,10 @@ const EditClassModal: React.FC<EditClassModalProps> = ({ visible, onClose, onSub
                 <div className="text-xs text-gray-400 mb-1">Mô tả</div>
                 <div className="text-gray-700 text-sm line-clamp-3">{formValues.description || 'Mô tả ngắn sẽ hiển thị ở đây.'}</div>
               </div>
-
+              <div className="mb-3">
+                <div className="text-xs text-gray-400">Chương trình</div>
+                <div className="font-medium text-sm text-gray-700">{(programsRes.find(p => p.programAssignmentId === formValues.programAssignmentId) ? `${programsRes.find(p => p.programAssignmentId === formValues.programAssignmentId)?.programName} - ${programsRes.find(p => p.programAssignmentId === formValues.programAssignmentId)?.levelName}` : 'Chưa chọn')}</div>
+              </div>
               <div className="grid grid-cols-2 gap-3 text-sm text-gray-700 mb-3">
                 <div>
                   <div className="text-xs text-gray-400">Ngày</div>
