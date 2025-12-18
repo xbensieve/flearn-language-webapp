@@ -1,6 +1,6 @@
-import React from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Mail,
   Phone,
@@ -13,26 +13,31 @@ import {
   AlertCircle,
   ShieldCheck,
   Bell,
-} from 'lucide-react';
+} from "lucide-react";
 
 // Services
-import { getProfile, logoutService, getProfileTeacher } from '../../services/auth';
-import { unregisterWebPush } from '../../services/webPush';
+import {
+  getProfile,
+  logoutService,
+  getProfileTeacher,
+} from "../../services/auth";
+import { unregisterWebPush } from "../../services/webPush";
 
 // UI Components
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import NotificationSettings from '@/components/NotificationSettings';
-import { toast } from 'sonner';
-import { useAuth } from '@/utils/AuthContext';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import NotificationSettings from "@/components/NotificationSettings";
+import { toast } from "sonner";
+import { useAuth } from "@/utils/AuthContext";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { updateAuth } = useAuth();
   // --- Queries ---
   const {
@@ -40,19 +45,19 @@ const Profile: React.FC = () => {
     isLoading: generalLoading,
     isError: generalError,
   } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ["profile"],
     queryFn: getProfile,
     refetchOnWindowFocus: false,
   });
 
-  const isTeacher = profileData?.data?.roles?.includes('Teacher') || false;
+  const isTeacher = profileData?.data?.roles?.includes("Teacher") || false;
 
   const {
     data: teacherProfile,
     isLoading: teacherLoading,
     isError: teacherError,
   } = useQuery({
-    queryKey: ['teacherProfile'],
+    queryKey: ["teacherProfile"],
     queryFn: () => getProfileTeacher(),
     enabled: isTeacher,
     select: (data) => data.data,
@@ -69,7 +74,8 @@ const Profile: React.FC = () => {
   });
 
   const handleLogoutClick = () => {
-    const refreshToken = localStorage.getItem('FLEARN_REFRESH_TOKEN');
+    const refreshToken = localStorage.getItem("FLEARN_REFRESH_TOKEN");
+    queryClient.removeQueries();
     // Unregister web push before logout
     unregisterWebPush().catch(() => {});
     if (refreshToken) {
@@ -80,13 +86,13 @@ const Profile: React.FC = () => {
   };
 
   const handleLogoutCleanup = () => {
-    toast.success('Đăng xuất thành công!');
-    localStorage.removeItem('FLEARN_ACCESS_TOKEN');
-    localStorage.removeItem('FLEARN_REFRESH_TOKEN');
-    localStorage.removeItem('FLEARN_USER_ROLE');
-    localStorage.removeItem('FLEARN_USER_ROLES');
+    toast.success("Đăng xuất thành công!");
+    localStorage.removeItem("FLEARN_ACCESS_TOKEN");
+    localStorage.removeItem("FLEARN_REFRESH_TOKEN");
+    localStorage.removeItem("FLEARN_USER_ROLE");
+    localStorage.removeItem("FLEARN_USER_ROLES");
     updateAuth();
-    navigate('/login');
+    navigate("/login");
   };
 
   // --- Render Helpers ---
@@ -97,7 +103,9 @@ const Profile: React.FC = () => {
           <Star
             key={star}
             className={`w-4 h-4 ${
-              star <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+              star <= Math.round(rating)
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300"
             }`}
           />
         ))}
@@ -128,19 +136,18 @@ const Profile: React.FC = () => {
   if (isError || !profileData?.success) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Alert
-          variant="destructive"
-          className="max-w-md">
+        <Alert variant="destructive" className="max-w-md">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Connection Error</AlertTitle>
           <AlertDescription>
-            Unable to load your profile information. Please check your internet connection or try
-            again later.
+            Unable to load your profile information. Please check your internet
+            connection or try again later.
           </AlertDescription>
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => window.location.reload()}>
+            onClick={() => window.location.reload()}
+          >
             Reload Page
           </Button>
         </Alert>
@@ -173,9 +180,10 @@ const Profile: React.FC = () => {
               </h1>
               <div className="flex items-center gap-2 mt-2">
                 <Badge
-                  variant={isTeacher ? 'default' : 'secondary'}
-                  className="text-sm px-3 py-0.5">
-                  {isTeacher ? 'Giáo viên' : 'Học viên'}
+                  variant={isTeacher ? "default" : "secondary"}
+                  className="text-sm px-3 py-0.5"
+                >
+                  {isTeacher ? "Giáo viên" : "Học viên"}
                 </Badge>
                 {isTeacher && (
                   <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -190,7 +198,8 @@ const Profile: React.FC = () => {
           <Button
             variant="destructive"
             onClick={handleLogoutClick}
-            className="w-full md:w-auto shadow-sm cursor-pointer !text-white hover:bg-red-400">
+            className="w-full md:w-auto shadow-sm cursor-pointer !text-white hover:bg-red-400"
+          >
             <LogOut className="w-4 h-4 mr-2" />
             Đăng xuất
           </Button>
@@ -212,10 +221,13 @@ const Profile: React.FC = () => {
                     <Mail className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Email
+                    </p>
                     <p
                       className="text-sm font-medium text-gray-900 truncate"
-                      title={user.email}>
+                      title={user.email}
+                    >
                       {user.email}
                     </p>
                   </div>
@@ -227,8 +239,12 @@ const Profile: React.FC = () => {
                       <Phone className="w-5 h-5 text-indigo-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Số điện thoại</p>
-                      <p className="text-sm font-medium text-gray-900">{teacher.phoneNumber}</p>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Số điện thoại
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {teacher.phoneNumber}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -239,8 +255,12 @@ const Profile: React.FC = () => {
                       <Calendar className="w-5 h-5 text-pink-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Ngày sinh</p>
-                      <p className="text-sm font-medium text-gray-900">{teacher.dateOfBirth}</p>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Ngày sinh
+                      </p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {teacher.dateOfBirth}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -313,11 +333,13 @@ const Profile: React.FC = () => {
                           size="sm"
                           variant="outline"
                           className="h-8 gap-2"
-                          asChild>
+                          asChild
+                        >
                           <a
                             href={teacher.meetingUrl}
                             target="_blank"
-                            rel="noopener noreferrer">
+                            rel="noopener noreferrer"
+                          >
                             <Link2 className="w-3.5 h-3.5" />
                             Liên kết lớp
                           </a>
@@ -347,12 +369,18 @@ const Profile: React.FC = () => {
                         <p className="text-sm font-medium">Đánh giá tổng thể</p>
                         <div className="flex items-center gap-2">
                           {renderStars(teacher.averageRating || 0)}
-                          <span className="text-sm font-bold ml-2">{teacher.averageRating}</span>
+                          <span className="text-sm font-bold ml-2">
+                            {teacher.averageRating}
+                          </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-gray-900">{teacher.reviewCount}</p>
-                        <p className="text-xs text-muted-foreground">Tổng số đánh giá</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {teacher.reviewCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Tổng số đánh giá
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -365,10 +393,13 @@ const Profile: React.FC = () => {
                   <div className="bg-gray-100 p-4 rounded-full inline-block">
                     <User className="w-8 h-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900">Chào mừng, {user.username}!</h3>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Chào mừng, {user.username}!
+                  </h3>
                   <p className="text-muted-foreground max-w-xs mx-auto">
-                    Hiện tại bạn đang xem hồ sơ này với tư cách là sinh viên. Lịch sử học tập và
-                    tiến độ khóa học của bạn sẽ được hiển thị tại đây.
+                    Hiện tại bạn đang xem hồ sơ này với tư cách là sinh viên.
+                    Lịch sử học tập và tiến độ khóa học của bạn sẽ được hiển thị
+                    tại đây.
                   </p>
                 </div>
               </Card>
