@@ -1,3 +1,8 @@
+export const updateClassService = async (classId: string, data: Partial<Class>) => {
+  // Chỉ gửi các trường cần update, API yêu cầu đúng schema
+  const res = await api.put(`teacher/classes/${classId}`, data);
+  return res.data;
+};
 import api from "../../config/axios";
 import type { Class, CreateClassRequest, ClassEnrollmentResponse } from "./type";
 
