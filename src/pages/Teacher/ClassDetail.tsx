@@ -19,7 +19,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   getClassByIdService,
-  requestCancelClassService,
   deleteClassService,
   updateClassService,
   getClassAssignmentsService,
@@ -33,9 +32,7 @@ import {
   CheckCircleOutlined,
   GlobalOutlined,
   DeleteOutlined,
-  StopOutlined,
   EditOutlined,
-  ExclamationCircleOutlined,
   StarFilled,
   ThunderboltFilled,
   FireFilled,
@@ -132,10 +129,6 @@ const ClassDetail: React.FC = () => {
       .finally(() => setUpdating(false));
   };
 
-  // Cancel request modal state
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState('');
-  const [isSubmittingCancel, setIsSubmittingCancel] = useState(false);
 
   // Delete modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -175,36 +168,11 @@ const ClassDetail: React.FC = () => {
 
   const programLabel = getProgramLabel((classData as any)?.programAssignmentId) || (classData as any)?.programName ? `${(classData as any).programName}${(classData as any).levelName ? ' - ' + (classData as any).levelName : ''}` : null;
 
+  const durationMinutes = classData?.endDateTime && classData?.startDateTime ? Math.round((new Date(classData.endDateTime).getTime() - new Date(classData.startDateTime).getTime()) / (1000 * 60)) : undefined;
 
 
-  // Handle request cancel class
-  const handleRequestCancel = async () => {
-    if (!cancelReason.trim()) {
-      message.warning('Vui lòng nhập lý do hủy lớp.');
-      return;
-    }
 
-    setIsSubmittingCancel(true);
-    try {
-      const res = await requestCancelClassService(id!, cancelReason);
-      message.success({
-        content: res.message || 'Yêu cầu hủy lớp đã được gửi thành công!',
-        duration: 3,
-        icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
-      });
-      setIsCancelModalOpen(false);
-      setCancelReason('');
-      await refetch();
-      queryClient.invalidateQueries({ queryKey: ['class', id] });
-    } catch (error: any) {
-      message.error({
-        content: error.response?.data?.message || 'Không thể gửi yêu cầu hủy lớp.',
-        duration: 4,
-      });
-    } finally {
-      setIsSubmittingCancel(false);
-    }
-  };
+
 
   // Handle delete class
   const handleDeleteClass = async () => {
@@ -233,15 +201,7 @@ const ClassDetail: React.FC = () => {
     }
   };
 
-  // Calculate if class is more than 3 days away
-  const isMoreThan3DaysAway = () => {
-    if (!classData?.startDateTime) return false;
-    const startDate = new Date(classData.startDateTime);
-    const now = new Date();
-    const diffTime = startDate.getTime() - now.getTime();
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays > 3;
-  };
+
 
   if (isLoading) {
     return (
@@ -306,9 +266,6 @@ const ClassDetail: React.FC = () => {
   const normalizedStatus = statusValue.toLowerCase();
   const isPublished = normalizedStatus === 'published';
   const isCancelled = normalizedStatus === 'cancelled' || normalizedStatus === 'canceled';
-  const isPendingCancel = ['pendingcancel', 'pending_cancel', 'pendingcancel'].includes(normalizedStatus);
-
-  const canRequestCancel = isPublished && !isMoreThan3DaysAway() && !isCancelled && !isPendingCancel;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-8 px-4">
@@ -335,23 +292,14 @@ const ClassDetail: React.FC = () => {
               </Button>
             )}
 
-                  {/* Edit Class Modal (still mounted to allow programmatic open) */}
-                  <EditClassModal
-                    visible={editModal}
-                    onClose={() => setEditModal(false)}
-                    onSubmit={handleEditSubmit}
-                    initialValues={classData || {}}
-                    loading={updating}
-                  />
-            {canRequestCancel && (
-              <Button
-                icon={<StopOutlined />}
-                onClick={() => setIsCancelModalOpen(true)}
-                size="large"
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium h-12 px-6">
-                Yêu cầu hủy lớp
-              </Button>
-            )}
+            {/* Edit Class Modal (still mounted to allow programmatic open) */}
+            <EditClassModal
+              visible={editModal}
+              onClose={() => setEditModal(false)}
+              onSubmit={handleEditSubmit}
+              initialValues={classData || {}}
+              loading={updating}
+            />
           </Space>
         </div>
 
@@ -369,7 +317,7 @@ const ClassDetail: React.FC = () => {
         )}
 
         {/* Hero Header Card */}
-        <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden mb-8">
+        <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden mb-6">
           <div className="bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-600 p-10 sm:p-12 text-white relative overflow-hidden rounded-3xl">
             <div className="absolute top-0 right-0 w-80 h-80 bg-white opacity-6 rounded-full -mr-24 -mt-24"></div>
             <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
@@ -389,11 +337,52 @@ const ClassDetail: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                {canRequestCancel && (<Button icon={<StopOutlined />} onClick={() => setIsCancelModalOpen(true)} className="bg-amber-500 text-white rounded-xl h-12 px-6">Yêu cầu hủy</Button>)}
               </div>
             </div>
           </div>
         </Card>
+
+        {/* Summary Cards (compact 3-column) */}
+        <Row gutter={[24, 24]} className="mb-8">
+          <Col xs={24} md={8}>
+            <Card className="rounded-2xl shadow-lg border-0 h-full">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-gray-400 font-semibold">Học viên đăng ký</div>
+                  <div className="text-xl font-bold text-gray-900 mt-2">{classData.currentEnrollments}/{classData.capacity}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-400">Dự toán doanh thu</div>
+                  <div className="text-lg font-extrabold text-emerald-600">{new Intl.NumberFormat('vi-VN').format((classData.pricePerStudent || 0) * (classData.capacity || 0))} VNĐ</div>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Progress percent={Math.round((classData.currentEnrollments / classData.capacity) * 100) || 0} strokeColor={{ '0%': '#8b5cf6', '100%': '#6366f1' }} trailColor="#f3e8ff" showInfo={false} strokeWidth={10} />
+              </div>
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card className="rounded-2xl shadow-lg border-0 h-full">
+              <div className="text-xs text-gray-400 font-semibold">Lịch & Thời gian</div>
+              <div className="mt-3">
+                <div className="text-sm text-gray-800 font-bold">{new Date(classData.startDateTime).toLocaleDateString('vi-VN')}</div>
+                <div className="text-sm text-gray-600 mt-1">{new Date(classData.startDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - {new Date(classData.endDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="text-sm text-gray-500 mt-2">Thời lượng: {durationMinutes ? `${durationMinutes} phút` : '--'}</div>
+              </div>
+            </Card>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Card className="rounded-2xl shadow-lg border-0 h-full">
+              <div className="text-xs text-gray-400 font-semibold">Học phí</div>
+              <div className="mt-3">
+                <div className="text-lg font-bold text-emerald-600">{(classData.pricePerStudent || 0).toLocaleString('vi-VN')} đ</div>
+                <div className="text-sm text-gray-600 mt-1">Số chỗ: {classData.capacity}</div>
+              </div>
+            </Card>
+          </Col>
+        </Row>
 
         {/* Main Content Grid */}
         <Row gutter={[24, 24]}>
@@ -557,65 +546,7 @@ const ClassDetail: React.FC = () => {
         <ClassEnrollmentList classId={id!} />
       </div>
 
-      {/* Request Cancel Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-3 py-2">
-            <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl">
-              <ExclamationCircleOutlined className="text-white text-lg" />
-            </div>
-            <span className="text-lg font-bold">Yêu cầu hủy lớp học</span>
-          </div>
-        }
-        open={isCancelModalOpen}
-        onCancel={() => {
-          setIsCancelModalOpen(false);
-          setCancelReason('');
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsCancelModalOpen(false);
-              setCancelReason('');
-            }}
-            disabled={isSubmittingCancel}
-            size="large"
-            className="rounded-xl h-11">
-            Đóng
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={isSubmittingCancel}
-            onClick={handleRequestCancel}
-            size="large"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0 rounded-xl h-11 font-semibold">
-            Gửi yêu cầu
-          </Button>,
-        ]}
-        className="rounded-2xl"
-        styles={{ body: { padding: '24px' } }}>
-        <div className="py-2">
-          <Alert
-            message="Lớp học sắp bắt đầu"
-            description="Do lớp học sẽ bắt đầu trong vòng 3 ngày, yêu cầu hủy của bạn sẽ được admin xem xét trước khi xử lý."
-            type="warning"
-            showIcon
-            className="mb-6 rounded-xl"
-          />
-          <Text className="block mb-3 font-semibold text-gray-700">Lý do hủy lớp:</Text>
-          <TextArea
-            rows={4}
-            placeholder="Vui lòng mô tả chi tiết lý do bạn muốn hủy lớp học này..."
-            value={cancelReason}
-            onChange={(e) => setCancelReason(e.target.value)}
-            maxLength={500}
-            showCount
-            className="rounded-xl"
-          />
-        </div>
-      </Modal>
+
 
       {/* Delete Class Modal */}
       <Modal
