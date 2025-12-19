@@ -47,16 +47,12 @@ import {
   AlertTriangle,
   XCircle,
   Loader2,
-  GraduationCap,
   Users,
   Wallet,
-  Video,
-  Calendar as CalendarIcon,
   Star,
   Zap,
   Ban,
   Trophy,
-  Globe,
   Edit,
 } from 'lucide-react';
 
@@ -153,8 +149,6 @@ const ClassDetail: React.FC = () => {
 
   const programLabel = getProgramLabel((classData as any)?.programAssignmentId) || (classData as any)?.programName ? `${(classData as any).programName}${(classData as any).levelName ? ' - ' + (classData as any).levelName : ''}` : null;
 
-  const durationMinutes = classData?.endDateTime && classData?.startDateTime ? Math.round((new Date(classData.endDateTime).getTime() - new Date(classData.startDateTime).getTime()) / (1000 * 60)) : undefined;
-
   // Handle delete class
   const handleDeleteClass = async () => {
     if (!deleteReason.trim()) {
@@ -213,7 +207,6 @@ const ClassDetail: React.FC = () => {
   }
 
   const statusInfo = statusConfig[classData.status] || statusConfig.Draft;
-  const enrollmentPercentage = Math.round((classData.currentEnrollments / classData.capacity) * 100);
 
   const statusValue = (classData?.status || '').toString();
   const normalizedStatus = statusValue.toLowerCase();
