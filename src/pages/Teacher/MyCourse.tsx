@@ -14,6 +14,7 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
+  BarChart3,
 } from "lucide-react";
 
 // --- Services & Utils ---
@@ -376,6 +377,15 @@ export default function MyCourses() {
                           onClick={() => navigate(`${course.courseId}`)}
                         >
                           Xem chi tiết
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() =>
+                            navigate(`${course.courseId}/statistics`)
+                          }
+                        >
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Xem thống kê
                         </DropdownMenuItem>
                         {canEdit && (
                           <DropdownMenuItem
