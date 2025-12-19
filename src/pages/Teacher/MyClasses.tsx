@@ -1,555 +1,441 @@
-import React, { useState } from 'react';
-import {
-  Card,
-  Typography,
-  Row,
-  Col,
-  Button,
-  Spin,
-  Select,
-  Tag,
-  Pagination,
-  Progress,
-  Badge,
-  Tooltip,
-  message,
-} from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Card, Button, Typography, Row, Col, Select, Empty, Tag, Tooltip, Segmented, Avatar, Pagination } from 'antd';
+import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { format, parse, startOfWeek, getDay, isSameDay, addMonths, subMonths } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
+import { getClassesService } from '../../services/class';
 import { useNavigate } from 'react-router-dom';
-import { getClassesService, getClassAssignmentsService } from '../../services/class';
-import {
-  PlusOutlined,
-  EyeOutlined,
-  LoadingOutlined,
-  BookOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  TeamOutlined,
-  FilterOutlined,
-  RocketOutlined,
-  StarFilled,
-  ThunderboltFilled,
-  FireFilled,
-  TrophyOutlined,
-} from '@ant-design/icons';
-import type { Class } from '../../services/class/type';
+import { PlusOutlined, AppstoreOutlined, CalendarOutlined, UserOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { vi } from 'date-fns/locale';
+import dayjs from 'dayjs';
 import CreateClassForm from './components/CreateClassForm';
-import EditClassModal from './components/EditClassModal';
-import { updateClassService } from '../../services/class';
-import { GraduationCap, Sparkles } from 'lucide-react';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
+const locales = { vi };
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 1 }),
+  getDay,
+  locales,
+});
+
 const statusOptions = [
-  { value: '', label: 'Tất cả lớp học', icon: <BookOutlined /> },
-  { value: 'Draft', label: 'Bản nháp', color: '#8b5cf6' },
-  { value: 'Published', label: 'Đã xuất bản', color: '#10b981' },
-  { value: 'InProgress', label: 'Đang diễn ra', color: '#3b82f6' },
-  { value: 'Finished', label: 'Đã kết thúc', color: '#6366f1' },
-  { value: 'Completed_PendingPayout', label: 'Chờ thanh toán', color: '#f59e42' },
-  { value: 'Completed_Paid', label: 'Đã thanh toán GV', color: '#22d3ee' },
-  { value: 'PendingCancel', label: 'Chờ hủy', color: '#f59e0b' },
-  { value: 'Cancelled', label: 'Đã hủy', color: '#ef4444' },
+  { value: 'ALL', label: 'Tất cả trạng thái' },
+  { value: 'Published', label: 'Đã xuất bản' },
+  { value: 'Draft', label: 'Bản nháp' },
+  { value: 'InProgress', label: 'Đang diễn ra' },
+  { value: 'Finished', label: 'Đã kết thúc' },
+  { value: 'PendingCancel', label: 'Chờ hủy' },
+  { value: 'Cancelled', label: 'Đã hủy' },
+  { value: 'Cancelled_InsufficientStudents', label: 'Hủy (Thiếu HV)' },
 ];
-
-const statusConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ReactNode }> = {
-  Draft: {
-    label: 'Bản nháp',
-    color: '#8b5cf6',
-    bgColor: 'bg-violet-50',
-    icon: <ThunderboltFilled className="text-violet-500" />,
-  },
-  Published: {
-    label: 'Đã xuất bản',
-    color: '#10b981',
-    bgColor: 'bg-emerald-50',
-    icon: <StarFilled className="text-emerald-500" />,
-  },
-  InProgress: {
-    label: 'Đang diễn ra',
-    color: '#3b82f6',
-    bgColor: 'bg-blue-50',
-    icon: <ThunderboltFilled className="text-blue-500" />,
-  },
-  Finished: {
-    label: 'Đã kết thúc',
-    color: '#6366f1',
-    bgColor: 'bg-indigo-50',
-    icon: <TrophyOutlined className="text-indigo-500" />,
-  },
-  Completed_PendingPayout: {
-    label: 'Chờ thanh toán',
-    color: '#f59e42',
-    bgColor: 'bg-amber-100',
-    icon: <ThunderboltFilled className="text-amber-500" />,
-  },
-  Completed_Paid: {
-    label: 'Đã thanh toán GV',
-    color: '#22d3ee',
-    bgColor: 'bg-cyan-100',
-    icon: <StarFilled className="text-cyan-500" />,
-  },
-  PendingCancel: {
-    label: 'Chờ hủy',
-    color: '#f59e0b',
-    bgColor: 'bg-amber-50',
-    icon: <FireFilled className="text-amber-500" />,
-  },
-  Cancelled: {
-    label: 'Đã hủy',
-    color: '#ef4444',
-    bgColor: 'bg-red-50',
-    icon: null,
-  },
-};
-
 
 const MyClasses: React.FC = () => {
   const navigate = useNavigate();
-  const [status, setStatus] = useState<string>('');
-  const [page, setPage] = useState(1);
+  const [filterStatus, setFilterStatus] = useState<string>('Published');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [editModal, setEditModal] = useState<{ visible: boolean; classData?: Class }>({ visible: false });
-  const [updating, setUpdating] = useState(false);
-  const pageSize = 9;
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['classes', status, page],
-    queryFn: () => getClassesService({ status, page, pageSize }),
-    retry: 1,
-    retryDelay: 500,
+  const { data, refetch } = useQuery({
+    queryKey: ['all-classes-calendar'],
+    queryFn: () => getClassesService({ page: 1, pageSize: 100 }),
   });
+  
+  const classes = data?.data || [];
+  
+  const filteredClasses = useMemo(() => {
+    if (filterStatus === 'ALL') return classes;
+    return classes.filter((c: any) => (c.status || '') === filterStatus);
+  }, [classes, filterStatus]);
 
-  const classes = data?.data ?? [];
+  const events = useMemo(() => {
+    return filteredClasses
+      .map((cls: any) => ({
+        id: cls.classID,
+        title: cls.title,
+        start: new Date(cls.startDateTime),
+        end: new Date(cls.endDateTime),
+        status: cls.status,
+        resource: cls,
+      }));
+  }, [filteredClasses]);
 
-  // Program assignments mapping for displaying program name/level on cards
-  const [programsRes, setProgramsRes] = React.useState<any[]>([]);
-
-  React.useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await getClassAssignmentsService();
-        if (!mounted) return;
-        setProgramsRes(res.data || []);
-      } catch (err) {
-        console.error('Failed to load program assignments', err);
-      }
-    })();
-    return () => { mounted = false };
-  }, []);
-
-  const getProgramLabel = (assignmentId?: string) => {
-    if (!assignmentId) return null;
-    const found = programsRes.find((p: any) => p.programAssignmentId === assignmentId);
-    if (found) return `${found.programName} - ${found.levelName}`;
-    return null;
-  };
-
-  const handleStatusChange = (value: string) => {
-    setStatus(value);
-    setPage(1);
-    refetch();
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleEditClick = (cls: Class) => {
-    setEditModal({ visible: true, classData: cls });
-  };
-
-  const handleEditSubmit = (values: Partial<Class>) => {
-    if (!editModal.classData) return Promise.reject(new Error('No class selected'));
-    setUpdating(true);
-
-    const updateData: Partial<any> = { ...values };
-    const statusVal = (editModal.classData.status || '').toString().toLowerCase();
-    if (statusVal === 'cancelled' || statusVal === 'canceled') {
-      (updateData as any).status = 'Draft';
+  const eventStyleGetter = (event: any) => {
+    let bg = '#6b7280'; // gray-500
+    let border = '#4b5563';
+    
+    const status = (event.status || '').toLowerCase();
+    
+    if (status === 'published') {
+      bg = '#10b981'; // emerald-500
+      border = '#059669';
+    } else if (status === 'draft') {
+      bg = '#94a3b8'; // slate-400
+      border = '#64748b';
+    } else if (status === 'inprogress') {
+      bg = '#3b82f6'; // blue-500
+      border = '#2563eb';
+    } else if (status === 'finished') {
+      bg = '#6366f1'; // indigo-500
+      border = '#4f46e5';
+    } else if (status === 'pendingcancel') {
+      bg = '#f97316'; // orange-500
+      border = '#ea580c';
+    } else if (status.includes('cancelled')) {
+      bg = '#ef4444'; // red-500
+      border = '#dc2626';
     }
 
-    return updateClassService(editModal.classData.classID, updateData)
-      .then((res) => {
-        message.success(res.message || 'Cập nhật lớp học thành công');
-        setEditModal({ visible: false });
-        refetch();
-        return res;
-      })
-      .catch((err: any) => {
-        // rethrow so modal can handle field errors
-        throw err;
-      })
-      .finally(() => setUpdating(false));
+    return {
+      style: {
+        backgroundColor: bg,
+        borderColor: border,
+        borderRadius: '6px',
+        opacity: 0.9,
+        color: 'white',
+        border: '0px',
+        display: 'block',
+        fontSize: '0.85rem',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        textDecoration: status.includes('cancelled') ? 'line-through' : 'none',
+      },
+    };
   };
 
-  const calculateEnrollmentPercentage = (current: number, capacity: number) => {
-    if (!capacity) return 0;
-    return Math.round((current / capacity) * 100);
-  };
-
-  const getStatusLabel = (statusKey: string) => {
-    return statusConfig[statusKey]?.label || statusKey;
-  };
-
-  if (isLoading) {
+  const EventComponent: React.FC<{ event: any }> = ({ event }) => {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] bg-gradient-to-br from-violet-50 via-blue-50 to-indigo-100">
-        <div className="relative">
-          <div className="absolute inset-0 animate-ping bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full opacity-20 scale-150"></div>
-          <div className="relative p-6 bg-white rounded-3xl shadow-2xl">
-            <Spin
-              size="large"
-              indicator={
-                <LoadingOutlined
-                  className="text-5xl text-violet-600"
-                  spin
-                />
-              }
-            />
+      <Tooltip title={`${event.title} (${event.status})`}>
+        <div className="flex flex-col h-full justify-center px-1 overflow-hidden">
+          <div className="font-semibold text-xs truncate">{event.title}</div>
+          <div className="text-[10px] opacity-90 truncate flex items-center gap-1">
+             {dayjs(event.start).format('HH:mm')} - {dayjs(event.end).format('HH:mm')}
           </div>
         </div>
-        <Text className="mt-8 text-gray-600 text-xl font-medium animate-pulse">
-          Đang tải danh sách lớp học...
-        </Text>
+      </Tooltip>
+    );
+  };
+
+  const CustomToolbar = (toolbar: any) => {
+    const goToBack = () => toolbar.onNavigate('PREV');
+    const goToNext = () => toolbar.onNavigate('NEXT');
+    const goToCurrent = () => toolbar.onNavigate('TODAY');
+
+    return (
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+        <div className="flex items-center gap-2">
+          <Button onClick={goToBack}>Trước</Button>
+          <Button type="primary" onClick={goToCurrent} className="font-semibold">Hôm nay</Button>
+          <Button onClick={goToNext}>Sau</Button>
+        </div>
+        <span className="text-xl font-bold text-gray-700 capitalize">
+          {toolbar.label}
+        </span>
+        <div className="flex items-center gap-2">
+          <Select
+            value={filterStatus}
+            onChange={(val) => {
+              setFilterStatus(val);
+              setCurrentPage(1);
+            }}
+            style={{ width: 180 }}
+            className="font-medium"
+          >
+            {statusOptions.map(opt => <Option key={opt.value} value={opt.value}>{opt.label}</Option>)}
+          </Select>
+        </div>
       </div>
     );
-  }
+  };
+
+  const today = new Date();
+  const todayEvents = events.filter((ev: any) => isSameDay(ev.start, today));
+
+  const getStatusColorClass = (status: string) => {
+    const s = (status || '').toLowerCase();
+    if (s === 'published') return 'bg-emerald-500';
+    if (s === 'draft') return 'bg-slate-400';
+    if (s === 'inprogress') return 'bg-blue-500';
+    if (s === 'finished') return 'bg-indigo-500';
+    if (s === 'pendingcancel') return 'bg-orange-500';
+    if (s.includes('cancelled')) return 'bg-red-500';
+    return 'bg-gray-500';
+  };
+
+  const getStatusConfig = (status: string) => {
+    const s = (status || '').toLowerCase();
+    const config: Record<string, { color: string; bg: string; label: string }> = {
+      published: { color: 'text-emerald-700 border-emerald-200', bg: '!bg-emerald-100', label: 'Đã xuất bản' },
+      draft: { color: 'text-gray-600 border-gray-200', bg: '!bg-gray-200', label: 'Bản nháp' },
+      inprogress: { color: 'text-blue-700 border-blue-200', bg: '!bg-blue-100', label: 'Đang diễn ra' },
+      finished: { color: 'text-indigo-700 border-indigo-200', bg: '!bg-indigo-100', label: 'Đã kết thúc' },
+      pendingcancel: { color: 'text-orange-700 border-orange-200', bg: '!bg-orange-100', label: 'Chờ hủy' },
+      cancelled: { color: 'text-red-700 border-red-200', bg: '!bg-red-100', label: 'Đã hủy' },
+    };
+    
+    if (s.includes('cancelled') && !config[s]) return config.cancelled;
+    return config[s] || { color: 'text-gray-700 border-gray-200', bg: '!bg-gray-100', label: status };
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="relative bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-xl shadow-violet-100/50 mb-8">
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-violet-400/10 to-indigo-400/10 rounded-full -mr-40 -mt-40"></div>
-          <div className="absolute bottom-0 left-0 w-60 h-60 bg-gradient-to-tr from-blue-400/10 to-cyan-400/10 rounded-full -ml-30 -mb-30"></div>
-          
-          {/* Title Bar */}
-          <div className="relative flex items-center gap-4 p-6 border-b border-gray-100/80">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl blur-lg opacity-40"></div>
-              <div className="relative w-14 h-14 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <GraduationCap size={28} className="text-white" />
-              </div>
-            </div>
-            <div>
-              <Title level={2} className="!m-0 !text-gray-900 !font-bold !text-2xl flex items-center gap-2">
-                Quản lý lớp học
-                <Sparkles size={20} className="text-amber-500" />
-              </Title>
-              <Text className="text-gray-500 text-sm">Tạo và quản lý các lớp học trực tuyến của bạn</Text>
-            </div>
+    <div className="min-h-screen bg-gray-50/50 p-6">
+      <div className="max-w-[1600px] mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <Title level={2} className="!mb-1 !text-gray-800">Lịch giảng dạy</Title>
+            <Text className="text-gray-500">Quản lý thời gian và lịch trình các lớp học của bạn</Text>
           </div>
-
-          {/* Stats + Controls */}
-          <div className="relative p-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-              {/* Stats */}
-              <div className="flex items-center gap-6">
-                <div className="text-center px-6 py-3 bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border border-violet-100">
-                  <div className="text-4xl font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
-                    {classes.length}
-                  </div>
-                  <div className="text-gray-500 text-sm mt-1 font-medium">
-                    {status ? getStatusLabel(status) : 'Tổng số lớp'}
-                  </div>
-                </div>
-                
-                <div className="hidden md:flex items-center gap-3">
-                  {[
-                    { icon: <StarFilled className="text-emerald-500" />, label: 'Đang hoạt động', count: classes.filter(c => c.status === 'Published').length },
-                    { icon: <ThunderboltFilled className="text-violet-500" />, label: 'Bản nháp', count: classes.filter(c => c.status === 'Draft').length },
-                  ].map((stat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      {stat.icon}
-                      <span className="text-gray-600 text-sm">{stat.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Controls */}
-              <div className="flex flex-wrap items-center gap-3">
-                <Select
-                  value={status}
-                  onChange={handleStatusChange}
-                  style={{ width: 200 }}
-                  size="large"
-                  placeholder="Lọc theo trạng thái"
-                  suffixIcon={<FilterOutlined className="text-violet-500" />}
-                  className="rounded-xl shadow-sm"
-                  popupClassName="rounded-xl">
-                  {statusOptions.map((s) => (
-                    <Option key={s.value} value={s.value}>
-                      <div className="flex items-center gap-2">
-                        {s.value && (
-                          <Badge
-                            color={s.color}
-                            style={{ width: 8, height: 8 }}
-                          />
-                        )}
-                        <span className="font-medium text-gray-700">{s.label}</span>
-                      </div>
-                    </Option>
-                  ))}
-                </Select>
-
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsCreateModalVisible(true)}
-                  size="large"
-                  className="h-12 px-8 rounded-2xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-lg shadow-violet-200 hover:shadow-xl hover:shadow-violet-300 transition-all duration-300">
-                  Tạo lớp học mới
-                </Button>
-              </div>
-            </div>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            {viewMode === 'list' && (
+              <Select
+                value={filterStatus}
+                onChange={(val) => {
+                  setFilterStatus(val);
+                  setCurrentPage(1);
+                }}
+                style={{ width: 180 }}
+                className="font-medium"
+              >
+                {statusOptions.map(opt => <Option key={opt.value} value={opt.value}>{opt.label}</Option>)}
+              </Select>
+            )}
+            <Segmented
+              options={[
+                { label: 'Lịch', value: 'calendar', icon: <CalendarOutlined /> },
+                { label: 'Danh sách', value: 'list', icon: <AppstoreOutlined /> },
+              ]}
+              value={viewMode}
+              onChange={(val) => setViewMode(val as 'calendar' | 'list')}
+            />
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              size="large"
+              onClick={() => setIsCreateModalVisible(true)}
+              className="bg-blue-600 hover:bg-blue-700 border-none shadow-md shadow-blue-200 rounded-lg"
+            >
+              Tạo lớp học mới
+            </Button>
           </div>
         </div>
 
-        {/* Classes Grid */}
-        {classes.length > 0 ? (
-          <div>
-            <Row gutter={[24, 24]}>
-              {classes.map((cls: Class) => {
-                const enrollmentPercentage = calculateEnrollmentPercentage(
-                  cls.currentEnrollments,
-                  cls.capacity
-                );
-                const statusInfo = statusConfig[cls.status] || { label: cls.status, color: '#9ca3af', bgColor: 'bg-gray-50' };
+        {viewMode === 'calendar' ? (
+          <Row gutter={[24, 24]}>
+          <Col xs={24} xl={18}>
+            <Card className="rounded-2xl shadow-sm border-gray-200 h-full" bodyStyle={{ padding: '20px', height: '100%' }}>
+              <div className="h-[700px]">
+                <Calendar
+                  localizer={localizer}
+                  events={events}
+                  startAccessor="start"
+                  endAccessor="end"
+                  style={{ height: '100%' }}
+                  eventPropGetter={eventStyleGetter}
+                  components={{ event: EventComponent, toolbar: CustomToolbar }}
+                  views={['month', 'week', 'day', 'agenda']}
+                  defaultView={Views.MONTH}
+                  popup
+                  messages={{
+                    today: 'Hôm nay',
+                    previous: 'Trước',
+                    next: 'Sau',
+                    month: 'Tháng',
+                    week: 'Tuần',
+                    day: 'Ngày',
+                    agenda: 'Lịch trình',
+                    date: 'Ngày',
+                    time: 'Thời gian',
+                    event: 'Sự kiện',
+                    noEventsInRange: 'Không có lớp học nào trong khoảng thời gian này.',
+                  }}
+                  onSelectEvent={(event: any) => navigate(`/teacher/classes/${event.id}`)}
+                />
+              </div>
+            </Card>
+          </Col>
+          
+          <Col xs={24} xl={6}>
+            <div className="flex flex-col gap-6 h-full">
+              {/* Today's Schedule */}
+              <Card 
+                title={<div className="flex items-center gap-2"><span className="font-bold">Lịch hôm nay</span></div>}
+                className="rounded-2xl shadow-sm border-gray-200 flex-1"
+                headStyle={{ borderBottom: '1px solid #f0f0f0' }}
+              >
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-bold text-gray-800">{dayjs().format('DD')}</div>
+                  <div className="text-gray-500 uppercase font-medium tracking-wide">{dayjs().format('MMMM, YYYY')}</div>
+                  <div className="text-blue-600 font-medium mt-1">{dayjs().format('dddd')}</div>
+                </div>
+
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+                  {todayEvents.length === 0 ? (
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có lớp học nào hôm nay" />
+                  ) : (
+                    todayEvents.map((ev: any) => {
+                      const st = getStatusConfig(ev.status);
+                      return (
+                        <div 
+                          key={ev.id} 
+                          className="group p-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-blue-50 hover:border-blue-200 transition-all cursor-pointer relative overflow-hidden"
+                          onClick={() => navigate(`/teacher/classes/${ev.id}`)}
+                        >
+                          <div className={`absolute left-0 top-0 bottom-0 w-1 ${getStatusColorClass(ev.status)}`}></div>
+                          <div className="pl-2">
+                            <div className="font-semibold text-gray-800 group-hover:text-blue-700 transition-colors line-clamp-1">{ev.title}</div>
+                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                              {dayjs(ev.start).format('HH:mm')} - {dayjs(ev.end).format('HH:mm')}
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                               <Tag className="m-0 text-[10px] border-0 bg-white shadow-sm">
+                                 {ev.resource.languageName}
+                               </Tag>
+                               <Tag className={`m-0 text-[10px] border ${st.bg} ${st.color}`}>
+                                 {st.label}
+                               </Tag>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </Card>
+
+              {/* Legend / Stats */}
+              <Card className="rounded-2xl shadow-sm border-gray-200">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
+                      <span className="text-gray-600">Đã xuất bản</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">{classes.filter((c: any) => c.status === 'Published').length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
+                      <span className="text-gray-600">Đã kết thúc</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">{classes.filter((c: any) => c.status === 'Finished').length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                      <span className="text-gray-600">Đang diễn ra</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">{classes.filter((c: any) => c.status === 'InProgress').length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-orange-500"></span>
+                      <span className="text-gray-600">Chờ hủy</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">{classes.filter((c: any) => c.status === 'PendingCancel').length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-gray-400"></span>
+                      <span className="text-gray-600">Bản nháp</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">{classes.filter((c: any) => c.status === 'Draft').length}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                      <span className="text-gray-600">Đã hủy</span>
+                    </div>
+                    <span className="font-semibold text-gray-800">{classes.filter((c: any) => c.status && c.status.includes('Cancelled')).length}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </Col>
+        </Row>
+        ) : (
+          <Row gutter={[24, 24]}>
+            {filteredClasses.length === 0 ? (
+              <Col span={24} className="min-h-[400px]">
+                <Empty description="Không tìm thấy lớp học nào" className="py-20" />
+              </Col>
+            ) : (
+              <>
+              {filteredClasses.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((cls: any) => {
+                const st = getStatusConfig(cls.status);
 
                 return (
-                  <Col key={cls.classID} xs={24} sm={12} lg={8}>
+                  <Col key={cls.classID} xs={24} sm={12} lg={8} xl={6}>
                     <Card
                       hoverable
-                      className="h-full rounded-3xl border-0 shadow-lg shadow-gray-100/80 hover:shadow-2xl hover:shadow-violet-100/50 transition-all duration-500 hover:-translate-y-2 overflow-hidden group"
-                      styles={{ body: { padding: 0 } }}>
+                      className="h-full rounded-2xl border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col"
+                      bodyStyle={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}
+                      onClick={() => navigate(`/teacher/classes/${cls.classID}`)}
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <Tag className={`m-0 border font-medium px-2.5 py-0.5 rounded-full ${st.bg} ${st.color}`}>
+                          {st.label}
+                        </Tag>
+                        <Tag className="m-0 bg-indigo-50 text-indigo-600 border-indigo-100 font-medium">
+                          {cls.languageName}
+                        </Tag>
+                      </div>
                       
-                      {/* Card Header with Gradient */}
-                      <div className={`relative p-6 ${statusInfo.bgColor}`}>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/40 rounded-full -mr-16 -mt-16"></div>
-                        
-                        <div className="relative flex justify-between items-start mb-4">
-                          <Tag
-                            className="px-4 py-1.5 rounded-full text-xs font-semibold border-0 shadow-sm"
-                            style={{ 
-                              backgroundColor: statusInfo.color + '15',
-                              color: statusInfo.color,
-                            }}>
-                            <span className="flex items-center gap-1.5">
-                              {statusInfo.icon}
-                              {statusInfo.label}
-                            </span>
-                          </Tag>
-                          
-                          <Tooltip title="Chi tiết lớp học">
-                            <div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
-                                 onClick={() => navigate(`${cls.classID}`)}>
-                              <BookOutlined className="text-gray-500 text-lg" />
-                            </div>
-                          </Tooltip>
-                          {((cls.status || '').toString().toLowerCase() === 'draft' || (cls.status || '').toString().toLowerCase() === 'cancelled' || (cls.status || '').toString().toLowerCase() === 'canceled') && (
-                            <Tooltip title="Chỉnh sửa lớp học">
-                              <Button
-                                size="small"
-                                type="default"
-                                className="ml-2 bg-white shadow-sm"
-                                onClick={e => { e.stopPropagation(); handleEditClick(cls); }}
-                              >
-                                Sửa
-                              </Button>
-                            </Tooltip>
-                          )}
-                              {/* Edit Class Modal */}
-                              <EditClassModal
-                                visible={editModal.visible}
-                                onClose={() => setEditModal({ visible: false })}
-                                onSubmit={handleEditSubmit}
-                                initialValues={editModal.classData || {}}
-                                loading={updating}
-                              />
+                      <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem]">
+                        {cls.title}
+                      </h3>
+                      
+                      <div className="space-y-2 mb-4 flex-1">
+                        <div className="flex items-center gap-2 text-gray-500 text-sm">
+                          <CalendarOutlined />
+                          <span>{dayjs(cls.startDateTime).format('DD/MM/YYYY')}</span>
                         </div>
-
-                        <Title
-                          level={4}
-                          className="!m-0 !text-gray-900 !font-bold !leading-snug"
-                          style={{
-                            overflow: 'hidden',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                          }}>
-                          {cls.title}
-                        </Title>
-
-                        <div className="mt-2">
-                          <Text className="block text-gray-500 font-medium text-sm">🌐 {cls.languageName}</Text>
-                          {getProgramLabel((cls as any).programAssignmentId) ? (
-                            <Text className="block text-sm text-gray-600 mt-1">📚 {getProgramLabel((cls as any).programAssignmentId)}</Text>
-                          ) : (cls as any).programName ? (
-                            <Text className="block text-sm text-gray-600 mt-1">📚 {(cls as any).programName}{(cls as any).levelName ? ` - ${(cls as any).levelName}` : ''}</Text>
-                          ) : null}
+                        <div className="flex items-center gap-2 text-gray-500 text-sm">
+                          <ClockCircleOutlined />
+                          <span>{dayjs(cls.startDateTime).format('HH:mm')} - {dayjs(cls.endDateTime).format('HH:mm')}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-500 text-sm">
+                          <UserOutlined />
+                          <span>{cls.currentEnrollments}/{cls.capacity} Học viên</span>
                         </div>
                       </div>
 
-                      {/* Card Body */}
-                      <div className="p-6 space-y-5">
-                        <Paragraph
-                          ellipsis={{ rows: 2 }}
-                          className="!m-0 text-gray-600 text-sm leading-relaxed min-h-[2.8rem]">
-                          {cls.description}
-                        </Paragraph>
-
-                        {/* Schedule Info */}
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-3 p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100/50">
-                            <div className="p-2 bg-white rounded-lg shadow-sm">
-                              <CalendarOutlined className="text-blue-600 text-base" />
-                            </div>
-                            <div className="flex-1">
-                              <Text className="text-gray-400 text-xs block mb-0.5">Lịch học</Text>
-                              <Text className="text-gray-800 font-semibold text-sm">
-                                {new Date(cls.startDateTime).toLocaleDateString('vi-VN')}
-                              </Text>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100/50">
-                            <div className="p-2 bg-white rounded-lg shadow-sm">
-                              <ClockCircleOutlined className="text-amber-600 text-base" />
-                            </div>
-                            <div className="flex-1">
-                              <Text className="text-gray-400 text-xs block mb-0.5">Thời gian</Text>
-                              <Text className="text-gray-800 font-semibold text-sm">
-                                {new Date(cls.startDateTime).toLocaleTimeString('vi-VN', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}{' '}
-                                -{' '}
-                                {new Date(cls.endDateTime).toLocaleTimeString('vi-VN', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </Text>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Enrollment Progress */}
-                        <div className="p-4 bg-gradient-to-br from-violet-50 to-purple-50 rounded-2xl border border-violet-100/50">
-                          <div className="flex justify-between items-center mb-3">
-                            <div className="flex items-center gap-2">
-                              <TeamOutlined className="text-violet-600 text-base" />
-                              <Text className="font-semibold text-gray-700 text-sm">Học viên đăng ký</Text>
-                            </div>
-                            <Text className="font-bold text-violet-700">
-                              {cls.currentEnrollments}/{cls.capacity}
-                            </Text>
-                          </div>
-                          <Progress
-                            percent={enrollmentPercentage}
-                            strokeColor={{
-                              '0%': '#8b5cf6',
-                              '100%': '#6366f1',
-                            }}
-                            trailColor="#e9d5ff"
-                            showInfo={false}
-                            strokeWidth={10}
-                            className="!mb-2"
-                          />
-                          <div className="flex justify-between items-center">
-                            <Text className="text-xs text-gray-500">
-                              Còn {cls.capacity - cls.currentEnrollments} chỗ trống
-                            </Text>
-                            <Tag
-                              color={
-                                enrollmentPercentage >= 80
-                                  ? 'red'
-                                  : enrollmentPercentage >= 50
-                                  ? 'orange'
-                                  : 'green'
-                              }
-                              className="rounded-full text-xs font-medium border-0">
-                              {enrollmentPercentage}%
-                            </Tag>
-                          </div>
-                        </div>
-
-                        {/* Price & Action */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <div>
-                            <Text className="text-xs text-gray-400 block mb-1">Học phí</Text>
-                            <div className="flex items-baseline gap-1">
-                              <Text className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                                {cls.pricePerStudent.toLocaleString('vi-VN')}
-                              </Text>
-                              <Text className="text-gray-500 text-sm font-medium">đ</Text>
-                            </div>
-                          </div>
-                          <Button
-                            type="primary"
-                            icon={<EyeOutlined />}
-                            onClick={() => navigate(`${cls.classID}`)}
-                            size="large"
-                            className="rounded-xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-md hover:shadow-lg transition-all">
-                            Xem chi tiết
-                          </Button>
-                        </div>
+                      <div className="pt-4 border-t border-gray-100 flex justify-between items-center mt-auto">
+                        <span className="text-gray-400 text-xs">Học phí</span>
+                        <span className="font-bold text-blue-600 text-lg">
+                          {(cls.pricePerStudent || 0).toLocaleString('vi-VN')} đ
+                        </span>
                       </div>
                     </Card>
                   </Col>
                 );
               })}
-            </Row>
-
-            {/* Pagination */}
-            <div className="flex justify-center mt-12">
-              <Pagination
-                current={page}
-                pageSize={pageSize}
-                onChange={handlePageChange}
-                showSizeChanger={false}
-                className="bg-white px-8 py-4 rounded-2xl shadow-lg shadow-gray-100/80 border border-gray-100"
-              />
-            </div>
-          </div>
-        ) : (
-          /* Empty State */
-          <div className="bg-white rounded-3xl shadow-xl shadow-violet-100/50 p-16 text-center border border-gray-100">
-            <div className="relative inline-block mb-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-400 to-indigo-500 rounded-full blur-2xl opacity-20 scale-150"></div>
-              <div className="relative w-32 h-32 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center">
-                <RocketOutlined className="text-6xl text-violet-600" />
-              </div>
-            </div>
-            <Title level={2} className="!text-gray-900 !mb-4 !font-bold">
-              Chưa có lớp học nào
-            </Title>
-            <Text className="text-gray-500 max-w-lg mx-auto block mb-10 text-lg leading-relaxed">
-              Bắt đầu hành trình giảng dạy của bạn bằng cách tạo lớp học đầu tiên. 
-              Chia sẻ kiến thức và truyền cảm hứng cho học viên!
-            </Text>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsCreateModalVisible(true)}
-              size="large"
-              className="h-14 px-12 rounded-2xl font-bold text-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-xl shadow-violet-200 hover:shadow-2xl hover:shadow-violet-300 transition-all duration-300">
-              Tạo lớp học đầu tiên
-            </Button>
-          </div>
+              <Col span={24} className="flex justify-center mt-8 pb-8">
+                <Pagination
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={filteredClasses.length}
+                  onChange={(page) => setCurrentPage(page)}
+                  showSizeChanger={false}
+                />
+              </Col>
+              </>
+            )}
+          </Row>
         )}
-      </div>
 
-      {/* Create Class Modal */}
-      <CreateClassForm
-        visible={isCreateModalVisible}
-        onClose={() => setIsCreateModalVisible(false)}
-        onCreated={() => refetch()}
-      />
+        <CreateClassForm
+          visible={isCreateModalVisible}
+          onClose={() => setIsCreateModalVisible(false)}
+          onCreated={() => refetch()}
+        />
+      </div>
     </div>
   );
 };

@@ -4,6 +4,10 @@ export interface Class {
   description: string;
   languageID: string;
   languageName: string;
+  programAssignmentId?: string;
+  programName?: string;
+  levelName?: string;
+  durationMinutes?: number;
   startDateTime: string;
   endDateTime: string;
   capacity: number;
@@ -11,6 +15,10 @@ export interface Class {
   pricePerStudent: number;
   googleMeetLink: string;
   status: string;
+  // Lý do hủy (có thể có nhiều tên trường tuỳ API)
+  cancelReason?: string;
+  cancellationReason?: string;
+  cancel_reason?: string;
   currentEnrollments: number;
   createdAt: string;
   updatedAt: string;
