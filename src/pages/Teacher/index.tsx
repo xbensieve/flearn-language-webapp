@@ -61,6 +61,7 @@ import LoadingScreen from "@/components/Loading/LoadingScreen";
 import BackgroundImage from "@/assets/background-image-05.jpg";
 const { Option } = Select;
 const { Title, Paragraph, Text } = Typography;
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const proficiencyByLanguage: Record<
   string,
@@ -73,6 +74,8 @@ export const proficiencyByLanguage: Record<
     value: x,
   })),
 };
+
+// [CẬP NHẬT] Việt hóa nội dung hiển thị cho các thẻ ngôn ngữ
 const LANGUAGES = [
   {
     code: "en",
@@ -83,7 +86,7 @@ const LANGUAGES = [
     gradientEnd: "#bfdbfe",
     native: "379M",
     learners: "1.5B+",
-    badge: "Most Popular",
+    badge: "Phổ biến nhất", // Most Popular
     icon: <Globe className="w-4 h-4" />,
   },
   {
@@ -95,7 +98,7 @@ const LANGUAGES = [
     gradientEnd: "#fecaca",
     native: "125M",
     learners: "3M+",
-    badge: "Unique Culture",
+    badge: "Văn hóa độc đáo", // Unique Culture
     icon: <BookOpen className="w-4 h-4" />,
   },
   {
@@ -107,10 +110,11 @@ const LANGUAGES = [
     gradientEnd: "#fef9c3",
     native: "1.1B",
     learners: "40M+",
-    badge: "Business Power",
+    badge: "Tiềm năng kinh tế", // Business Power
     icon: <Users className="w-4 h-4" />,
   },
 ] as const;
+
 interface LanguageCardProps {
   lang: Language;
   selected: boolean;
@@ -308,7 +312,7 @@ const TeacherApplicationPage: React.FC = () => {
       navigate("/learner/application?status=success");
     },
     onError: (err: AxiosError<any>) => {
-      toast.error(err.response?.data.errors || "Không nộp được đơn!");
+      toast.error(err.response?.data.errors || "Gửi đơn thất bại!");
     },
   });
 
@@ -316,11 +320,11 @@ const TeacherApplicationPage: React.FC = () => {
     mutationFn: updateSubmitTeacherApplication,
     onSuccess: () => {
       setIsSubmitted(true);
-      notifySuccess("Đơn được cập nhật thành công!");
+      notifySuccess("Cập nhật đơn thành công!");
       navigate("/teacher");
     },
     onError: (err: AxiosError<any>) => {
-      toast.error(err.response?.data.errors || "Không cập nhật được đơn!");
+      toast.error(err.response?.data.errors || "Cập nhật đơn thất bại!");
     },
   });
 
@@ -424,14 +428,14 @@ const TeacherApplicationPage: React.FC = () => {
       content: (
         <Form form={form} layout="vertical" size="large">
           <Form.Item
-            label={<Text strong>Chọn ngôn ngữ</Text>}
+            label={<Text strong>Chọn ngôn ngữ giảng dạy</Text>}
             name="LangCode"
             rules={[{ required: true, message: "Vui lòng chọn một ngôn ngữ" }]}
           >
             <div>
               {loadingLanguages ? (
                 <div style={{ textAlign: "center", padding: "40px 0" }}>
-                  <Spin size="large" tip="Đang tải ngôn ngữ..." />
+                  <Spin size="large" tip="Đang tải danh sách ngôn ngữ..." />
                 </div>
               ) : (
                 <Flex gap={24} justify="space-between">
@@ -478,7 +482,7 @@ const TeacherApplicationPage: React.FC = () => {
                     padding: "20px 0",
                   }}
                 >
-                  Vui lòng chọn ngôn ngữ trước
+                  Vui lòng chọn ngôn ngữ phía trên trước
                 </Text>
               ) : (
                 <Row gutter={[12, 12]}>
@@ -526,10 +530,10 @@ const TeacherApplicationPage: React.FC = () => {
                   label="Họ và tên"
                   required
                   rules={[
-                    { required: true, message: "Tên đầy đủ là bắt buộc" },
+                    { required: true, message: "Vui lòng nhập họ và tên" },
                   ]}
                 >
-                  <Input placeholder="Nguyễn Văn Nam" className="h-11" />
+                  <Input placeholder="Ví dụ: Nguyễn Văn Nam" className="h-11" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -537,14 +541,14 @@ const TeacherApplicationPage: React.FC = () => {
                   name="BirthDate"
                   label="Ngày sinh"
                   rules={[
-                    { required: true, message: "Ngày sinh là bắt buộc" },
+                    { required: true, message: "Vui lòng chọn ngày sinh" },
                     {
                       validator: (_, value) => {
                         if (!value) return Promise.reject();
                         const today = new Date();
                         const age = today.getFullYear() - value.year();
                         if (age < 18) {
-                          return Promise.reject("Bạn phải ít nhất 18 tuổi");
+                          return Promise.reject("Bạn phải đủ 18 tuổi trở lên");
                         }
                         return Promise.resolve();
                       },
@@ -610,11 +614,11 @@ const TeacherApplicationPage: React.FC = () => {
                         type="secondary"
                         className="text-xs leading-relaxed"
                       >
-                        Ít nhất 250×250 pixel
+                        Kích thước tối thiểu 250×250 pixel
                         <br />
-                        Chỉ định dạng JPG, PNG và BMP
+                        Định dạng: JPG, PNG hoặc BMP
                         <br />
-                        Kích thước tối đa 2 MB
+                        Dung lượng tối đa: 2 MB
                       </Text>
                     </div>
                     <Form.Item
@@ -646,7 +650,7 @@ const TeacherApplicationPage: React.FC = () => {
                           className="w-full max-w-xs"
                           size="large"
                         >
-                          CHỌN MỘT ẢNH
+                          TẢI ẢNH LÊN
                         </Button>
                       </Upload>
                     </Form.Item>
@@ -661,17 +665,17 @@ const TeacherApplicationPage: React.FC = () => {
           >
             <Form.Item
               name="Bio"
-              label="Hãy cho chúng tôi biết về bạn"
+              label="Hãy giới thiệu đôi nét về bản thân"
               rules={[
                 {
                   required: true,
-                  message: "Xin hãy cho chúng tôi biết về bạn",
+                  message: "Vui lòng nhập thông tin giới thiệu",
                 },
               ]}
             >
               <Input.TextArea
                 rows={4}
-                placeholder="Ví dụ, giáo viên tiếng Anh nhiệt tình với 3 năm kinh nghiệm giúp học sinh đạt được trình độ nói lưu loát..."
+                placeholder="Ví dụ: Tôi là giáo viên tiếng Anh nhiệt huyết với 3 năm kinh nghiệm, giúp học viên tự tin giao tiếp..."
                 className="resize-none"
               />
             </Form.Item>
@@ -686,11 +690,11 @@ const TeacherApplicationPage: React.FC = () => {
                   label="Email"
                   name="Email"
                   rules={[
-                    { required: true, message: "Email là bắt buộc" },
+                    { required: true, message: "Vui lòng nhập Email" },
                     { type: "email", message: "Định dạng email không hợp lệ" },
                   ]}
                 >
-                  <Input placeholder="johndoe@gmail.com" className="h-11" />
+                  <Input placeholder="example@gmail.com" className="h-11" />
                 </Form.Item>
               </Col>
               <Col xs={24} md={12}>
@@ -698,7 +702,7 @@ const TeacherApplicationPage: React.FC = () => {
                   name="PhoneNumber"
                   label="Số điện thoại"
                   rules={[
-                    { required: true, message: "Số điện thoại là bắt buộc" },
+                    { required: true, message: "Vui lòng nhập số điện thoại" },
                     {
                       validator: (_, value) => {
                         // Nếu không có giá trị thì bỏ qua (đã có rule required lo)
@@ -774,7 +778,7 @@ const TeacherApplicationPage: React.FC = () => {
               rules={[
                 {
                   required: true,
-                  message: "Vui lòng mô tả lý lịch giảng dạy của bạn",
+                  message: "Vui lòng mô tả kinh nghiệm giảng dạy của bạn",
                 },
               ]}
             >
@@ -785,12 +789,15 @@ const TeacherApplicationPage: React.FC = () => {
               />
             </Form.Item>
           </InfoSection>
-          <InfoSection title="Meeting Link" icon={<Link className="w-5 h-5" />}>
+          <InfoSection
+            title="Phòng họp trực tuyến"
+            icon={<Link className="w-5 h-5" />}
+          >
             <Form.Item
               name="MeetingUrl"
-              label="Meeting link"
+              label="Đường dẫn Google Meet / Zoom cá nhân"
               rules={[
-                { required: true, message: "Meeting link là bắt buộc" },
+                { required: true, message: "Vui lòng nhập đường dẫn họp" },
                 { type: "url", message: "Vui lòng nhập URL hợp lệ" },
               ]}
             >
@@ -812,7 +819,7 @@ const TeacherApplicationPage: React.FC = () => {
               <>
                 {loadingCertificates && (
                   <div className="flex justify-center py-8">
-                    <Spin size="large" tip="Đang tải chứng chỉ..." />
+                    <Spin size="large" tip="Đang tải danh sách chứng chỉ..." />
                   </div>
                 )}
 
@@ -837,7 +844,7 @@ const TeacherApplicationPage: React.FC = () => {
                               rules={[
                                 {
                                   required: true,
-                                  message: "Chọn chứng chỉ",
+                                  message: "Vui lòng chọn loại chứng chỉ",
                                 },
                               ]}
                             >
@@ -872,13 +879,14 @@ const TeacherApplicationPage: React.FC = () => {
                             <Form.Item
                               {...restField}
                               name={[name, "CertificateImage"]}
-                              label="Hình ảnh"
+                              label="Hình ảnh chứng chỉ"
                               valuePropName="fileList"
                               getValueFromEvent={(e) => e && e.fileList}
                               rules={[
                                 {
                                   required: true,
-                                  message: "Vui lòng tải hình ảnh lên",
+                                  message:
+                                    "Vui lòng tải hình ảnh chứng chỉ lên",
                                 },
                               ]}
                             >
@@ -894,7 +902,7 @@ const TeacherApplicationPage: React.FC = () => {
                                       )
                                   );
                                   setPreviewOpen(true);
-                                  setPreviewTitle(file.name || "Preview");
+                                  setPreviewTitle(file.name || "Xem trước");
                                 }}
                               >
                                 <div>
@@ -969,8 +977,8 @@ const TeacherApplicationPage: React.FC = () => {
             Xem lại đơn đăng ký của bạn
           </Title>
           <Paragraph className="text-center text-gray-600 mb-8">
-            Kiểm tra lại thông tin của bạn trước khi gửi. Mọi thứ đã ổn chưa?
-            Nhấn gửi!
+            Vui lòng kiểm tra kỹ thông tin trước khi gửi. Nếu mọi thứ đã chính
+            xác, hãy nhấn nút Gửi!
           </Paragraph>
 
           {/* Language Card */}
@@ -978,13 +986,13 @@ const TeacherApplicationPage: React.FC = () => {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-2 h-2 bg-blue-500 rounded-md"></div>
               <Paragraph className="text-gray-700 font-semibold !mb-0">
-                Ngôn ngữ đã chọn
+                Ngôn ngữ giảng dạy
               </Paragraph>
             </div>
             <p className="text-gray-800 text-lg font-medium">
               {languagesData?.data?.find(
                 (l: any) => l.langCode === formData.LangCode
-              )?.langName || "Not selected"}{" "}
+              )?.langName || "Chưa chọn ngôn ngữ"}{" "}
             </p>
           </div>
 
@@ -1003,7 +1011,7 @@ const TeacherApplicationPage: React.FC = () => {
                       src={URL.createObjectURL(
                         formData.Avatar[0].originFileObj
                       )}
-                      alt="Applicant Avatar Preview"
+                      alt="Avatar Preview"
                       className="!w-16 !h-16 border-2 border-indigo-300 object-cover rounded-md shadow-md ring-2 ring-indigo-100"
                       icon={
                         <div className="w-full h-full bg-gradient-to-br from-indigo-400 to-blue-500 rounded-md flex items-center justify-center text-white font-bold text-sm">
@@ -1020,10 +1028,10 @@ const TeacherApplicationPage: React.FC = () => {
                   )}
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">
-                      {formData.FullName || "Người nộp đơn không tên"}
+                      {formData.FullName || "Chưa cập nhật tên"}
                     </h3>
                     <p className="text-indigo-600 font-medium">
-                      {formData.Email || "Không có email nào được cung cấp"}
+                      {formData.Email || "Chưa cập nhật Email"}
                     </p>
                   </div>
                 </div>
@@ -1032,8 +1040,7 @@ const TeacherApplicationPage: React.FC = () => {
                   {[
                     {
                       label: "Ngày sinh",
-                      value:
-                        formData.BirthDate?.format?.("MMM DD, YYYY") || "-",
+                      value: formData.BirthDate?.format?.("DD/MM/YYYY") || "-",
                       icon: <Cake />,
                     },
                     {
@@ -1042,7 +1049,7 @@ const TeacherApplicationPage: React.FC = () => {
                       icon: <Phone />,
                     },
                     {
-                      label: "Meeting URL",
+                      label: "Link phòng họp (Meeting URL)",
                       value: formData.MeetingUrl ? (
                         <a
                           href={formData.MeetingUrl}
@@ -1089,14 +1096,14 @@ const TeacherApplicationPage: React.FC = () => {
                 {[
                   {
                     label: "Tiểu sử",
-                    value: formData.Bio || "Không có sinh học được cung cấp",
+                    value: formData.Bio || "Chưa có thông tin giới thiệu.",
                     icon: <Info />,
                   },
                   {
                     label: "Kinh nghiệm giảng dạy",
                     value:
                       formData.TeachingExperience ||
-                      "Không có kinh nghiệm được liệt kê",
+                      "Chưa có kinh nghiệm được liệt kê",
                     icon: <GraduationCap />,
                   },
                 ].map((field, idx) => (
@@ -1137,7 +1144,7 @@ const TeacherApplicationPage: React.FC = () => {
                         className="group relative bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-md p-4 shadow-sm transition-all duration-300 cursor-pointer overflow-hidden"
                       >
                         <h4 className="font-bold text-gray-900 mb-2 text-center">
-                          {certInfo?.name || "Certificate"}
+                          {certInfo?.name || "Chứng chỉ"}
                         </h4>
                         {cert.CertificateImage?.[0] ? (
                           <img
@@ -1152,9 +1159,7 @@ const TeacherApplicationPage: React.FC = () => {
                           />
                         ) : (
                           <div className="w-full max-w-sm mx-auto h-32 bg-gray-200 rounded-md flex items-center justify-center text-gray-500">
-                            <span className="text-sm">
-                              Không có hình ảnh được tải lên
-                            </span>
+                            <span className="text-sm">Chưa tải ảnh lên</span>
                           </div>
                         )}
                       </div>
@@ -1167,7 +1172,7 @@ const TeacherApplicationPage: React.FC = () => {
                       Chưa có chứng chỉ nào được thêm vào.
                     </p>
                     <Button type="dashed" className="mt-2">
-                      Thêm nhiều hơn nữa
+                      Thêm chứng chỉ khác
                     </Button>
                   </div>
                 )}
@@ -1199,11 +1204,11 @@ const TeacherApplicationPage: React.FC = () => {
                   onClick={() => handleSubmit()}
                   size="large"
                 >
-                  Gửi đơn đăng ký{" "}
+                  Gửi đơn đăng ký
                 </Button>
                 <Paragraph className="text-xs text-gray-500 mt-2">
-                  Bằng cách gửi, bạn đồng ý với các điều khoản và chính sách bảo
-                  mật của chúng tôi.
+                  Bằng việc gửi đơn, bạn đồng ý với các điều khoản và chính sách
+                  bảo mật của chúng tôi.
                 </Paragraph>
               </div>
             )
@@ -1236,9 +1241,9 @@ const TeacherApplicationPage: React.FC = () => {
             Đơn đăng ký đang được xem xét
           </Title>
           <Paragraph className="text-gray-500 text-lg mb-8 leading-relaxed">
-            Bạn đã nộp đơn đăng ký và đơn đăng ký này hiện đang được quản trị
-            viên của chúng tôi xem xét. Bạn không thể nộp đơn đăng ký mới cho
-            đến khi quá trình hoàn tất.
+            Bạn đã nộp đơn đăng ký và hiện tại hồ sơ đang được đội ngũ quản trị
+            viên của chúng tôi xem xét. Bạn không thể tạo đơn đăng ký mới trong
+            quá trình này.
           </Paragraph>
           <Button
             type="primary"
@@ -1273,8 +1278,8 @@ const TeacherApplicationPage: React.FC = () => {
               lineHeight: 1.2,
             }}
           >
-            Giải pháp đào tạo ngôn ngữ chuyên nghiệp – tạo giá trị từ việc nâng
-            cao năng lực học tập.
+            Giải pháp đào tạo ngôn ngữ chuyên nghiệp – kiến tạo giá trị từ năng
+            lực học tập.
           </Title>
 
           <Text
@@ -1285,10 +1290,10 @@ const TeacherApplicationPage: React.FC = () => {
               maxWidth: "1000px",
             }}
           >
-            FLearn là nền tảng trực tuyến kết nối người học với giáo viên tiếng
-            Anh, tiếng Trung và tiếng Nhật. Hãy tham gia cộng đồng những nhà
-            giáo dục đầy nhiệt huyết của chúng tôi và bắt đầu tạo nên sự khác
-            biệt ngay hôm nay!
+            FLearn là nền tảng trực tuyến kết nối người học với các giáo viên
+            tiếng Anh, Trung và Nhật. Hãy gia nhập cộng đồng những nhà giáo dục
+            đầy nhiệt huyết của chúng tôi để bắt đầu tạo nên sự khác biệt ngay
+            hôm nay!
           </Text>
         </div>
       </div>
@@ -1319,7 +1324,7 @@ const TeacherApplicationPage: React.FC = () => {
                   className="px-8 h-10 text-gray-600 hover:text-gray-900 border-gray-300"
                   size="large"
                 >
-                  Trước
+                  Quay lại
                 </Button>
               )}
             </div>

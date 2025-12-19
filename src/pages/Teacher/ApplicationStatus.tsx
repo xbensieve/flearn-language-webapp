@@ -20,10 +20,11 @@ import { useNavigate } from "react-router-dom";
 import {
   ClockCircleOutlined,
   UserOutlined,
-  TrophyOutlined,
   ExclamationCircleOutlined,
   EyeOutlined,
   SearchOutlined,
+  CheckCircleOutlined,
+  SyncOutlined,
 } from "@ant-design/icons";
 import type {
   ApplicationData,
@@ -33,30 +34,38 @@ import { getMyApplication } from "../../services/teacherApplication";
 import { useDebounce } from "../../utils/useDebound";
 import NotificationSettings from "../../components/NotificationSettings";
 
-
 const { Title, Paragraph, Text } = Typography;
 
+// [CẬP NHẬT] Việt hóa các trạng thái hiển thị
 const statusMap: Record<
   string,
   { text: string; color: string; icon: React.ReactNode }
 > = {
   Pending: {
-    text: "Pending",
+    text: "Đang chờ xử lý",
     color: "processing",
     icon: <ClockCircleOutlined />,
   },
   Submitted: {
-    text: "Submitted",
+    text: "Đã nộp đơn",
     color: "warning",
-    icon: <ClockCircleOutlined />,
+    icon: <SyncOutlined />,
   },
-  Reviewed: { text: "Reviewed", color: "success", icon: <TrophyOutlined /> },
+  Reviewed: {
+    text: "Đã xem xét",
+    color: "purple",
+    icon: <EyeOutlined />,
+  },
   Rejected: {
-    text: "Rejected",
+    text: "Bị từ chối",
     color: "error",
     icon: <ExclamationCircleOutlined />,
   },
-  Approved: { text: "Approved", color: "success", icon: <TrophyOutlined /> },
+  Approved: {
+    text: "Đã phê duyệt",
+    color: "success",
+    icon: <CheckCircleOutlined />, // Đổi icon Trophy sang Check cho chuẩn hơn
+  },
 };
 
 const ApplicationStatus: React.FC = () => {
@@ -100,7 +109,7 @@ const ApplicationStatus: React.FC = () => {
         <Space direction="vertical" size="large" className="text-center">
           <Spin size="large" />
           <Title level={4} type="secondary">
-            Đang tải đơn đăng ký...
+            Đang tải dữ liệu đơn đăng ký...
           </Title>
         </Space>
       </div>
@@ -117,10 +126,10 @@ const ApplicationStatus: React.FC = () => {
           className="text-center max-w-md"
         >
           <Alert
-            message="Error"
+            message="Đã xảy ra lỗi" // [CẬP NHẬT] Error -> Đã xảy ra lỗi
             description={
               (error as any)?.response?.data?.message ||
-              "Không tải được đơn đăng ký."
+              "Không tải được danh sách đơn đăng ký."
             }
             type="error"
             showIcon
@@ -131,7 +140,7 @@ const ApplicationStatus: React.FC = () => {
             onClick={() => navigate("/learner/application")}
             icon={<UserOutlined />}
           >
-            Đăng ký để giảng dạy
+            Đăng ký giảng dạy ngay
           </Button>
         </Space>
       </div>
@@ -140,7 +149,7 @@ const ApplicationStatus: React.FC = () => {
 
   const columns = [
     {
-      title: "Người xin việc",
+      title: "Họ và Tên",
       key: "name",
       render: (_: any, record: ApplicationData) => (
         <Space>
@@ -173,8 +182,8 @@ const ApplicationStatus: React.FC = () => {
       render: (status: string) => {
         const s = statusMap[status] || statusMap.Pending;
         return (
-          <Tag color={s.color} className="font-medium">
-            {s.icon} {s.text}
+          <Tag color={s.color} className="font-medium" icon={s.icon}>
+            {s.text}
           </Tag>
         );
       },
@@ -208,7 +217,7 @@ const ApplicationStatus: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
           <Title level={1} className="text-4xl font-bold text-gray-900 mb-3">
-            Đơn đăng ký làm giáo viên của bạn
+            Đơn đăng ký làm giáo viên
           </Title>
         </div>
 
@@ -216,7 +225,8 @@ const ApplicationStatus: React.FC = () => {
         <Card className="!mb-4 shadow-md rounded-xl">
           <NotificationSettings />
           <p className="text-gray-500 text-sm mt-2">
-            Bật thông báo để nhận kết quả duyệt đơn đăng ký ngay trên desktop.
+            Bật thông báo để nhận kết quả duyệt đơn đăng ký ngay trên thiết bị
+            của bạn.
           </p>
         </Card>
 
@@ -237,9 +247,9 @@ const ApplicationStatus: React.FC = () => {
               allowClear
               onChange={(v) => setStatusFilter(v)}
               options={[
-                { label: "Đang xử lý", value: "Pending" },
-                { label: "Đã duyệt", value: "Approved" },
-                { label: "Từ chối", value: "Rejected" },
+                { label: "Đang chờ xử lý", value: "Pending" },
+                { label: "Đã phê duyệt", value: "Approved" },
+                { label: "Bị từ chối", value: "Rejected" },
               ]}
             />
           </Space>
@@ -274,9 +284,10 @@ const ApplicationStatus: React.FC = () => {
           footer={null}
           width={900}
           centered
+          title={<Title level={4}>Chi tiết đơn đăng ký</Title>} // Thêm title cho modal rõ ràng
         >
           {selectedApp && (
-            <div className="space-y-6">
+            <div className="space-y-6 pt-4">
               <div className="flex items-center justify-between border-b pb-4">
                 <Space size="large">
                   <Image
@@ -296,37 +307,45 @@ const ApplicationStatus: React.FC = () => {
                 </Space>
                 <Tag
                   color={statusMap[selectedApp.status]?.color}
-                  className="text-lg px-4 py-1"
+                  className="text-lg px-4 py-1 flex items-center gap-2"
                 >
-                  {statusMap[selectedApp.status]?.icon}{" "}
+                  {statusMap[selectedApp.status]?.icon}
                   {statusMap[selectedApp.status]?.text}
                 </Tag>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <span className="font-semibold">Email:</span>{" "}
-                  {selectedApp.email}
+                  <span className="font-semibold text-gray-600">Email:</span>{" "}
+                  <Text copyable>{selectedApp.email}</Text>
                 </div>
                 <div>
-                  <span className="font-semibold">Số điện thoại:</span>{" "}
-                  {selectedApp.phoneNumber}
+                  <span className="font-semibold text-gray-600">
+                    Số điện thoại:
+                  </span>{" "}
+                  <Text>{selectedApp.phoneNumber}</Text>
                 </div>
                 <div>
-                  <span className="font-semibold">Ngôn ngữ:</span>{" "}
+                  <span className="font-semibold text-gray-600">Ngôn ngữ:</span>{" "}
                   {selectedApp.language} ({selectedApp.proficiencyCode})
                 </div>
                 <div>
-                  <span className="font-semibold">Ngày sinh:</span>{" "}
+                  <span className="font-semibold text-gray-600">
+                    Ngày sinh:
+                  </span>{" "}
                   {selectedApp.dateOfBirth}
                 </div>
                 <div>
-                  <span className="font-semibold">Kinh nghiệm:</span>{" "}
-                  {selectedApp.teachingExperience || "—"}
+                  <span className="font-semibold text-gray-600">
+                    Kinh nghiệm:
+                  </span>{" "}
+                  {selectedApp.teachingExperience || "Chưa cập nhật"}
                 </div>
                 {selectedApp.meetingUrl && (
                   <div>
-                    <span className="font-semibold">Google Meet: </span>
+                    <span className="font-semibold text-gray-600">
+                      Meeting URL (Google Meet):{" "}
+                    </span>
                     <a
                       href={selectedApp.meetingUrl}
                       target="_blank"
@@ -340,13 +359,15 @@ const ApplicationStatus: React.FC = () => {
               </div>
               <Divider />
               <Paragraph className="whitespace-pre-wrap">
-                <span className="font-semibold">Tiểu sử: </span>
-                {selectedApp.bio || "No bio."}
+                <span className="font-semibold text-gray-600">Tiểu sử: </span>
+                {selectedApp.bio ||
+                  "Chưa có thông tin giới thiệu bản thân."}{" "}
+                {/* [CẬP NHẬT] */}
               </Paragraph>
               {selectedApp.certificates?.length ? (
                 <div className="mt-4">
                   <Title level={5} className="flex items-center gap-2">
-                    Chứng chỉ: ({selectedApp.certificates.length})
+                    Chứng chỉ chuyên môn ({selectedApp.certificates.length})
                   </Title>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     {selectedApp.certificates.map((cert) => (
@@ -357,23 +378,37 @@ const ApplicationStatus: React.FC = () => {
                         cover={
                           <Image
                             src={cert.certificateImageUrl}
-                            className="h-40 object-contain"
+                            className="h-40 object-contain p-2"
                             preview={{ src: cert.certificateImageUrl }}
+                            alt={cert.certificateName}
                           />
                         }
                       >
-                        <Card.Meta title={cert.certificateName} />
+                        <Card.Meta
+                          title={
+                            <div
+                              className="truncate"
+                              title={cert.certificateName}
+                            >
+                              {cert.certificateName}
+                            </div>
+                          }
+                        />
                       </Card>
                     ))}
                   </div>
                 </div>
               ) : (
-                <Alert message="No certificates" type="info" showIcon />
+                <Alert
+                  message="Người dùng chưa tải lên chứng chỉ nào"
+                  type="info"
+                  showIcon
+                /> // [CẬP NHẬT]
               )}
 
               {selectedApp.rejectionReason && (
                 <Alert
-                  message="Rejected"
+                  message="Lý do từ chối" // [CẬP NHẬT] Rejected -> Lý do từ chối
                   description={selectedApp.rejectionReason}
                   type="error"
                   showIcon
