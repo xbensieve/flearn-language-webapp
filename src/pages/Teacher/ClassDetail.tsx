@@ -1,100 +1,80 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import {
-  Card,
-  Typography,
-  Spin,
-  Space,
-  Tag,
-  Button,
-  Row,
-  Col,
-  Progress,
-  message,
-  Alert,
-  Modal,
-  Input,
-} from 'antd';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import dayjs from 'dayjs';
+import { toast } from 'react-hot-toast';
 import {
   getClassByIdService,
   deleteClassService,
   updateClassService,
   getClassAssignmentsService,
+  publishClassService,
+  requestCancelClassService,
 } from '../../services/class';
-import EditClassModal from './components/EditClassModal';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
 import {
-  LoadingOutlined,
-  ArrowLeftOutlined,
-  CloseOutlined,
-  BookOutlined,
-  CheckCircleOutlined,
-  GlobalOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  StarFilled,
-  ThunderboltFilled,
-  FireFilled,
-  TrophyOutlined,
-} from '@ant-design/icons';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+import {
+  ArrowLeft,
+  Book,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Loader2,
+  GraduationCap,
+  Users,
+  Wallet,
+  Video,
+  Calendar as CalendarIcon,
+  Star,
+  Zap,
+  Ban,
+  Trophy,
+  Globe,
+  Edit,
+} from 'lucide-react';
+
+import EditClassModal from './components/EditClassModal';
 import ClassEnrollmentList from './components/ClassEnrollmentList';
-import { GraduationCap, Users, Wallet, Video, Calendar } from 'lucide-react';
 
-const { Title, Text, Paragraph } = Typography;
-
-const { TextArea } = Input;
-
-const statusConfig: Record<string, { label: string; color: string; bgGradient: string; icon: React.ReactNode }> = {
-  Draft: {
-    label: 'Bản nháp',
-    color: '#8b5cf6',
-    bgGradient: 'from-violet-500 via-purple-500 to-indigo-600',
-    icon: <ThunderboltFilled />,
-  },
-  Published: {
-    label: 'Đã xuất bản',
-    color: '#10b981',
-    bgGradient: 'from-emerald-500 via-teal-500 to-cyan-600',
-    icon: <StarFilled />,
-  },
-  InProgress: {
-    label: 'Đang diễn ra',
-    color: '#3b82f6',
-    bgGradient: 'from-blue-500 via-blue-400 to-blue-300',
-    icon: <ThunderboltFilled />,
-  },
-  Finished: {
-    label: 'Đã kết thúc',
-    color: '#6366f1',
-    bgGradient: 'from-indigo-500 via-indigo-400 to-indigo-300',
-    icon: <TrophyOutlined />,
-  },
-  Completed_PendingPayout: {
-    label: 'Chờ thanh toán',
-    color: '#f59e42',
-    bgGradient: 'from-amber-400 via-amber-300 to-amber-200',
-    icon: <ThunderboltFilled />,
-  },
-  Completed_Paid: {
-    label: 'Đã thanh toán GV',
-    color: '#22d3ee',
-    bgGradient: 'from-cyan-400 via-cyan-300 to-cyan-200',
-    icon: <StarFilled />,
-  },
-  PendingCancel: {
-    label: 'Chờ hủy',
-    color: '#f59e0b',
-    bgGradient: 'from-amber-500 via-orange-500 to-red-500',
-    icon: <FireFilled />,
-  },
-  Cancelled: {
-    label: 'Đã hủy',
-    color: '#ef4444',
-    bgGradient: 'from-red-500 via-rose-500 to-pink-600',
-    icon: <CloseOutlined />,
-  },
+const statusConfig: Record<string, { label: string; className: string; icon: React.ReactNode }> = {
+  Draft: { label: 'Bản nháp', className: 'bg-gray-100 text-gray-600 border-gray-200', icon: <Zap className="h-3.5 w-3.5" /> },
+  Published: { label: 'Đã xuất bản', className: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
+  InProgress: { label: 'Đang diễn ra', className: 'bg-blue-50 text-blue-700 border-blue-200', icon: <Zap className="h-3.5 w-3.5" /> },
+  Finished: { label: 'Đã kết thúc', className: 'bg-slate-100 text-slate-600 border-slate-200', icon: <Trophy className="h-3.5 w-3.5" /> },
+  Completed_PendingPayout: { label: 'Chờ thanh toán', className: 'bg-amber-50 text-amber-700 border-amber-200', icon: <Wallet className="h-3.5 w-3.5" /> },
+  Completed_Paid: { label: 'Đã thanh toán', className: 'bg-green-50 text-green-700 border-green-200', icon: <Star className="h-3.5 w-3.5" /> },
+  PendingCancel: { label: 'Chờ duyệt hủy', className: 'bg-orange-50 text-orange-700 border-orange-200', icon: <Ban className="h-3.5 w-3.5" /> },
+  Cancelled: { label: 'Đã hủy', className: 'bg-red-50 text-red-700 border-red-200', icon: <XCircle className="h-3.5 w-3.5" /> },
+  Cancelled_InsufficientStudents: { label: 'Không đủ HV', className: 'bg-red-50 text-red-700 border-red-200', icon: <Users className="h-3.5 w-3.5" /> },
 };
+
 
 const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,7 +84,7 @@ const ClassDetail: React.FC = () => {
   // Edit modal state
   const [editModal, setEditModal] = useState(false);
   const [updating, setUpdating] = useState(false);
-
+  
   const handleEditSubmit = (values: Partial<any>) => {
     if (!classData) return Promise.reject(new Error('No class selected'));
     setUpdating(true);
@@ -117,13 +97,14 @@ const ClassDetail: React.FC = () => {
 
     return updateClassService(classData.classID, updateData)
       .then((res) => {
-        message.success(res.message || 'Cập nhật lớp học thành công');
+        toast.success(res.message || 'Cập nhật lớp học thành công');
         setEditModal(false);
         refetch();
         queryClient.invalidateQueries({ queryKey: ['class', id] });
         return res;
       })
       .catch((err: any) => {
+        toast.error(err?.response?.data?.message || 'Cập nhật thất bại');
         throw err;
       })
       .finally(() => setUpdating(false));
@@ -134,6 +115,10 @@ const ClassDetail: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteReason, setDeleteReason] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  // Cancel modal state
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['class', id],
@@ -170,32 +155,21 @@ const ClassDetail: React.FC = () => {
 
   const durationMinutes = classData?.endDateTime && classData?.startDateTime ? Math.round((new Date(classData.endDateTime).getTime() - new Date(classData.startDateTime).getTime()) / (1000 * 60)) : undefined;
 
-
-
-
-
   // Handle delete class
   const handleDeleteClass = async () => {
     if (!deleteReason.trim()) {
-      message.warning('Vui lòng nhập lý do xóa lớp.');
+      toast.error('Vui lòng nhập lý do xóa lớp.');
       return;
     }
 
     setIsDeleting(true);
     try {
       const res = await deleteClassService(id!, deleteReason);
-      message.success({
-        content: res.message || 'Xóa lớp học thành công!',
-        duration: 3,
-        icon: <CheckCircleOutlined style={{ color: '#52c41a' }} />,
-      });
+      toast.success(res.message || 'Xóa lớp học thành công!');
       setIsDeleteModalOpen(false);
       navigate('/teacher/classes');
     } catch (error: any) {
-      message.error({
-        content: error.response?.data?.message || 'Không thể xóa lớp học.',
-        duration: 4,
-      });
+      toast.error(error.response?.data?.message || 'Không thể xóa lớp học.');
     } finally {
       setIsDeleting(false);
     }
@@ -205,56 +179,35 @@ const ClassDetail: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[70vh] bg-gradient-to-br from-violet-50 via-blue-50 to-indigo-100">
-        <div className="relative">
-          <div className="absolute inset-0 animate-ping bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full opacity-20 scale-150"></div>
-          <div className="relative p-8 bg-white rounded-3xl shadow-2xl">
-            <Spin
-              size="large"
-              indicator={
-                <LoadingOutlined
-                  style={{ fontSize: 48 }}
-                  className="text-violet-600"
-                  spin
-                />
-              }
-            />
-          </div>
-        </div>
-        <Text className="mt-8 text-gray-600 text-xl font-medium animate-pulse">
-          Đang tải thông tin lớp học...
-        </Text>
+      <div className="flex flex-col justify-center items-center min-h-[70vh] bg-gray-50">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Đang tải thông tin lớp học...</p>
       </div>
     );
   }
 
   if (isError || !classData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Card className="text-center shadow-2xl rounded-3xl p-12 border-0">
-            <div className="relative inline-block mb-8">
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-400 to-indigo-500 rounded-full blur-2xl opacity-20 scale-150"></div>
-              <div className="relative w-28 h-28 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center">
-                <BookOutlined className="text-5xl text-violet-600" />
-              </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <div className="mx-auto bg-destructive/10 text-destructive p-3 rounded-full">
+              <Book className="h-8 w-8" />
             </div>
-            <Title level={2} className="!text-gray-800 !mb-3">
-              Không tìm thấy lớp học
-            </Title>
-            <Text className="text-gray-500 block mb-8 text-lg">
+          </CardHeader>
+          <CardContent>
+            <CardTitle className="text-2xl">Không tìm thấy lớp học</CardTitle>
+            <CardDescription className="mt-2">
               Lớp học bạn đang tìm kiếm có thể không tồn tại hoặc đã bị xóa.
-            </Text>
-            <Button
-              type="primary"
-              size="large"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/teacher/classes')}
-              className="h-14 px-10 rounded-2xl font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 border-0 shadow-lg">
+            </CardDescription>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => navigate('/teacher/classes')} className="w-full">
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Quay lại danh sách
             </Button>
-          </Card>
-        </div>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
@@ -266,348 +219,246 @@ const ClassDetail: React.FC = () => {
   const normalizedStatus = statusValue.toLowerCase();
   const isPublished = normalizedStatus === 'published';
   const isCancelled = normalizedStatus === 'cancelled' || normalizedStatus === 'canceled';
+  
+  const handlePublish = async () => {
+    setUpdating(true);
+    try {
+      await publishClassService(classData.classID);
+      toast.success('Lớp học đã được xuất bản!');
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['class', id] });
+    } catch (err) {
+      toast.error('Không thể xuất bản lớp học.');
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  const handleCancelRequest = async () => {
+    if (!cancelReason.trim()) {
+      toast.error('Vui lòng nhập lý do hủy lớp.');
+      return;
+    }
+    setIsCancelling(true);
+    try {
+      const now = new Date();
+      const start = new Date(classData.startDateTime);
+      const diffDays = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (diffDays >= 7) {
+        await deleteClassService(classData.classID, cancelReason);
+        toast.success('Lớp học đã bị hủy.');
+      } else {
+        await requestCancelClassService(classData.classID, cancelReason);
+        toast.success('Yêu cầu hủy đã được gửi tới quản lý để duyệt.');
+      }
+
+      setIsCancelModalOpen(false);
+      setCancelReason('');
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ['class', id] });
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Không thể xử lý hủy lớp.';
+      toast.error(msg);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-blue-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Navigation Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate('/teacher/classes')}
-            size="large"
-            className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border-0 font-medium h-12 px-6">
-            Quay lại
-          </Button>
-
-          {/* Action Buttons */}
-          <Space wrap>
-            {(normalizedStatus === 'draft' || isCancelled) && (
-              <Button
-                icon={<EditOutlined />}
-                onClick={() => setEditModal(true)}
-                size="large"
-                className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl border-0 font-medium h-12 px-6">
-                Sửa
-              </Button>
-            )}
-
-            {/* Edit Class Modal (still mounted to allow programmatic open) */}
-            <EditClassModal
-              visible={editModal}
-              onClose={() => setEditModal(false)}
-              onSubmit={handleEditSubmit}
-              initialValues={classData || {}}
-              loading={updating}
-            />
-          </Space>
+    <div className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* 1. Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <Button variant="ghost" onClick={() => navigate('/teacher/classes')} className="pl-0 text-muted-foreground hover:text-primary -ml-2">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Quay lại Lịch học
+                </Button>
+                <h1 className="text-3xl font-bold tracking-tight mt-1">{classData.title}</h1>
+            </div>
         </div>
 
-        {/* Success Alert */}
+        {/* Alerts */}
         {isPublished && (
-          <Alert
-            message="🎉 Lớp học đang hoạt động!"
-            description="Lớp học của bạn đã được xuất bản thành công và đang hiển thị cho học viên."
-            type="success"
-            showIcon
-            icon={<CheckCircleOutlined />}
-            className="mb-6 rounded-2xl shadow-lg border-0"
-            closable
-          />
+          <Alert variant="default" className="bg-emerald-50 border-emerald-200 text-emerald-800">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+            <AlertTitle className="text-emerald-800 font-semibold ml-2">Lớp học đang hoạt động!</AlertTitle>
+            <AlertDescription>
+              Học viên có thể tìm và đăng ký lớp học này.
+            </AlertDescription>
+          </Alert>
+        )}
+        {normalizedStatus === 'pendingcancel' && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-5 w-5" />
+            <AlertTitle className="font-semibold ml-2">Yêu cầu hủy đang chờ duyệt</AlertTitle>
+            <AlertDescription>
+              Lý do: {(classData as any)?.cancelReason || (classData as any)?.cancellationReason || 'Chưa cung cấp.'}
+            </AlertDescription>
+          </Alert>
         )}
 
-        {/* Hero Header Card */}
-        <Card className="shadow-2xl rounded-3xl border-0 overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-600 p-10 sm:p-12 text-white relative overflow-hidden rounded-3xl">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-white opacity-6 rounded-full -mr-24 -mt-24"></div>
-            <div className="flex flex-col lg:flex-row justify-between items-start gap-6">
-              <div className="max-w-3xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="p-3 bg-white/20 rounded-xl"><GraduationCap size={20} className="text-white" /></div>
-                  <div className="text-sm text-white/80">Chi tiết lớp học · FLearn</div>
-                </div>
-                <Title level={1} className="!text-white !mb-4 !text-3xl sm:!text-4xl !font-bold !leading-tight">{classData.title}</Title>
-                <Paragraph className="text-white/90 text-lg mb-6 leading-relaxed max-w-3xl">{classData.description}</Paragraph>
-                <div className="flex flex-wrap gap-3">
-                  <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">{classData.languageName}</span>
-                  {programLabel && <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">📚 {programLabel}</span>}
-                  <span className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm">{classData.currentEnrollments}/{classData.capacity} học viên</span>
-                  <Tag className="bg-white/20 text-white border-0">{statusInfo.label}</Tag>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Summary Cards (compact 3-column) */}
-        <Row gutter={[24, 24]} className="mb-8">
-          <Col xs={24} md={8}>
-            <Card className="rounded-2xl shadow-lg border-0 h-full">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-gray-400 font-semibold">Học viên đăng ký</div>
-                  <div className="text-xl font-bold text-gray-900 mt-2">{classData.currentEnrollments}/{classData.capacity}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-gray-400">Dự toán doanh thu</div>
-                  <div className="text-lg font-extrabold text-emerald-600">{new Intl.NumberFormat('vi-VN').format((classData.pricePerStudent || 0) * (classData.capacity || 0))} VNĐ</div>
-                </div>
-              </div>
-              <div className="mt-4">
-                <Progress percent={Math.round((classData.currentEnrollments / classData.capacity) * 100) || 0} strokeColor={{ '0%': '#8b5cf6', '100%': '#6366f1' }} trailColor="#f3e8ff" showInfo={false} strokeWidth={10} />
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} md={8}>
-            <Card className="rounded-2xl shadow-lg border-0 h-full">
-              <div className="text-xs text-gray-400 font-semibold">Lịch & Thời gian</div>
-              <div className="mt-3">
-                <div className="text-sm text-gray-800 font-bold">{new Date(classData.startDateTime).toLocaleDateString('vi-VN')}</div>
-                <div className="text-sm text-gray-600 mt-1">{new Date(classData.startDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} - {new Date(classData.endDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
-                <div className="text-sm text-gray-500 mt-2">Thời lượng: {durationMinutes ? `${durationMinutes} phút` : '--'}</div>
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} md={8}>
-            <Card className="rounded-2xl shadow-lg border-0 h-full">
-              <div className="text-xs text-gray-400 font-semibold">Học phí</div>
-              <div className="mt-3">
-                <div className="text-lg font-bold text-emerald-600">{(classData.pricePerStudent || 0).toLocaleString('vi-VN')} đ</div>
-                <div className="text-sm text-gray-600 mt-1">Số chỗ: {classData.capacity}</div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Main Content Grid */}
-        <Row gutter={[24, 24]}>
-          {/* Left Column - Class Information */}
-          <Col xs={24} lg={14}>
-            <Card className="shadow-xl rounded-3xl border-0 h-full">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-3 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl shadow-lg">
-                  <BookOutlined className="text-white text-xl" />
-                </div>
-                <div>
-                  <Title level={4} className="!m-0 !text-gray-900">Thông tin lớp học</Title>
-                  <Text className="text-gray-500 text-sm">Chi tiết về lịch học và địa điểm</Text>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {/* Language */}
-                <div className="flex items-center p-5 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl border border-violet-100">
-                  <div className="p-3 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl shadow-md mr-4">
-                    <GlobalOutlined className="text-white text-xl" />
-                  </div>
-                  <div className="flex-1">
-                    <Text className="text-gray-500 text-xs block mb-1 uppercase tracking-wide font-medium">Ngôn ngữ giảng dạy</Text>
-                    <Text className="text-gray-900 text-lg font-bold">{classData.languageName}</Text>
-                  </div>
-                </div>
-
-                {/* Schedule */}
-                <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                  <div className="flex items-center mb-4">
-                    <div className="p-2.5 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-md mr-3">
-                      <Calendar size={18} className="text-white" />
+        {/* 2. Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-8">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle>Thông tin chung</CardTitle>
+                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${statusInfo.className}`}>
+                        {statusInfo.icon} {statusInfo.label}
                     </div>
-                    <Text className="text-gray-900 font-bold text-base">Lịch học</Text>
-                  </div>
-                  <Row gutter={16}>
-                  <Col span={12}>
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                      <div className="text-xs text-gray-400 uppercase mb-2 font-semibold">Bắt đầu</div>
-                      <div className="font-bold text-lg">{new Date(classData.startDateTime).toLocaleDateString('vi-VN')}</div>
-                      <div className="text-sm text-gray-500 mt-1">{new Date(classData.startDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                      <div className="text-xs text-gray-400 uppercase mb-2 font-semibold">Kết thúc</div>
-                      <div className="font-bold text-lg">{new Date(classData.endDateTime).toLocaleDateString('vi-VN')}</div>
-                      <div className="text-sm text-gray-500 mt-1">{new Date(classData.endDateTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
-                    </div>
-                  </Col>
-                </Row>
                 </div>
-
-                {/* Google Meet Link */}
-                {classData.googleMeetLink && (
-                  <div className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100">
-                    <div className="flex items-start">
-                      <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl shadow-md mr-4">
-                        <Video size={20} className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <Text className="text-gray-500 text-xs block mb-2 uppercase tracking-wide font-medium">Link phòng học</Text>
-                        <a
-                          href={classData.googleMeetLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-600 hover:text-emerald-700 font-semibold break-all inline-flex items-center gap-2 text-base">
-                          {classData.googleMeetLink}
-                          <CheckCircleOutlined />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </Col>
-
-          {/* Right Column - Statistics */}
-          <Col xs={24} lg={10}>
-            <div className="space-y-6">
-              {/* Enrollment Card */}
-              <Card className="shadow-xl rounded-3xl border-0 bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl shadow-lg">
-                    <Users size={20} className="text-white" />
-                  </div>
-                  <div>
-                    <Title level={4} className="!m-0 !text-gray-900">Tình trạng đăng ký</Title>
-                    <Text className="text-gray-500 text-sm">Số lượng học viên hiện tại</Text>
-                  </div>
-                </div>
-
-                <div className="text-center mb-6 p-6 bg-white rounded-2xl shadow-sm">
-                  <div className="flex items-baseline justify-center gap-2">
-                    <Text className="text-5xl sm:text-6xl font-black text-violet-700">{classData.currentEnrollments}</Text>
-                    <Text className="text-3xl text-gray-400 font-medium">/</Text>
-                    <Text className="text-3xl font-bold text-gray-600">{classData.capacity}</Text>
-                  </div>
-                  <Text className="text-gray-500 mt-2 block font-medium">Học viên đã đăng ký</Text>
-                </div>
-
-                <Progress
-                  percent={enrollmentPercentage}
-                  strokeColor={{
-                    '0%': '#8b5cf6',
-                    '100%': '#a855f7',
-                  }}
-                  trailColor="#e9d5ff"
-                  strokeWidth={14}
-                  className="mb-4"
-                  format={() => null}
-                />
-
-                <div className="flex items-center justify-between gap-3">
-                  <Button type="primary" className="rounded-xl px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 border-0 shadow-md">Xem học viên</Button>
-                  <Tag className="rounded-full text-sm font-medium border-0">Còn <span className="font-bold">{classData.capacity - classData.currentEnrollments}</span> chỗ trống</Tag>
-                </div>
-              </Card>
-
-              {/* Price Card */}
-              <Card className="shadow-xl rounded-3xl border-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 overflow-hidden">
-                <div className="relative p-6">
-                  {/* Decorative */}
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
-                  <div className="absolute bottom-0 left-0 w-28 h-28 bg-white opacity-10 rounded-full -ml-14 -mb-14"></div>
-
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
-                        <Wallet size={24} className="text-white" />
+                <CardDescription className="pt-2">{classData.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center border-t pt-4">
+                      <div>
+                          <p className="text-sm text-muted-foreground">Học viên</p>
+                          <p className="text-xl font-bold">{classData.currentEnrollments}/{classData.capacity}</p>
                       </div>
                       <div>
-                        <Text className="text-white font-bold text-lg block">Học phí</Text>
-                        <Text className="text-white/70 text-sm">Giá mỗi học viên</Text>
+                          <p className="text-sm text-muted-foreground">Ngày học</p>
+                          <p className="text-xl font-bold">{dayjs(classData.startDateTime).format('DD/MM')}</p>
                       </div>
-                    </div>
-
-                    <div className="bg-white/15 backdrop-blur-md rounded-2xl p-6 text-center border border-white/20">
-                      <div className="flex items-baseline justify-center gap-1">
-                        <Text className="text-5xl sm:text-6xl font-black text-white tracking-tight">
-                          {classData.pricePerStudent.toLocaleString('vi-VN')}
-                        </Text>
+                      <div>
+                          <p className="text-sm text-muted-foreground">Thời gian</p>
+                          <p className="text-xl font-bold">{dayjs(classData.startDateTime).format('HH:mm')}</p>
                       </div>
-                      <Text className="text-2xl text-white/90 font-bold mt-1 block">VNĐ</Text>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-center gap-2 text-white/80">
-                      <TrophyOutlined />
-                      <Text className="text-white/80 text-sm font-medium">Thanh toán một lần</Text>
-                    </div>
+                      <div>
+                          <p className="text-sm text-muted-foreground">Học phí</p>
+                          <p className="text-xl font-bold text-emerald-600">{(classData.pricePerStudent || 0).toLocaleString('vi-VN')}đ</p>
+                      </div>
                   </div>
-                </div>
-              </Card>
-            </div>
-          </Col>
-        </Row>
+              </CardContent>
+            </Card>
 
-        {/* Enrolled Students List */}
-        <ClassEnrollmentList classId={id!} />
-      </div>
-
-
-
-      {/* Delete Class Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-3 py-2">
-            <div className="p-2 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl">
-              <DeleteOutlined className="text-white text-lg" />
-            </div>
-            <span className="text-lg font-bold">Xóa lớp học</span>
+            <ClassEnrollmentList classId={id!} />
           </div>
-        }
-        open={isDeleteModalOpen}
-        onCancel={() => {
-          setIsDeleteModalOpen(false);
-          setDeleteReason('');
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setIsDeleteModalOpen(false);
-              setDeleteReason('');
-            }}
-            disabled={isDeleting}
-            size="large"
-            className="rounded-xl h-11">
-            Đóng
-          </Button>,
-          <Button
-            key="delete"
-            type="primary"
-            danger
-            loading={isDeleting}
-            onClick={handleDeleteClass}
-            size="large"
-            className="rounded-xl h-11 font-semibold">
-            Xác nhận xóa
-          </Button>,
-        ]}
-        className="rounded-2xl"
-        styles={{ body: { padding: '24px' } }}>
-        <div className="py-2">
-          <Alert
-            message="Hành động không thể hoàn tác"
-            description="Xóa lớp học sẽ xóa vĩnh viễn khỏi hệ thống. Tất cả học viên đã đăng ký sẽ được thông báo."
-            type="error"
-            showIcon
-            className="mb-6 rounded-xl"
-          />
-          <Text className="block mb-3 font-semibold text-gray-700">Lý do xóa:</Text>
-          <TextArea
-            rows={4}
-            placeholder="Vui lòng mô tả lý do bạn muốn xóa lớp học này..."
-            value={deleteReason}
-            onChange={(e) => setDeleteReason(e.target.value)}
-            maxLength={500}
-            showCount
-            className="rounded-xl"
-          />
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Hành động</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                {(normalizedStatus === 'draft' || isCancelled) && (
+                  <>
+                    <Button variant="outline" onClick={() => setEditModal(true)}>
+                      <Edit className="mr-2 h-4 w-4" /> Sửa thông tin
+                    </Button>
+                    {normalizedStatus === 'draft' && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button disabled={updating}>
+                            {updating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                            Xuất bản lớp học
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Xác nhận xuất bản?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Lớp học sẽ được hiển thị công khai cho học viên. Bạn có chắc chắn muốn tiếp tục?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
+                            <AlertDialogAction onClick={handlePublish}>Xác nhận</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </>
+                )}
+
+                {(isPublished || normalizedStatus === 'inprogress') && (
+                  <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Ban className="mr-2 h-4 w-4" /> Yêu cầu hủy lớp
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Yêu cầu hủy lớp học</DialogTitle>
+                        <DialogDescription>
+                          Vui lòng mô tả lý do bạn muốn hủy lớp học này.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <Textarea rows={4} value={cancelReason} onChange={e => setCancelReason(e.target.value)} placeholder="Lý do hủy..." />
+                      <p className="text-sm text-muted-foreground">
+                        Lưu ý: Nếu lớp bắt đầu sau 6 ngày hoặc ít hơn, yêu cầu sẽ được gửi tới quản lý để duyệt.
+                      </p>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCancelModalOpen(false)}>Hủy</Button>
+                        <Button onClick={handleCancelRequest} disabled={isCancelling}>
+                          {isCancelling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                          Gửi yêu cầu
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                <EditClassModal visible={editModal} onClose={() => setEditModal(false)} onSubmit={handleEditSubmit} initialValues={classData || {}} loading={updating} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Chi tiết bổ sung</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Ngôn ngữ</span>
+                  <span className="font-semibold">{classData.languageName}</span>
+                </div>
+                {programLabel && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Chương trình</span>
+                    <span className="font-semibold text-right">{programLabel}</span>
+                  </div>
+                )}
+                {classData.googleMeetLink && (
+                  <div className="space-y-2 pt-2 border-t">
+                    <p className="text-muted-foreground">Link phòng học</p>
+                    <a href={classData.googleMeetLink} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 break-all hover:underline">
+                      {classData.googleMeetLink}
+                    </a>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </Modal>
+      </div>
+      
+      <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa lớp học?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Hành động này không thể hoàn tác. Lớp học sẽ bị xóa vĩnh viễn.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+           <Textarea
+              rows={4}
+              value={deleteReason}
+              onChange={e => setDeleteReason(e.target.value)}
+              placeholder="Lý do xóa..."
+            />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteClass} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Xác nhận xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

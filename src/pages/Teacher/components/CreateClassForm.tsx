@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, InputNumber, DatePicker, TimePicker, Select, Row, Col, Card, Tooltip, Typography, message } from 'antd';
-import { RocketOutlined, DollarOutlined, InfoCircleOutlined, CalendarOutlined, ClockCircleOutlined, FileTextOutlined, UserOutlined, TeamOutlined, BookOutlined, StarFilled } from '@ant-design/icons';
+import { Modal, Form, Input, InputNumber, DatePicker, TimePicker, Select, Row, Col, Card, Tooltip, Typography, message, Steps, Button } from 'antd';
+import { RocketOutlined, DollarOutlined, InfoCircleOutlined, CalendarOutlined, ClockCircleOutlined, FileTextOutlined, UserOutlined, TeamOutlined, BookOutlined, StarFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { GraduationCap, Sparkles, Wallet, Clock, Calendar, Users } from 'lucide-react';
 import dayjs from 'dayjs';
 import { createClassService, getClassAssignmentsService } from '../../../services/class';
@@ -19,6 +19,8 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
   const [isCreating, setIsCreating] = useState(false);
   const [programsRes, setProgramsRes] = useState<ProgramAssignment[]>([]);
   const [isLoadingPrograms, setIsLoadingPrograms] = useState<boolean>(true);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [messageApi, contextHolder] = message.useMessage();
   const { TextArea } = Input;
 
   React.useEffect(() => {
@@ -53,7 +55,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
         title: values.title,
         description: values.description,
         classDate: values.classDate ? values.classDate.format('YYYY-MM-DD') : undefined,
-        startTime: values.startTime ? values.startTime.format('HH:mm') : undefined,
+        startTime: values.startTime ? values.startTime.format('HH:mm:ss') : undefined,
         durationMinutes: values.durationMinutes,
         pricePerStudent: values.pricePerStudent,
         minStudents: values.minStudents,
@@ -61,15 +63,39 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
         programAssignmentId: values.programAssignmentId,
       };
       const res = await createClassService(payload);
-      message.success({ content: res.message || 'Tạo lớp học thành công!', duration: 3 });
+      messageApi.success({ content: res.message || 'Tạo lớp học thành công!', duration: 3 });
       form.resetFields();
       onClose();
       if (onCreated) onCreated();
     } catch (error: any) {
-      message.error({ content: error?.response?.data?.message || 'Tạo lớp thất bại', duration: 4 });
+      const errorMsg = error?.response?.data?.message || 'Tạo lớp thất bại';
+      messageApi.error({ content: errorMsg, duration: 4 });
+
+      // Nếu lỗi trùng lịch, quay lại bước chọn giờ (Step 1) để chỉnh sửa
+      if (typeof errorMsg === 'string' && errorMsg.toLowerCase().includes('trùng thời gian')) {
+        setCurrentStep(1);
+      }
     } finally {
       setIsCreating(false);
     }
+  };
+
+  const next = async () => {
+    try {
+      // Validate fields based on current step
+      if (currentStep === 0) {
+        await form.validateFields(['title', 'description', 'programAssignmentId']);
+      } else if (currentStep === 1) {
+        await form.validateFields(['classDate', 'startTime', 'durationMinutes']);
+      }
+      setCurrentStep(currentStep + 1);
+    } catch (error) {
+      // Validation failed
+    }
+  };
+
+  const prev = () => {
+    setCurrentStep(currentStep - 1);
   };
 
   return (
@@ -93,13 +119,15 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
       }
       open={visible}
       onCancel={() => {
+        setCurrentStep(0);
         form.resetFields();
         onClose();
       }}
-      onOk={() => form.submit()}
+      footer={null} // Custom footer inside content
       confirmLoading={isCreating}
       width={1200}
       okText="Tạo lớp học"
+      style={{ top: 20 }}
       cancelText="Hủy bỏ"
       okButtonProps={{
         className:
@@ -126,9 +154,20 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
         },
       }}
       className="create-class-modal">
+      {contextHolder}
       <div className="flex flex-col md:flex-row gap-8">
         {/* FORM CỘT TRÁI */}
         <div className="flex-1 min-w-0">
+          <Steps
+            current={currentStep}
+            className="mb-8 px-4"
+            items={[
+              { title: 'Thông tin', icon: <FileTextOutlined /> },
+              { title: 'Lịch học', icon: <CalendarOutlined /> },
+              { title: 'Chi tiết', icon: <DollarOutlined /> },
+            ]}
+          />
+
           <Form
             form={form}
             layout="vertical"
@@ -139,30 +178,9 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
               capacity: 30,
               durationMinutes: 60,
             }}>
-            {/* Basic Information Section */}
-            <Card
-              className="mb-6 shadow-lg border-0 rounded-2xl overflow-hidden"
-              styles={{
-                header: {
-                  background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
-                  borderBottom: 'none',
-                  padding: '20px 24px',
-                },
-                body: {
-                  padding: '24px',
-                },
-              }}
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-md">
-                    <BookOutlined className="text-white text-lg" />
-                  </div>
-                  <div>
-                    <Text className="text-lg font-bold text-gray-900 block">Thông tin cơ bản</Text>
-                    <Text className="text-gray-500 text-xs">Điền thông tin chính của lớp học</Text>
-                  </div>
-                </div>
-              }>
+            
+            {/* STEP 1: BASIC INFO */}
+            <div className={currentStep === 0 ? 'block' : 'hidden'}>
               <Form.Item
                 name="title"
                 label={
@@ -229,32 +247,10 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
                   }))}
                 />
               </Form.Item>
-            </Card>
+            </div>
 
-            {/* Schedule Section */}
-            <Card
-              className="mb-6 shadow-lg border-0 rounded-2xl overflow-hidden"
-              styles={{
-                header: {
-                  background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                  borderBottom: 'none',
-                  padding: '20px 24px',
-                },
-                body: {
-                  padding: '24px',
-                },
-              }}
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-md">
-                    <Calendar size={18} className="text-white" />
-                  </div>
-                  <div>
-                    <Text className="text-lg font-bold text-gray-900 block">Lịch học & Thời lượng</Text>
-                    <Text className="text-gray-500 text-xs">Thiết lập thời gian tổ chức lớp học</Text>
-                  </div>
-                </div>
-              }>
+            {/* STEP 2: SCHEDULE */}
+            <div className={currentStep === 1 ? 'block' : 'hidden'}>
               <Row gutter={24}>
                 <Col xs={24} md={12}>
                   <Form.Item
@@ -283,6 +279,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
                       format="DD/MM/YYYY"
                       placeholder="Chọn ngày học"
                       disabledDate={(current) => current && current < dayjs().add(6, 'day')}
+                      inputReadOnly={false}
                     />
                   </Form.Item>
                 </Col>
@@ -365,32 +362,10 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
                   </Select.Option>
                 </Select>
               </Form.Item>
-            </Card>
+            </div>
 
-            {/* Capacity & Pricing Section */}
-            <Card
-              className="mb-6 shadow-lg border-0 rounded-2xl overflow-hidden"
-              styles={{
-                header: {
-                  background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
-                  borderBottom: 'none',
-                  padding: '20px 24px',
-                },
-                body: {
-                  padding: '24px',
-                },
-              }}
-              title={
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl shadow-md">
-                    <Users size={18} className="text-white" />
-                  </div>
-                  <div>
-                    <Text className="text-lg font-bold text-gray-900 block">Sức chứa & Học phí</Text>
-                    <Text className="text-gray-500 text-xs">Cấu hình số lượng học viên và giá</Text>
-                  </div>
-                </div>
-              }>
+            {/* STEP 3: CAPACITY & PRICING */}
+            <div className={currentStep === 2 ? 'block' : 'hidden'}>
               <Row gutter={24}>
                 <Col xs={24} md={8}>
                   <Form.Item
@@ -503,23 +478,33 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
 
-            {/* Info Note */}
-            <div className="bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-50 border border-violet-200 rounded-2xl p-6">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-violet-100 rounded-xl">
-                  <InfoCircleOutlined className="text-violet-600 text-lg" />
-                </div>
-                <div>
-                  <Text className="text-violet-900 font-bold block mb-2 text-base">Lưu ý quan trọng</Text>
-                  <Text className="text-violet-700 text-sm leading-relaxed">
-                    Lớp học sẽ được tạo ở trạng thái <strong>Bản nháp</strong>. Bạn có thể xem lại và <strong>Xuất bản</strong>{' '}
-                    từ trang chi tiết lớp học. Học viên chỉ có thể đăng ký sau khi lớp được xuất bản. 
-                    Lớp học chỉ diễn ra khi đạt số học viên tối thiểu trước ngày khai giảng.
-                  </Text>
-                </div>
-              </div>
+            {/* NAVIGATION BUTTONS */}
+            <div className="flex justify-between mt-8 pt-4 border-t border-gray-100">
+              {currentStep > 0 && (
+                <Button onClick={prev} size="large" className="rounded-xl px-6">
+                  <LeftOutlined /> Quay lại
+                </Button>
+              )}
+              <div className="flex-1"></div>
+              {currentStep < 2 && (
+                <Button type="primary" onClick={next} size="large" className="rounded-xl px-8 bg-blue-600">
+                  Tiếp theo <RightOutlined />
+                </Button>
+              )}
+              {currentStep === 2 && (
+                <Button 
+                  type="primary" 
+                  htmlType="submit" 
+                  loading={isCreating}
+                  size="large" 
+                  className="rounded-xl px-8 bg-gradient-to-r from-violet-600 to-indigo-600 border-0 shadow-lg shadow-violet-200"
+                  icon={<RocketOutlined />}
+                >
+                  Tạo lớp học
+                </Button>
+              )}
             </div>
           </Form>
         </div>
