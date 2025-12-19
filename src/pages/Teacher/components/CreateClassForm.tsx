@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, Form, Input, InputNumber, DatePicker, TimePicker, Select, Row, Col, Card, Tooltip, Typography, message, Steps, Button } from 'antd';
 import { RocketOutlined, DollarOutlined, InfoCircleOutlined, CalendarOutlined, ClockCircleOutlined, FileTextOutlined, UserOutlined, TeamOutlined, BookOutlined, StarFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
-import { GraduationCap, Sparkles, Wallet, Clock, Calendar, Users } from 'lucide-react';
+import { GraduationCap, Sparkles, Wallet, Clock } from 'lucide-react';
 import dayjs from 'dayjs';
 import { createClassService, getClassAssignmentsService } from '../../../services/class';
 import type { ProgramAssignment } from '@/types/createCourse';

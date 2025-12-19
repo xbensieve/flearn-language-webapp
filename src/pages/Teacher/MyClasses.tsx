@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Card, Button, Typography, Row, Col, Select, Empty, Tag, Tooltip, Segmented, Avatar, Pagination } from 'antd';
+import { Card, Button, Typography, Row, Col, Select, Empty, Tag, Tooltip, Segmented, Pagination } from 'antd';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { format, parse, startOfWeek, getDay, isSameDay, addMonths, subMonths } from 'date-fns';
+import { format, parse, startOfWeek, getDay, isSameDay } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { getClassesService } from '../../services/class';
 import { useNavigate } from 'react-router-dom';
