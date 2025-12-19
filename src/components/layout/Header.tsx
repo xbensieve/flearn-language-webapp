@@ -1,4 +1,5 @@
 import { Bell, LogOut, User, UserCog } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,11 +14,11 @@ import { toast } from "sonner";
 import { logoutService } from "@/services/auth";
 export const Header = () => {
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
   const handleLogout = async () => {
     try {
       const refreshToken = localStorage.getItem("refreshToken");
-
+      queryClient.removeQueries();
       if (refreshToken) {
         await logoutService(refreshToken);
       }
