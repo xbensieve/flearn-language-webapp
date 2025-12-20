@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Typography,
@@ -14,12 +14,11 @@ import {
   Radio,
   Table,
   Image,
-} from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+} from "antd";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   EyeOutlined,
   CheckCircleOutlined,
-
   FileImageOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
@@ -27,13 +26,13 @@ import {
   SendOutlined,
   EditOutlined,
   FilterOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 import {
   getRefundRequestsAll,
   processRefundClass,
   requestBankUpdate,
-} from '../../services/refund';
-import { notifyError, notifySuccess } from '@/utils/toastConfig';
+} from "../../services/refund";
+import { notifyError, notifySuccess } from "@/utils/toastConfig";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -47,19 +46,52 @@ const { Option } = Select;
 // 5 = Other (Admin CAN reject)
 // 6 = DisputeResolved
 
-const requestTypeMap: Record<number, { label: string; canReject: boolean; color: string; bgColor: string }> = {
-  0: { label: 'Hủy do thiếu học viên', canReject: false, color: '#3b82f6', bgColor: '#eff6ff' },
-  1: { label: 'Giáo viên hủy lớp', canReject: false, color: '#8b5cf6', bgColor: '#f5f3ff' },
-  2: { label: 'Lý do cá nhân', canReject: true, color: '#f59e0b', bgColor: '#fffbeb' },
-  3: { label: 'Vấn đề chất lượng', canReject: true, color: '#ef4444', bgColor: '#fef2f2' },
-  4: { label: 'Lỗi kỹ thuật', canReject: true, color: '#6366f1', bgColor: '#eef2ff' },
-  5: { label: 'Khác', canReject: true, color: '#6b7280', bgColor: '#f9fafb' },
-  6: { label: 'Giải quyết tranh chấp', canReject: false, color: '#10b981', bgColor: '#ecfdf5' },
+const requestTypeMap: Record<
+  number,
+  { label: string; canReject: boolean; color: string; bgColor: string }
+> = {
+  0: {
+    label: "Hủy do thiếu học viên",
+    canReject: false,
+    color: "#3b82f6",
+    bgColor: "#eff6ff",
+  },
+  1: {
+    label: "Giáo viên hủy lớp",
+    canReject: false,
+    color: "#8b5cf6",
+    bgColor: "#f5f3ff",
+  },
+  2: {
+    label: "Lý do cá nhân",
+    canReject: true,
+    color: "#f59e0b",
+    bgColor: "#fffbeb",
+  },
+  3: {
+    label: "Vấn đề chất lượng",
+    canReject: true,
+    color: "#ef4444",
+    bgColor: "#fef2f2",
+  },
+  4: {
+    label: "Lỗi kỹ thuật",
+    canReject: true,
+    color: "#6366f1",
+    bgColor: "#eef2ff",
+  },
+  5: { label: "Khác", canReject: true, color: "#6b7280", bgColor: "#f9fafb" },
+  6: {
+    label: "Giải quyết tranh chấp",
+    canReject: false,
+    color: "#10b981",
+    bgColor: "#ecfdf5",
+  },
 };
 
 interface RefundItem {
   refundRequestID: string;
-  refundCategory: 'Class' | 'Course';
+  refundCategory: "Class" | "Course";
   studentID: string;
   studentName: string;
   studentEmail: string;
@@ -87,24 +119,49 @@ interface RefundItem {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  Draft: { label: 'Nháp', className: 'bg-gray-100 text-gray-600 border-gray-200' },
-  Pending: { label: 'Chờ xử lý', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  UnderReview: { label: 'Chờ xử lý', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  Approved: { label: 'Đã duyệt', className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
-  Rejected: { label: 'Từ chối', className: 'bg-red-50 text-red-700 border-red-200' },
-  Completed: { label: 'Hoàn thành', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  Cancelled: { label: 'Đã hủy', className: 'bg-slate-100 text-slate-500 border-slate-200' },
+  Draft: {
+    label: "Nháp",
+    className: "bg-gray-100 text-gray-600 border-gray-200",
+  },
+  Pending: {
+    label: "Chờ xử lý",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  UnderReview: {
+    label: "Chờ xử lý",
+    className: "bg-blue-50 text-blue-700 border-blue-200",
+  },
+  Approved: {
+    label: "Đã duyệt",
+    className: "bg-cyan-50 text-cyan-700 border-cyan-200",
+  },
+  Rejected: {
+    label: "Từ chối",
+    className: "bg-red-50 text-red-700 border-red-200",
+  },
+  Completed: {
+    label: "Hoàn thành",
+    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  Cancelled: {
+    label: "Đã hủy",
+    className: "bg-slate-100 text-slate-500 border-slate-200",
+  },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
   <div
-    className={`p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center gap-4 h-full transition-transform hover:-translate-y-1 duration-300`}>
+    className={`p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center gap-4 h-full transition-transform hover:-translate-y-1 duration-300`}
+  >
     <div
-      className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${bgClass} ${colorClass}`}>
+      className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${bgClass} ${colorClass}`}
+    >
       {icon}
     </div>
     <div>
-      <div className="text-2xl font-bold text-gray-800 leading-none">{value}</div>
+      <div className="text-2xl font-bold text-gray-800 leading-none">
+        {value}
+      </div>
       <div className="text-gray-400 text-[11px] font-semibold uppercase tracking-wide mt-1">
         {title}
       </div>
@@ -119,15 +176,19 @@ const parseAndFormatDate = (d: string): string => {
 
 const RefundAdminPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [classStatusFilter, setClassStatusFilter] = useState<number | null>(null);
-  const [courseStatusFilter, setCourseStatusFilter] = useState<number | null>(null);
+  const [classStatusFilter, setClassStatusFilter] = useState<number | null>(
+    null
+  );
+  const [courseStatusFilter, setCourseStatusFilter] = useState<number | null>(
+    null
+  );
   const [selectedRefund, setSelectedRefund] = useState<RefundItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
   // Use new API endpoint
   const { data: refundResponse, refetch } = useQuery({
-    queryKey: ['refunds-all'],
+    queryKey: ["refunds-all"],
     queryFn: () => getRefundRequestsAll({}),
   });
 
@@ -146,12 +207,14 @@ const RefundAdminPage: React.FC = () => {
 
     allRefunds.forEach((item) => {
       // Ẩn các yêu cầu ở trạng thái Nháp (Draft) đối với Admin
-      if (item.status === 0 || item.statusText === 'Draft') return;
+      if (item.status === 0 || item.statusText === "Draft") return;
 
-      if (item.refundCategory === 'Class') {
-        if (matchesFilter(item.status, classStatusFilter)) classItems.push(item);
+      if (item.refundCategory === "Class") {
+        if (matchesFilter(item.status, classStatusFilter))
+          classItems.push(item);
       } else {
-        if (matchesFilter(item.status, courseStatusFilter)) courseItems.push(item);
+        if (matchesFilter(item.status, courseStatusFilter))
+          courseItems.push(item);
       }
     });
 
@@ -161,46 +224,57 @@ const RefundAdminPage: React.FC = () => {
   const processRefundMutation = useMutation({
     mutationFn: processRefundClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds-all'] });
+      queryClient.invalidateQueries({ queryKey: ["refunds-all"] });
       refetch();
       setIsModalVisible(false);
-      notifySuccess('Processed successfully');
+      notifySuccess("Đã xử lý thành công!");
     },
-    onError: () => notifyError('Failed to process'),
+    onError: () => notifyError("Xử lý không thành công"),
   });
 
   const requestBankUpdateMutation = useMutation({
-    mutationFn: ({ refundRequestId, note }: { refundRequestId: string; note: string }) =>
-      requestBankUpdate(refundRequestId, note),
+    mutationFn: ({
+      refundRequestId,
+      note,
+    }: {
+      refundRequestId: string;
+      note: string;
+    }) => requestBankUpdate(refundRequestId, note),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds-all'] });
+      queryClient.invalidateQueries({ queryKey: ["refunds-all"] });
       refetch();
       setIsModalVisible(false);
-      notifySuccess('Notification sent to student');
+      notifySuccess("Thông báo được gửi tới sinh viên");
     },
-    onError: () => notifyError('Failed to send notification'),
+    onError: () => notifyError("Thất bại khi gửi thông báo"),
   });
 
   useEffect(() => {
     if (selectedRefund && isModalVisible) {
       form.resetFields();
-      form.setFieldValue('Action', 'Approve');
+      form.setFieldValue("Action", "Approve");
     }
   }, [selectedRefund, isModalVisible, form]);
 
-  const pendingCount = allRefunds.filter((r) => r.statusText === 'Pending' || r.statusText === 'UnderReview').length;
-  const processingCount = allRefunds.filter((r) => r.statusText === 'Approved').length;
-  const completedCount = allRefunds.filter((r) => ['Rejected', 'Completed', 'Cancelled'].includes(r.statusText)).length;
+  const pendingCount = allRefunds.filter(
+    (r) => r.statusText === "Pending" || r.statusText === "UnderReview"
+  ).length;
+  const processingCount = allRefunds.filter(
+    (r) => r.statusText === "Approved"
+  ).length;
+  const completedCount = allRefunds.filter((r) =>
+    ["Rejected", "Completed", "Cancelled"].includes(r.statusText)
+  ).length;
 
   const handleClearFilters = () => {
     setClassStatusFilter(null);
     setCourseStatusFilter(null);
   };
 
-  const getColumns = (type: 'class' | 'course') => [
+  const getColumns = (type: "class" | "course") => [
     {
-      title: 'Học viên',
-      dataIndex: 'studentName',
+      title: "Học viên",
+      dataIndex: "studentName",
       render: (text: string, record: RefundItem) => (
         <div>
           <Text strong className="text-gray-700 text-sm block">
@@ -211,63 +285,77 @@ const RefundAdminPage: React.FC = () => {
       ),
     },
     {
-      title: type === 'class' ? 'Lớp' : 'Khóa học',
-      dataIndex: 'displayTitle',
+      title: type === "class" ? "Lớp" : "Khóa học",
+      dataIndex: "displayTitle",
       ellipsis: true,
-      render: (t: string) => <span className="text-xs text-gray-500">{t || 'N/A'}</span>,
-    },
-    {
-      title: 'Số tiền',
-      dataIndex: 'refundAmount',
-      render: (val: number) => (
-        <span className="font-semibold text-emerald-600">{val?.toLocaleString()} ₫</span>
+      render: (t: string) => (
+        <span className="text-xs text-gray-500">{t || "N/A"}</span>
       ),
     },
     {
-      title: 'Loại yêu cầu',
-      dataIndex: 'requestTypeText',
+      title: "Số tiền",
+      dataIndex: "refundAmount",
+      render: (val: number) => (
+        <span className="font-semibold text-emerald-600">
+          {val?.toLocaleString()} ₫
+        </span>
+      ),
+    },
+    {
+      title: "Loại yêu cầu",
+      dataIndex: "requestTypeText",
       ellipsis: true,
       width: 200,
       render: (_: string, record: RefundItem) => {
         const typeInfo = requestTypeMap[record.requestType];
         return (
-          <div 
+          <div
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
-            style={{ 
-              backgroundColor: typeInfo?.bgColor || '#f3f4f6',
-              color: typeInfo?.color || '#6b7280',
-              border: `1px solid ${typeInfo?.color}20`
+            style={{
+              backgroundColor: typeInfo?.bgColor || "#f3f4f6",
+              color: typeInfo?.color || "#6b7280",
+              border: `1px solid ${typeInfo?.color}20`,
             }}
           >
             <span>{typeInfo?.label}</span>
             {!typeInfo?.canReject && (
-              <span className="ml-1 w-1.5 h-1.5 rounded-full bg-green-500" title="Auto-approve" />
+              <span
+                className="ml-1 w-1.5 h-1.5 rounded-full bg-green-500"
+                title="Auto-approve"
+              />
             )}
           </div>
         );
       },
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'statusText',
+      title: "Trạng thái",
+      dataIndex: "statusText",
       width: 120,
       render: (s: string) => {
-        const config = statusConfig[s] || { label: s, className: 'bg-gray-100 text-gray-600 border-gray-200' };
+        const config = statusConfig[s] || {
+          label: s,
+          className: "bg-gray-100 text-gray-600 border-gray-200",
+        };
         return (
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${config.className}`}>
+          <span
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${config.className}`}
+          >
             {config.label}
           </span>
         );
       },
     },
     {
-      title: 'Ngày',
-      dataIndex: 'requestedAt',
+      title: "Ngày",
+      dataIndex: "requestedAt",
       width: 100,
-      render: (d: string) => <span className="text-xs text-gray-400">{parseAndFormatDate(d)}</span>,
+      render: (d: string) => (
+        <span className="text-xs text-gray-400">{parseAndFormatDate(d)}</span>
+      ),
     },
     {
-      title: '',
+      title: "",
       width: 50,
       render: (_: any, r: RefundItem) => (
         <Button
@@ -289,22 +377,25 @@ const RefundAdminPage: React.FC = () => {
     },
   ];
 
-  const canProcess = selectedRefund?.status === 1 || selectedRefund?.status === 2;
+  const canProcess =
+    selectedRefund?.status === 1 || selectedRefund?.status === 2;
 
   // Check if bank info is complete
   const hasBankInfo = selectedRefund
     ? selectedRefund.bankName &&
-      selectedRefund.bankName.trim() !== '' &&
+      selectedRefund.bankName.trim() !== "" &&
       selectedRefund.bankAccountNumber &&
-      selectedRefund.bankAccountNumber.trim() !== '' &&
+      selectedRefund.bankAccountNumber.trim() !== "" &&
       selectedRefund.bankAccountHolderName &&
-      selectedRefund.bankAccountHolderName.trim() !== ''
+      selectedRefund.bankAccountHolderName.trim() !== ""
     : false;
 
   // Check if admin can reject based on requestType
   // requestType 0, 1: Class cancelled by system/teacher -> CANNOT reject
   // requestType 2, 3, 4, 5: Student requested -> CAN reject
-  const canReject = selectedRefund ? requestTypeMap[selectedRefund.requestType]?.canReject : false;
+  const canReject = selectedRefund
+    ? requestTypeMap[selectedRefund.requestType]?.canReject
+    : false;
 
   return (
     <div className="!space-y-5">
@@ -341,8 +432,8 @@ const RefundAdminPage: React.FC = () => {
       {/* Global Filter Actions */}
       {(classStatusFilter !== null || courseStatusFilter !== null) && (
         <div className="flex justify-end">
-          <Button 
-            icon={<FilterOutlined />} 
+          <Button
+            icon={<FilterOutlined />}
             onClick={handleClearFilters}
             className="text-gray-500 hover:text-blue-600 hover:border-blue-600"
           >
@@ -595,7 +686,7 @@ const RefundAdminPage: React.FC = () => {
                       onClick={() => {
                         const note =
                           form.getFieldValue("bankUpdateNote") ||
-                          "Please update your bank account information.";
+                          "Vui lòng điền thông tin tài khoản ngân hàng.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -649,7 +740,7 @@ const RefundAdminPage: React.FC = () => {
                       onClick={() => {
                         const note =
                           form.getFieldValue("bankUpdateNote") ||
-                          "Your bank account information appears to be incorrect. Please update it.";
+                          "Thông tin tài khoản ngân hàng của bạn có vẻ không chính xác. Vui lòng cập nhật lại.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -669,11 +760,14 @@ const RefundAdminPage: React.FC = () => {
 
                   <Form.Item
                     name="ProofImage"
-                    label="Proof Image (Required)"
+                    label="Hình ảnh chứng minh(bắt buộc)"
                     valuePropName="file"
                     getValueFromEvent={(e) => e && e.file}
                     rules={[
-                      { required: true, message: "Please upload proof image" },
+                      {
+                        required: true,
+                        message: "Vui lòng nhập hình ảnh chứng minh",
+                      },
                     ]}
                   >
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
@@ -689,7 +783,7 @@ const RefundAdminPage: React.FC = () => {
                     </div>
                   </Form.Item>
 
-                  <Form.Item name="AdminNote" label="Admin Note">
+                  <Form.Item name="AdminNote" label="Chú ý">
                     <Input.TextArea
                       rows={2}
                       placeholder="Transaction ID or notes..."
@@ -748,7 +842,7 @@ const RefundAdminPage: React.FC = () => {
                       onClick={() => {
                         const note =
                           form.getFieldValue("bankUpdateNote") ||
-                          "Your bank account information appears to be incorrect. Please update it.";
+                          "Thông tin tài khoản ngân hàng của bạn có vẻ không chính xác. Vui lòng cập nhật lại.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -791,13 +885,13 @@ const RefundAdminPage: React.FC = () => {
                       getFieldValue("Action") === "Approve" ? (
                         <Form.Item
                           name="ProofImage"
-                          label="Proof Image (Required)"
+                          label="Hình ảnh chứng minh"
                           valuePropName="file"
                           getValueFromEvent={(e) => e && e.file}
                           rules={[
                             {
                               required: true,
-                              message: "Please upload proof image",
+                              message: "Vui lòng nhập hình ảnh chứng minh",
                             },
                           ]}
                         >
@@ -864,14 +958,17 @@ const RefundAdminPage: React.FC = () => {
           ) : (
             <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex flex-col items-center gap-2">
-                {selectedRefund?.status === 4 || selectedRefund?.status === 6 ? (
+                {selectedRefund?.status === 4 ||
+                selectedRefund?.status === 6 ? (
                   <CloseCircleOutlined className="text-3xl text-red-500" />
                 ) : (
                   <CheckCircleOutlined className="text-3xl text-green-500" />
                 )}
                 <div>
                   <div className="text-gray-800 font-semibold text-base">
-                    Yêu cầu {statusConfig[selectedRefund?.statusText || '']?.label || selectedRefund?.statusText}
+                    Yêu cầu{" "}
+                    {statusConfig[selectedRefund?.statusText || ""]?.label ||
+                      selectedRefund?.statusText}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     {selectedRefund?.processedByAdminName && (
