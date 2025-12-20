@@ -17,7 +17,7 @@ import BackgroundImage from "@/assets/background-image.avif";
 import LoadingScreen from "@/components/Loading/LoadingScreen";
 import { toast } from "sonner";
 
-const SYSTEM_DOMAIN = "https://system-flearn.vercel.app";
+const SYSTEM_DOMAIN = "https://system-flearn.dev";
 
 const LoginLearner: React.FC = () => {
   const navigate = useNavigate();
