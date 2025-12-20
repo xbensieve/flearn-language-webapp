@@ -124,7 +124,7 @@ export default function MyCourses() {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Failed to delete course";
+      const msg = err.response?.data?.message || "Thất bại khi xóa khóa học";
       toast.error(msg);
     },
   });
