@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Table,
   Typography,
@@ -10,20 +10,23 @@ import {
   Input,
   InputNumber,
   Select,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { useQuery, useMutation } from '@tanstack/react-query';
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   getCourseTemplatesService,
   createCourseTemplateService,
   updateCourseTemplateService,
   deleteCourseTemplateService,
-} from '../../services/course';
-import type { CourseTemplate, PayloadCourseTemplate } from '../../services/course/type';
-import { getLanguagesService } from '../../services/language';
-import { getProgramsService } from '../../services/program';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import { Edit, Eye, PlusCircle, Trash2 } from 'lucide-react';
+} from "../../services/course";
+import type {
+  CourseTemplate,
+  PayloadCourseTemplate,
+} from "../../services/course/type";
+import { getLanguagesService } from "../../services/language";
+import { getProgramsService } from "../../services/program";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
+import { Edit, Eye, PlusCircle, Trash2 } from "lucide-react";
 
 const { Title } = Typography;
 const { Option } = Select; // ← This was missing!
@@ -34,14 +37,17 @@ const CourseTemplatesPage: React.FC = () => {
   const [openDetailDrawer, setOpenDetailDrawer] = useState(false);
   const [openCreateDrawer, setOpenCreateDrawer] = useState(false);
   const [openUpdateDrawer, setOpenUpdateDrawer] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<CourseTemplate | null>(null);
-  const [selectedLanguageId, setSelectedLanguageId] = useState<string | undefined>();
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<CourseTemplate | null>(null);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<
+    string | undefined
+  >();
   const [form] = Form.useForm();
-  const programIdWatch = Form.useWatch('programId', form);
+  const programIdWatch = Form.useWatch("programId", form);
 
   // Languages
   const { data: languagesData, isLoading: languagesLoading } = useQuery({
-    queryKey: ['languages'],
+    queryKey: ["languages"],
     queryFn: getLanguagesService,
     staleTime: 5 * 60 * 1000,
     select: (data) => data.data,
@@ -49,7 +55,7 @@ const CourseTemplatesPage: React.FC = () => {
 
   // Programs (by selected language)
   const { data: programsData, isLoading: programsLoading } = useQuery({
-    queryKey: ['programs', selectedLanguageId],
+    queryKey: ["programs", selectedLanguageId],
     queryFn: () => getProgramsService({ languageId: selectedLanguageId! }),
     enabled: !!selectedLanguageId,
     staleTime: 5 * 60 * 1000,
@@ -57,7 +63,7 @@ const CourseTemplatesPage: React.FC = () => {
 
   // Course Templates List
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['courseTemplates', page, pageSize],
+    queryKey: ["courseTemplates", page, pageSize],
     queryFn: () => getCourseTemplatesService({ page, pageSize }),
   });
 
@@ -72,20 +78,25 @@ const CourseTemplatesPage: React.FC = () => {
       refetch();
     },
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to create template');
+      notifyError(err?.response?.data?.message || "Failed to create template");
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ templateId, data }: { templateId: string; data: PayloadCourseTemplate }) =>
-      updateCourseTemplateService({ templateId, data }),
+    mutationFn: ({
+      templateId,
+      data,
+    }: {
+      templateId: string;
+      data: PayloadCourseTemplate;
+    }) => updateCourseTemplateService({ templateId, data }),
     onSuccess: () => {
       notifySuccess("Đã cập nhật mẫu thành công!");
       setOpenUpdateDrawer(false);
       refetch();
     },
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to update template');
+      notifyError(err?.response?.data?.message || "Failed to update template");
     },
   });
 

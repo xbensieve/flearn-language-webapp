@@ -195,8 +195,10 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       setIsRecording(true);
       startTimer();
     } catch (err) {
-      console.error("Error accessing microphone:", err);
-      message.error("Could not access microphone. Please check permissions.");
+      console.error("Lỗi truy cập micro:", err);
+      message.error(
+        "Không thể truy cập micro. Vui lòng kiểm tra quyền truy cập."
+      );
     }
   };
 
@@ -269,7 +271,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        "Failed to update exercise";
+        "Thất bại khi cập nhật bài tập!";
       message.error(errorMsg);
       notifyError(errorMsg);
     },
@@ -385,7 +387,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         } else if (exercise && existingAudioUrl) {
           finalFiles = [];
         } else {
-          message.error("Please record an audio clip!");
+          message.error("Vui lòng ghi âm một đoạn âm thanh!");
           return;
         }
       } else {

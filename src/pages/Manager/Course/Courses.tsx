@@ -64,7 +64,6 @@ export default function Courses() {
     // Thực ra tốt hơn là setPage(1) ngay tại sự kiện onChange của các filter input
   }, [searchTerm, levelFilter, priceFilter, sortBy, statusFilter]);
 
-
   useEffect(() => {
     setPage(1);
   }, [searchTerm, levelFilter, priceFilter, sortBy, statusFilter]);
@@ -128,10 +127,10 @@ export default function Courses() {
   const totalPages = Math.ceil(processedData.length / pageSize);
 
   const getTimeAgo = (submittedAt: string) => {
-    if (!submittedAt) return "unknown";
+    if (!submittedAt) return "Không rõ";
     const [day, month, year] = submittedAt.split("-");
     const submittedDate = new Date(`${year}-${month}-${day}`);
-    if (isNaN(submittedDate.getTime())) return "invalid date";
+    if (isNaN(submittedDate.getTime())) return "Ngày không hợp lệ";
     const now = new Date();
     const diffMs = now.getTime() - submittedDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -425,7 +424,7 @@ export default function Courses() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-6 border-t border-slate-100 mt-6">
             <div className="text-sm text-slate-600">
-              Page <strong>{page}</strong> của <strong>{totalPages}</strong> (
+              Trang <strong>{page}</strong> của <strong>{totalPages}</strong> (
               {processedData.length} tổng)
             </div>
             <div className="flex gap-2">

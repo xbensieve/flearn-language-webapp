@@ -310,7 +310,7 @@ const CourseDetailView: React.FC = () => {
       refetchCourse();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to create unit");
+      notifyError(error.response?.data?.message || "Thất bại khi tạo chương");
     },
   });
 
@@ -332,14 +332,14 @@ const CourseDetailView: React.FC = () => {
     onSuccess: (data) => {
       notifySuccess(
         data.isHidden
-          ? "Course archived successfully"
-          : "Course restored successfully"
+          ? "Khóa học được lưu trữ thành công"
+          : "Khóa học được khôi phục thành công"
       );
       refetchCourse();
     },
     onError: (error: AxiosError<any>) => {
       notifyError(
-        error.response?.data?.message || "Failed to update visibility"
+        error.response?.data?.message || "Không thể cập nhật khả năng hiển thị"
       );
     },
   });
@@ -360,13 +360,14 @@ const CourseDetailView: React.FC = () => {
         setValidationData(errorResponse.errors);
         setIsValidationOpen(true);
       } else {
-        notifyError(errorResponse?.message || "Error submitting course");
+        notifyError(errorResponse?.message || "Lỗi khi nộp khóa học");
       }
     },
   });
 
   const handleToggleEdit = () => {
-    if (isEditMode) notifySuccess("Changes saved (mock)");
+    if (isEditMode)
+      notifySuccess("Các thay đổi được lưu thành công!(bản nháp)");
     setIsEditMode((prev) => !prev);
   };
 
@@ -729,10 +730,10 @@ const CourseDetailView: React.FC = () => {
                             </div>
                             <div className="flex-1">
                               <h4 className="font-semibold text-gray-900">
-                                {unit?.title ?? "Untitled Unit"}
+                                {unit?.title ?? "Chương không có tiêu đề"}
                               </h4>
                               <p className="text-xs text-muted-foreground mt-0.5 font-normal line-clamp-1">
-                                {unit?.description ?? "Unit description"}
+                                {unit?.description ?? "Mô tả chương"}
                               </p>
                             </div>
                           </div>

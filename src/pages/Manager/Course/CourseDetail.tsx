@@ -51,7 +51,7 @@ export default function CourseDetail() {
         const data = await courseService.getCourseDetail(id);
         setCourse(data);
       } catch (err) {
-        console.error("Failed to fetch course:", err);
+        console.error("Không thể tải khóa học:", err);
         setError(true);
       } finally {
         setLoading(false);
@@ -71,7 +71,7 @@ export default function CourseDetail() {
       setReviewData(fullCourseData);
       setIsReviewing(true);
     } catch (err) {
-      console.error("Failed to load course content", err);
+      console.error("Không thể tải nội dung khóa học.", err);
       // Optional: Add toast error here
     } finally {
       setLoadingReview(false);
@@ -240,7 +240,7 @@ export default function CourseDetail() {
 
 function CourseCurriculum({ units }: { units: CourseDetail["units"] }) {
   if (!units?.length)
-    return <p className="text-muted-foreground">No units available.</p>;
+    return <p className="text-muted-foreground">Không có chương nào có sẵn.</p>;
 
   return (
     <div className="space-y-4">
@@ -389,13 +389,13 @@ function CourseNotFound({ onBack }: { onBack: () => void }) {
   return (
     <DashboardLayout>
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
-        <h2 className="text-2xl font-bold">Course Not Found</h2>
+        <h2 className="text-2xl font-bold">Khóa học không tìm thấy</h2>
         <p className="text-muted-foreground max-w-md">
-          The course you're looking for doesn't exist or has been removed.
+          Khóa học bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
         </p>
         <Button onClick={onBack} className="cursor-pointer">
           <ArrowLeft className="w-4 h-4 mr-2 " />
-          Back to Courses
+          Trở lại khóa học
         </Button>
       </div>
     </DashboardLayout>

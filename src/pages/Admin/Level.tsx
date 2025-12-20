@@ -42,7 +42,7 @@ const LevelPage: React.FC = () => {
       notifySuccess("Đã tạo thành công!");
       queryClient.invalidateQueries({ queryKey: ["levels", programId] });
     },
-    onError: () => notifyError("Create failed"),
+    onError: () => notifyError("Tạo thất bại!"),
   });
 
   const updateMutation = useMutation({
@@ -52,7 +52,7 @@ const LevelPage: React.FC = () => {
       notifySuccess("Đã cập nhật thành công!");
       queryClient.invalidateQueries({ queryKey: ["levels", programId] });
     },
-    onError: () => notifyError("Update failed"),
+    onError: () => notifyError("Cập nhật thất bại!"),
   });
 
   const deleteMutation = useMutation({
@@ -61,7 +61,7 @@ const LevelPage: React.FC = () => {
       notifySuccess("Đã xóa thành công!");
       queryClient.invalidateQueries({ queryKey: ["levels", programId] });
     },
-    onError: () => notifyError("Delete failed"),
+    onError: () => notifyError("Xóa thất bại!"),
   });
 
   const handleSubmit = (values: any) => {

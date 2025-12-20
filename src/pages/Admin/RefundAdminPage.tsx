@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Typography,
@@ -14,8 +14,8 @@ import {
   Radio,
   Table,
   Image,
-} from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+} from "antd";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   EyeOutlined,
   CheckCircleOutlined,
@@ -26,13 +26,13 @@ import {
   WarningOutlined,
   SendOutlined,
   EditOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 import {
   getRefundRequestsAll,
   processRefundClass,
   requestBankUpdate,
-} from '../../services/refund';
-import { notifyError, notifySuccess } from '@/utils/toastConfig';
+} from "../../services/refund";
+import { notifyError, notifySuccess } from "@/utils/toastConfig";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,18 +45,46 @@ const { Option } = Select;
 // 4 = TechnicalIssue (Admin CAN reject)
 // 5 = Other (Admin CAN reject)
 
-const requestTypeMap: Record<number, { label: string; canReject: boolean; color: string; bgColor: string }> = {
-  0: { label: 'Insufficient Students', canReject: false, color: '#3b82f6', bgColor: '#eff6ff' },
-  1: { label: 'Teacher Unavailable', canReject: false, color: '#8b5cf6', bgColor: '#f5f3ff' },
-  2: { label: 'Personal Reason', canReject: true, color: '#f59e0b', bgColor: '#fffbeb' },
-  3: { label: 'Quality Issue', canReject: true, color: '#ef4444', bgColor: '#fef2f2' },
-  4: { label: 'Technical Issue', canReject: true, color: '#6366f1', bgColor: '#eef2ff' },
-  5: { label: 'Other', canReject: true, color: '#6b7280', bgColor: '#f9fafb' },
+const requestTypeMap: Record<
+  number,
+  { label: string; canReject: boolean; color: string; bgColor: string }
+> = {
+  0: {
+    label: "Insufficient Students",
+    canReject: false,
+    color: "#3b82f6",
+    bgColor: "#eff6ff",
+  },
+  1: {
+    label: "Teacher Unavailable",
+    canReject: false,
+    color: "#8b5cf6",
+    bgColor: "#f5f3ff",
+  },
+  2: {
+    label: "Personal Reason",
+    canReject: true,
+    color: "#f59e0b",
+    bgColor: "#fffbeb",
+  },
+  3: {
+    label: "Quality Issue",
+    canReject: true,
+    color: "#ef4444",
+    bgColor: "#fef2f2",
+  },
+  4: {
+    label: "Technical Issue",
+    canReject: true,
+    color: "#6366f1",
+    bgColor: "#eef2ff",
+  },
+  5: { label: "Other", canReject: true, color: "#6b7280", bgColor: "#f9fafb" },
 };
 
 interface RefundItem {
   refundRequestID: string;
-  refundCategory: 'Class' | 'Course';
+  refundCategory: "Class" | "Course";
   studentID: string;
   studentName: string;
   studentEmail: string;
@@ -84,23 +112,27 @@ interface RefundItem {
 }
 
 const statusMap: Record<number, { label: string; color: string }> = {
-  0: { label: 'Pending', color: 'blue' },
-  1: { label: 'Under Review', color: 'orange' },
-  2: { label: 'Approved', color: 'green' },
-  3: { label: 'Rejected', color: 'red' },
-  4: { label: 'Completed', color: 'green' },
-  5: { label: 'Cancelled', color: 'default' },
+  0: { label: "Pending", color: "blue" },
+  1: { label: "Under Review", color: "orange" },
+  2: { label: "Approved", color: "green" },
+  3: { label: "Rejected", color: "red" },
+  4: { label: "Completed", color: "green" },
+  5: { label: "Cancelled", color: "default" },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
   <div
-    className={`p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center gap-4 h-full transition-transform hover:-translate-y-1 duration-300`}>
+    className={`p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center gap-4 h-full transition-transform hover:-translate-y-1 duration-300`}
+  >
     <div
-      className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${bgClass} ${colorClass}`}>
+      className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${bgClass} ${colorClass}`}
+    >
       {icon}
     </div>
     <div>
-      <div className="text-2xl font-bold text-gray-800 leading-none">{value}</div>
+      <div className="text-2xl font-bold text-gray-800 leading-none">
+        {value}
+      </div>
       <div className="text-gray-400 text-[11px] font-semibold uppercase tracking-wide mt-1">
         {title}
       </div>
@@ -122,10 +154,11 @@ const RefundAdminPage: React.FC = () => {
 
   // Use new API endpoint
   const { data: refundResponse, refetch } = useQuery({
-    queryKey: ['refunds-all', statusFilter],
-    queryFn: () => getRefundRequestsAll({ 
-      status: statusFilter !== null ? statusFilter : undefined 
-    }),
+    queryKey: ["refunds-all", statusFilter],
+    queryFn: () =>
+      getRefundRequestsAll({
+        status: statusFilter !== null ? statusFilter : undefined,
+      }),
   });
 
   const allRefunds: RefundItem[] = refundResponse?.data || [];
@@ -136,7 +169,7 @@ const RefundAdminPage: React.FC = () => {
     const courseItems: RefundItem[] = [];
 
     allRefunds.forEach((item) => {
-      if (item.refundCategory === 'Class') {
+      if (item.refundCategory === "Class") {
         classItems.push(item);
       } else {
         courseItems.push(item);
@@ -149,41 +182,48 @@ const RefundAdminPage: React.FC = () => {
   const processRefundMutation = useMutation({
     mutationFn: processRefundClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds-all'] });
+      queryClient.invalidateQueries({ queryKey: ["refunds-all"] });
       refetch();
       setIsModalVisible(false);
-      notifySuccess('Processed successfully');
+      notifySuccess("Processed successfully");
     },
-    onError: () => notifyError('Failed to process'),
+    onError: () => notifyError("Failed to process"),
   });
 
   const requestBankUpdateMutation = useMutation({
-    mutationFn: ({ refundRequestId, note }: { refundRequestId: string; note: string }) =>
-      requestBankUpdate(refundRequestId, note),
+    mutationFn: ({
+      refundRequestId,
+      note,
+    }: {
+      refundRequestId: string;
+      note: string;
+    }) => requestBankUpdate(refundRequestId, note),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['refunds-all'] });
+      queryClient.invalidateQueries({ queryKey: ["refunds-all"] });
       refetch();
       setIsModalVisible(false);
-      notifySuccess('Notification sent to student');
+      notifySuccess("Thông báo gửi tới sinh viên");
     },
-    onError: () => notifyError('Failed to send notification'),
+    onError: () => notifyError("Thất bại khi gửi thông báo tới sinh viên"),
   });
 
   useEffect(() => {
     if (selectedRefund && isModalVisible) {
       form.resetFields();
-      form.setFieldValue('Action', 'Approve');
+      form.setFieldValue("Action", "Approve");
     }
   }, [selectedRefund, isModalVisible, form]);
 
   const pendingCount = allRefunds.filter((r) => r.status === 0).length;
   const processingCount = allRefunds.filter((r) => r.status === 1).length;
-  const completedCount = allRefunds.filter((r) => r.status === 2 || r.status === 4).length;
+  const completedCount = allRefunds.filter(
+    (r) => r.status === 2 || r.status === 4
+  ).length;
 
-  const getColumns = (type: 'class' | 'course') => [
+  const getColumns = (type: "class" | "course") => [
     {
-      title: 'Học viên',
-      dataIndex: 'studentName',
+      title: "Học viên",
+      dataIndex: "studentName",
       render: (text: string, record: RefundItem) => (
         <div>
           <Text strong className="text-gray-700 text-sm block">
@@ -194,59 +234,95 @@ const RefundAdminPage: React.FC = () => {
       ),
     },
     {
-      title: type === 'class' ? 'Lớp' : 'Khóa học',
-      dataIndex: 'displayTitle',
+      title: type === "class" ? "Lớp" : "Khóa học",
+      dataIndex: "displayTitle",
       ellipsis: true,
-      render: (t: string) => <span className="text-xs text-gray-500">{t || 'N/A'}</span>,
-    },
-    {
-      title: 'Số tiền',
-      dataIndex: 'refundAmount',
-      render: (val: number) => (
-        <span className="font-semibold text-emerald-600">{val?.toLocaleString()} ₫</span>
+      render: (t: string) => (
+        <span className="text-xs text-gray-500">{t || "N/A"}</span>
       ),
     },
     {
-      title: 'Loại yêu cầu',
-      dataIndex: 'requestTypeText',
+      title: "Số tiền",
+      dataIndex: "refundAmount",
+      render: (val: number) => (
+        <span className="font-semibold text-emerald-600">
+          {val?.toLocaleString()} ₫
+        </span>
+      ),
+    },
+    {
+      title: "Loại yêu cầu",
+      dataIndex: "requestTypeText",
       ellipsis: true,
       width: 200,
       render: (_: string, record: RefundItem) => {
         const typeInfo = requestTypeMap[record.requestType];
         return (
-          <div 
+          <div
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
-            style={{ 
-              backgroundColor: typeInfo?.bgColor || '#f3f4f6',
-              color: typeInfo?.color || '#6b7280',
-              border: `1px solid ${typeInfo?.color}20`
+            style={{
+              backgroundColor: typeInfo?.bgColor || "#f3f4f6",
+              color: typeInfo?.color || "#6b7280",
+              border: `1px solid ${typeInfo?.color}20`,
             }}
           >
             <span>{typeInfo?.label}</span>
             {!typeInfo?.canReject && (
-              <span className="ml-1 w-1.5 h-1.5 rounded-full bg-green-500" title="Auto-approve" />
+              <span
+                className="ml-1 w-1.5 h-1.5 rounded-full bg-green-500"
+                title="Auto-approve"
+              />
             )}
           </div>
         );
       },
     },
     {
-      title: 'Trạng thái',
-      dataIndex: 'status',
+      title: "Trạng thái",
+      dataIndex: "status",
       width: 110,
       render: (s: number) => {
-        const info = statusMap[s] || { label: 'Unknown', color: 'default' };
-        const statusStyles: Record<number, { bg: string; text: string; border: string }> = {
-          0: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
-          1: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
-          2: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
-          3: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
-          4: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' },
-          5: { bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-200' },
+        const info = statusMap[s] || { label: "Unknown", color: "default" };
+        const statusStyles: Record<
+          number,
+          { bg: string; text: string; border: string }
+        > = {
+          0: {
+            bg: "bg-blue-50",
+            text: "text-blue-600",
+            border: "border-blue-200",
+          },
+          1: {
+            bg: "bg-amber-50",
+            text: "text-amber-600",
+            border: "border-amber-200",
+          },
+          2: {
+            bg: "bg-emerald-50",
+            text: "text-emerald-600",
+            border: "border-emerald-200",
+          },
+          3: {
+            bg: "bg-red-50",
+            text: "text-red-600",
+            border: "border-red-200",
+          },
+          4: {
+            bg: "bg-green-50",
+            text: "text-green-600",
+            border: "border-green-200",
+          },
+          5: {
+            bg: "bg-gray-50",
+            text: "text-gray-500",
+            border: "border-gray-200",
+          },
         };
         const style = statusStyles[s] || statusStyles[5];
         return (
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide border ${style.bg} ${style.text} ${style.border}`}>
+          <span
+            className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide border ${style.bg} ${style.text} ${style.border}`}
+          >
             {s === 1 && <SyncOutlined spin className="mr-1 text-[10px]" />}
             {info.label}
           </span>
@@ -254,13 +330,15 @@ const RefundAdminPage: React.FC = () => {
       },
     },
     {
-      title: 'Ngày',
-      dataIndex: 'requestedAt',
+      title: "Ngày",
+      dataIndex: "requestedAt",
       width: 100,
-      render: (d: string) => <span className="text-xs text-gray-400">{parseAndFormatDate(d)}</span>,
+      render: (d: string) => (
+        <span className="text-xs text-gray-400">{parseAndFormatDate(d)}</span>
+      ),
     },
     {
-      title: '',
+      title: "",
       width: 50,
       render: (_: any, r: RefundItem) => (
         <Button
@@ -282,22 +360,25 @@ const RefundAdminPage: React.FC = () => {
     },
   ];
 
-  const canProcess = selectedRefund?.status === 0 || selectedRefund?.status === 1;
+  const canProcess =
+    selectedRefund?.status === 0 || selectedRefund?.status === 1;
 
   // Check if bank info is complete
   const hasBankInfo = selectedRefund
     ? selectedRefund.bankName &&
-      selectedRefund.bankName.trim() !== '' &&
+      selectedRefund.bankName.trim() !== "" &&
       selectedRefund.bankAccountNumber &&
-      selectedRefund.bankAccountNumber.trim() !== '' &&
+      selectedRefund.bankAccountNumber.trim() !== "" &&
       selectedRefund.bankAccountHolderName &&
-      selectedRefund.bankAccountHolderName.trim() !== ''
+      selectedRefund.bankAccountHolderName.trim() !== ""
     : false;
 
   // Check if admin can reject based on requestType
   // requestType 0, 1: Class cancelled by system/teacher -> CANNOT reject
   // requestType 2, 3, 4, 5: Student requested -> CAN reject
-  const canReject = selectedRefund ? requestTypeMap[selectedRefund.requestType]?.canReject : false;
+  const canReject = selectedRefund
+    ? requestTypeMap[selectedRefund.requestType]?.canReject
+    : false;
 
   return (
     <div className="!space-y-5">
@@ -615,7 +696,7 @@ const RefundAdminPage: React.FC = () => {
                       onClick={() => {
                         const note =
                           form.getFieldValue("bankUpdateNote") ||
-                          "Your bank account information appears to be incorrect. Please update it.";
+                          "Thông tin tài khoản ngân hàng của bạn có vẻ không chính xác. Vui lòng cập nhật lại.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -714,7 +795,7 @@ const RefundAdminPage: React.FC = () => {
                       onClick={() => {
                         const note =
                           form.getFieldValue("bankUpdateNote") ||
-                          "Your bank account information appears to be incorrect. Please update it.";
+                          "Thông tin tài khoản ngân hàng của bạn có vẻ không chính xác. Vui lòng cập nhật lại.";
                         if (selectedRefund) {
                           requestBankUpdateMutation.mutate({
                             refundRequestId: selectedRefund.refundRequestID,
@@ -757,7 +838,7 @@ const RefundAdminPage: React.FC = () => {
                       getFieldValue("Action") === "Approve" ? (
                         <Form.Item
                           name="ProofImage"
-                          label="Proof Image (Required)"
+                          label="Ảnh chứng minh (Bắt buộc)"
                           valuePropName="file"
                           getValueFromEvent={(e) => e && e.file}
                           rules={[
@@ -783,7 +864,7 @@ const RefundAdminPage: React.FC = () => {
                     }
                   </Form.Item>
 
-                  <Form.Item name="AdminNote" label="Admin Note">
+                  <Form.Item name="AdminNote" label="Lưu ý của quản trị viên">
                     <Input.TextArea
                       rows={2}
                       placeholder="Transaction ID or rejection reason..."

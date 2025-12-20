@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Typography,
@@ -15,8 +15,8 @@ import {
   message,
   Table,
   Image,
-} from 'antd';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+} from "antd";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   EyeOutlined,
   CheckCircleOutlined,
@@ -24,31 +24,38 @@ import {
   FileImageOutlined,
   ClockCircleOutlined,
   CloseCircleOutlined,
-} from '@ant-design/icons';
-import { getRefundRequestsClass, processRefundClass } from '../../services/refund';
-import type { RefundRequestClass } from '../../services/refund/type';
+} from "@ant-design/icons";
+import {
+  getRefundRequestsClass,
+  processRefundClass,
+} from "../../services/refund";
+import type { RefundRequestClass } from "../../services/refund/type";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 const statusMap: Record<number, { label: string; color: string }> = {
-  0: { label: 'Pending', color: 'blue' },
-  1: { label: 'Under Review', color: 'orange' },
-  2: { label: 'Approved', color: 'green' },
-  3: { label: 'Rejected', color: 'red' },
-  4: { label: 'Completed', color: 'green' },
-  5: { label: 'Cancelled', color: 'default' },
+  0: { label: "Pending", color: "blue" },
+  1: { label: "Under Review", color: "orange" },
+  2: { label: "Approved", color: "green" },
+  3: { label: "Rejected", color: "red" },
+  4: { label: "Completed", color: "green" },
+  5: { label: "Cancelled", color: "default" },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
   <div
-    className={`p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center gap-4 h-full transition-transform hover:-translate-y-1 duration-300`}>
+    className={`p-4 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center gap-4 h-full transition-transform hover:-translate-y-1 duration-300`}
+  >
     <div
-      className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${bgClass} ${colorClass}`}>
+      className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${bgClass} ${colorClass}`}
+    >
       {icon}
     </div>
     <div>
-      <div className="text-2xl font-bold text-gray-800 leading-none">{value}</div>
+      <div className="text-2xl font-bold text-gray-800 leading-none">
+        {value}
+      </div>
       <div className="text-gray-400 text-[11px] font-semibold uppercase tracking-wide mt-1">
         {title}
       </div>
@@ -58,93 +65,99 @@ const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
 
 const ClassRefundAdmin: React.FC = () => {
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<string>('');
-  const [selectedRefund, setSelectedRefund] = useState<RefundRequestClass | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [selectedRefund, setSelectedRefund] =
+    useState<RefundRequestClass | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
   const { data: refunds = [] } = useQuery<RefundRequestClass[]>({
-    queryKey: ['class-refunds', statusFilter],
+    queryKey: ["class-refunds", statusFilter],
     queryFn: () => getRefundRequestsClass({ statusFilter }),
   });
 
   const processMutation = useMutation({
     mutationFn: processRefundClass,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['class-refunds'] });
+      queryClient.invalidateQueries({ queryKey: ["class-refunds"] });
       setIsModalVisible(false);
-      message.success('Processed successfully');
+      message.success("Đã xử lý thành công!");
     },
-    onError: () => message.error('Failed to process'),
+    onError: () => message.error("Không thể xử lý"),
   });
 
   useEffect(() => {
     if (selectedRefund && isModalVisible) {
       form.resetFields();
-      form.setFieldValue('Action', 'Approve');
+      form.setFieldValue("Action", "Approve");
     }
   }, [selectedRefund, isModalVisible, form]);
 
   const pendingCount = refunds.filter((r) => r.status === 0).length;
   const processingCount = refunds.filter((r) => r.status === 1).length;
-  const completedCount = refunds.filter((r) => r.status === 2 || r.status === 4).length;
+  const completedCount = refunds.filter(
+    (r) => r.status === 2 || r.status === 4
+  ).length;
 
   const columns = [
     {
-      title: 'Student',
-      dataIndex: 'studentName',
+      title: "Student",
+      dataIndex: "studentName",
       render: (text: string) => (
-        <Text
-          strong
-          className="text-gray-700 text-sm">
+        <Text strong className="text-gray-700 text-sm">
           {text}
         </Text>
       ),
     },
     {
-      title: 'Class',
-      dataIndex: 'className',
+      title: "Class",
+      dataIndex: "className",
       ellipsis: true,
       render: (t: string) => <span className="text-xs text-gray-500">{t}</span>,
     },
     {
-      title: 'Amount',
-      dataIndex: 'refundAmount',
+      title: "Amount",
+      dataIndex: "refundAmount",
       render: (val: number) => (
-        <span className="font-semibold text-emerald-600">{val?.toLocaleString()} ₫</span>
+        <span className="font-semibold text-emerald-600">
+          {val?.toLocaleString()} ₫
+        </span>
       ),
     },
     {
-      title: 'Reason',
-      dataIndex: 'reason',
+      title: "Reason",
+      dataIndex: "reason",
       ellipsis: true,
       render: (t: string) => <span className="text-sm text-gray-600">{t}</span>,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
+      title: "Status",
+      dataIndex: "status",
       width: 120,
       render: (s: number) => {
-        const info = statusMap[s] || { label: 'Unknown', color: 'default' };
+        const info = statusMap[s] || { label: "Unknown", color: "default" };
         return (
           <Tag
             color={info.color}
-            className="text-[10px] px-2 border-0 font-medium uppercase">
+            className="text-[10px] px-2 border-0 font-medium uppercase"
+          >
             {info.label}
           </Tag>
         );
       },
     },
     {
-      title: 'Date',
-      dataIndex: 'requestedAt',
+      title: "Date",
+      dataIndex: "requestedAt",
       width: 110,
       render: (d: string) => (
-        <span className="text-xs text-gray-400">{new Date(d).toLocaleDateString()}</span>
+        <span className="text-xs text-gray-400">
+          {new Date(d).toLocaleDateString()}
+        </span>
       ),
     },
     {
-      title: '',
+      title: "",
       width: 60,
       render: (_: any, r: RefundRequestClass) => (
         <Button
@@ -166,14 +179,13 @@ const ClassRefundAdmin: React.FC = () => {
     },
   ];
 
-  const canProcess = selectedRefund?.status === 0 || selectedRefund?.status === 1;
+  const canProcess =
+    selectedRefund?.status === 0 || selectedRefund?.status === 1;
 
   return (
     <div className="space-y-5">
       <Row gutter={[16, 16]}>
-        <Col
-          xs={24}
-          sm={8}>
+        <Col xs={24} sm={8}>
           <StatCard
             title="New Requests"
             value={pendingCount}
@@ -182,9 +194,7 @@ const ClassRefundAdmin: React.FC = () => {
             bgClass="bg-blue-50"
           />
         </Col>
-        <Col
-          xs={24}
-          sm={8}>
+        <Col xs={24} sm={8}>
           <StatCard
             title="Processing"
             value={processingCount}
@@ -193,9 +203,7 @@ const ClassRefundAdmin: React.FC = () => {
             bgClass="bg-orange-50"
           />
         </Col>
-        <Col
-          xs={24}
-          sm={8}>
+        <Col xs={24} sm={8}>
           <StatCard
             title="Completed"
             value={completedCount}
@@ -209,11 +217,10 @@ const ClassRefundAdmin: React.FC = () => {
       <Card
         bordered={false}
         className="rounded-2xl shadow-sm border border-gray-100"
-        bodyStyle={{ padding: '16px' }}>
+        bodyStyle={{ padding: "16px" }}
+      >
         <div className="flex justify-between items-center mb-4 px-2">
-          <Title
-            level={5}
-            className="!mb-0 !font-semibold text-gray-700">
+          <Title level={5} className="!mb-0 !font-semibold text-gray-700">
             Class Refund Requests
           </Title>
           <Select
@@ -222,7 +229,8 @@ const ClassRefundAdmin: React.FC = () => {
             size="middle"
             style={{ width: 160 }}
             placeholder="Filter Status"
-            allowClear>
+            allowClear
+          >
             <Option value="">All Status</Option>
             <Option value="0">Pending</Option>
             <Option value="2">Approved</Option>
@@ -233,18 +241,19 @@ const ClassRefundAdmin: React.FC = () => {
           dataSource={refunds}
           columns={columns}
           rowKey="refundRequestID"
-          pagination={{ pageSize: 8, size: 'small' }}
+          pagination={{ pageSize: 8, size: "small" }}
           size="small"
         />
       </Card>
 
       <Modal
-        title={canProcess ? 'Process Refund' : 'Refund Details'}
+        title={canProcess ? "Process Refund" : "Refund Details"}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
         width={480}
-        centered>
+        centered
+      >
         <Form
           form={form}
           layout="vertical"
@@ -253,12 +262,15 @@ const ClassRefundAdmin: React.FC = () => {
               RefundRequestId: selectedRefund!.refundRequestID.toString(),
               ...v,
             })
-          }>
+          }
+        >
           {selectedRefund && (
             <div className="mb-5 p-4 bg-gray-50 rounded-xl text-xs text-gray-600 space-y-2 border border-gray-100">
               <div className="flex justify-between">
                 <span>Student:</span>
-                <strong className="text-gray-800">{selectedRefund.studentName}</strong>
+                <strong className="text-gray-800">
+                  {selectedRefund.studentName}
+                </strong>
               </div>
               <div className="flex justify-between">
                 <span>Amount:</span>
@@ -286,7 +298,7 @@ const ClassRefundAdmin: React.FC = () => {
                     <Image
                       src={selectedRefund.proofImageUrl}
                       height={150}
-                      style={{ objectFit: 'contain' }}
+                      style={{ objectFit: "contain" }}
                     />
                   </div>
                 </div>
@@ -296,21 +308,15 @@ const ClassRefundAdmin: React.FC = () => {
 
           {canProcess ? (
             <>
-              <Form.Item
-                name="Action"
-                label="Action"
-                className="mb-4">
+              <Form.Item name="Action" label="Action" className="mb-4">
                 <Radio.Group
                   buttonStyle="solid"
-                  className="w-full flex text-center">
-                  <Radio.Button
-                    value="Approve"
-                    className="flex-1">
+                  className="w-full flex text-center"
+                >
+                  <Radio.Button value="Approve" className="flex-1">
                     Approve
                   </Radio.Button>
-                  <Radio.Button
-                    value="Reject"
-                    className="flex-1">
+                  <Radio.Button value="Reject" className="flex-1">
                     Reject
                   </Radio.Button>
                 </Radio.Group>
@@ -318,15 +324,22 @@ const ClassRefundAdmin: React.FC = () => {
 
               <Form.Item
                 noStyle
-                shouldUpdate={(prev, current) => prev.Action !== current.Action}>
+                shouldUpdate={(prev, current) => prev.Action !== current.Action}
+              >
                 {({ getFieldValue }) =>
-                  getFieldValue('Action') === 'Approve' ? (
+                  getFieldValue("Action") === "Approve" ? (
                     <Form.Item
                       name="ProofImage"
                       label="Proof Image (Required)"
                       valuePropName="file"
                       getValueFromEvent={(e) => e && e.file}
-                      rules={[{ required: true, message: 'Please upload proof image' }]}>
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please upload proof image",
+                        },
+                      ]}
+                    >
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-blue-500 transition-colors cursor-pointer bg-gray-50">
                         <input
                           type="file"
@@ -343,9 +356,7 @@ const ClassRefundAdmin: React.FC = () => {
                 }
               </Form.Item>
 
-              <Form.Item
-                name="AdminNote"
-                label="Admin Note">
+              <Form.Item name="AdminNote" label="Admin Note">
                 <Input.TextArea
                   rows={2}
                   placeholder="Transaction ID or notes..."
@@ -358,7 +369,8 @@ const ClassRefundAdmin: React.FC = () => {
                 block
                 loading={processMutation.isPending}
                 size="large"
-                className="bg-blue-600 shadow-md h-10 font-medium">
+                className="bg-blue-600 shadow-md h-10 font-medium"
+              >
                 Confirm Action
               </Button>
             </>

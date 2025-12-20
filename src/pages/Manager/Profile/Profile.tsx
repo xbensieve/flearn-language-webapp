@@ -1,17 +1,23 @@
-import { getProfile } from '@/services/auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { Mail, User, Calendar, Shield } from 'lucide-react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { format } from 'date-fns';
-import NotificationSettings from '@/components/NotificationSettings';
-import { useQuery } from '@tanstack/react-query';
+import { getProfile } from "@/services/auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Mail, User, Calendar, Shield } from "lucide-react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { format } from "date-fns";
+import NotificationSettings from "@/components/NotificationSettings";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Profile() {
   const { data: profile, isLoading } = useQuery({
-    queryKey: ['user-profile'],
+    queryKey: ["user-profile"],
     queryFn: async () => {
       const response = await getProfile();
       return response?.data || null;
@@ -19,10 +25,10 @@ export default function Profile() {
     staleTime: 30 * 60 * 1000, // Profile ít đổi, cache hẳn 30 phút
   });
 
-  const userInitials = profile?.username?.substring(0, 2).toUpperCase() || 'UN';
+  const userInitials = profile?.username?.substring(0, 2).toUpperCase() || "UN";
   const joinedDate = profile?.createdAt
-    ? format(new Date(profile.createdAt), 'MMMM d, yyyy')
-    : 'N/A';
+    ? format(new Date(profile.createdAt), "MMMM d, yyyy")
+    : "N/A";
 
   if (isLoading) {
     return (
@@ -43,9 +49,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="space-y-3">
+                  <div key={i} className="space-y-3">
                     <Skeleton className="h-5 w-32" />
                     <Skeleton className="h-10 w-full max-w-md" />
                   </div>
@@ -62,7 +66,9 @@ export default function Profile() {
     return (
       <DashboardLayout>
         <div className="container mx-auto p-6 text-center py-20">
-          <p className="text-muted-foreground text-lg">No profile data available.</p>
+          <p className="text-muted-foreground text-lg">
+            Không có dữ liệu hồ sơ.
+          </p>
         </div>
       </DashboardLayout>
     );
@@ -72,7 +78,9 @@ export default function Profile() {
     <DashboardLayout>
       <div className="font-sans container mx-auto p-6 max-w-5xl">
         <div className="mb-10">
-          <h1 className="text-xl font-bold tracking-tight lg:text-2xl">Hồ sơ của tôi</h1>
+          <h1 className="text-xl font-bold tracking-tight lg:text-2xl">
+            Hồ sơ của tôi
+          </h1>
           <p className="text-muted-foreground mt-2 text-lg">
             Xem và quản lý thông tin tài khoản của bạn
           </p>
@@ -85,16 +93,15 @@ export default function Profile() {
               <CardHeader className="bg-gradient-to-br from-primary/5 via-background to-background pb-8">
                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
                   <Avatar className="h-28 w-28 ring-4 ring-background shadow-xl">
-                    <AvatarImage
-                      src=""
-                      alt={profile.username}
-                    />
+                    <AvatarImage src="" alt={profile.username} />
                     <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary/80 text-white">
                       {userInitials}
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-2">
-                    <CardTitle className="text-3xl font-bold">{profile.username}</CardTitle>
+                    <CardTitle className="text-3xl font-bold">
+                      {profile.username}
+                    </CardTitle>
                     <CardDescription className="text-base">
                       Thành viên kể từ {joinedDate}
                     </CardDescription>
@@ -102,8 +109,9 @@ export default function Profile() {
                       {profile.roles.map((role) => (
                         <Badge
                           key={role}
-                          variant={role === 'admin' ? 'default' : 'secondary'}
-                          className="font-medium">
+                          variant={role === "admin" ? "default" : "secondary"}
+                          className="font-medium"
+                        >
                           <Shield className="h-3 w-3 mr-1" />
                           {role.charAt(0).toUpperCase() + role.slice(1)}
                         </Badge>
@@ -118,9 +126,13 @@ export default function Profile() {
                   <div className="group p-5 rounded-md border bg-muted/30 hover:bg-muted/50 transition-all duration-200">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                       <User className="h-5 w-5" />
-                      <span className="font-medium text-sm">Tên người dùng</span>
+                      <span className="font-medium text-sm">
+                        Tên người dùng
+                      </span>
                     </div>
-                    <p className="text-xl font-semibold pl-8 text-foreground">{profile.username}</p>
+                    <p className="text-xl font-semibold pl-8 text-foreground">
+                      {profile.username}
+                    </p>
                   </div>
 
                   <div className="group p-5 rounded-md border bg-muted/30 hover:bg-muted/50 transition-all duration-200">
@@ -136,9 +148,13 @@ export default function Profile() {
                   <div className="group p-5 rounded-md border bg-muted/30 hover:bg-muted/50 transition-all duration-200">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                       <Calendar className="h-5 w-5" />
-                      <span className="font-medium text-sm">Đã tham gia vào</span>
+                      <span className="font-medium text-sm">
+                        Đã tham gia vào
+                      </span>
                     </div>
-                    <p className="text-xl font-semibold pl-8 text-foreground">{joinedDate}</p>
+                    <p className="text-xl font-semibold pl-8 text-foreground">
+                      {joinedDate}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -160,9 +176,7 @@ export default function Profile() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>
-                  <Badge
-                    variant="outline"
-                    className="text-green-600">
+                  <Badge variant="outline" className="text-green-600">
                     Đang hoạt động
                   </Badge>
                 </div>

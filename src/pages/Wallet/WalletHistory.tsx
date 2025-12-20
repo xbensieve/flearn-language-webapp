@@ -106,7 +106,7 @@ const WalletHistoryPage: React.FC = () => {
       const transactions = response.data || [];
 
       if (transactions.length === 0) {
-        notifyError("No transactions to export");
+        notifyError("Không có giao dịch để xuất khẩu");
         setIsExporting(false);
         return;
       }
@@ -389,7 +389,8 @@ const WalletHistoryPage: React.FC = () => {
         {data?.meta && (
           <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/30">
             <div className="text-sm text-slate-500">
-              Trang <span className="font-medium text-slate-900">{page}</span> của{" "}
+              Trang <span className="font-medium text-slate-900">{page}</span>{" "}
+              của{" "}
               <span className="font-medium text-slate-900">
                 {data.meta.totalPages}
               </span>

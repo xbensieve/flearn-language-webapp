@@ -192,8 +192,8 @@ const EditCoursePage: React.FC = () => {
       updateCourseService({ id: id!, payload: payload as any }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["course", id] });
-      toast.success("Saved successfully!", {
-        description: "Course details have been updated.",
+      toast.success("Thay đổi thành công!", {
+        description: "Thông tin chi tiết khóa học đã cập nhật.",
       });
       navigate("/teacher/course");
     },

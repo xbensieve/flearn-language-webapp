@@ -39,7 +39,7 @@ const UnitsManager: React.FC = () => {
       refetchUnit();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to delete lesson");
+      notifyError(error.response?.data?.message || "Thất bại khi xóa bài học!");
     },
   });
 
@@ -50,7 +50,8 @@ const UnitsManager: React.FC = () => {
       </div>
     );
 
-  if (!unit) return <Empty description="Unit not found" className="mt-10" />;
+  if (!unit)
+    return <Empty description="Chương không tìm thấy" className="mt-10" />;
 
   const handleOpenDrawer = () => {
     setDrawerVisible(true);
