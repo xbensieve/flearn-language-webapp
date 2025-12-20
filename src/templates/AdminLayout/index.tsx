@@ -27,7 +27,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { logoutService } from "../../services/auth";
 import { getAdminWalletService } from "../../services/payout";
 import { unregisterWebPush } from "../../services/webPush";
-import { ArrowLeftRight, BookAudio } from "lucide-react";
+import { ArrowLeftRight, BookAudio, Package } from "lucide-react";
 import { toast } from "sonner";
 
 const { Header, Sider, Content } = Layout;
@@ -118,6 +118,11 @@ const DashboardLayout: React.FC = () => {
           key: "/admin/topics",
           icon: <BookAudio />,
           label: "Chủ đề",
+        },
+        {
+          key: "/admin/subscriptions",
+          icon: <Package />,
+          label: "Gói dịch vụ",
         },
       ],
     },
