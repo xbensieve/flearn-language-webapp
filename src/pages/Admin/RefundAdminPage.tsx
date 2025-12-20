@@ -26,6 +26,7 @@ import {
   WarningOutlined,
   SendOutlined,
   EditOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import {
   getRefundRequestsAll,
@@ -44,14 +45,16 @@ const { Option } = Select;
 // 3 = ClassQualityIssue (Admin CAN reject)
 // 4 = TechnicalIssue (Admin CAN reject)
 // 5 = Other (Admin CAN reject)
+// 6 = DisputeResolved
 
 const requestTypeMap: Record<number, { label: string; canReject: boolean; color: string; bgColor: string }> = {
-  0: { label: 'Insufficient Students', canReject: false, color: '#3b82f6', bgColor: '#eff6ff' },
-  1: { label: 'Teacher Unavailable', canReject: false, color: '#8b5cf6', bgColor: '#f5f3ff' },
-  2: { label: 'Personal Reason', canReject: true, color: '#f59e0b', bgColor: '#fffbeb' },
-  3: { label: 'Quality Issue', canReject: true, color: '#ef4444', bgColor: '#fef2f2' },
-  4: { label: 'Technical Issue', canReject: true, color: '#6366f1', bgColor: '#eef2ff' },
-  5: { label: 'Other', canReject: true, color: '#6b7280', bgColor: '#f9fafb' },
+  0: { label: 'Hủy do thiếu học viên', canReject: false, color: '#3b82f6', bgColor: '#eff6ff' },
+  1: { label: 'Giáo viên hủy lớp', canReject: false, color: '#8b5cf6', bgColor: '#f5f3ff' },
+  2: { label: 'Lý do cá nhân', canReject: true, color: '#f59e0b', bgColor: '#fffbeb' },
+  3: { label: 'Vấn đề chất lượng', canReject: true, color: '#ef4444', bgColor: '#fef2f2' },
+  4: { label: 'Lỗi kỹ thuật', canReject: true, color: '#6366f1', bgColor: '#eef2ff' },
+  5: { label: 'Khác', canReject: true, color: '#6b7280', bgColor: '#f9fafb' },
+  6: { label: 'Giải quyết tranh chấp', canReject: false, color: '#10b981', bgColor: '#ecfdf5' },
 };
 
 interface RefundItem {
@@ -83,13 +86,14 @@ interface RefundItem {
   displayTitle: string;
 }
 
-const statusMap: Record<number, { label: string; color: string }> = {
-  0: { label: 'Pending', color: 'blue' },
-  1: { label: 'Under Review', color: 'orange' },
-  2: { label: 'Approved', color: 'green' },
-  3: { label: 'Rejected', color: 'red' },
-  4: { label: 'Completed', color: 'green' },
-  5: { label: 'Cancelled', color: 'default' },
+const statusConfig: Record<string, { label: string; className: string }> = {
+  Draft: { label: 'Nháp', className: 'bg-gray-100 text-gray-600 border-gray-200' },
+  Pending: { label: 'Chờ xử lý', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  UnderReview: { label: 'Chờ xử lý', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  Approved: { label: 'Đã duyệt', className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  Rejected: { label: 'Từ chối', className: 'bg-red-50 text-red-700 border-red-200' },
+  Completed: { label: 'Hoàn thành', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  Cancelled: { label: 'Đã hủy', className: 'bg-slate-100 text-slate-500 border-slate-200' },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
@@ -115,17 +119,16 @@ const parseAndFormatDate = (d: string): string => {
 
 const RefundAdminPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const [statusFilter, setStatusFilter] = useState<number | null>(null);
+  const [classStatusFilter, setClassStatusFilter] = useState<number | null>(null);
+  const [courseStatusFilter, setCourseStatusFilter] = useState<number | null>(null);
   const [selectedRefund, setSelectedRefund] = useState<RefundItem | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
   // Use new API endpoint
   const { data: refundResponse, refetch } = useQuery({
-    queryKey: ['refunds-all', statusFilter],
-    queryFn: () => getRefundRequestsAll({ 
-      status: statusFilter !== null ? statusFilter : undefined 
-    }),
+    queryKey: ['refunds-all'],
+    queryFn: () => getRefundRequestsAll({}),
   });
 
   const allRefunds: RefundItem[] = refundResponse?.data || [];
@@ -135,16 +138,25 @@ const RefundAdminPage: React.FC = () => {
     const classItems: RefundItem[] = [];
     const courseItems: RefundItem[] = [];
 
+    const matchesFilter = (itemStatus: number, filter: number | null) => {
+      if (filter === null) return true;
+      if (filter === 1) return itemStatus === 1 || itemStatus === 2; // Pending or UnderReview
+      return itemStatus === filter;
+    };
+
     allRefunds.forEach((item) => {
+      // Ẩn các yêu cầu ở trạng thái Nháp (Draft) đối với Admin
+      if (item.status === 0 || item.statusText === 'Draft') return;
+
       if (item.refundCategory === 'Class') {
-        classItems.push(item);
+        if (matchesFilter(item.status, classStatusFilter)) classItems.push(item);
       } else {
-        courseItems.push(item);
+        if (matchesFilter(item.status, courseStatusFilter)) courseItems.push(item);
       }
     });
 
     return { classRefunds: classItems, courseRefunds: courseItems };
-  }, [allRefunds]);
+  }, [allRefunds, classStatusFilter, courseStatusFilter]);
 
   const processRefundMutation = useMutation({
     mutationFn: processRefundClass,
@@ -176,9 +188,14 @@ const RefundAdminPage: React.FC = () => {
     }
   }, [selectedRefund, isModalVisible, form]);
 
-  const pendingCount = allRefunds.filter((r) => r.status === 0).length;
-  const processingCount = allRefunds.filter((r) => r.status === 1).length;
-  const completedCount = allRefunds.filter((r) => r.status === 2 || r.status === 4).length;
+  const pendingCount = allRefunds.filter((r) => r.statusText === 'Pending' || r.statusText === 'UnderReview').length;
+  const processingCount = allRefunds.filter((r) => r.statusText === 'Approved').length;
+  const completedCount = allRefunds.filter((r) => ['Rejected', 'Completed', 'Cancelled'].includes(r.statusText)).length;
+
+  const handleClearFilters = () => {
+    setClassStatusFilter(null);
+    setCourseStatusFilter(null);
+  };
 
   const getColumns = (type: 'class' | 'course') => [
     {
@@ -232,23 +249,13 @@ const RefundAdminPage: React.FC = () => {
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'status',
-      width: 110,
-      render: (s: number) => {
-        const info = statusMap[s] || { label: 'Unknown', color: 'default' };
-        const statusStyles: Record<number, { bg: string; text: string; border: string }> = {
-          0: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
-          1: { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
-          2: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
-          3: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
-          4: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200' },
-          5: { bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-200' },
-        };
-        const style = statusStyles[s] || statusStyles[5];
+      dataIndex: 'statusText',
+      width: 120,
+      render: (s: string) => {
+        const config = statusConfig[s] || { label: s, className: 'bg-gray-100 text-gray-600 border-gray-200' };
         return (
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide border ${style.bg} ${style.text} ${style.border}`}>
-            {s === 1 && <SyncOutlined spin className="mr-1 text-[10px]" />}
-            {info.label}
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${config.className}`}>
+            {config.label}
           </span>
         );
       },
@@ -267,7 +274,7 @@ const RefundAdminPage: React.FC = () => {
           size="small"
           type="text"
           icon={
-            r.status === 0 || r.status === 1 ? (
+            r.status === 1 || r.status === 2 ? (
               <EyeOutlined className="text-blue-500" />
             ) : (
               <EyeOutlined className="text-gray-400" />
@@ -282,7 +289,7 @@ const RefundAdminPage: React.FC = () => {
     },
   ];
 
-  const canProcess = selectedRefund?.status === 0 || selectedRefund?.status === 1;
+  const canProcess = selectedRefund?.status === 1 || selectedRefund?.status === 2;
 
   // Check if bank info is complete
   const hasBankInfo = selectedRefund
@@ -304,7 +311,7 @@ const RefundAdminPage: React.FC = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={8}>
           <StatCard
-            title="Yêu cầu mới"
+            title="Chờ xử lý"
             value={pendingCount}
             icon={<ClockCircleOutlined />}
             colorClass="text-blue-600"
@@ -313,39 +320,36 @@ const RefundAdminPage: React.FC = () => {
         </Col>
         <Col xs={24} sm={8}>
           <StatCard
-            title="Xử lý"
+            title="Đã duyệt"
             value={processingCount}
-            icon={<SyncOutlined spin={processingCount > 0} />}
-            colorClass="text-orange-500"
-            bgClass="bg-orange-50"
+            icon={<CheckCircleOutlined />}
+            colorClass="text-cyan-600"
+            bgClass="bg-cyan-50"
           />
         </Col>
         <Col xs={24} sm={8}>
           <StatCard
-            title="Hoàn thành"
+            title="Đã hoàn tất"
             value={completedCount}
-            icon={<CheckCircleOutlined />}
-            colorClass="text-green-600"
-            bgClass="bg-green-50"
+            icon={<FileImageOutlined />}
+            colorClass="text-emerald-600"
+            bgClass="bg-emerald-50"
           />
         </Col>
       </Row>
 
-      <div className="flex justify-end mb-4">
-        <Select
-          value={statusFilter}
-          onChange={(val) => setStatusFilter(val)}
-          size="middle"
-          style={{ width: 160 }}
-          placeholder="All Status"
-          allowClear
-          onClear={() => setStatusFilter(null)}
-        >
-          <Option value={0}>Pending</Option>
-          <Option value={2}>Approved</Option>
-          <Option value={3}>Rejected</Option>
-        </Select>
-      </div>
+      {/* Global Filter Actions */}
+      {(classStatusFilter !== null || courseStatusFilter !== null) && (
+        <div className="flex justify-end">
+          <Button 
+            icon={<FilterOutlined />} 
+            onClick={handleClearFilters}
+            className="text-gray-500 hover:text-blue-600 hover:border-blue-600"
+          >
+            Xóa bộ lọc đang chọn
+          </Button>
+        </div>
+      )}
 
       {/* Course Refund Requests */}
       {courseRefunds.length > 0 && (
@@ -355,10 +359,25 @@ const RefundAdminPage: React.FC = () => {
           styles={{ body: { padding: "16px" } }}
         >
           <div className="flex justify-between items-center mb-4 px-2">
-            <Title level={5} className="!mb-0 !font-semibold text-gray-700">
-              Yêu cầu hoàn tiền khóa học
-            </Title>
-            <Tag color="purple">{courseRefunds.length} requests</Tag>
+            <div className="flex items-center gap-3">
+              <Title level={5} className="!mb-0 !font-semibold text-gray-700">
+                Yêu cầu hoàn tiền khóa học
+              </Title>
+              <Tag color="purple">{courseRefunds.length}</Tag>
+            </div>
+            <Select
+              value={courseStatusFilter}
+              onChange={setCourseStatusFilter}
+              size="small"
+              style={{ width: 140 }}
+              placeholder="Tất cả trạng thái"
+              allowClear
+            >
+              <Option value={1}>Chờ xử lý</Option>
+              <Option value={3}>Đã duyệt</Option>
+              <Option value={4}>Từ chối</Option>
+              <Option value={5}>Hoàn thành</Option>
+            </Select>
           </div>
           <Table
             dataSource={courseRefunds}
@@ -377,10 +396,25 @@ const RefundAdminPage: React.FC = () => {
         styles={{ body: { padding: "16px" } }}
       >
         <div className="flex justify-between items-center mb-4 px-2">
-          <Title level={5} className="!mb-0 !font-semibold text-gray-700">
-            Yêu cầu hoàn tiền lớp học
-          </Title>
-          <Tag color="blue">{classRefunds.length} requests</Tag>
+          <div className="flex items-center gap-3">
+            <Title level={5} className="!mb-0 !font-semibold text-gray-700">
+              Yêu cầu hoàn tiền lớp học
+            </Title>
+            <Tag color="blue">{classRefunds.length}</Tag>
+          </div>
+          <Select
+            value={classStatusFilter}
+            onChange={setClassStatusFilter}
+            size="small"
+            style={{ width: 140 }}
+            placeholder="Tất cả trạng thái"
+            allowClear
+          >
+            <Option value={1}>Chờ xử lý</Option>
+            <Option value={3}>Đã duyệt</Option>
+            <Option value={4}>Từ chối</Option>
+            <Option value={5}>Hoàn thành</Option>
+          </Select>
         </div>
         <Table
           dataSource={classRefunds}
@@ -830,14 +864,14 @@ const RefundAdminPage: React.FC = () => {
           ) : (
             <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex flex-col items-center gap-2">
-                {selectedRefund?.status === 3 ? (
+                {selectedRefund?.status === 4 || selectedRefund?.status === 6 ? (
                   <CloseCircleOutlined className="text-3xl text-red-500" />
                 ) : (
                   <CheckCircleOutlined className="text-3xl text-green-500" />
                 )}
                 <div>
                   <div className="text-gray-800 font-semibold text-base">
-                    Yêu cầu {statusMap[selectedRefund?.status ?? 0].label}
+                    Yêu cầu {statusConfig[selectedRefund?.statusText || '']?.label || selectedRefund?.statusText}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     {selectedRefund?.processedByAdminName && (

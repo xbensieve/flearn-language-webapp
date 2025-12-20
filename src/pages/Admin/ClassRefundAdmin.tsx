@@ -26,18 +26,19 @@ import {
   CloseCircleOutlined,
 } from '@ant-design/icons';
 import { getRefundRequestsClass, processRefundClass } from '../../services/refund';
-import type { RefundRequestClass } from '../../services/refund/type';
+import { RefundStatus, type RefundRequestClass } from '../../services/refund/type';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const statusMap: Record<number, { label: string; color: string }> = {
-  0: { label: 'Pending', color: 'blue' },
-  1: { label: 'Under Review', color: 'orange' },
-  2: { label: 'Approved', color: 'green' },
-  3: { label: 'Rejected', color: 'red' },
-  4: { label: 'Completed', color: 'green' },
-  5: { label: 'Cancelled', color: 'default' },
+const statusMap: Record<string, { label: string; color: string }> = {
+  Draft: { label: 'Nháp', color: 'default' },
+  Pending: { label: 'Chờ xử lý', color: 'blue' },
+ 
+  Approved: { label: 'Đã duyệt', color: 'cyan' },
+  Rejected: { label: 'Từ chối', color: 'red' },
+  Completed: { label: 'Hoàn thành', color: 'green' },
+  Cancelled: { label: 'Đã hủy', color: 'default' },
 };
 
 const StatCard = ({ title, value, icon, colorClass, bgClass }: any) => (
@@ -85,9 +86,9 @@ const ClassRefundAdmin: React.FC = () => {
     }
   }, [selectedRefund, isModalVisible, form]);
 
-  const pendingCount = refunds.filter((r) => r.status === 0).length;
-  const processingCount = refunds.filter((r) => r.status === 1).length;
-  const completedCount = refunds.filter((r) => r.status === 2 || r.status === 4).length;
+  const pendingCount = refunds.filter((r) => r.status === RefundStatus.Pending || r.status === RefundStatus.UnderReview).length;
+  const processingCount = refunds.filter((r) => r.status === RefundStatus.Approved).length;
+  const completedCount = refunds.filter((r) => r.status === RefundStatus.Rejected || r.status === RefundStatus.Completed || r.status === RefundStatus.Cancelled).length;
 
   const columns = [
     {
@@ -122,9 +123,9 @@ const ClassRefundAdmin: React.FC = () => {
     },
     {
       title: 'Status',
-      dataIndex: 'status',
+      dataIndex: 'statusText',
       width: 120,
-      render: (s: number) => {
+      render: (s: string) => {
         const info = statusMap[s] || { label: 'Unknown', color: 'default' };
         return (
           <Tag
@@ -166,7 +167,7 @@ const ClassRefundAdmin: React.FC = () => {
     },
   ];
 
-  const canProcess = selectedRefund?.status === 0 || selectedRefund?.status === 1;
+  const canProcess = selectedRefund?.status === RefundStatus.Pending || selectedRefund?.status === RefundStatus.UnderReview;
 
   return (
     <div className="space-y-5">
@@ -223,10 +224,11 @@ const ClassRefundAdmin: React.FC = () => {
             style={{ width: 160 }}
             placeholder="Filter Status"
             allowClear>
-            <Option value="">All Status</Option>
-            <Option value="0">Pending</Option>
-            <Option value="2">Approved</Option>
-            <Option value="3">Rejected</Option>
+            <Option value="">Tất cả</Option>
+            <Option value={RefundStatus.Pending.toString()}>Chờ xử lý</Option>
+            <Option value={RefundStatus.Approved.toString()}>Đã duyệt</Option>
+            <Option value={RefundStatus.Rejected.toString()}>Từ chối</Option>
+            <Option value={RefundStatus.Completed.toString()}>Hoàn thành</Option>
           </Select>
         </div>
         <Table
@@ -365,14 +367,14 @@ const ClassRefundAdmin: React.FC = () => {
           ) : (
             <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex flex-col items-center gap-2">
-                {selectedRefund?.status === 3 ? (
+                {selectedRefund?.status === RefundStatus.Rejected || selectedRefund?.status === RefundStatus.Cancelled ? (
                   <CloseCircleOutlined className="text-3xl text-red-500" />
                 ) : (
                   <CheckCircleOutlined className="text-3xl text-green-500" />
                 )}
                 <div>
                   <div className="text-gray-800 font-semibold text-base">
-                    Request {statusMap[selectedRefund?.status || 0].label}
+                    Yêu cầu {statusMap[selectedRefund?.statusText || '']?.label || selectedRefund?.statusText}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
                     This request has been processed and is closed.
