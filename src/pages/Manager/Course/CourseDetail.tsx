@@ -71,7 +71,7 @@ export default function CourseDetail() {
       setReviewData(fullCourseData);
       setIsReviewing(true);
     } catch (err) {
-      console.error("Failed to load course content", err);
+      console.error("Không thể tải nội dung khóa học.", err);
       // Optional: Add toast error here
     } finally {
       setLoadingReview(false);

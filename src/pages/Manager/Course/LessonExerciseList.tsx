@@ -94,7 +94,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
           </div>
           <div className="flex-1">
             <p className="text-xs font-medium text-blue-600 mb-2 uppercase tracking-wide">
-              Audio Track
+              Bản âm thanh
             </p>
             {ex.mediaUrls.map((url, idx) => (
               <audio
@@ -103,7 +103,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
                 className="w-full h-10 block mb-2 last:mb-0"
               >
                 <source src={url} type="audio/mpeg" />
-                Your browser does not support the audio element.
+                Trình duyệt của bạn không hỗ trợ phần tử âm thanh.
               </audio>
             ))}
           </div>

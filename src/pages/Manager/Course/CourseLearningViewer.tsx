@@ -168,7 +168,7 @@ export default function CourseLearningViewer({
     if (!submissionId) {
       setMessage({
         type: "error",
-        text: "Submission ID is missing. Cannot approve.",
+        text: "Mã số hồ sơ không có.Không thể phê duyệt",
       });
       setIsApproveConfirmOpen(false);
       return;
@@ -212,7 +212,7 @@ export default function CourseLearningViewer({
     if (!submissionId) {
       setMessage({
         type: "error",
-        text: "Submission ID is missing. Cannot reject.",
+        text: "Mã số hồ sơ không có. Không thể từ chối.",
       });
       return;
     }
