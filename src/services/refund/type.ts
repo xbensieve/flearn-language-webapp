@@ -16,10 +16,20 @@ export interface ProcessRefundRequest {
   ProofImage?: File;
 }
 
-export type RefundStatus = 0 | 1 | 2 | 3 | 4 | 5;
+export const RefundStatus = {
+  Draft: 0,
+  Pending: 1,
+  UnderReview: 2,
+  Approved: 3,
+  Rejected: 4,
+  Completed: 5,
+  Cancelled: 6,
+} as const;
+
+export type RefundStatus = typeof RefundStatus[keyof typeof RefundStatus];
 
 export interface RefundRequestClass {
-  refundRequestID: number;
+  refundRequestID: string;
   enrollmentID: string;
   studentID: string;
   studentName: string;
@@ -31,6 +41,7 @@ export interface RefundRequestClass {
   bankAccountNumber: string;
   bankAccountHolderName: string;
   status: RefundStatus;
+  statusText?: string;
   adminNote?: string;
   refundAmount: number;
   requestedAt: string;
