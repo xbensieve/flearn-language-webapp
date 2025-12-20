@@ -91,7 +91,7 @@ const CourseDetail: React.FC = () => {
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to delete unit");
+      notifyError(error.response?.data?.message || "Thất bại xóa chương");
     },
   });
 
@@ -116,7 +116,7 @@ const CourseDetail: React.FC = () => {
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to create unit");
+      notifyError(error.response?.data?.message || "Thất bại tạo chương");
     },
   });
 
@@ -136,7 +136,7 @@ const CourseDetail: React.FC = () => {
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to update unit");
+      notifyError(error.response?.data?.message || "Thất bại cập nhật chương");
     },
   });
 
@@ -191,7 +191,7 @@ const CourseDetail: React.FC = () => {
     );
 
   if (!course)
-    return <Empty description="Course not found" className="mt-20" />;
+    return <Empty description="Khóa học không tìm thấy" className="mt-20" />;
 
   return (
     <div className="min-h-screen bg-gray-50/50 py-8 px-4 sm:px-6 lg:px-8">
@@ -317,7 +317,7 @@ const CourseDetail: React.FC = () => {
                     {course?.title}
                   </Title>
                   <Paragraph className="text-gray-500 text-sm leading-relaxed">
-                    {course?.description || "No description provided."}
+                    {course?.description || "Không có mô tả nào được cung cấp."}
                   </Paragraph>
                 </div>
 
@@ -331,7 +331,7 @@ const CourseDetail: React.FC = () => {
                   </Avatar>
                   <div>
                     <Text className="block text-sm font-medium text-gray-900">
-                      {course?.teacher?.name || "Instructor"}
+                      {course?.teacher?.name || "Người hướng dẫn"}
                     </Text>
                     <Text className="block text-xs text-gray-500">
                       Giáo viên
@@ -396,7 +396,8 @@ const CourseDetail: React.FC = () => {
                 <LayoutDashboard size={16} /> Kết quả học tập
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                {course?.learningOutcome || "No specific outcomes defined."}
+                {course?.learningOutcome ||
+                  "Không có kết quả cụ thể được xác định."}
               </p>
               <Divider className="my-4" />
               <h4 className="font-semibold text-gray-900">Chủ đề</h4>

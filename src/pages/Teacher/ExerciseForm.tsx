@@ -196,7 +196,9 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       startTimer();
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      message.error("Could not access microphone. Please check permissions.");
+      message.error(
+        "Không thể truy cập micro. Vui lòng kiểm tra quyền truy cập."
+      );
     }
   };
 
@@ -269,7 +271,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        "Failed to update exercise";
+        "Thất bại khi cập nhật bài tập";
       message.error(errorMsg);
       notifyError(errorMsg);
     },

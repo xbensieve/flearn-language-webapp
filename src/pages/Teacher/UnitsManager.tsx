@@ -39,7 +39,7 @@ const UnitsManager: React.FC = () => {
       refetchUnit();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Failed to delete lesson");
+      notifyError(error.response?.data?.message || "Thất bại khi xóa bài học");
     },
   });
 
