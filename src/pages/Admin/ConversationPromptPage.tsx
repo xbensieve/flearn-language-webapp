@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Table,
   Drawer,
@@ -13,21 +13,26 @@ import {
   Input,
   Switch,
   Tooltip,
-} from 'antd';
-import { BarChartOutlined, EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
-import { useMutation, useQuery } from '@tanstack/react-query';
+} from "antd";
+import {
+  BarChartOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   CreateConversationPromptPayload,
   IConversationPrompt,
   UpdateConversationPromptPayload,
-} from '../../services/conversation/type';
+} from "../../services/conversation/type";
 import {
   createConversationPrompt,
   getConversationPrompts,
   updateConversationPrompt,
-} from '../../services/conversation';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import type { ColumnsType } from 'antd/es/table';
+} from "../../services/conversation";
+import { notifyError, notifySuccess } from "../../utils/toastConfig";
+import type { ColumnsType } from "antd/es/table";
 
 const { Title, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -126,21 +131,22 @@ const ConversationPromptPage: React.FC = () => {
   ];
 
   const { data: conversationPrompts } = useQuery({
-    queryKey: ['conversationPrompts'],
+    queryKey: ["conversationPrompts"],
     queryFn: () => getConversationPrompts(),
     select: (data) => data.data,
   });
 
   // ✅ Setup mutation for creating new prompt
   const { mutate: createConversation, isPending } = useMutation({
-    mutationFn: (payload: CreateConversationPromptPayload) => createConversationPrompt(payload),
+    mutationFn: (payload: CreateConversationPromptPayload) =>
+      createConversationPrompt(payload),
     onSuccess: () => {
-      notifySuccess('Đã tạo mới!');
+      notifySuccess("Đã tạo mới!");
       setCreateVisible(false);
       form.resetFields();
     },
     onError: (err: any) => {
-      notifyError(err?.response?.data?.message || 'Failed to create prompt');
+      notifyError(err?.response?.data?.message || "Thất bại khi tạo");
     },
   });
 
@@ -149,11 +155,12 @@ const ConversationPromptPage: React.FC = () => {
     mutationFn: (payload: UpdateConversationPromptPayload) =>
       updateConversationPrompt({ id: selectedPrompt.globalPromptID, payload }),
     onSuccess: () => {
-      notifySuccess('Cập nhật thành công!');
+      notifySuccess("Cập nhật thành công!");
       setEditVisible(false);
       editForm.resetFields();
     },
-    onError: (err: any) => notifyError(err?.response?.data?.message || 'Failed to update prompt'),
+    onError: (err: any) =>
+      notifyError(err?.response?.data?.message || "Thất bại khi cập nhật"),
   });
 
   const handleCreate = (values: any) => {
@@ -165,7 +172,6 @@ const ConversationPromptPage: React.FC = () => {
 
     createConversation(payload);
   };
-
 
   const handleEdit = (values: any) => {
     if (!selectedPrompt) return;
@@ -264,7 +270,7 @@ const ConversationPromptPage: React.FC = () => {
           <Form.Item
             label="Tên"
             name="promptName"
-            rules={[{ required: true, message: "Please enter a prompt name" }]}
+            rules={[{ required: true, message: "Vui lòng điền tên" }]}
           >
             <Input placeholder="Nhập tên" />
           </Form.Item>
