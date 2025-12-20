@@ -192,15 +192,15 @@ const EditCoursePage: React.FC = () => {
       updateCourseService({ id: id!, payload: payload as any }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["course", id] });
-      toast.success("Saved successfully!", {
+      toast.success("Đã lưu thành công!", {
         description: "Course details have been updated.",
       });
       navigate("/teacher/course");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.message || "Failed to update course";
-      toast.error("Update failed", { description: msg });
+      const msg = err.response?.message || "Thất bại khi cập nhật khóa học";
+      toast.error("Cập nhật thất bại", { description: msg });
     },
   });
 
