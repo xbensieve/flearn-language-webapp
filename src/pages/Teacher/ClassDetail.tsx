@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
+import { message } from 'antd';
 import { toast } from 'react-hot-toast';
 import {
   getClassByIdService,
@@ -76,6 +77,7 @@ const ClassDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [messageApi, contextHolder] = message.useMessage();
 
   // Edit modal state
   const [editModal, setEditModal] = useState(false);
@@ -229,21 +231,25 @@ const ClassDetail: React.FC = () => {
 
   const handleCancelRequest = async () => {
     if (!cancelReason.trim()) {
-      toast.error('Vui lòng nhập lý do hủy lớp.');
+      messageApi.error('Vui lòng nhập lý do hủy lớp.');
       return;
     }
     setIsCancelling(true);
     try {
       const now = new Date();
       const start = new Date(classData.startDateTime);
-      const diffDays = Math.ceil((start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
-      if (diffDays >= 7) {
+      if (start.getTime() - now.getTime() >= sevenDaysMs) {
         await deleteClassService(classData.classID, cancelReason);
-        toast.success('Lớp học đã bị hủy.');
+        messageApi.success('Lớp học đã bị hủy.');
       } else {
-        await requestCancelClassService(classData.classID, cancelReason);
-        toast.success('Yêu cầu hủy đã được gửi tới quản lý để duyệt.');
+        const res = await requestCancelClassService(classData.classID, cancelReason);
+        if (res && res.success === false) {
+          messageApi.error(res.message);
+        } else {
+          messageApi.success('Yêu cầu hủy đã được gửi tới quản lý để duyệt.');
+        }
       }
 
       setIsCancelModalOpen(false);
@@ -252,7 +258,7 @@ const ClassDetail: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['class', id] });
     } catch (err: any) {
       const msg = err?.response?.data?.message || 'Không thể xử lý hủy lớp.';
-      toast.error(msg);
+      messageApi.error(msg);
     } finally {
       setIsCancelling(false);
     }
@@ -260,6 +266,7 @@ const ClassDetail: React.FC = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-6 lg:p-8">
+      {contextHolder}
       <div className="max-w-7xl mx-auto space-y-8">
         {/* 1. Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -384,7 +391,7 @@ const ClassDetail: React.FC = () => {
                       </DialogHeader>
                       <Textarea rows={4} value={cancelReason} onChange={e => setCancelReason(e.target.value)} placeholder="Lý do hủy..." />
                       <p className="text-sm text-muted-foreground">
-                        Lưu ý: Nếu lớp bắt đầu sau 6 ngày hoặc ít hơn, yêu cầu sẽ được gửi tới quản lý để duyệt.
+                        Lưu ý: Nếu lớp bắt đầu trong vòng 7 ngày tới, yêu cầu sẽ được gửi tới quản lý để duyệt.
                       </p>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setIsCancelModalOpen(false)}>Hủy</Button>
