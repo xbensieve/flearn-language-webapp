@@ -13,16 +13,9 @@ import {
   MoreHorizontal,
   ArrowUpRight,
   PiggyBank,
-  Lock,
 } from "lucide-react";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,7 +25,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -183,7 +175,7 @@ const PayoutManagerPage: React.FC = () => {
       });
       setPayouts(response.data.data || []);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to load payout history");
     } finally {
       setIsLoadingPayouts(false);
@@ -281,31 +273,6 @@ const PayoutManagerPage: React.FC = () => {
                   <p className="text-3xl font-bold tracking-tight">
                     {formatCurrency(wallet?.availableBalance || 0)}
                   </p>
-                  <p className="text-xs text-blue-200">Sẵn sàng rút tiền</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* On Hold Balance */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-amber-50 rounded-full text-amber-600">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">
-                  Đang chờ
-                </span>
-              </div>
-              {isLoadingWallet ? (
-                <Skeleton className="h-10 w-1/2 bg-slate-100" />
-              ) : (
-                <div className="space-y-1">
-                  <p className="text-2xl font-bold text-slate-800">
-                    {formatCurrency(wallet?.holdBalance || 0)}
-                  </p>
-                  <p className="text-xs text-slate-400">Pending clearance</p>
                 </div>
               )}
             </CardContent>
@@ -329,7 +296,6 @@ const PayoutManagerPage: React.FC = () => {
                   <p className="text-2xl font-bold text-slate-800">
                     {formatCurrency(wallet?.totalBalance || 0)}
                   </p>
-                  <p className="text-xs text-slate-400">Thu nhập trọn đời</p>
                 </div>
               )}
             </CardContent>
@@ -364,12 +330,8 @@ const PayoutManagerPage: React.FC = () => {
             <Card className="lg:col-span-1 border-slate-200 shadow-sm h-fit">
               <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-4">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-blue-600" />
                   Yêu cầu thanh toán
                 </CardTitle>
-                <CardDescription>
-                  Rút tiền vào tài khoản ngân hàng của bạn.
-                </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <form onSubmit={handleCreatePayout} className="space-y-5">
@@ -433,7 +395,7 @@ const PayoutManagerPage: React.FC = () => {
 
                   <Button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 !text-white shadow-md transition-all active:scale-[0.98]"
+                    className="w-full bg-blue-600 hover:bg-blue-700 !text-white shadow-md transition-all active:scale-[0.98] cursor-pointer"
                     size="lg"
                     disabled={
                       isSubmitting ||
@@ -462,7 +424,7 @@ const PayoutManagerPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setDrawerOpen(true)}
-                  className="gap-2 border-dashed border-slate-300 hover:border-slate-400"
+                  className="gap-2 border-dashed border-slate-300 hover:border-slate-400 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" /> Thêm mới
                 </Button>
@@ -533,10 +495,6 @@ const PayoutManagerPage: React.FC = () => {
           <Card className="border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle>Lịch sử giao dịch</CardTitle>
-              <CardDescription>
-                Xem tất cả các yêu cầu thanh toán trước đây của bạn và trạng
-                thái của chúng.
-              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -546,7 +504,7 @@ const PayoutManagerPage: React.FC = () => {
                     <TableHead>Thông tin ngân hàng</TableHead>
                     <TableHead>Số tiền</TableHead>
                     <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Hành động</TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -647,9 +605,6 @@ const PayoutManagerPage: React.FC = () => {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Chi tiết thanh toán</DialogTitle>
-            <DialogDescription>
-              ID giao dịch: #{selectedPayout?.payoutRequestId}
-            </DialogDescription>
           </DialogHeader>
 
           {selectedPayout && (
@@ -693,12 +648,6 @@ const PayoutManagerPage: React.FC = () => {
                     <span className="text-slate-500">Số tài khoản:</span>
                     <span className="font-mono font-medium">
                       {selectedPayout.accountNumber}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">Email giáo viên:</span>
-                    <span className="font-medium">
-                      {selectedPayout.teacherEmail}
                     </span>
                   </div>
                 </div>

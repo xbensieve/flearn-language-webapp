@@ -1,5 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as XLSX from "xlsx";
 import {
@@ -8,7 +8,14 @@ import {
   type SortOption,
   type WalletTransaction,
 } from "@/services/wallet/walletService";
-import { Loader2, Wallet, Filter, FileSpreadsheet } from "lucide-react";
+import {
+  Loader2,
+  Wallet,
+  Filter,
+  FileSpreadsheet,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -56,19 +63,22 @@ const getStatusStyles = (status: string) => {
 
 const WalletHistoryPage: React.FC = () => {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [transactionType, setTransactionType] = useState<string>("all");
   const [sort, setSort] = useState<SortOption>("newest");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
 
-  const [isExporting, setIsExporting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const [isExporting, setIsExporting] = useState(false);
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: [
       "wallet-transactions",
       page,
+      pageSize,
       transactionType,
       sort,
       fromDate,
@@ -77,7 +87,7 @@ const WalletHistoryPage: React.FC = () => {
     queryFn: () =>
       getWalletTransactions({
         PageNumber: page,
-        PageSize: 10,
+        PageSize: pageSize,
         TransactionType:
           transactionType === "all"
             ? undefined
@@ -87,6 +97,28 @@ const WalletHistoryPage: React.FC = () => {
         ToDate: toDate || undefined,
       }),
   });
+
+  const filteredData = useMemo(() => {
+    if (!data?.data) return [];
+    if (statusFilter === "all") return data.data;
+    return data.data.filter((item) => item.status === statusFilter);
+  }, [data?.data, statusFilter]);
+
+  const handleResetFilters = () => {
+    setTransactionType("all");
+    setStatusFilter("all");
+    setFromDate("");
+    setToDate("");
+    setSort("newest");
+    setPage(1);
+  };
+
+  const isFiltering =
+    transactionType !== "all" ||
+    statusFilter !== "all" ||
+    fromDate !== "" ||
+    toDate !== "" ||
+    sort !== "newest";
 
   const handleExportExcel = async () => {
     try {
@@ -104,7 +136,6 @@ const WalletHistoryPage: React.FC = () => {
       });
 
       const transactions = response.data || [];
-
       if (transactions.length === 0) {
         notifyError("No transactions to export");
         setIsExporting(false);
@@ -121,14 +152,13 @@ const WalletHistoryPage: React.FC = () => {
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-
       const wscols = [
-        { wch: 35 }, // ID
-        { wch: 20 }, // Date
-        { wch: 15 }, // Type
-        { wch: 40 }, // Description
-        { wch: 15 }, // Status
-        { wch: 15 }, // Amount
+        { wch: 35 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 40 },
+        { wch: 15 },
+        { wch: 15 },
       ];
       worksheet["!cols"] = wscols;
 
@@ -150,14 +180,12 @@ const WalletHistoryPage: React.FC = () => {
   const handleNextPage = () => {
     if (data?.meta && page < data.meta.totalPages) setPage((p) => p + 1);
   };
-
   const handlePrevPage = () => {
     if (page > 1) setPage((p) => p - 1);
   };
 
   return (
     <div className="space-y-6 p-6 animate-in fade-in duration-500">
-      {/* 1. PAGE HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -168,7 +196,6 @@ const WalletHistoryPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* UPDATED EXPORT BUTTON */}
           <Button
             variant="outline"
             className="hidden md:flex gap-2 cursor-pointer"
@@ -194,19 +221,30 @@ const WalletHistoryPage: React.FC = () => {
 
       <Separator />
 
-      {/* 2. FILTERS & CONTROLS */}
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-medium flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-500" /> Lọc & Sắp xếp
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <Filter className="w-4 h-4 text-slate-500" /> Lọc & Sắp xếp
+            </CardTitle>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              disabled={!isFiltering}
+              className={`text-slate-500 hover:text-slate-900 ${
+                !isFiltering ? "opacity-50" : ""
+              }`}
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-2" /> Đặt lại mặc định
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col lg:flex-row gap-4 justify-between items-end lg:items-center">
-            {/* Left: Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              {/* Type Select */}
-              <div className="w-full sm:w-[180px]">
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto flex-wrap">
+              <div className="w-full sm:w-[160px]">
                 <label className="text-xs font-medium text-slate-500 mb-1 block">
                   Loại giao dịch
                 </label>
@@ -218,10 +256,10 @@ const WalletHistoryPage: React.FC = () => {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Tất cả các loại" />
+                    <SelectValue placeholder="Tất cả" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Tất cả các loại</SelectItem>
+                    <SelectItem value="all">Tất cả</SelectItem>
                     <SelectItem value={TransactionType.Payout.toString()}>
                       Thanh toán
                     </SelectItem>
@@ -238,8 +276,55 @@ const WalletHistoryPage: React.FC = () => {
                 </Select>
               </div>
 
-              {/* Date Inputs */}
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="w-full sm:w-[180px]">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-medium text-slate-500 block">
+                    Trạng thái
+                  </label>
+                  {statusFilter !== "all" && (
+                    <span
+                      className="text-[10px] text-blue-600 cursor-pointer hover:underline flex items-center"
+                      onClick={() => setStatusFilter("all")}
+                    >
+                      <X className="w-3 h-3 mr-0.5" /> Xóa
+                    </span>
+                  )}
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger
+                    className={`bg-slate-50 ${
+                      statusFilter !== "all"
+                        ? "border-blue-500 ring-1 ring-blue-100"
+                        : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Tất cả trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả trạng thái</SelectItem>
+                    <SelectItem value="Succeeded">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500" />{" "}
+                        Succeeded
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="Pending">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500" />{" "}
+                        Pending
+                      </span>
+                    </SelectItem>
+                    <SelectItem value="Failed">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-red-500" />{" "}
+                        Failed
+                      </span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex gap-2 w-full sm:w-auto min-w-[300px]">
                 <div className="flex-1">
                   <label className="text-xs font-medium text-slate-500 mb-1 block">
                     Từ ngày
@@ -248,6 +333,7 @@ const WalletHistoryPage: React.FC = () => {
                     type="date"
                     className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
                     onChange={(e) => setFromDate(e.target.value)}
+                    value={fromDate}
                   />
                 </div>
                 <div className="flex-1">
@@ -258,12 +344,12 @@ const WalletHistoryPage: React.FC = () => {
                     type="date"
                     className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
                     onChange={(e) => setToDate(e.target.value)}
+                    value={toDate}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Right: Sort */}
             <div className="w-full sm:w-[180px]">
               <label className="text-xs font-medium text-slate-500 mb-1 block">
                 Sắp xếp theo
@@ -287,13 +373,12 @@ const WalletHistoryPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 3. DATA TABLE */}
       <Card className="border-slate-200 shadow-sm overflow-hidden">
         <div className="relative w-full overflow-auto">
           <Table>
             <TableHeader className="bg-slate-50/50">
               <TableRow>
-                <TableHead className="w-[100px]">Trạng thái</TableHead>
+                <TableHead className="w-[120px]">Trạng thái</TableHead>
                 <TableHead>Loại</TableHead>
                 <TableHead className="min-w-[150px]">Mô tả</TableHead>
                 <TableHead className="hidden md:table-cell">
@@ -322,17 +407,32 @@ const WalletHistoryPage: React.FC = () => {
                     Không tải được giao dịch. Vui lòng thử lại.
                   </TableCell>
                 </TableRow>
-              ) : data?.data.length === 0 ? (
+              ) : filteredData.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={6}
                     className="h-32 text-center text-slate-500"
                   >
-                    Không tìm thấy giao dịch nào phù hợp với tiêu chí của bạn.
+                    {data?.data && data.data.length > 0 ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <span>
+                          Không có giao dịch <b>{statusFilter}</b> nào trong
+                          trang này.
+                        </span>
+                        <Button
+                          variant="link"
+                          onClick={() => setStatusFilter("all")}
+                        >
+                          Xem tất cả giao dịch
+                        </Button>
+                      </div>
+                    ) : (
+                      "Không tìm thấy giao dịch nào phù hợp."
+                    )}
                   </TableCell>
                 </TableRow>
               ) : (
-                data?.data.map((transaction) => (
+                filteredData.map((transaction) => (
                   <TableRow
                     key={transaction.walletTransactionId}
                     className="hover:bg-slate-50/50 transition-colors"
@@ -385,34 +485,58 @@ const WalletHistoryPage: React.FC = () => {
           </Table>
         </div>
 
-        {/* 4. PAGINATION FOOTER */}
         {data?.meta && (
-          <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/30">
-            <div className="text-sm text-slate-500">
-              Trang <span className="font-medium text-slate-900">{page}</span> của{" "}
-              <span className="font-medium text-slate-900">
-                {data.meta.totalPages}
-              </span>
+          <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-slate-100 bg-slate-50/30 gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500">Hiển thị</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(val) => {
+                  setPageSize(Number(val));
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[70px] h-8 bg-white">
+                  <SelectValue placeholder="10" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-slate-500">giao dịch</span>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevPage}
-                disabled={page <= 1 || isLoading}
-                className="h-8"
-              >
-                Trước
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={page >= data.meta.totalPages || isLoading}
-                className="h-8"
-              >
-                Tiếp theo
-              </Button>
+
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-slate-500">
+                Trang <span className="font-medium text-slate-900">{page}</span>{" "}
+                /{" "}
+                <span className="font-medium text-slate-900">
+                  {data.meta.totalPages}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevPage}
+                  disabled={page <= 1 || isLoading}
+                  className="h-8"
+                >
+                  Trước
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={page >= data.meta.totalPages || isLoading}
+                  className="h-8"
+                >
+                  Tiếp theo
+                </Button>
+              </div>
             </div>
           </div>
         )}
