@@ -29,7 +29,7 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Xem trước trực tiếp
+          Xem trước khóa học
         </h3>
         <Badge
           variant="outline"
@@ -65,8 +65,7 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
               )}
             </h3>
             <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem]">
-              {values.description ||
-                "Mô tả khóa học hấp dẫn của bạn sẽ xuất hiện ở đây."}
+              {values.description || "Mô tả ngắn về khóa học..."}
             </p>
           </div>
 
@@ -86,7 +85,7 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
               })
             ) : (
               <span className="text-xs text-gray-400 italic">
-                Không có chủ đề nào được chọn
+                Chưa có chủ đề nào được chọn
               </span>
             )}
             {values.topicIds && values.topicIds.length > 3 && (
@@ -142,12 +141,12 @@ export const CoursePreview: React.FC<CoursePreviewProps> = ({
         <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5" />
         <div>
           <p className="text-xs font-semibold text-blue-900">
-            Hệ thống chấm điểm
+            Phương thức chấm điểm:{" "}
           </p>
           <p className="text-xs text-blue-700 mt-0.5">
             {values.gradingType === "1"
-              ? "Hệ thống chấm điểm tự động bằng AI."
-              : "Hỗ trợ đánh giá của giáo viên."}
+              ? "Bài tập sẽ được chấm tự động bởi AI."
+              : "Bài tập sẽ được chấm bán tự động bởi giáo viên và AI."}
           </p>
         </div>
       </div>

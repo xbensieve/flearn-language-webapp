@@ -40,10 +40,6 @@ import {
   FileText,
   Dumbbell,
   CheckCircle2,
-  Sparkles,
-  Layout,
-  DollarSign,
-  BookOpen,
   Save,
   PlusCircle,
   ImageIcon,
@@ -213,13 +209,10 @@ export const CourseForm: React.FC<CourseFormProps> = ({
       <Card className="border-none shadow-md">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-              <BookOpen className="w-5 h-5" />
-            </div>
             <div>
               <CardTitle>Thông tin chung</CardTitle>
               <CardDescription>
-                Những thông tin cốt lõi của khóa học của bạn.
+                Cung cấp các chi tiết cơ bản về khóa học của bạn.
               </CardDescription>
             </div>
           </div>
@@ -231,7 +224,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Tên khóa học <RequiredMark />
+                  Tiêu đề <RequiredMark />
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -389,13 +382,10 @@ export const CourseForm: React.FC<CourseFormProps> = ({
       <Card className="border-none shadow-md">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
-              <Layout className="w-5 h-5" />
-            </div>
             <div>
               <CardTitle>Cấu trúc chương trình giảng dạy</CardTitle>
               <CardDescription>
-                Xác định mức độ, thời lượng và nội dung.
+                Định nghĩa cấu trúc khóa học của bạn.
               </CardDescription>
             </div>
           </div>
@@ -449,7 +439,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                         </SelectValue>
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="max-h-64 overflow-y-auto">
                       {programLevels.map((pl) => (
                         <SelectItem
                           key={pl.levelId}
@@ -561,8 +551,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
           <div className="space-y-4 pt-4 border-t">
             <div className="flex justify-between items-center">
               <Label className="text-base font-semibold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-yellow-500" /> Áp dụng một Bản
-                mẫu
+                Mẫu khóa học
               </Label>
               {selectedTemplateId && (
                 <Button
@@ -676,13 +665,10 @@ export const CourseForm: React.FC<CourseFormProps> = ({
       <Card className="border-none shadow-md">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-green-100 text-green-600 rounded-lg">
-              <DollarSign className="w-5 h-5" />
-            </div>
             <div>
               <CardTitle>Cài đặt & Giá cả</CardTitle>
               <CardDescription>
-                Chính sách kiếm tiền và chấm điểm.
+                Thiết lập các tùy chọn khóa học và giá cả.
               </CardDescription>
             </div>
           </div>
@@ -710,7 +696,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       >
                         <span className="block font-bold">Miễn phí</span>
                         <span className="text-xs opacity-70">
-                          Chỉ chấm điểm AI
+                          AI sẽ tự động chấm điểm bài tập
                         </span>
                         {isEditMode && field.value === 1 && (
                           <div className="mt-2">
@@ -731,9 +717,9 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                             : "hover:bg-gray-50"
                         }`}
                       >
-                        <span className="block font-bold">Paid</span>
+                        <span className="block font-bold">Trả phí</span>
                         <span className="text-xs opacity-70">
-                          Đánh giá AI và giáo viên
+                          AI và giáo viên sẽ chấm điểm
                         </span>
                         {isEditMode && field.value === 2 && (
                           <div className="mt-2">
@@ -825,17 +811,17 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       <FormLabel>
                         Phương pháp chấm điểm <RequiredMark />
                       </FormLabel>
-                      <FormDescription>
+                      <FormDescription className="mt-1 text-sm text-gray-600">
                         {gradingTypeValue === "1"
-                          ? "AI sẽ tự động chấm điểm bài tập."
-                          : "Giáo viên sẽ tự tay xem xét bài nộp + sự hỗ trợ của AI."}
+                          ? "Bài tập sẽ được chấm điểm tự động bằng AI."
+                          : "Bài tập sẽ được chấm điểm thủ công bởi giáo viên và AI sẽ hỗ trợ một phần."}
                       </FormDescription>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="bg-white">
                         {gradingTypeValue === "1"
                           ? "Tự động (AI)"
-                          : "Thủ công (Giáo viên)"}
+                          : "Bán tự động (Giáo viên + AI)"}
                       </Badge>
                       {isEditMode &&
                         initialGradingType &&
@@ -869,8 +855,8 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               ? "Lưu thay đổi..."
               : "Tạo..."
             : isEditMode
-            ? "Xem lại những thay đổi trước khi lưu."
-            : "Các bản nháp chưa lưu sẽ được lưu trữ cục bộ."}
+            ? "Bạn có chắc chắn muốn lưu các thay đổi cho khóa học này?"
+            : "Sẵn sàng để tạo khóa học mới?"}
         </span>
         <Button
           type="submit"

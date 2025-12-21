@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Trash2, Sparkles } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { CourseForm } from "@/pages/Teacher/components/course/CourseForm";
 import { CoursePreview } from "@/pages/Teacher/components/course/CoursePreview";
 import { courseSchema } from "@/schemas/courseSchema";
@@ -76,11 +76,6 @@ const CreateCoursePage: React.FC = () => {
       }
 
       reset({ ...defaultValues, ...parsedData, image: null });
-
-      toast.info("Đã khôi phục bản nháp", {
-        description:
-          "Chúng tôi đã khôi phục dữ liệu trước đó của bạn (trừ hình ảnh).",
-      });
     } catch (error) {
       console.error("Failed to parse draft", error);
     }
@@ -204,20 +199,14 @@ const CreateCoursePage: React.FC = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex flex-col justify-end pb-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div>
-              <div className="flex items-center gap-2 text-blue-200 mb-2 animate-in fade-in slide-in-from-bottom-3">
-                <Sparkles className="w-5 h-5" />
-                <span className="text-sm font-medium uppercase tracking-wider">
-                  Studio sáng tạo khóa học
-                </span>
-              </div>
-
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white animate-in fade-in slide-in-from-bottom-4 delay-100">
                 Tạo khóa học mới
               </h1>
 
               <p className="text-gray-300 mt-2 max-w-2xl text-lg animate-in fade-in slide-in-from-bottom-5 delay-200">
-                Thiết kế lộ trình học tập toàn diện. Xây dựng nội dung hấp dẫn,
-                đặt ra thử thách và truyền cảm hứng cho học sinh.
+                Sử dụng biểu mẫu bên dưới để tạo khóa học mới cho học viên của
+                bạn. Hãy chắc chắn rằng bạn đã cung cấp tất cả thông tin cần
+                thiết.
               </p>
             </div>
 
@@ -238,7 +227,7 @@ const CreateCoursePage: React.FC = () => {
                         "
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Hủy bản nháp
+                    Hủy biểu mẫu nháp
                   </Button>
                 </DialogTrigger>
 

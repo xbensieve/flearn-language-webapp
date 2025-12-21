@@ -290,11 +290,10 @@ export default function TeacherExerciseGradingPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
-              Nhiệm vụ chấm điểm của tôi
+              Quản lý chấm bài tập
             </h2>
             <p className="text-muted-foreground">
-              Xem xét các bài nộp, cung cấp phản hồi và theo dõi thu nhập của
-              bạn.
+              Xem và chấm các bài tập đã được giao cho học viên.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -433,12 +432,12 @@ export default function TeacherExerciseGradingPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Học viên</TableHead>
-                <TableHead>Bài tập</TableHead>
-                <TableHead>Dấu thời gian</TableHead>
-                <TableHead>Thu nhập</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Hành động</TableHead>
+                <TableHead className="text-left">Học viên</TableHead>
+                <TableHead className="text-left">Bài tập</TableHead>
+                <TableHead className="text-left">Thời gian</TableHead>
+                <TableHead className="text-left">Thu nhập</TableHead>
+                <TableHead className="text-center">Trạng thái</TableHead>
+                <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -532,7 +531,7 @@ export default function TeacherExerciseGradingPage() {
 
                         {item.isReassigned && (
                           <div className="text-[10px] text-red-500 font-medium mt-0.5 text-center">
-                            Đã được bàn giao lại
+                            Đã được giao lại
                           </div>
                         )}
                       </div>
@@ -620,14 +619,13 @@ export default function TeacherExerciseGradingPage() {
                         <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
                         <div>
                           <h4 className="font-semibold text-red-800 text-sm">
-                            Nhiệm vụ được giao lại
+                            Bài tập đã được chuyển giao lại
                           </h4>
                           <p className="text-sm text-red-700 mt-1">
-                            Bài tập này đã quá hạn/hết hạn và đã được chuyển cho
-                            giáo viên khác. Bạn không thể chấm bài này nữa.
+                            Bài tập này đã được bạn chuyển giao cho giáo viên
                           </p>
                           <div className="mt-2 text-xs text-red-800 bg-white/50 inline-block px-2 py-1 rounded border border-red-100">
-                            Được bàn giao lại cho:{" "}
+                            Được giao lại cho:{" "}
                             <span className="font-bold">
                               {selectedAssignment.reassignedToTeacherName}
                             </span>{" "}
@@ -641,7 +639,7 @@ export default function TeacherExerciseGradingPage() {
                     <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 border border-slate-200">
                       <div className="flex flex-col">
                         <span className="text-xs text-muted-foreground uppercase font-semibold">
-                          Tình trạng hiện tại
+                          Trạng thái bài tập
                         </span>
                         <span className="font-medium text-slate-800">
                           {selectedAssignment.status}
@@ -658,12 +656,12 @@ export default function TeacherExerciseGradingPage() {
                   {/* Financial Info Block (Teacher Exclusive) */}
                   <div className="p-4 rounded-lg border border-emerald-100 bg-emerald-50/50">
                     <h4 className="text-sm font-semibold text-emerald-800 flex items-center gap-2 mb-3">
-                      <Wallet className="h-4 w-4" /> Chi tiết thu nhập
+                      <Wallet className="h-4 w-4" /> Thu nhập từ bài tập
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-white p-3 rounded border border-emerald-100">
                         <div className="text-xs text-muted-foreground">
-                          Tổng
+                          Số tiền kiếm được
                         </div>
                         <div className="text-lg font-bold text-emerald-600 flex items-center">
                           {selectedAssignment.earningAmount.toLocaleString()}
@@ -672,7 +670,7 @@ export default function TeacherExerciseGradingPage() {
                       </div>
                       <div className="bg-white p-3 rounded border border-emerald-100">
                         <div className="text-xs text-muted-foreground">
-                          Trạng thái
+                          Trạng thái thu nhập
                         </div>
                         <Badge
                           variant="outline"
@@ -696,8 +694,8 @@ export default function TeacherExerciseGradingPage() {
                   {/* --- NEW: FINAL SCORE & RESULT SECTION --- */}
                   <div>
                     <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2 mb-3">
-                      <Trophy className="h-4 w-4 text-yellow-600" /> Đánh giá
-                      Kết quả
+                      <Trophy className="h-4 w-4 text-yellow-600" /> Điểm cuối
+                      cùng & Kết quả
                     </h4>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -752,13 +750,10 @@ export default function TeacherExerciseGradingPage() {
                       {/* Pass Score Requirement Card */}
                       <div className="p-4 rounded-lg border border-slate-200 bg-slate-50 flex flex-col justify-center">
                         <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                          Bắt buộc phải vượt qua
+                          Điểm đạt yêu cầu
                         </div>
                         <div className="text-3xl font-bold text-slate-700">
-                          {selectedAssignment.passScore || "--"}
-                        </div>
-                        <div className="text-xs text-slate-400 mt-1">
-                          Cần có điểm tối thiểu
+                          {selectedAssignment.passScore || "--"}/100
                         </div>
                       </div>
                     </div>
@@ -778,7 +773,7 @@ export default function TeacherExerciseGradingPage() {
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                        <Award className="h-4 w-4" /> Mục tiêu
+                        <Award className="h-4 w-4" /> Điểm đạt
                       </h4>
                       <p className="font-medium">
                         {selectedAssignment.passScore || "--"} / 100
@@ -789,7 +784,7 @@ export default function TeacherExerciseGradingPage() {
                   {/* Audio Player */}
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                      <PlayCircle className="h-4 w-4" /> Bài nộp của học viên
+                      <PlayCircle className="h-4 w-4" /> Bài nói của học viên
                     </h4>
                     {selectedAssignment.audioUrl ? (
                       <audio controls className="w-full h-10">
@@ -815,7 +810,7 @@ export default function TeacherExerciseGradingPage() {
                   {/* AI & Scoring Results */}
                   <div className="space-y-4">
                     <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Award className="h-4 w-4" /> Kết quả chấm điểm
+                      <Award className="h-4 w-4" /> Kết quả AI và chấm điểm
                     </h4>
 
                     {/* AI Feedback Section */}
@@ -846,7 +841,7 @@ export default function TeacherExerciseGradingPage() {
                         <div className="bg-white rounded-md border p-4 space-y-3">
                           <div className="flex justify-between items-center pb-2 border-b">
                             <span className="font-semibold text-sm">
-                              Đánh giá AI
+                              Điểm tổng thể AI:
                             </span>
                             <Badge className="bg-blue-600">
                               {aiData.overall}/100
@@ -880,7 +875,7 @@ export default function TeacherExerciseGradingPage() {
                     <div className="border rounded-md p-4 bg-orange-50/30 border-orange-100">
                       <div className="flex justify-between items-center mb-2">
                         <h5 className="text-sm font-semibold text-orange-800">
-                          Chấm điểm của bạn
+                          Điểm của giáo viên
                         </h5>
                         <Badge
                           variant="outline"
@@ -888,7 +883,7 @@ export default function TeacherExerciseGradingPage() {
                         >
                           {selectedAssignment.teacherScore
                             ? `${selectedAssignment.teacherScore}/100`
-                            : "Không được chấm điểm"}
+                            : "Chưa chấm"}
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-600 italic">
@@ -901,10 +896,11 @@ export default function TeacherExerciseGradingPage() {
                   {selectedAssignment && !selectedAssignment.isReassigned && (
                     <div className="mt-6 pt-6 border-t border-slate-200">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-blue-600" />
-                          Chấm điểm giáo viên
+                        <h4 className="text-sm font-semibold text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                          <CheckCircle2 className="h-5 w-5 text-blue-600 shrink-0" />
+                          Giáo viên chấm điểm
                         </h4>
+
                         {!isGradingMode &&
                           selectedAssignment.status !== "Returned" && (
                             <Button

@@ -394,7 +394,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Form.Item
               name="video"
-              label="Video Resource"
+              label="Video bài giảng"
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
@@ -410,7 +410,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             </Form.Item>
             <Form.Item
               name="document"
-              label="Tài nguyên tài liệu"
+              label="Tài liệu đính kèm"
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
@@ -443,7 +443,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               onClick={() => setPreviewVisible(false)}
               className="rounded-md"
             >
-              Đóng bản xem trước
+              Đóng
             </Button>
           </div>
         }

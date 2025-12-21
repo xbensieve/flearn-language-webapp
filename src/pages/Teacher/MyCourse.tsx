@@ -177,7 +177,7 @@ export default function MyCourses() {
             Khóa học của tôi
           </h1>
           <p className="text-slate-500 mt-1">
-            Quản lý chương trình giảng dạy và theo dõi tiến độ của người học.
+            Quản lý tất cả các khóa học bạn đã tạo và xuất bản.
           </p>
         </div>
         <Button
@@ -280,14 +280,14 @@ export default function MyCourses() {
               return (
                 <Card
                   key={course.courseId}
-                  className="group flex flex-col overflow-hidden border-slate-200 hover:border-blue-300 hover:shadow-lg rounded-sm transition-all duration-300 bg-white"
+                  className="group flex flex-col overflow-hidden rounded-sm transition-all duration-300 bg-white hover:shadow-lg border border-slate-200 cursor-pointer"
                 >
                   {/* Image & Badge */}
                   <div className="relative h-48 bg-slate-100 overflow-hidden">
                     <img
                       src={course.imageUrl || "/placeholder.jpg"}
                       alt={course.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full h-full object-cover"
                     />
                     <div className="absolute top-3 left-3">
                       <Badge
