@@ -1,16 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { Form, Input, Upload, Button, Row, Col, Divider, Alert } from "antd";
+import { Form, Input, Upload, Button, Row, Col, Divider } from "antd";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import type { Unit } from "../../../services/course/type";
 import { useCreateLesson } from "../helpers";
-import {
-  Upload as UploadIcon,
-  Video,
-  FileText,
-  Check,
-} from "lucide-react";
+import { Upload as UploadIcon, Video, FileText, Check } from "lucide-react";
 
 interface LessonFormProps {
   unit: Unit;
@@ -42,14 +37,6 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
         className="space-y-8"
         requiredMark="optional"
       >
-        <Alert
-          message="Bài học soạn thảo"
-          description={`Bạn đang thêm một bài học vào đơn vị: "${unit.title}".`}
-          type="info"
-          showIcon
-          className="mb-6 border-blue-100 bg-blue-50/50"
-        />
-
         {/* Section 1: General Information */}
         <div className="space-y-4">
           <div className="mt-2">
@@ -90,9 +77,8 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-              <FileText size={18} className="text-gray-500" /> Nội dung
+              <FileText size={18} className="text-gray-500" /> Nội dung bài học
             </h3>
-            <p className="text-sm text-gray-500">Tài liệu học tập chính</p>
           </div>
 
           <Form.Item
@@ -117,21 +103,20 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-              <Video size={18} className="text-gray-500" /> Phương tiện & Tệp
-              đính kèm
+              <Video size={18} className="text-gray-500" /> Tài nguyên đính kèm
             </h3>
             <p className="text-sm text-gray-500">
-              Tài nguyên video hoặc PDF tùy chọn.
+              Thêm tài nguyên bổ sung cho bài học của bạn.
             </p>
           </div>
 
           <Row gutter={24}>
             <Col span={12}>
               <Form.Item
-                label="Tài nguyên video"
+                label="Video bài giảng"
                 name="video"
                 valuePropName="file"
-                help="Hỗ trợ: MP4, WebM (Tối đa 100MB)"
+                help="Hỗ trợ: MP4, AVI, MOV"
               >
                 <Upload
                   beforeUpload={() => false}
@@ -143,17 +128,17 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
                     icon={<UploadIcon size={16} />}
                     className="flex items-center justify-center gap-2 h-10"
                   >
-                    Chọn Video
+                    Chọn video
                   </Button>
                 </Upload>
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                label="Tài liệu bổ sung"
+                label="Tài liệu đính kèm"
                 name="document"
                 valuePropName="file"
-                help="Hỗ trợ: PDF, DOCX"
+                help="Hỗ trợ: PDF, DOC, DOCX"
               >
                 <Upload
                   beforeUpload={() => false}
@@ -174,9 +159,9 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
         </div>
 
         {/* Action Bar */}
-        <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-gray-100 flex justify-end gap-3 z-10">
+        <div className="sticky bottom-0 bg-gray-50 pt-4 pb-2 border-t border-gray-100 flex justify-end gap-3 z-10">
           <Button onClick={() => form.resetFields()} className="text-gray-500">
-            Cài lại
+            Đặt lại
           </Button>
           <Button
             type="primary"
@@ -185,7 +170,7 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
             icon={<Check size={16} />}
             className="bg-gray-900 hover:bg-gray-800 h-10 px-6"
           >
-            Xuất bản bài học
+            Tạo bài học
           </Button>
         </div>
       </Form>

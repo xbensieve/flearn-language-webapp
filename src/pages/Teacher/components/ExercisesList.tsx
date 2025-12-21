@@ -243,10 +243,10 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                 {/* Footer */}
                 <div className="flex justify-between items-center px-5 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-500">
                   <span>
-                    Tối đa: <strong>{exercise.maxScore}</strong>
+                    Điểm tối đa: <strong>{exercise.maxScore}</strong>
                   </span>
                   <span>
-                    Đạt: <strong>{exercise.passScore}</strong>
+                    Điểm đạt: <strong>{exercise.passScore}</strong>
                   </span>
                 </div>
 
@@ -279,14 +279,14 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                           Xem trước
                         </Button>
                       </Tooltip>
-                      <Tooltip title="Biên tập">
+                      <Tooltip title="Chỉnh sửa">
                         <Button
                           type="text"
                           icon={<EditOutlined />}
                           onClick={() => handleOpenDrawer(exercise, "edit")}
                           className="flex-1 h-12 text-amber-600 hover:text-amber-700 hover:bg-amber-50 font-medium rounded-none"
                         >
-                          Biên tập
+                          Chỉnh sửa
                         </Button>
                       </Tooltip>
                       <Tooltip title="Xóa bỏ">
