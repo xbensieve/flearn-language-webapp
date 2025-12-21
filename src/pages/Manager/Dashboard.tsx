@@ -180,10 +180,10 @@ export default function Dashboard() {
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-              Bảng điều hành
+              Bảng điều khiển quản lý
             </h2>
             <p className="text-muted-foreground mt-1">
-              Số liệu hiệu suất từ{" "}
+              Xem dữ liệu từ{" "}
               <span className="font-medium text-foreground">
                 {dateRange.startDate}
               </span>{" "}
@@ -345,7 +345,7 @@ export default function Dashboard() {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `${value / 1000}đ`}
+                      tickFormatter={(value) => `${value / 1000}k`}
                       dx={-10}
                     />
                     <Tooltip

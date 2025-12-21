@@ -70,6 +70,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import DateRangePicker from "./DateRangePicker";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { RobotOutlined } from "@ant-design/icons";
 
 // Hook useDebounce đơn giản để tránh gọi API quá nhiều khi search
 function useDebounce<T>(value: T, delay: number): T {
@@ -332,10 +333,10 @@ export default function ExerciseGradingPage() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">
-              Bài tập học viên đã nộp
+              Quản lý chấm điểm bài tập
             </h2>
             <p className="text-muted-foreground">
-              Quản lý và chấm điểm bài tập của học viên.
+              Quản lý và chấm điểm các bài tập đã giao cho học viên.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -540,7 +541,7 @@ export default function ExerciseGradingPage() {
                     <TableCell>{item.assignedTeacherName}</TableCell>
                     <TableCell className="text-sm">
                       <div className="whitespace-nowrap text-xs">
-                        Giao phó: {item.assignedAt}
+                        Giao vào: {item.assignedAt}
                       </div>
                       <div className="whitespace-nowrap text-xs text-red-500">
                         Thời hạn: {item.deadline}
@@ -554,7 +555,7 @@ export default function ExerciseGradingPage() {
                             variant="outline"
                             className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
                           >
-                            Đã được giao phó lại
+                            Đã phân công lại
                           </Badge>
                           {/* Status cũ (thường là Expired) bị gạch ngang và làm mờ */}
                           <Badge
@@ -685,7 +686,7 @@ export default function ExerciseGradingPage() {
                               </p>
                               <div className="flex items-center text-xs text-muted-foreground mt-0.5">
                                 <span>
-                                  Được phân công lại vào lúc:{" "}
+                                  Được phân công vào{" "}
                                   {selectedAssignment.reassignedAt}
                                 </span>
                               </div>
@@ -712,7 +713,7 @@ export default function ExerciseGradingPage() {
                     >
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-semibold text-gray-700">
-                          Tình trạng hiện tại
+                          Trạng thái bài tập
                         </span>
                         <Badge
                           className={getStatusColor(selectedAssignment.status)}
@@ -735,18 +736,18 @@ export default function ExerciseGradingPage() {
                       selectedAssignment.isOverdue) && (
                       <div className="p-4 rounded-lg border border-orange-200 bg-orange-50">
                         <h4 className="font-semibold text-orange-800 mb-2">
-                          Cần phân công lại giáo viên
+                          Phân công lại giáo viên
                         </h4>
                         <p className="text-sm text-orange-700 mb-3">
-                          Bài tập này đã hết hạn hoặc quá hạn. Vui lòng chọn
-                          giáo viên khác.
+                          Bài tập này đã hết hạn hoặc bị hủy. Bạn có thể phân
+                          công lại cho giáo viên khác để tiếp tục chấm điểm.
                         </p>
                         <Button
                           onClick={handleOpenReassignDialog}
                           className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer"
                         >
                           <UserCheck className="mr-2 h-4 w-4" />
-                          Tìm và phân công giáo viên mới
+                          Phân công lại giáo viên
                         </Button>
                       </div>
                     )}
@@ -773,7 +774,7 @@ export default function ExerciseGradingPage() {
                         {selectedAssignment.assignedTeacherName}
                         {selectedAssignment.isReassigned && (
                           <span className="text-xs text-red-500 font-normal">
-                            (Cancelled)
+                            (Đã được phân công lại)
                           </span>
                         )}
                       </p>
@@ -785,7 +786,7 @@ export default function ExerciseGradingPage() {
                   {/* Scoring Summary (Existing Code) */}
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                      <Award className="h-4 w-4" /> Kết quả chấm điểm
+                      <Award className="h-4 w-4" /> Tóm tắt điểm số
                     </h4>
                     {/* Final Score & Pass Score Cards */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
@@ -807,9 +808,7 @@ export default function ExerciseGradingPage() {
                                 Number(selectedAssignment.finalScore).toFixed(2)
                               )
                             : "--"}
-                          <span className="text-sm font-normal text-muted-foreground ml-1">
-                            /100
-                          </span>
+                          /100
                         </div>
                         <div className="mt-1 flex items-center gap-1 text-xs">
                           {selectedAssignment.finalScore !== null &&
@@ -836,10 +835,10 @@ export default function ExerciseGradingPage() {
                           Điểm đạt
                         </div>
                         <div className="text-3xl font-bold text-slate-700">
-                          {selectedAssignment.passScore || "--"}
+                          {selectedAssignment.passScore || "--"}/100
                         </div>
                         <div className="mt-1 text-xs text-muted-foreground">
-                          Bắt buộc phải vượt qua
+                          Mức điểm tối thiểu để đạt bài tập
                         </div>
                       </div>
                     </div>
@@ -849,7 +848,7 @@ export default function ExerciseGradingPage() {
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                           <User className="h-4 w-4 text-blue-500" />
-                          Đánh giá giáo viên
+                          Phản hồi từ giáo viên
                         </span>
                         <Badge
                           variant="secondary"
@@ -859,6 +858,7 @@ export default function ExerciseGradingPage() {
                           {selectedAssignment.teacherScore !== undefined
                             ? selectedAssignment.teacherScore
                             : "--"}
+                          /100
                         </Badge>
                       </div>
                       {selectedAssignment.teacherFeedback ? (
@@ -878,7 +878,7 @@ export default function ExerciseGradingPage() {
                   {/* Audio Player */}
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                      <PlayCircle className="h-4 w-4" /> Âm thanh gửi
+                      <PlayCircle className="h-4 w-4" /> Bài nói của học viên
                     </h4>
                     {selectedAssignment.audioUrl ? (
                       <audio controls className="w-full h-10">
@@ -905,7 +905,7 @@ export default function ExerciseGradingPage() {
                   <div>
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="text-sm font-medium text-muted-foreground">
-                        Phân tích và chấm điểm AI
+                        <RobotOutlined className="h-4 w-4" /> Phân tích AI
                       </h4>
 
                       {(selectedAssignment.aiScore === 0 || isPollingAI) && (
@@ -945,7 +945,9 @@ export default function ExerciseGradingPage() {
                         return (
                           <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
                             <p className="text-sm text-gray-600 mb-2">
-                              <span className="font-semibold">Status: </span>
+                              <span className="font-semibold">
+                                Trạng thái:{" "}
+                              </span>
                               {selectedAssignment.aiFeedback || "Không có sẵn"}
                             </p>
                             <div className="text-xs text-muted-foreground">
@@ -962,18 +964,10 @@ export default function ExerciseGradingPage() {
                           <div className="flex gap-4">
                             <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-md text-center flex-1">
                               <div className="text-xs uppercase font-bold">
-                                Tổng thể
+                                Điểm tổng thể
                               </div>
                               <div className="text-xl font-bold">
-                                {aiData.overall}
-                              </div>
-                            </div>
-                            <div className="bg-purple-50 text-purple-700 px-3 py-2 rounded-md text-center flex-1">
-                              <div className="text-xs uppercase font-bold">
-                                CEFR
-                              </div>
-                              <div className="text-xl font-bold">
-                                {aiData.cefrLevel || "N/A"}
+                                {aiData.overall}/100
                               </div>
                             </div>
                           </div>
@@ -997,7 +991,7 @@ export default function ExerciseGradingPage() {
                           {aiData.recognizedText && (
                             <div className="bg-slate-50 p-3 rounded-md text-sm text-gray-700 border">
                               <div className="font-semibold text-slate-600 mb-1">
-                                Văn bản được nhận dạng
+                                Bản ghi nhận dạng văn bản
                               </div>
                               <div className="italic">
                                 "{aiData.recognizedText}"
@@ -1009,7 +1003,7 @@ export default function ExerciseGradingPage() {
                           {aiData.feedback && (
                             <div className="text-sm text-gray-600 bg-slate-50 p-3 rounded-md border">
                               <div className="font-semibold text-slate-600 mb-1">
-                                Phản hồi AI
+                                Phản hồi từ AI
                               </div>
                               {aiData.feedback}
                             </div>
@@ -1023,7 +1017,7 @@ export default function ExerciseGradingPage() {
 
                   <div className="space-y-3">
                     <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                      <Clock className="h-4 w-4" /> Mốc thời gian
+                      <Clock className="h-4 w-4" /> Thông tin thời gian
                     </h4>
                     <div className="grid grid-cols-2 gap-y-2 text-sm">
                       <div className="text-muted-foreground">Đã giao:</div>
@@ -1032,7 +1026,7 @@ export default function ExerciseGradingPage() {
                       <div>
                         {selectedAssignment.completedAt || "Chưa hoàn thành"}
                       </div>
-                      <div className="text-red-500 font-medium">Thời hạn:</div>
+                      <div className="text-red-500 font-medium">Hạn chót:</div>
                       <div className="text-red-500 font-medium">
                         {selectedAssignment.deadline}
                       </div>
