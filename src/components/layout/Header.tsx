@@ -37,9 +37,7 @@ export const Header = () => {
   return (
     <header className="h-16 bg-surface border-b border-border flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold">
-          Trang tổng quan dành cho người quản lý
-        </h1>
+        <h1 className="text-xl font-semibold">{"Quản lý hệ thống"}</h1>
       </div>
 
       <div className="flex items-center gap-3">
@@ -58,7 +56,7 @@ export const Header = () => {
               className="flex items-center gap-2 cursor-pointer"
             >
               <UserCog />
-              <span className="font-medium">{"Quản lý"}</span>
+              <span className="font-medium">Quản lý</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
