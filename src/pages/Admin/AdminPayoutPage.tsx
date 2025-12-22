@@ -26,6 +26,7 @@ import {
   type ProcessPayoutPayload,
 } from '../../services/payout';
 import type { AdminPayout } from '../../services/payout/type';
+import { translateStatus } from './CoursesPage';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -77,7 +78,7 @@ const AdminPayoutsPage: React.FC = () => {
     mutationFn: ({ id, payload }: { id: string; payload: ProcessPayoutPayload }) =>
       processPayoutService(id, payload),
     onSuccess: () => {
-      message.success("Đã xử lý thành công!");
+      message.success('Đã xử lý thành công!');
       setProcessModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['admin-payouts-all'] });
       queryClient.invalidateQueries({ queryKey: ['admin-payouts-pending'] });
@@ -87,20 +88,24 @@ const AdminPayoutsPage: React.FC = () => {
 
   const columns = [
     {
-      title: "Giáo viên",
+      title: 'Giáo viên',
       render: (_: any, r: AdminPayout) => (
         <div>
-          <Text strong className="block text-gray-700 text-sm">
+          <Text
+            strong
+            className="block text-gray-700 text-sm">
             {r.teacherName}
           </Text>
-          <Text type="secondary" className="text-xs">
+          <Text
+            type="secondary"
+            className="text-xs">
             {r.teacherEmail}
           </Text>
         </div>
       ),
     },
     {
-      title: "Chi tiết ngân hàng",
+      title: 'Chi tiết ngân hàng',
       render: (_: any, r: AdminPayout) => (
         <div className="text-xs text-gray-500">
           <div className="font-medium text-gray-700">{r.bankName}</div>
@@ -109,56 +114,57 @@ const AdminPayoutsPage: React.FC = () => {
       ),
     },
     {
-      title: "Số tiền",
-      dataIndex: "amount",
+      title: 'Số tiền',
+      dataIndex: 'amount',
       render: (val: number) => (
-        <Text strong className="text-emerald-600 text-sm">
+        <Text
+          strong
+          className="text-emerald-600 text-sm">
           {val.toLocaleString()} ₫
         </Text>
       ),
       sorter: (a: any, b: any) => a.amount - b.amount,
     },
     {
-      title: "Trạng thái",
-      dataIndex: "payoutStatus",
+      title: 'Trạng thái',
+      dataIndex: 'payoutStatus',
       width: 100,
       render: (status: string) => {
         const color =
-          status === "Completed"
-            ? "success"
-            : status === "Pending"
-            ? "warning"
-            : "error";
+          status === 'Completed' ? 'success' : status === 'Pending' ? 'warning' : 'error';
         return (
-          <Tag color={color} className="rounded px-2 text-xs border-0">
-            {status}
+          <Tag
+            color={color}
+            className="rounded px-2 text-xs border-0">
+            {translateStatus(status)}
           </Tag>
         );
       },
     },
     {
-      title: "Ngày",
-      dataIndex: "requestedAt",
+      title: 'Ngày',
+      dataIndex: 'requestedAt',
       width: 120,
       render: (date: string) => (
-        <Text type="secondary" className="text-xs">
+        <Text
+          type="secondary"
+          className="text-xs">
           {new Date(date).toLocaleDateString()}
         </Text>
       ),
     },
     {
-      title: "",
+      title: '',
       width: 80,
       render: (_: any, r: AdminPayout) =>
-        r.payoutStatus === "Pending" ? (
+        r.payoutStatus === 'Pending' ? (
           <Button
             size="small"
             type="link"
             onClick={() => {
               setSelectedPayout(r);
               setProcessModalOpen(true);
-            }}
-          >
+            }}>
             Xử lý
           </Button>
         ) : (
@@ -168,8 +174,7 @@ const AdminPayoutsPage: React.FC = () => {
             onClick={() => {
               setSelectedPayout(r);
               setDetailModalOpen(true);
-            }}
-          >
+            }}>
             Xem
           </Button>
         ),
@@ -179,7 +184,9 @@ const AdminPayoutsPage: React.FC = () => {
   return (
     <div className="space-y-5">
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={8}>
+        <Col
+          xs={24}
+          sm={8}>
           <StatCard
             title="Tổng yêu cầu rút tiền"
             value={payoutsAll.length}
@@ -187,7 +194,9 @@ const AdminPayoutsPage: React.FC = () => {
             gradient="bg-gradient-to-br from-blue-500 to-cyan-500"
           />
         </Col>
-        <Col xs={24} sm={8}>
+        <Col
+          xs={24}
+          sm={8}>
           <StatCard
             title="Tổng tiền"
             value={`${totalAmount.toLocaleString()} ₫`}
@@ -195,7 +204,9 @@ const AdminPayoutsPage: React.FC = () => {
             gradient="bg-gradient-to-br from-teal-400 to-emerald-500"
           />
         </Col>
-        <Col xs={24} sm={8}>
+        <Col
+          xs={24}
+          sm={8}>
           <StatCard
             title="Đang chờ"
             value={payoutsPending.length}
@@ -208,10 +219,11 @@ const AdminPayoutsPage: React.FC = () => {
       <Card
         bordered={false}
         className="rounded-2xl shadow-sm border border-gray-100"
-        bodyStyle={{ padding: "20px" }}
-      >
+        bodyStyle={{ padding: '20px' }}>
         <div className="flex justify-between items-center mb-4">
-          <Title level={5} className="!mb-0 !font-semibold text-gray-800">
+          <Title
+            level={5}
+            className="!mb-0 !font-semibold text-gray-800">
             Lịch sử thanh toán
           </Title>
           <Space size="small">
@@ -234,7 +246,7 @@ const AdminPayoutsPage: React.FC = () => {
           columns={columns}
           dataSource={filteredData}
           rowKey="payoutRequestId"
-          pagination={{ pageSize: 10, size: "small" }}
+          pagination={{ pageSize: 10, size: 'small' }}
           size="small"
         />
       </Card>
@@ -244,8 +256,7 @@ const AdminPayoutsPage: React.FC = () => {
         title="Xử lý thanh toán"
         onCancel={() => setProcessModalOpen(false)}
         footer={null}
-        width={400}
-      >
+        width={400}>
         <Form
           form={form}
           layout="vertical"
@@ -254,18 +265,24 @@ const AdminPayoutsPage: React.FC = () => {
               id: selectedPayout!.payoutRequestId,
               payload: v,
             })
-          }
-        >
-          <Form.Item name="action" label="Action" rules={[{ required: true }]}>
+          }>
+          <Form.Item
+            name="action"
+            label="Action"
+            rules={[{ required: true }]}>
             <Select>
               <Option value="Approve">Duyệt</Option>
               <Option value="Reject">Từ chối</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="transactionReference" label="Transaction Ref">
+          <Form.Item
+            name="transactionReference"
+            label="Transaction Ref">
             <Input />
           </Form.Item>
-          <Form.Item name="adminNote" label="Note">
+          <Form.Item
+            name="adminNote"
+            label="Note">
             <TextArea rows={2} />
           </Form.Item>
           <Button
@@ -273,8 +290,7 @@ const AdminPayoutsPage: React.FC = () => {
             htmlType="submit"
             block
             loading={processMutation.isPending}
-            className="bg-indigo-600"
-          >
+            className="bg-indigo-600">
             Nộp
           </Button>
         </Form>
@@ -284,13 +300,13 @@ const AdminPayoutsPage: React.FC = () => {
         open={detailModalOpen}
         title="Chi tiết thanh toán"
         onCancel={() => setDetailModalOpen(false)}
-        footer={null}
-      >
+        footer={null}>
         {selectedPayout && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Giáo viên">
-              {selectedPayout.teacherName}
-            </Descriptions.Item>
+          <Descriptions
+            column={1}
+            bordered
+            size="small">
+            <Descriptions.Item label="Giáo viên">{selectedPayout.teacherName}</Descriptions.Item>
             <Descriptions.Item label="Số tiền">
               {selectedPayout.amount.toLocaleString()} ₫
             </Descriptions.Item>

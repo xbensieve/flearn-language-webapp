@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Table,
   Card,
@@ -12,44 +12,56 @@ import {
   Tooltip,
   Empty,
   Button,
-} from "antd";
-import { useQuery } from "@tanstack/react-query";
-import {
-  getAdminCoursesService,
-  getAdminCourseSubmissionsService,
-} from "../../services/course";
-import type { Course, ICourseDataStaff } from "../../services/course/type";
-import {
-  SearchOutlined,
-  BookOutlined,
-  UserOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
-import { useDebounce } from "../../utils/useDebound";
+} from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { getAdminCoursesService, getAdminCourseSubmissionsService } from '../../services/course';
+import type { Course, ICourseDataStaff } from '../../services/course/type';
+import { SearchOutlined, BookOutlined, UserOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useDebounce } from '../../utils/useDebound';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const translateStatus = (status: string): string => {
+  switch (status) {
+    case 'Published':
+      return 'Đã xuất bản';
+    case 'Draft':
+      return 'Bản nháp';
+    case 'Rejected':
+      return 'Bị từ chối';
+    case 'Pending':
+      return 'Đang chờ duyệt';
+    case 'Inactive':
+      return 'Không hoạt động';
+    case 'Completed':
+      return 'Thành công';
+    default:
+      return status;
+  }
+};
+
 const CoursesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [language, setLanguage] = useState<string | undefined>(undefined);
   const [status, setStatus] = useState<string | undefined>(undefined);
-  const [sortBy, setSortBy] = useState<string>("newest");
+  const [sortBy, setSortBy] = useState<string>('newest');
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const handleClearFilters = () => {
-    setSearchTerm("");
+    setSearchTerm('');
     setLanguage(undefined);
     setStatus(undefined);
-    setSortBy("newest");
+    setSortBy('newest');
     setPage(1);
   };
 
   const formatDateSafe = (dateString: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return 'N/A';
 
     const date = new Date(dateString);
 
@@ -57,26 +69,18 @@ const CoursesPage: React.FC = () => {
       return dateString;
     }
 
-    return date.toLocaleDateString("en-GB");
+    return date.toLocaleDateString('en-GB');
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: [
-      "admin-courses",
-      page,
-      pageSize,
-      debouncedSearch,
-      language,
-      status,
-      sortBy,
-    ],
+    queryKey: ['admin-courses', page, pageSize, debouncedSearch, language, status, sortBy],
     queryFn: async () => {
       try {
-        if (status === "Pending") {
+        if (status === 'Pending') {
           const res = await getAdminCourseSubmissionsService({
             page,
             pageSize,
-            status: "Pending",
+            status: 'Pending',
           });
 
           const mappedData =
@@ -89,7 +93,7 @@ const CoursesPage: React.FC = () => {
                 email: item.submitter?.email,
                 avatar: item.submitter?.avatar,
               },
-              courseStatus: "Pending",
+              courseStatus: 'Pending',
               createdAt: item.submittedAt,
             })) || [];
 
@@ -130,17 +134,17 @@ const CoursesPage: React.FC = () => {
 
   const columns = [
     {
-      title: "Thông tin khóa học",
+      title: 'Thông tin khóa học',
       width: 320,
       render: (_: any, record: Course) => (
         <div className="flex gap-3">
           <div className="flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border border-gray-100 relative">
             <Image
-              src={record.imageUrl || "error"}
+              src={record.imageUrl || 'error'}
               fallback="https://via.placeholder.com/80x60?text=No+Img"
               width="100%"
               height="100%"
-              style={{ objectFit: "cover" }}
+              style={{ objectFit: 'cover' }}
               preview={false}
             />
           </div>
@@ -148,19 +152,18 @@ const CoursesPage: React.FC = () => {
             <Tooltip title={record.title}>
               <Text
                 strong
-                className="truncate text-sm mb-0.5 block text-slate-700"
-              >
+                className="truncate text-sm mb-0.5 block text-slate-700">
                 {record.title}
               </Text>
             </Tooltip>
             <div className="flex flex-wrap gap-1">
               {record.language && (
-                <Tag className="mr-0 text-[10px] px-1 bg-gray-50">
-                  {record.language}
-                </Tag>
+                <Tag className="mr-0 text-[10px] px-1 bg-gray-50">{record.language}</Tag>
               )}
               {record.program?.level?.name && (
-                <Tag color="blue" className="mr-0 text-[10px] px-1">
+                <Tag
+                  color="blue"
+                  className="mr-0 text-[10px] px-1">
                   {record.program.level.name}
                 </Tag>
               )}
@@ -170,40 +173,46 @@ const CoursesPage: React.FC = () => {
       ),
     },
     {
-      title: "Giáo viên",
-      dataIndex: "teacher",
+      title: 'Giáo viên',
+      dataIndex: 'teacher',
       width: 200,
       render: (teacher: any) => (
         <div className="flex items-center gap-2">
-          <Avatar src={teacher?.avatar} icon={<UserOutlined />} size="small" />
+          <Avatar
+            src={teacher?.avatar}
+            icon={<UserOutlined />}
+            size="small"
+          />
           <div className="flex flex-col">
-            <Text className="text-xs font-medium">
-              {teacher?.name || "Unknown"}
-            </Text>
-            <Text className="text-[10px] text-gray-400 truncate w-32">
-              {teacher?.email}
-            </Text>
+            <Text className="text-xs font-medium">{teacher?.name || 'Unknown'}</Text>
+            <Text className="text-[10px] text-gray-400 truncate w-32">{teacher?.email}</Text>
           </div>
         </div>
       ),
     },
     {
-      title: "Giá",
-      dataIndex: "price",
+      title: 'Giá',
+      dataIndex: 'price',
       width: 120,
       render: (price: number, record: Course) => (
         <div>
-          {record.courseType === "Free" || price === 0 ? (
-            <Tag color="green" className="font-semibold">
+          {record.courseType === 'Free' || price === 0 ? (
+            <Tag
+              color="green"
+              className="font-semibold">
               Miễn phí
             </Tag>
           ) : (
             <div className="flex flex-col">
-              <Text strong className="text-emerald-600">
+              <Text
+                strong
+                className="text-emerald-600">
                 {price?.toLocaleString()} ₫
               </Text>
               {record.discountPrice ? (
-                <Text delete className="text-[10px] text-gray-400">
+                <Text
+                  delete
+                  className="text-[10px] text-gray-400">
                   {record.discountPrice.toLocaleString()} ₫
                 </Text>
               ) : null}
@@ -213,44 +222,44 @@ const CoursesPage: React.FC = () => {
       ),
     },
     {
-      title: "Trạng thái",
+      title: 'Trạng thái',
       width: 160,
       render: (_: any, record: Course) => (
         <div className="text-xs text-gray-500 space-y-1">
           <div className="flex items-center gap-1">
             <UserOutlined /> {record.learnerCount || 0} học viên
           </div>
-          <div className="flex items-center gap-1">
-            {record.numLessons || 0} bài học
-          </div>
+          <div className="flex items-center gap-1">{record.numLessons || 0} bài học</div>
         </div>
       ),
     },
     {
-      title: "Trạng thái",
-      dataIndex: "courseStatus",
+      title: 'Trạng thái',
+      dataIndex: 'courseStatus',
       width: 120,
       render: (st: string) => {
-        let color = "default";
-        if (st === "Published") color = "success";
-        if (st === "Draft") color = "warning";
-        if (st === "Rejected") color = "error";
-        if (st === "Pending") color = "processing";
+        let color = 'default';
+        if (st === 'Published') color = 'success';
+        if (st === 'Draft') color = 'warning';
+        if (st === 'Rejected') color = 'error';
+        if (st === 'Pending') color = 'processing';
         return (
-          <Tag color={color} className="min-w-[70px] text-center">
-            {st}
+          <Tag
+            color={color}
+            className="min-w-[70px] text-center">
+            {translateStatus(st)}
           </Tag>
         );
       },
     },
     {
-      title: "Ngày",
-      dataIndex: "createdAt",
+      title: 'Ngày',
+      dataIndex: 'createdAt',
       width: 120,
       render: (date: string) => (
         <div className="flex flex-col">
+          <Text className="text-[10px] text-gray-400">Tạo vào</Text>
           <Text className="text-xs text-gray-600">{formatDateSafe(date)}</Text>
-          <Text className="text-[10px] text-gray-400">Created</Text>
         </div>
       ),
     },
@@ -260,8 +269,7 @@ const CoursesPage: React.FC = () => {
     <div className="space-y-6">
       <Card
         bordered={false}
-        className="rounded-2xl shadow-sm border border-gray-100"
-      >
+        className="rounded-2xl shadow-sm border border-gray-100">
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
@@ -269,7 +277,9 @@ const CoursesPage: React.FC = () => {
                 <BookOutlined className="text-xl" />
               </div>
               <div>
-                <Title level={4} className="!mb-0 !font-bold text-gray-800">
+                <Title
+                  level={4}
+                  className="!mb-0 !font-bold text-gray-800">
                   Tất cả các khóa học
                 </Title>
                 <Text className="text-xs text-gray-500">
@@ -278,13 +288,12 @@ const CoursesPage: React.FC = () => {
               </div>
             </div>
 
-            {(searchTerm || language || status || sortBy !== "newest") && (
+            {(searchTerm || language || status || sortBy !== 'newest') && (
               <Button
                 icon={<ReloadOutlined />}
                 onClick={handleClearFilters}
                 size="small"
-                className="text-gray-500"
-              >
+                className="text-gray-500">
                 Đặt lại bộ lọc
               </Button>
             )}
@@ -298,7 +307,7 @@ const CoursesPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
               allowClear
-              disabled={status === "Pending"}
+              disabled={status === 'Pending'}
             />
             <Select
               placeholder="Ngôn ngữ"
@@ -306,8 +315,7 @@ const CoursesPage: React.FC = () => {
               allowClear
               value={language}
               onChange={(val) => setLanguage(val)}
-              disabled={status === "Pending"}
-            >
+              disabled={status === 'Pending'}>
               <Option value="en">Tiếng Anh</Option>
               <Option value="ja">Tiếng Nhật</Option>
               <Option value="zh">Tiếng Trung</Option>
@@ -320,8 +328,7 @@ const CoursesPage: React.FC = () => {
               onChange={(val) => {
                 setStatus(val);
                 setPage(1);
-              }}
-            >
+              }}>
               <Option value="Published">Đã xuất bản</Option>
               <Option value="Draft">Bản nháp</Option>
               <Option value="Pending">Đang chờ xử lý (Đánh giá)</Option>
@@ -331,8 +338,7 @@ const CoursesPage: React.FC = () => {
               value={sortBy}
               style={{ width: 140 }}
               onChange={(val) => setSortBy(val)}
-              disabled={status === "Pending"}
-            >
+              disabled={status === 'Pending'}>
               <Option value="newest">Mới nhất</Option>
               <Option value="oldest">Cũ nhất</Option>
               <Option value="price_asc">Giá: Thấp đến Cao</Option>
@@ -357,7 +363,7 @@ const CoursesPage: React.FC = () => {
               setPageSize(ps);
             },
             showTotal: (total) => `Tổng ${total} khóa học`,
-            position: ["bottomRight"],
+            position: ['bottomRight'],
           }}
           scroll={{ x: 1100 }}
           size="middle"
