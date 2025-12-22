@@ -3,6 +3,7 @@ import { Form, Input, InputNumber, Button, Card, Typography, message } from 'ant
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createCourseTemplateService } from '../../services/course';
+import { toast } from 'react-toastify';
 
 const { Title } = Typography;
 
@@ -20,12 +21,12 @@ const CreateCourseTemplate: React.FC = () => {
       levelId: string;
     }) => createCourseTemplateService(payload),
     onSuccess: () => {
-      message.success('Course Template created successfully!');
+      toast.success('Mẫu khóa học đã được tạo thành công!');
       navigate('course');
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      message.error(err?.response?.data?.message || 'Failed to create course template');
+      message.error(err?.response?.data?.message || 'Tạo mẫu khóa học thất bại.');
     },
   });
 
@@ -44,7 +45,7 @@ const CreateCourseTemplate: React.FC = () => {
   return (
     <div className="min-h-screen flex justify-center items-start bg-gray-50 py-10 px-4">
       <Card className="w-full max-w-3xl shadow-md">
-        <Title level={3}>Create Course Template</Title>
+        <Title level={3}>Tạo mẫu khóa học</Title>
 
         <Form
           layout="vertical"
@@ -55,26 +56,26 @@ const CreateCourseTemplate: React.FC = () => {
             exercisesPerLesson: 1,
           }}>
           <Form.Item
-            label="Name"
+            label="Tên mẫu"
             name="name"
-            rules={[{ required: true, message: 'Please enter template name' }]}>
-            <Input placeholder="Enter template name" />
+            rules={[{ required: true, message: 'Vui lòng nhập tên mẫu' }]}>
+            <Input placeholder="Nhập tên mẫu khóa học" />
           </Form.Item>
 
           <Form.Item
-            label="Description"
+            label="Mô tả"
             name="description"
-            rules={[{ required: true, message: 'Please enter description' }]}>
+            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}>
             <Input.TextArea
               rows={3}
-              placeholder="Enter template description"
+              placeholder="Nhập mô tả"
             />
           </Form.Item>
 
           <Form.Item
             label="Program ID"
             name="programId"
-            rules={[{ required: true, message: 'Please enter program ID' }]}>
+            rules={[{ required: true, message: 'Vui lòng nhập id chương trình' }]}>
             <Input placeholder="Enter program ID (e.g., 3fa85f64-5717-4562-b3fc-2c963f66afa6)" />
           </Form.Item>
 
