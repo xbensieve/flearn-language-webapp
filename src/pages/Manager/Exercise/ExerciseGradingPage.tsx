@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { format } from "date-fns";
+import { useState, useEffect, useMemo } from 'react';
+import { format } from 'date-fns';
 import {
   Search,
   MoreHorizontal,
@@ -19,25 +19,26 @@ import {
   XCircle,
   Info,
   Bot,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { exerciseGradingService } from "@/services/exerciseGrading/exerciseGradingService";
-import type {
-  Assignment,
-  AssignmentQueryParams,
-  AIFeedbackData,
-} from "@/types/exerciseGrading";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { exerciseGradingService } from '@/services/exerciseGrading/exerciseGradingService';
+import {
+  type Assignment,
+  type AssignmentQueryParams,
+  type AIFeedbackData,
+  translateAssignmentStatus,
+} from '@/types/exerciseGrading';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -45,7 +46,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 import {
   Sheet,
@@ -53,7 +54,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import {
   Dialog,
   DialogContent,
@@ -61,16 +62,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import DateRangePicker from "./DateRangePicker";
-import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RobotOutlined } from "@ant-design/icons";
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import DateRangePicker from './DateRangePicker';
+import { toast } from 'sonner';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { RobotOutlined } from '@ant-design/icons';
+
+const translateAssignmentStatus = (status: string): string => {
+  switch (status) {
+    case 'Assigned':
+      return 'Đã giao';
+    case 'Returned':
+      return 'Đã nộp';
+    case 'Expired':
+      return 'Hết hạn';
+    case 'Pending':
+      return 'Đang chờ';
+    default:
+      return status;
+  }
+};
 
 // Hook useDebounce đơn giản để tránh gọi API quá nhiều khi search
 function useDebounce<T>(value: T, delay: number): T {
@@ -93,29 +109,28 @@ export default function ExerciseGradingPage() {
   const [queryParams, setQueryParams] = useState<AssignmentQueryParams>({
     Page: 1,
     PageSize: 10,
-    Status: "",
-    courseId: "",
-    exerciseId: "",
+    Status: '',
+    courseId: '',
+    exerciseId: '',
     FromDate: undefined,
     ToDate: undefined,
   });
 
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<Assignment | null>(null);
-  const [clientSearch, setClientSearch] = useState("");
-  const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [clientSearch, setClientSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest'>('latest');
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
 
   // --- QUERY 1: Filters (Cache lâu vì ít thay đổi) ---
   const { data: filterOptions } = useQuery({
-    queryKey: ["grading-filters"],
+    queryKey: ['grading-filters'],
     queryFn: () => exerciseGradingService.getFilters(),
     staleTime: 60 * 60 * 1000, // 1 giờ
   });
 
   // --- QUERY 2: Assignments List (Main Data) ---
   const { data: assignmentsData, isLoading: loading } = useQuery({
-    queryKey: ["grading-assignments", queryParams], // Tự động refetch khi queryParams đổi
+    queryKey: ['grading-assignments', queryParams], // Tự động refetch khi queryParams đổi
     queryFn: () => exerciseGradingService.getAssignments(queryParams),
     staleTime: 2 * 60 * 1000, // 2 phút
   });
@@ -129,31 +144,28 @@ export default function ExerciseGradingPage() {
 
   // --- Reassign Feature States ---
   const [isReassignDialogOpen, setIsReassignDialogOpen] = useState(false);
-  const [teacherSearchTerm, setTeacherSearchTerm] = useState("");
+  const [teacherSearchTerm, setTeacherSearchTerm] = useState('');
   const debouncedTeacherSearch = useDebounce(teacherSearchTerm, 500);
-  const [selectedNewTeacher, setSelectedNewTeacher] = useState<string | null>(
-    null
-  );
+  const [selectedNewTeacher, setSelectedNewTeacher] = useState<string | null>(null);
   const [isPollingAI, setIsPollingAI] = useState(false);
 
   // --- QUERY 3: Eligible Teachers (Chỉ fetch khi mở dialog) ---
-  const { data: eligibleTeachersResponse, isLoading: loadingTeachers } =
-    useQuery({
-      queryKey: [
-        "eligible-teachers",
-        selectedAssignment?.exerciseSubmissionId,
+  const { data: eligibleTeachersResponse, isLoading: loadingTeachers } = useQuery({
+    queryKey: [
+      'eligible-teachers',
+      selectedAssignment?.exerciseSubmissionId,
+      debouncedTeacherSearch,
+    ],
+    queryFn: () =>
+      exerciseGradingService.getEligibleTeachers(
+        selectedAssignment!.exerciseSubmissionId,
         debouncedTeacherSearch,
-      ],
-      queryFn: () =>
-        exerciseGradingService.getEligibleTeachers(
-          selectedAssignment!.exerciseSubmissionId,
-          debouncedTeacherSearch,
-          1,
-          10
-        ),
-      enabled: !!isReassignDialogOpen && !!selectedAssignment, // Chỉ chạy khi mở dialog
-      staleTime: 5 * 60 * 1000,
-    });
+        1,
+        10
+      ),
+    enabled: !!isReassignDialogOpen && !!selectedAssignment, // Chỉ chạy khi mở dialog
+    staleTime: 5 * 60 * 1000,
+  });
 
   const eligibleTeachers = eligibleTeachersResponse?.data || [];
 
@@ -162,8 +174,8 @@ export default function ExerciseGradingPage() {
     if (dateRange.from) {
       setQueryParams((prev) => ({
         ...prev,
-        FromDate: format(dateRange.from!, "yyyy-MM-dd"),
-        ToDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+        FromDate: format(dateRange.from!, 'yyyy-MM-dd'),
+        ToDate: dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
         Page: 1,
       }));
     } else {
@@ -177,20 +189,15 @@ export default function ExerciseGradingPage() {
   // --- Mutations (Thay đổi dữ liệu) ---
   const assignTeacherMutation = useMutation({
     mutationFn: (teacherId: string) =>
-      exerciseGradingService.assignTeacher(
-        selectedAssignment!.exerciseSubmissionId,
-        teacherId
-      ),
+      exerciseGradingService.assignTeacher(selectedAssignment!.exerciseSubmissionId, teacherId),
     onSuccess: () => {
-      toast.success("Đã phân công lại thành công!");
+      toast.success('Đã phân công lại thành công!');
       setIsReassignDialogOpen(false);
       setSelectedAssignment(null);
-      queryClient.invalidateQueries({ queryKey: ["grading-assignments"] }); // Refresh list
+      queryClient.invalidateQueries({ queryKey: ['grading-assignments'] }); // Refresh list
     },
     onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Không thể phân công lại giáo viên"
-      );
+      toast.error(error?.response?.data?.message || 'Không thể phân công lại giáo viên');
     },
   });
 
@@ -199,7 +206,7 @@ export default function ExerciseGradingPage() {
   };
 
   const handleOpenReassignDialog = () => {
-    setTeacherSearchTerm("");
+    setTeacherSearchTerm('');
     setSelectedNewTeacher(null);
     setIsReassignDialogOpen(true);
   };
@@ -211,13 +218,10 @@ export default function ExerciseGradingPage() {
     }
   };
 
-  const handleFilterChange = (
-    key: keyof AssignmentQueryParams,
-    value: string
-  ) => {
+  const handleFilterChange = (key: keyof AssignmentQueryParams, value: string) => {
     setQueryParams((prev) => ({
       ...prev,
-      [key]: value === "all" ? "" : value,
+      [key]: value === 'all' ? '' : value,
       Page: 1,
     }));
   };
@@ -234,23 +238,22 @@ export default function ExerciseGradingPage() {
           );
           const isFinished =
             statusData.aiScore > 0 ||
-            (statusData.status !== "PendingAIReview" &&
-              statusData.status !== "Pending");
+            (statusData.status !== 'PendingAIReview' && statusData.status !== 'Pending');
 
           if (isFinished) {
             setIsPollingAI(false);
-            toast.success("AI Grading Completed!");
+            toast.success('AI Grading Completed!');
             setSelectedAssignment((prev) => {
               if (!prev) return null;
               return { ...prev, ...statusData };
             });
             // Refresh lại list bên ngoài
             queryClient.invalidateQueries({
-              queryKey: ["grading-assignments"],
+              queryKey: ['grading-assignments'],
             });
           }
         } catch (error) {
-          console.error("Polling error", error);
+          console.error('Polling error', error);
         }
       }, 3000);
     }
@@ -263,15 +266,11 @@ export default function ExerciseGradingPage() {
     if (!selectedAssignment) return;
     try {
       setIsPollingAI(true);
-      await exerciseGradingService.retryAIGrading(
-        selectedAssignment.exerciseSubmissionId
-      );
-      toast.info("AI is grading... Please wait.");
+      await exerciseGradingService.retryAIGrading(selectedAssignment.exerciseSubmissionId);
+      toast.info('AI is grading... Please wait.');
     } catch (error: any) {
       setIsPollingAI(false);
-      toast.error(
-        error?.response?.data?.message || "Failed to trigger AI retry"
-      );
+      toast.error(error?.response?.data?.message || 'Failed to trigger AI retry');
     }
   };
 
@@ -292,13 +291,13 @@ export default function ExerciseGradingPage() {
     result.sort((a, b) => {
       // ... logic sort cũ
       const parseDate = (dateStr: string) => {
-        const [datePart, timePart] = dateStr.split(" ");
-        const [day, month, year] = datePart.split("-");
+        const [datePart, timePart] = dateStr.split(' ');
+        const [day, month, year] = datePart.split('-');
         return new Date(`${year}-${month}-${day}T${timePart}`);
       };
       const dateA = parseDate(a.assignedAt).getTime();
       const dateB = parseDate(b.assignedAt).getTime();
-      return sortOrder === "latest" ? dateB - dateA : dateA - dateB;
+      return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
     });
     return result;
   }, [assignments, clientSearch, sortOrder]);
@@ -306,14 +305,14 @@ export default function ExerciseGradingPage() {
   const getStatusColor = (status: string) => {
     /* Giữ nguyên */
     switch (status) {
-      case "Assigned":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200";
-      case "Returned":
-        return "bg-green-100 text-green-800 hover:bg-green-200 border-green-200";
-      case "Expired":
-        return "bg-red-100 text-red-800 hover:bg-red-200 border-red-200";
+      case 'Assigned':
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200';
+      case 'Returned':
+        return 'bg-green-100 text-green-800 hover:bg-green-200 border-green-200';
+      case 'Expired':
+        return 'bg-red-100 text-red-800 hover:bg-red-200 border-red-200';
       default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200";
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-200';
     }
   };
 
@@ -332,9 +331,7 @@ export default function ExerciseGradingPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              Quản lý chấm điểm bài tập
-            </h2>
+            <h2 className="text-2xl font-bold tracking-tight">Quản lý chấm điểm bài tập</h2>
             <p className="text-muted-foreground">
               Quản lý và chấm điểm các bài tập đã giao cho học viên.
             </p>
@@ -343,16 +340,9 @@ export default function ExerciseGradingPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setSortOrder((prev) =>
-                  prev === "latest" ? "oldest" : "latest"
-                )
-              }
-            >
+              onClick={() => setSortOrder((prev) => (prev === 'latest' ? 'oldest' : 'latest'))}>
               <ArrowUpDown className="mr-2 h-4 w-4" />
-              {sortOrder === "latest"
-                ? "Mới nhất đầu tiên"
-                : "Cũ nhất đầu tiên"}
+              {sortOrder === 'latest' ? 'Mới nhất đầu tiên' : 'Cũ nhất đầu tiên'}
             </Button>
           </div>
         </div>
@@ -376,18 +366,17 @@ export default function ExerciseGradingPage() {
 
                 {/* Course */}
                 <Select
-                  value={queryParams.courseId || "all"}
-                  onValueChange={(val) =>
-                    handleFilterChange("courseId", val === "all" ? "" : val)
-                  }
-                >
+                  value={queryParams.courseId || 'all'}
+                  onValueChange={(val) => handleFilterChange('courseId', val === 'all' ? '' : val)}>
                   <SelectTrigger className="h-10">
                     <SelectValue placeholder="Tất cả các khóa học" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tất cả các khóa học</SelectItem>
                     {filterOptions?.courses.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
+                      <SelectItem
+                        key={c.id}
+                        value={c.id}>
                         {c.name}
                       </SelectItem>
                     ))}
@@ -396,18 +385,19 @@ export default function ExerciseGradingPage() {
 
                 {/* Exercise */}
                 <Select
-                  value={queryParams.exerciseId || "all"}
+                  value={queryParams.exerciseId || 'all'}
                   onValueChange={(val) =>
-                    handleFilterChange("exerciseId", val === "all" ? "" : val)
-                  }
-                >
+                    handleFilterChange('exerciseId', val === 'all' ? '' : val)
+                  }>
                   <SelectTrigger className="h-10">
                     <SelectValue placeholder="Tất cả các bài tập" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tất cả các bài tập</SelectItem>
                     {filterOptions?.exercises.map((e) => (
-                      <SelectItem key={e.id} value={e.id}>
+                      <SelectItem
+                        key={e.id}
+                        value={e.id}>
                         {e.name}
                       </SelectItem>
                     ))}
@@ -416,18 +406,17 @@ export default function ExerciseGradingPage() {
 
                 {/* Status */}
                 <Select
-                  value={queryParams.Status || "all"}
-                  onValueChange={(val) =>
-                    handleFilterChange("Status", val === "all" ? "" : val)
-                  }
-                >
+                  value={queryParams.Status || 'all'}
+                  onValueChange={(val) => handleFilterChange('Status', val === 'all' ? '' : val)}>
                   <SelectTrigger className="h-10">
                     <SelectValue placeholder="Tất cả trạng thái" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tất cả trạng thái</SelectItem>
                     {filterOptions?.statuses.map((s) => (
-                      <SelectItem key={s} value={s}>
+                      <SelectItem
+                        key={s}
+                        value={s}>
                         {s}
                       </SelectItem>
                     ))}
@@ -452,16 +441,15 @@ export default function ExerciseGradingPage() {
                     onClick={() => {
                       setQueryParams((prev) => ({
                         ...prev,
-                        courseId: "",
-                        exerciseId: "",
-                        Status: "",
+                        courseId: '',
+                        exerciseId: '',
+                        Status: '',
                         Page: 1,
                       }));
-                      setClientSearch("");
+                      setClientSearch('');
                       setDateRange({});
                     }}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50">
                     <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
                     Đặt lại bộ lọc
                   </Button>
@@ -513,36 +501,28 @@ export default function ExerciseGradingPage() {
                   <TableRow
                     key={item.assignmentId}
                     className="cursor-pointer hover:bg-slate-50"
-                    onClick={() => setSelectedAssignment(item)}
-                  >
+                    onClick={() => setSelectedAssignment(item)}>
                     <TableCell className="font-medium">
                       <div>{item.learnerName}</div>
                     </TableCell>
                     <TableCell>
                       <div
                         className="font-medium text-blue-600 line-clamp-1"
-                        title={item.exerciseTitle}
-                      >
+                        title={item.exerciseTitle}>
                         {item.exerciseTitle}
                       </div>
                       <div
                         className="text-xs text-muted-foreground line-clamp-1"
-                        title={item.courseName}
-                      >
+                        title={item.courseName}>
                         {item.courseName}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        Loại:{" "}
-                        <span className="font-semibold">
-                          {item.exerciseType}
-                        </span>
+                        Loại: <span className="font-semibold">{item.exerciseType}</span>
                       </div>
                     </TableCell>
                     <TableCell>{item.assignedTeacherName}</TableCell>
                     <TableCell className="text-sm">
-                      <div className="whitespace-nowrap text-xs">
-                        Giao vào: {item.assignedAt}
-                      </div>
+                      <div className="whitespace-nowrap text-xs">Giao vào: {item.assignedAt}</div>
                       <div className="whitespace-nowrap text-xs text-red-500">
                         Thời hạn: {item.deadline}
                       </div>
@@ -553,8 +533,7 @@ export default function ExerciseGradingPage() {
                           {/* Badge mới để báo hiệu đã Reassign */}
                           <Badge
                             variant="outline"
-                            className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
-                          >
+                            className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100">
                             Đã phân công lại
                           </Badge>
                           {/* Status cũ (thường là Expired) bị gạch ngang và làm mờ */}
@@ -562,18 +541,16 @@ export default function ExerciseGradingPage() {
                             className={`${getStatusColor(
                               item.status
                             )} opacity-50 line-through decoration-slate-400`}
-                            variant="outline"
-                          >
-                            {item.status}
+                            variant="outline">
+                            {translateAssignmentStatus(item.status)}
                           </Badge>
                         </div>
                       ) : (
                         /* Hiển thị bình thường nếu chưa Reassign */
                         <Badge
                           className={getStatusColor(item.status)}
-                          variant="outline"
-                        >
-                          {item.status}
+                          variant="outline">
+                          {translateAssignmentStatus(item.status)}
                         </Badge>
                       )}
                     </TableCell>
@@ -584,8 +561,7 @@ export default function ExerciseGradingPage() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedAssignment(item);
-                        }}
-                      >
+                        }}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -593,7 +569,9 @@ export default function ExerciseGradingPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell
+                    colSpan={6}
+                    className="h-24 text-center">
                     Không tìm thấy kết quả nào.
                   </TableCell>
                 </TableRow>
@@ -611,8 +589,7 @@ export default function ExerciseGradingPage() {
               size="sm"
               onClick={() => handlePageChange(meta.page - 1)}
               disabled={meta.page <= 1 || loading}
-              className="cursor-pointer"
-            >
+              className="cursor-pointer">
               <ChevronLeft className="h-4 w-4" /> Trước
             </Button>
             <div></div>
@@ -621,8 +598,7 @@ export default function ExerciseGradingPage() {
               size="sm"
               onClick={() => handlePageChange(meta.page + 1)}
               disabled={meta.page >= meta.totalPages || loading}
-              className="cursor-pointer"
-            >
+              className="cursor-pointer">
               Tiếp theo <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -631,12 +607,10 @@ export default function ExerciseGradingPage() {
         {/* --- Detail Sheet --- */}
         <Sheet
           open={!!selectedAssignment}
-          onOpenChange={(open) => !open && setSelectedAssignment(null)}
-        >
+          onOpenChange={(open) => !open && setSelectedAssignment(null)}>
           <SheetContent
             className="w-[400px] sm:w-[540px] overflow-y-auto"
-            side="right"
-          >
+            side="right">
             {selectedAssignment && (
               <>
                 <SheetHeader className="mb-6">
@@ -661,23 +635,17 @@ export default function ExerciseGradingPage() {
                             Bài tập được phân công lại
                           </h4>
                           <p className="text-sm text-blue-600 mb-3 mt-1">
-                            Bài nộp này đã hết hạn/bị hủy và đã được chuyển cho
-                            giáo viên mới.
+                            Bài nộp này đã hết hạn/bị hủy và đã được chuyển cho giáo viên mới.
                           </p>
 
                           {/* Thông tin giáo viên mới */}
                           <div className="bg-white rounded border border-blue-100 p-3 flex items-center gap-3 shadow-sm">
                             <Avatar className="h-10 w-10 border border-gray-200">
                               <AvatarImage
-                                src={
-                                  selectedAssignment.reassignedToTeacherAvatar ||
-                                  ""
-                                }
+                                src={selectedAssignment.reassignedToTeacherAvatar || ''}
                               />
                               <AvatarFallback>
-                                {selectedAssignment.reassignedToTeacherName?.charAt(
-                                  0
-                                ) || "T"}
+                                {selectedAssignment.reassignedToTeacherName?.charAt(0) || 'T'}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
@@ -685,16 +653,12 @@ export default function ExerciseGradingPage() {
                                 {selectedAssignment.reassignedToTeacherName}
                               </p>
                               <div className="flex items-center text-xs text-muted-foreground mt-0.5">
-                                <span>
-                                  Được phân công vào{" "}
-                                  {selectedAssignment.reassignedAt}
-                                </span>
+                                <span>Được phân công vào {selectedAssignment.reassignedAt}</span>
                               </div>
                             </div>
                             <Badge
                               variant="outline"
-                              className="text-blue-600 bg-blue-50 border-blue-200"
-                            >
+                              className="text-blue-600 bg-blue-50 border-blue-200">
                               Mới
                             </Badge>
                           </div>
@@ -705,19 +669,15 @@ export default function ExerciseGradingPage() {
                     /* Case B: Chưa Reassign -> Hiển thị Status bình thường */
                     <div
                       className={`p-4 rounded-lg border ${
-                        selectedAssignment.isOverdue ||
-                        selectedAssignment.status === "Expired"
-                          ? "bg-red-50 border-red-200"
-                          : "bg-slate-50 border-slate-200"
-                      }`}
-                    >
+                        selectedAssignment.isOverdue || selectedAssignment.status === 'Expired'
+                          ? 'bg-red-50 border-red-200'
+                          : 'bg-slate-50 border-slate-200'
+                      }`}>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-semibold text-gray-700">
                           Trạng thái bài tập
                         </span>
-                        <Badge
-                          className={getStatusColor(selectedAssignment.status)}
-                        >
+                        <Badge className={getStatusColor(selectedAssignment.status)}>
                           {selectedAssignment.status}
                         </Badge>
                       </div>
@@ -732,20 +692,18 @@ export default function ExerciseGradingPage() {
 
                   {/* Nút Assign lại: Chỉ hiện nếu Chưa Reassign VÀ (Expired hoặc Overdue) */}
                   {!selectedAssignment.isReassigned &&
-                    (selectedAssignment.status === "Expired" ||
-                      selectedAssignment.isOverdue) && (
+                    (selectedAssignment.status === 'Expired' || selectedAssignment.isOverdue) && (
                       <div className="p-4 rounded-lg border border-orange-200 bg-orange-50">
                         <h4 className="font-semibold text-orange-800 mb-2">
                           Phân công lại giáo viên
                         </h4>
                         <p className="text-sm text-orange-700 mb-3">
-                          Bài tập này đã hết hạn hoặc bị hủy. Bạn có thể phân
-                          công lại cho giáo viên khác để tiếp tục chấm điểm.
+                          Bài tập này đã hết hạn hoặc bị hủy. Bạn có thể phân công lại cho giáo viên
+                          khác để tiếp tục chấm điểm.
                         </p>
                         <Button
                           onClick={handleOpenReassignDialog}
-                          className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer"
-                        >
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer">
                           <UserCheck className="mr-2 h-4 w-4" />
                           Phân công lại giáo viên
                         </Button>
@@ -755,16 +713,13 @@ export default function ExerciseGradingPage() {
                   {/* People Info (Giữ nguyên, nhưng có thể làm mờ nếu đã reassign) */}
                   <div
                     className={`grid grid-cols-2 gap-4 ${
-                      selectedAssignment.isReassigned ? "opacity-70" : ""
-                    }`}
-                  >
+                      selectedAssignment.isReassigned ? 'opacity-70' : ''
+                    }`}>
                     <div className="space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                         <User className="h-4 w-4" /> Học viên
                       </h4>
-                      <p className="font-medium">
-                        {selectedAssignment.learnerName}
-                      </p>
+                      <p className="font-medium">{selectedAssignment.learnerName}</p>
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -797,17 +752,13 @@ export default function ExerciseGradingPage() {
                         <div
                           className={`text-3xl font-bold ${
                             selectedAssignment.finalScore !== null &&
-                            selectedAssignment.finalScore >=
-                              (selectedAssignment.passScore || 0)
-                              ? "text-green-600"
-                              : "text-slate-700"
-                          }`}
-                        >
+                            selectedAssignment.finalScore >= (selectedAssignment.passScore || 0)
+                              ? 'text-green-600'
+                              : 'text-slate-700'
+                          }`}>
                           {selectedAssignment.finalScore !== null
-                            ? parseFloat(
-                                Number(selectedAssignment.finalScore).toFixed(2)
-                              )
-                            : "--"}
+                            ? parseFloat(Number(selectedAssignment.finalScore).toFixed(2))
+                            : '--'}
                           /100
                         </div>
                         <div className="mt-1 flex items-center gap-1 text-xs">
@@ -815,17 +766,13 @@ export default function ExerciseGradingPage() {
                             (selectedAssignment.finalScore >=
                             (selectedAssignment.passScore || 0) ? (
                               <>
-                                <CheckCircle2 className="h-3 w-3 text-green-600" />{" "}
-                                <span className="text-green-700 font-medium">
-                                  Đạt
-                                </span>
+                                <CheckCircle2 className="h-3 w-3 text-green-600" />{' '}
+                                <span className="text-green-700 font-medium">Đạt</span>
                               </>
                             ) : (
                               <>
-                                <XCircle className="h-3 w-3 text-red-600" />{" "}
-                                <span className="text-red-700 font-medium">
-                                  Không đạt
-                                </span>
+                                <XCircle className="h-3 w-3 text-red-600" />{' '}
+                                <span className="text-red-700 font-medium">Không đạt</span>
                               </>
                             ))}
                         </div>
@@ -835,7 +782,7 @@ export default function ExerciseGradingPage() {
                           Điểm đạt
                         </div>
                         <div className="text-3xl font-bold text-slate-700">
-                          {selectedAssignment.passScore || "--"}/100
+                          {selectedAssignment.passScore || '--'}/100
                         </div>
                         <div className="mt-1 text-xs text-muted-foreground">
                           Mức điểm tối thiểu để đạt bài tập
@@ -852,12 +799,11 @@ export default function ExerciseGradingPage() {
                         </span>
                         <Badge
                           variant="secondary"
-                          className="bg-blue-50 text-blue-700 hover:bg-blue-100"
-                        >
-                          Điểm:{" "}
+                          className="bg-blue-50 text-blue-700 hover:bg-blue-100">
+                          Điểm:{' '}
                           {selectedAssignment.teacherScore !== undefined
                             ? selectedAssignment.teacherScore
-                            : "--"}
+                            : '--'}
                           /100
                         </Badge>
                       </div>
@@ -881,7 +827,9 @@ export default function ExerciseGradingPage() {
                       <PlayCircle className="h-4 w-4" /> Bài nói của học viên
                     </h4>
                     {selectedAssignment.audioUrl ? (
-                      <audio controls className="w-full h-10">
+                      <audio
+                        controls
+                        className="w-full h-10">
                         <source
                           src={selectedAssignment.audioUrl}
                           type="audio/wav"
@@ -917,10 +865,9 @@ export default function ExerciseGradingPage() {
                           className={`h-7 text-xs border-orange-200 
                     ${
                       isPollingAI
-                        ? "bg-orange-50 text-orange-600 w-32 justify-center"
-                        : "text-orange-700 hover:bg-orange-50 hover:text-orange-800"
-                    }`}
-                        >
+                        ? 'bg-orange-50 text-orange-600 w-32 justify-center'
+                        : 'text-orange-700 hover:bg-orange-50 hover:text-orange-800'
+                    }`}>
                           {isPollingAI ? (
                             <>
                               <Loader2 className="mr-2 h-3 w-3 animate-spin" />
@@ -936,19 +883,15 @@ export default function ExerciseGradingPage() {
                       )}
                     </div>
                     {(() => {
-                      const aiData = parseAIFeedback(
-                        selectedAssignment.aiFeedback
-                      );
+                      const aiData = parseAIFeedback(selectedAssignment.aiFeedback);
 
                       // Case 1: AI Feedback is a pending string or error string, not JSON
                       if (!aiData) {
                         return (
                           <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
                             <p className="text-sm text-gray-600 mb-2">
-                              <span className="font-semibold">
-                                Trạng thái:{" "}
-                              </span>
-                              {selectedAssignment.aiFeedback || "Không có sẵn"}
+                              <span className="font-semibold">Trạng thái: </span>
+                              {selectedAssignment.aiFeedback || 'Không có sẵn'}
                             </p>
                             <div className="text-xs text-muted-foreground">
                               Điểm: {selectedAssignment.aiScore}
@@ -963,26 +906,19 @@ export default function ExerciseGradingPage() {
                           {/* Overall Badge */}
                           <div className="flex gap-4">
                             <div className="bg-blue-50 text-blue-700 px-3 py-2 rounded-md text-center flex-1">
-                              <div className="text-xs uppercase font-bold">
-                                Điểm tổng thể
-                              </div>
-                              <div className="text-xl font-bold">
-                                {aiData.overall}/100
-                              </div>
+                              <div className="text-xs uppercase font-bold">Điểm tổng thể</div>
+                              <div className="text-xl font-bold">{aiData.overall}/100</div>
                             </div>
                           </div>
                           {/* Detailed Scores Grid */}
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             {Object.entries(aiData.scores || {})
-                              .filter(([key]) => key !== "completeness")
+                              .filter(([key]) => key !== 'completeness')
                               .map(([key, score]) => (
                                 <div
                                   key={key}
-                                  className="flex justify-between border-b border-dashed py-1"
-                                >
-                                  <span className="capitalize text-muted-foreground">
-                                    {key}
-                                  </span>
+                                  className="flex justify-between border-b border-dashed py-1">
+                                  <span className="capitalize text-muted-foreground">{key}</span>
                                   <span className="font-semibold">{score}</span>
                                 </div>
                               ))}
@@ -993,9 +929,7 @@ export default function ExerciseGradingPage() {
                               <div className="font-semibold text-slate-600 mb-1">
                                 Bản ghi nhận dạng văn bản
                               </div>
-                              <div className="italic">
-                                "{aiData.recognizedText}"
-                              </div>
+                              <div className="italic">"{aiData.recognizedText}"</div>
                             </div>
                           )}
 
@@ -1023,13 +957,9 @@ export default function ExerciseGradingPage() {
                       <div className="text-muted-foreground">Đã giao:</div>
                       <div>{selectedAssignment.assignedAt}</div>
                       <div className="text-muted-foreground">Hoàn thành:</div>
-                      <div>
-                        {selectedAssignment.completedAt || "Chưa hoàn thành"}
-                      </div>
+                      <div>{selectedAssignment.completedAt || 'Chưa hoàn thành'}</div>
                       <div className="text-red-500 font-medium">Hạn chót:</div>
-                      <div className="text-red-500 font-medium">
-                        {selectedAssignment.deadline}
-                      </div>
+                      <div className="text-red-500 font-medium">{selectedAssignment.deadline}</div>
                     </div>
                   </div>
                 </div>
@@ -1041,14 +971,12 @@ export default function ExerciseGradingPage() {
         {/* --- Reassign Teacher Dialog --- */}
         <Dialog
           open={isReassignDialogOpen}
-          onOpenChange={setIsReassignDialogOpen}
-        >
+          onOpenChange={setIsReassignDialogOpen}>
           <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col p-0 gap-0">
             <DialogHeader className="px-6 py-4 border-b">
               <DialogTitle>Chỉ định giáo viên mới</DialogTitle>
               <DialogDescription>
-                Tìm kiếm và chọn một giáo viên đủ tiêu chuẩn để chấm bài nộp
-                này.
+                Tìm kiếm và chọn một giáo viên đủ tiêu chuẩn để chấm bài nộp này.
               </DialogDescription>
             </DialogHeader>
 
@@ -1072,9 +1000,7 @@ export default function ExerciseGradingPage() {
                 {loadingTeachers ? (
                   <div className="flex flex-col items-center justify-center h-40 space-y-2">
                     <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-                    <p className="text-sm text-muted-foreground">
-                      Tìm giáo viên...
-                    </p>
+                    <p className="text-sm text-muted-foreground">Tìm giáo viên...</p>
                   </div>
                 ) : eligibleTeachers.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
@@ -1094,42 +1020,32 @@ export default function ExerciseGradingPage() {
                         flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all
                         ${
                           selectedNewTeacher === teacher.teacherId
-                            ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
-                            : "hover:bg-slate-50 border-gray-200"
+                            ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500'
+                            : 'hover:bg-slate-50 border-gray-200'
                         }
-                      `}
-                    >
+                      `}>
                       <Avatar>
                         <AvatarImage src={teacher.avatar} />
-                        <AvatarFallback>
-                          {teacher.fullName.charAt(0)}
-                        </AvatarFallback>
+                        <AvatarFallback>{teacher.fullName.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start">
-                          <p className="font-medium truncate">
-                            {teacher.fullName}
-                          </p>
+                          <p className="font-medium truncate">{teacher.fullName}</p>
                           {teacher.isRecommended && (
                             <Badge
                               variant="secondary"
-                              className="text-[10px] h-5 px-1 bg-green-100 text-green-700"
-                            >
+                              className="text-[10px] h-5 px-1 bg-green-100 text-green-700">
                               Đề xuất
                             </Badge>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {teacher.email}
-                        </p>
+                        <p className="text-xs text-muted-foreground truncate">{teacher.email}</p>
                         <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
-                            <Award className="h-3 w-3" />{" "}
-                            {teacher.proficiencyCode}
+                            <Award className="h-3 w-3" /> {teacher.proficiencyCode}
                           </span>
                           <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Active:{" "}
-                            {teacher.activeAssignmentsCount}
+                            <Clock className="h-3 w-3" /> Active: {teacher.activeAssignmentsCount}
                           </span>
                         </div>
                       </div>
@@ -1148,18 +1064,14 @@ export default function ExerciseGradingPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsReassignDialogOpen(false)}
-                className="hover:bg-gray-100 transition-colors cursor-pointer"
-              >
+                className="hover:bg-gray-100 transition-colors cursor-pointer">
                 Hủy
               </Button>
               <Button
                 onClick={handleConfirmReassign}
                 disabled={!selectedNewTeacher || loading}
-                className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-600 transition-colors flex items-center cursor-pointer"
-              >
-                {loading && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
-                )}
+                className="bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-600 transition-colors flex items-center cursor-pointer">
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />}
                 Xác nhận
               </Button>
             </DialogFooter>

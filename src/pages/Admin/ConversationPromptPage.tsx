@@ -188,7 +188,7 @@ const ConversationPromptPage: React.FC = () => {
         }}
       >
         <Title level={3} style={{ margin: 0 }}>
-          Conversation Prompts
+          Gợi ý hội thoại
         </Title>
         <Button
           type="primary"

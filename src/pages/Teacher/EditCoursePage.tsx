@@ -1,21 +1,15 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useForm, FormProvider } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-import {
-  Sparkles,
-  ArrowLeft,
-  Loader2,
-  Trash2,
-  AlertTriangle,
-} from "lucide-react";
+import React, { useEffect, useState, useMemo } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Sparkles, ArrowLeft, Loader2, Trash2, AlertTriangle } from 'lucide-react';
 
 // Components
-import { CourseForm } from "@/pages/Teacher/components/course/CourseForm";
-import { CoursePreview } from "@/pages/Teacher/components/course/CoursePreview";
-import { Button } from "@/components/ui/button";
+import { CourseForm } from '@/pages/Teacher/components/course/CourseForm';
+import { CoursePreview } from '@/pages/Teacher/components/course/CoursePreview';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -25,17 +19,17 @@ import {
   DialogTrigger,
   DialogClose,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 // Schemas & Types
-import { courseSchema } from "@/schemas/courseSchema";
+import { courseSchema } from '@/schemas/courseSchema';
 import type {
   CourseFormValues,
   CreateCourseRequest,
   Topic,
   ProgramAssignment,
   CourseTemplate,
-} from "@/types/createCourse";
+} from '@/types/createCourse';
 
 // Services
 import {
@@ -43,36 +37,33 @@ import {
   updateCourseService,
   deleteCourseService,
   getCourseTemplatesService,
-} from "@/services/course";
-import { getTeachingProgramService } from "@/services/teacher/teacherService";
-import { getTopicsService } from "@/services/topics/topicService";
+} from '@/services/course';
+import { getTeachingProgramService } from '@/services/teacher/teacherService';
+import { getTopicsService } from '@/services/topics/topicService';
 
 const HERO_IMAGE_URL =
-  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop";
+  'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop';
 
 // --- HELPER FUNCTIONS ĐỂ CHUẨN HÓA DỮ LIỆU ---
 const normalizeCourseType = (type: string | number | undefined): number => {
   if (!type) return 1; // Default Free
   const t = String(type).toLowerCase();
   // Nếu là "paid" hoặc "2" hoặc số 2 -> trả về 2 (Paid)
-  if (t === "paid" || t === "2") return 2;
+  if (t === 'paid' || t === '2') return 2;
   return 1; // Còn lại là Free
 };
 
-const normalizeGradingType = (
-  type: string | number | undefined,
-  courseTypeVal: number
-): string => {
+const normalizeGradingType = (type: string | number | undefined, courseTypeVal: number): string => {
   // Logic cứng: Nếu CourseType là Paid (2) -> Grading phải là AIAndTeacher ("2")
-  if (courseTypeVal === 2) return "2";
+  if (courseTypeVal === 2) return '2';
   // Logic cứng: Nếu CourseType là Free (1) -> Grading phải là AIOnly ("1")
-  if (courseTypeVal === 1) return "1";
+  if (courseTypeVal === 1) return '1';
 
   // Fallback (dự phòng)
-  if (!type) return "1";
+  if (!type) return '1';
   const t = String(type).toLowerCase();
-  if (t === "aiandteacher" || t === "2") return "2";
-  return "1";
+  if (t === 'aiandteacher' || t === '2') return '2';
+  return '1';
 };
 
 const EditCoursePage: React.FC = () => {
@@ -91,42 +82,42 @@ const EditCoursePage: React.FC = () => {
       courseType: 1,
       topicIds: [],
       price: 0,
-      description: "",
-      title: "",
-      learningOutcome: "",
+      description: '',
+      title: '',
+      learningOutcome: '',
       durationDays: 30,
-      gradingType: "1",
+      gradingType: '1',
       image: null,
       templateId: undefined,
-      levelId: "",
+      levelId: '',
     },
-    mode: "onChange",
+    mode: 'onChange',
   });
 
   const { watch, reset, setValue } = methods;
   const formValues = watch();
 
   const { data: courseData, isLoading: isLoadingCourse } = useQuery({
-    queryKey: ["course", id],
+    queryKey: ['course', id],
     queryFn: () => getCourseDetailService(id!),
     enabled: !!id,
     refetchOnWindowFocus: false,
   });
 
   const { data: programData = [], isLoading: isLoadingPrograms } = useQuery({
-    queryKey: ["programLevels"],
+    queryKey: ['programLevels'],
     queryFn: () => getTeachingProgramService({ pageSize: 100 }),
     select: (res) => (res.data as ProgramAssignment[]) || [],
   });
 
   const { data: templates = [] } = useQuery({
-    queryKey: ["courseTemplates"],
+    queryKey: ['courseTemplates'],
     queryFn: () => getCourseTemplatesService({ page: 1, pageSize: 100 }),
     select: (res) => (res.data as CourseTemplate[]) || [],
   });
 
   const { data: topics = [], isLoading: isLoadingTopics } = useQuery({
-    queryKey: ["topics"],
+    queryKey: ['topics'],
     queryFn: getTopicsService,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     select: (res: any) => (res.data as Topic[]) || [],
@@ -138,7 +129,7 @@ const EditCoursePage: React.FC = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const existingTopics =
         courseData.topics?.map((t: any) =>
-          typeof t === "object" ? t.topicId?.toString() : t.toString()
+          typeof t === 'object' ? t.topicId?.toString() : t.toString()
         ) || [];
 
       if (courseData.imageUrl) {
@@ -146,8 +137,7 @@ const EditCoursePage: React.FC = () => {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fetchedLevelId =
-        (courseData as any).program?.level.levelId || courseData.LevelId || "";
+      const fetchedLevelId = (courseData as any).program?.level.levelId || courseData.LevelId || '';
       setCurrentLevelId(fetchedLevelId);
 
       // --- XỬ LÝ CONVERT DỮ LIỆU TẠI ĐÂY ---
@@ -156,14 +146,13 @@ const EditCoursePage: React.FC = () => {
         courseData.gradingType,
         normalizedCourseType
       );
-      const normalizedPrice =
-        normalizedCourseType === 1 ? 0 : Number(courseData.price) || 0;
+      const normalizedPrice = normalizedCourseType === 1 ? 0 : Number(courseData.price) || 0;
 
       // 3.4 Reset Form với dữ liệu đã được chuẩn hóa
       reset({
-        title: courseData.title || "",
-        description: courseData.description || "",
-        learningOutcome: courseData.learningOutcome || "",
+        title: courseData.title || '',
+        description: courseData.description || '',
+        learningOutcome: courseData.learningOutcome || '',
         price: normalizedPrice,
         courseType: normalizedCourseType, // Đã convert sang 1 hoặc 2
         durationDays: courseData.durationDays || 30,
@@ -175,7 +164,7 @@ const EditCoursePage: React.FC = () => {
       });
 
       if (courseData.templateId) {
-        setValue("templateId", courseData.templateId);
+        setValue('templateId', courseData.templateId);
       }
     }
   }, [courseData, programData, reset, setValue]);
@@ -191,31 +180,31 @@ const EditCoursePage: React.FC = () => {
     mutationFn: (payload: CreateCourseRequest) =>
       updateCourseService({ id: id!, payload: payload as any }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["course", id] });
-      toast.success("Đã lưu thành công!", {
-        description: "Course details have been updated.",
+      queryClient.invalidateQueries({ queryKey: ['course', id] });
+      toast.success('Đã lưu thành công!', {
+        description: 'Thông tin khóa học đã được cập nhật.',
       });
-      navigate("/teacher/course");
+      navigate('/teacher/course');
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.message || "Thất bại khi cập nhật khóa học";
-      toast.error("Cập nhật thất bại", { description: msg });
+      const msg = err.response?.message || 'Thất bại khi cập nhật khóa học';
+      toast.error('Cập nhật thất bại', { description: msg });
     },
   });
 
   const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
     mutationFn: () => deleteCourseService(id!),
     onSuccess: () => {
-      toast.success("Khóa học đã bị xóa!", {
-        description: "Khóa học đã bị xóa vĩnh viễn.",
+      toast.success('Khóa học đã bị xóa!', {
+        description: 'Khóa học đã bị xóa vĩnh viễn.',
       });
-      navigate("/teacher/course");
+      navigate('/teacher/course');
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Không thể xóa khóa học này";
-      toast.error("Xóa không thành công", { description: msg });
+      const msg = err.response?.data?.message || 'Không thể xóa khóa học này';
+      toast.error('Xóa không thành công', { description: msg });
     },
   });
 
@@ -230,7 +219,7 @@ const EditCoursePage: React.FC = () => {
       Title: data.title,
       Description: data.description,
       LevelId: data.levelId,
-      TopicIds: data.topicIds.join(","),
+      TopicIds: data.topicIds.join(','),
       CourseType: finalCourseType,
       Price: finalPrice,
       Image: data.image as File,
@@ -247,9 +236,7 @@ const EditCoursePage: React.FC = () => {
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-2">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-gray-500 font-medium">
-            Đang tải dữ liệu khóa học...
-          </p>
+          <p className="text-gray-500 font-medium">Đang tải dữ liệu khóa học...</p>
         </div>
       </div>
     );
@@ -269,8 +256,7 @@ const EditCoursePage: React.FC = () => {
           <Button
             variant="ghost"
             className="!text-white hover:text-white hover:bg-white/10 p-2 md:p-3 cursor-pointer backdrop-blur-sm"
-            onClick={() => navigate(-1)}
-          >
+            onClick={() => navigate(-1)}>
             <ArrowLeft className="w-10 h-10 md:w-5 md:h-5" />
           </Button>
         </div>
@@ -285,20 +271,18 @@ const EditCoursePage: React.FC = () => {
                 </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
-                {courseData?.title || "Chỉnh sửa khóa học"}
+                {courseData?.title || 'Chỉnh sửa khóa học'}
               </h1>
             </div>
 
             <div className="flex items-center gap-3">
               <Dialog
                 open={isDeleteModalOpen}
-                onOpenChange={setIsDeleteModalOpen}
-              >
+                onOpenChange={setIsDeleteModalOpen}>
                 <DialogTrigger asChild>
                   <Button
                     variant="destructive"
-                    className="bg-red-500/20 hover:bg-red-600 border border-red-500/50 !text-white backdrop-blur-md cursor-pointer"
-                  >
+                    className="bg-red-500/20 hover:bg-red-600 border border-red-500/50 !text-white backdrop-blur-md cursor-pointer">
                     <Trash2 className="w-4 h-4 mr-2" /> Xóa khóa học
                   </Button>
                 </DialogTrigger>
@@ -309,16 +293,17 @@ const EditCoursePage: React.FC = () => {
                       Xác nhận xóa
                     </DialogTitle>
                     <DialogDescription className="pt-2">
-                      Bạn có chắc chắn muốn xóa khóa học không?{" "}
-                      <strong>{courseData?.title}</strong>?
+                      Bạn có chắc chắn muốn xóa khóa học không? <strong>{courseData?.title}</strong>
+                      ?
                       <br />
-                      Không thể hoàn tác hành động này và tất cả dữ liệu sẽ bị
-                      mất.
+                      Không thể hoàn tác hành động này và tất cả dữ liệu sẽ bị mất.
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter className="mt-4 gap-2 sm:gap-0">
                     <DialogClose asChild>
-                      <Button className="cursor-pointer" variant="outline">
+                      <Button
+                        className="cursor-pointer"
+                        variant="outline">
                         Thoát
                       </Button>
                     </DialogClose>
@@ -327,11 +312,8 @@ const EditCoursePage: React.FC = () => {
                       className="!text-white cursor-pointer"
                       variant="destructive"
                       onClick={() => deleteCourse()}
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      ) : null}
+                      disabled={isDeleting}>
+                      {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                       Xóa vĩnh viễn
                     </Button>
                   </DialogFooter>
@@ -355,9 +337,7 @@ const EditCoursePage: React.FC = () => {
                 isEditMode={true}
                 initialImageUrl={courseData?.imageUrl}
                 initialLevelId={currentLevelId}
-                initialCourseType={normalizeCourseType(
-                  courseData?.courseType
-                ).toString()}
+                initialCourseType={normalizeCourseType(courseData?.courseType).toString()}
                 initialPrice={Number(courseData?.price || 0)}
                 initialGradingType={normalizeGradingType(
                   courseData?.gradingType,

@@ -32,11 +32,11 @@ const CreateSurvey: React.FC = () => {
   const mutation = useMutation<any, AxiosError<any>, SurveyCompleteRequest>({
     mutationFn: completeSurvey,
     onSuccess: (data) => {
-      notifySuccess(data.message || 'Survey submitted successfully!');
+      notifySuccess(data.message || 'Khảo sát đã được gửi thành công!');
       form.resetFields();
     },
     onError: (err) => {
-      notifyError(err?.response?.data?.message || 'Failed to submit survey');
+      notifyError(err?.response?.data?.message || 'Gửi khảo sát thất bại.');
     },
   });
 

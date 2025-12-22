@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Card,
@@ -12,20 +12,12 @@ import {
   Select,
   Space,
   Empty,
-} from "antd";
-import { useQuery } from "@tanstack/react-query";
-import {
-  getUsersListService,
-  getUserDetailService,
-} from "../../services/dashboard";
-import type { RecentUser } from "../../services/dashboard/types";
-import {
-  EyeOutlined,
-  UserOutlined,
-  FilterOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
-import { useSearchParams } from "react-router-dom";
+} from 'antd';
+import { useQuery } from '@tanstack/react-query';
+import { getUsersListService, getUserDetailService } from '../../services/dashboard';
+import type { RecentUser } from '../../services/dashboard/types';
+import { EyeOutlined, UserOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useSearchParams } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -38,9 +30,25 @@ const ROLE_PRIORITY: Record<string, number> = {
   Teacher: 4,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const getRoleName = (role: string) => {
+  switch (role) {
+    case 'Admin':
+      return 'Admin';
+    case 'Manager':
+      return 'Quản lý';
+    case 'Teacher':
+      return 'Giáo viên';
+    case 'Learner':
+      return 'Học viên';
+    default:
+      return 'default';
+  }
+};
+
 const UsersPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialRole = searchParams.get("role") || undefined;
+  const initialRole = searchParams.get('role') || undefined;
 
   const [roleFilter, setRoleFilter] = useState<string | undefined>(initialRole);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -56,7 +64,7 @@ const UsersPage: React.FC = () => {
   }, [roleFilter, setSearchParams]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-users-all"],
+    queryKey: ['admin-users-all'],
     queryFn: () => getUsersListService({ page: 1, pageSize: 100 }),
   });
 
@@ -67,23 +75,23 @@ const UsersPage: React.FC = () => {
     : serverUsers;
 
   const { data: userDetail, isLoading: loadingDetail } = useQuery({
-    queryKey: ["user-detail", selectedUserId],
+    queryKey: ['user-detail', selectedUserId],
     queryFn: () => getUserDetailService(selectedUserId!),
     enabled: !!selectedUserId && detailOpen,
   });
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "Admin":
-        return "red";
-      case "Manager":
-        return "purple";
-      case "Teacher":
-        return "blue";
-      case "Learner":
-        return "cyan";
+      case 'Admin':
+        return 'red';
+      case 'Manager':
+        return 'purple';
+      case 'Teacher':
+        return 'blue';
+      case 'Learner':
+        return 'cyan';
       default:
-        return "default";
+        return 'default';
     }
   };
 
@@ -102,20 +110,22 @@ const UsersPage: React.FC = () => {
 
   const columns = [
     {
-      title: "Người dùng",
-      dataIndex: "userName",
+      title: 'Người dùng',
+      dataIndex: 'userName',
       render: (text: string, record: RecentUser) => (
         <div className="flex items-center gap-3">
-          <Avatar
-            style={{ backgroundColor: record.status ? "#0ea5e9" : "#cbd5e1" }}
-          >
+          <Avatar style={{ backgroundColor: record.status ? '#0ea5e9' : '#cbd5e1' }}>
             {text?.charAt(0)?.toUpperCase()}
           </Avatar>
           <div>
-            <Text strong className="block text-sm">
+            <Text
+              strong
+              className="block text-sm">
               {text}
             </Text>
-            <Text type="secondary" className="text-xs">
+            <Text
+              type="secondary"
+              className="text-xs">
               {record.email}
             </Text>
           </div>
@@ -123,45 +133,41 @@ const UsersPage: React.FC = () => {
       ),
     },
     {
-      title: "Vai trò",
-      dataIndex: "roles",
+      title: 'Vai trò',
+      dataIndex: 'roles',
       render: (roles: string[]) => (
         <div className="flex gap-1">
           {sortRoles(roles).map((role) => (
             <Tag
               key={role}
               color={getRoleColor(role)}
-              className="mr-0 rounded-full text-[10px] px-2 border-0 font-medium"
-            >
-              {role}
+              className="mr-0 rounded-full text-[10px] px-2 border-0 font-medium">
+              {getRoleName(role) || role}
             </Tag>
           ))}
         </div>
       ),
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
+      title: 'Trạng thái',
+      dataIndex: 'status',
       render: (status: boolean) => (
         <Tag
-          color={status ? "success" : "error"}
-          className="rounded px-2 text-[10px]"
-        >
-          {status ? "Active" : "Inactive"}
+          color={status ? 'success' : 'error'}
+          className="rounded px-2 text-[10px]">
+          {status ? 'Đang hoạt động' : 'Không hoạt động'}
         </Tag>
       ),
     },
     {
-      title: "Đã tham gia",
-      dataIndex: "createdAt",
+      title: 'Đã tham gia',
+      dataIndex: 'createdAt',
       render: (date: string) => (
-        <Text className="text-xs text-gray-500">
-          {new Date(date).toLocaleDateString()}
-        </Text>
+        <Text className="text-xs text-gray-500">{new Date(date).toLocaleDateString()}</Text>
       ),
     },
     {
-      title: "Hành động",
+      title: 'Hành động',
       render: (_: any, record: RecentUser) => (
         <Button
           size="small"
@@ -180,15 +186,16 @@ const UsersPage: React.FC = () => {
     <div className="space-y-6">
       <Card
         bordered={false}
-        className="rounded-2xl shadow-sm border border-gray-100"
-      >
+        className="rounded-2xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
               <UserOutlined className="text-xl" />
             </div>
             <div>
-              <Title level={4} className="!mb-0 !font-bold text-gray-800">
+              <Title
+                level={4}
+                className="!mb-0 !font-bold text-gray-800">
                 Quản lý người dùng
               </Title>
               <Text className="text-xs text-gray-500">
@@ -205,8 +212,7 @@ const UsersPage: React.FC = () => {
               allowClear
               style={{ width: 180 }}
               suffixIcon={<FilterOutlined className="text-gray-400" />}
-              className="rounded-lg"
-            >
+              className="rounded-lg">
               <Option value="Admin">Quản trị viên</Option>
               <Option value="Manager">Quản lý</Option>
               <Option value="Teacher">Giáo viên</Option>
@@ -217,8 +223,7 @@ const UsersPage: React.FC = () => {
               <Button
                 icon={<ReloadOutlined />}
                 onClick={handleClearFilters}
-                className="text-gray-500 border-gray-300 hover:text-blue-600 hover:border-blue-600"
-              >
+                className="text-gray-500 border-gray-300 hover:text-blue-600 hover:border-blue-600">
                 Cài lại
               </Button>
             )}
@@ -233,8 +238,7 @@ const UsersPage: React.FC = () => {
           pagination={{
             pageSize: 10,
             showSizeChanger: false,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} users`,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} users`,
           }}
           size="middle"
           locale={{
@@ -256,8 +260,7 @@ const UsersPage: React.FC = () => {
           setDetailOpen(false);
           setSelectedUserId(null);
         }}
-        width={450}
-      >
+        width={450}>
         {loadingDetail ? (
           <div className="flex justify-center py-10">
             <Spin />
@@ -270,38 +273,48 @@ const UsersPage: React.FC = () => {
               icon={<UserOutlined />}
               className="mb-4 bg-blue-100 text-blue-600 border-4 border-white shadow-lg"
             />
-            <Title level={4} className="!mb-1">
+            <Title
+              level={4}
+              className="!mb-1">
               {userDetail.userName}
             </Title>
-            <Text type="secondary" className="mb-6 text-sm">
+            <Text
+              type="secondary"
+              className="mb-6 text-sm">
               {userDetail.email}
             </Text>
 
-            <Descriptions bordered column={1} className="w-full" size="small">
+            <Descriptions
+              bordered
+              column={1}
+              className="w-full"
+              size="small">
               <Descriptions.Item label="ID người dùng">
-                <Text copyable className="text-xs">
+                <Text
+                  copyable
+                  className="text-xs">
                   {userDetail.userID}
                 </Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Tên đầy đủ">
-                {userDetail.userName}
-              </Descriptions.Item>
+              <Descriptions.Item label="Tên đầy đủ">{userDetail.userName}</Descriptions.Item>
               <Descriptions.Item label="Vai trò">
                 <div className="flex gap-1">
                   {sortRoles(userDetail.roles).map((r: string) => (
-                    <Tag key={r} color={getRoleColor(r)}>
+                    <Tag
+                      key={r}
+                      color={getRoleColor(r)}>
                       {r}
                     </Tag>
                   ))}
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
-                <Tag color={userDetail.status ? "green" : "red"}>
-                  {userDetail.status ? "Hoạt động" : "Không hoạt động"}
+                <Tag color={userDetail.status ? 'green' : 'red'}>
+                  {userDetail.status ? 'Hoạt động' : 'Không hoạt động'}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Email đã được xác nhận">
-                {userDetail.isEmailConfirmed ? "Đã xác thực" : "Chưa xác thực"}
+                {userDetail.isEmailConfirmed ? 'Đã xác thực' : 'Chưa xác thực'}
               </Descriptions.Item>
               <Descriptions.Item label="Đã tham gia">
                 {new Date(userDetail.createdAt).toLocaleString()}

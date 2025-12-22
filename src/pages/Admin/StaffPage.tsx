@@ -5,6 +5,7 @@ import { getStaffListService, changeStaffPasswordService } from '../../services/
 import { notifySuccess, notifyError } from '../../utils/toastConfig';
 import type { Staff } from '../../services/dashboard/types';
 import { KeyOutlined, TeamOutlined } from '@ant-design/icons';
+import { getRoleName } from './UsersPage';
 
 const { Title, Text } = Typography;
 
@@ -13,7 +14,11 @@ const StaffPage: React.FC = () => {
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [form] = Form.useForm();
 
-  const { data: staffList, isLoading, refetch } = useQuery({
+  const {
+    data: staffList,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['admin-staff'],
     queryFn: getStaffListService,
   });
@@ -21,11 +26,11 @@ const StaffPage: React.FC = () => {
   const changePassMutation = useMutation({
     mutationFn: changeStaffPasswordService,
     onSuccess: () => {
-      notifySuccess("Đã thay đổi mật khẩu thành công!"); 
+      notifySuccess('Đã thay đổi mật khẩu thành công!');
       setModalOpen(false);
       form.resetFields();
     },
-  
+
     onError: (err: any) => {
       notifyError(err?.response?.data?.message || 'Failed to change password');
     },
@@ -35,7 +40,6 @@ const StaffPage: React.FC = () => {
     setSelectedStaff(record);
     setModalOpen(true);
   };
-
 
   const onFinish = (values: any) => {
     if (!selectedStaff) return;
@@ -52,12 +56,18 @@ const StaffPage: React.FC = () => {
       dataIndex: 'userName',
       render: (text: string, record: Staff) => (
         <div className="flex items-center gap-3">
-          <Avatar style={{ backgroundColor: '#7c3aed' }}>
-            {text?.charAt(0)?.toUpperCase()}
-          </Avatar>
+          <Avatar style={{ backgroundColor: '#7c3aed' }}>{text?.charAt(0)?.toUpperCase()}</Avatar>
           <div>
-            <Text strong className="block text-sm">{text}</Text>
-            <Text type="secondary" className="text-xs">{record.email}</Text>
+            <Text
+              strong
+              className="block text-sm">
+              {text}
+            </Text>
+            <Text
+              type="secondary"
+              className="text-xs">
+              {record.email}
+            </Text>
           </div>
         </div>
       ),
@@ -66,23 +76,28 @@ const StaffPage: React.FC = () => {
       title: 'Vai trò',
       dataIndex: 'roles',
       render: (roles: string[]) => (
-        <Tag color="purple" className="rounded-full px-2 border-0 bg-purple-50 text-purple-700">{roles[0]}</Tag>
+        <Tag
+          color="purple"
+          className="rounded-full px-2 border-0 bg-purple-50 text-purple-700">
+          {getRoleName(roles[0] || '')}
+        </Tag>
       ),
     },
     {
       title: 'Đã tham gia',
       dataIndex: 'createdAt',
-      render: (date: string) => <Text className="text-xs text-gray-500">{new Date(date).toLocaleDateString()}</Text>,
+      render: (date: string) => (
+        <Text className="text-xs text-gray-500">{new Date(date).toLocaleDateString()}</Text>
+      ),
     },
     {
       title: 'Hành động',
       render: (_: any, record: Staff) => (
-        <Button 
-          size="small" 
-          icon={<KeyOutlined />} 
+        <Button
+          size="small"
+          icon={<KeyOutlined />}
           onClick={() => handleOpenChangePass(record)}
-          className="text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100"
-        >
+          className="text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100">
           Đổi mật khẩu
         </Button>
       ),
@@ -93,15 +108,16 @@ const StaffPage: React.FC = () => {
     <div className="space-y-6">
       <Card
         bordered={false}
-        className="rounded-2xl shadow-sm border border-gray-100"
-      >
+        className="rounded-2xl shadow-sm border border-gray-100">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
               <TeamOutlined className="text-xl" />
             </div>
             <div>
-              <Title level={4} className="!mb-0 !font-bold text-gray-800">
+              <Title
+                level={4}
+                className="!mb-0 !font-bold text-gray-800">
                 Quản lý nhân viên
               </Title>
               <Text className="text-xs text-gray-500">
@@ -126,9 +142,11 @@ const StaffPage: React.FC = () => {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        centered
-      >
-        <Form form={form} layout="vertical" onFinish={onFinish}>
+        centered>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={onFinish}>
           <Form.Item
             name="newPassword"
             label="Mật khẩu mới"
@@ -137,43 +155,42 @@ const StaffPage: React.FC = () => {
                 required: true,
                 min: 6,
                 message:
-                  "Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt",
+                  'Mật khẩu phải chứa ít nhất một chữ cái viết hoa, một chữ cái viết thường, một số và một ký tự đặc biệt',
               },
-            ]}
-          >
+            ]}>
             <Input.Password placeholder="Nhập mật khẩu mới" />
           </Form.Item>
           <Form.Item
             name="confirmNewPassword"
             label="Xác nhận mật khẩu"
-            dependencies={["newPassword"]}
+            dependencies={['newPassword']}
             rules={[
               {
                 required: true,
-                message: "Vui lòng xác nhận mật khẩu của bạn!",
+                message: 'Vui lòng xác nhận mật khẩu của bạn!',
               },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue("newPassword") === value) {
+                  if (!value || getFieldValue('newPassword') === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error("Mật khẩu không khớp!"));
+                  return Promise.reject(new Error('Mật khẩu không khớp!'));
                 },
               }),
-            ]}
-          >
+            ]}>
             <Input.Password placeholder="Xác nhận mật khẩu mới" />
           </Form.Item>
           <div className="flex justify-end gap-2 mt-6">
-            <Button onClick={() => setModalOpen(false)} className="rounded-lg">
+            <Button
+              onClick={() => setModalOpen(false)}
+              className="rounded-lg">
               Thoát
             </Button>
             <Button
               type="primary"
               htmlType="submit"
               loading={changePassMutation.isPending}
-              className="bg-blue-600 rounded-lg shadow-md"
-            >
+              className="bg-blue-600 rounded-lg shadow-md">
               Thay đổi mật khẩu
             </Button>
           </div>

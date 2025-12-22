@@ -43,6 +43,22 @@ export interface GradingStatusResponse {
   isPassed?: boolean;
 }
 
+export const translateAssignmentStatus = (status: string): string => {
+  switch (status) {
+    case 'Assigned':
+      return 'Đã giao';
+    case 'Returned':
+      return 'Đã nộp';
+    case 'Expired':
+      return 'Hết hạn';
+    case 'Pending':
+      return 'Đang chờ';
+    default:
+      return status;
+  }
+};
+
+
 export interface Assignment {
   assignmentId: string;
   exerciseSubmissionId: string;

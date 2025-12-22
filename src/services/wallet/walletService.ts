@@ -7,6 +7,24 @@ export const TransactionType = {
   Transfer: 7,
 } as const;
 
+export const translateTransactionType = (
+  type: string
+): string => {
+  switch (type) {
+    case 'Withdrawal':
+      return 'Rút tiền';
+    case 'Payout':
+      return 'Thanh toán';
+    case 'Refund':
+      return 'Hoàn tiền';
+    case 'Transfer':
+      return 'Chuyển tiền';
+    default:
+      return type;
+  }
+};
+
+
 export type TransactionType =
   (typeof TransactionType)[keyof typeof TransactionType];
 
