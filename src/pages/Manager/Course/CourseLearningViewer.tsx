@@ -197,13 +197,13 @@ export default function CourseLearningViewer({
       setIsApproveConfirmOpen(false);
       setMessage({
         type: "success",
-        text: "Khóa học đã được DUYỆT thành công!",
+        text: "Khóa học đã được PHÊ DUYỆT thành công!",
       });
     } catch (error) {
       console.error("Lỗi khi phê duyệt khóa học:", error);
       setMessage({
         type: "error",
-        text: "Không phê duyệt được. Vui lòng thử lại.",
+        text: "Phê duyệt không thành công. Vui lòng thử lại.",
       });
       setIsApproveConfirmOpen(false);
     } finally {
@@ -338,7 +338,7 @@ export default function CourseLearningViewer({
       case "Published":
       case "Approved":
         classes += "bg-green-100 text-green-800";
-        text =  translateStatus("Approved");
+        text = translateStatus("Approved");
         break;
       case "PendingApproval":
       case "Pending":
@@ -362,10 +362,11 @@ export default function CourseLearningViewer({
             <Check className="w-6 h-6 text-green-600" />
           </div>
           <DialogTitle className="text-xl font-bold text-gray-900">
-            Phê duyệt khóa học
+            Xác nhận duyệt khóa học
           </DialogTitle>
           <DialogDescription className="text-gray-600 mt-2 max-w-xs mx-auto">
-            Bạn có chắc chắn muốn chấp thuận xuất bản khóa học này không?
+            Bạn có chắc chắn muốn duyệt khóa học này không? Hành động này sẽ
+            không thể hoàn tác.
           </DialogDescription>
         </div>
 
@@ -384,7 +385,7 @@ export default function CourseLearningViewer({
             className="w-full sm:w-auto min-w-[100px] bg-green-600 hover:bg-green-700 
           !text-white font-medium shadow-sm cursor-pointer"
           >
-            {isProcessingAction ? "Đang xử lý..." : "Có, Duyệt"}
+            {isProcessingAction ? "Đang duyệt..." : "Xác nhận duyệt"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -76,6 +76,7 @@ const TranslateStatus: Record<string, string> = {
   Pending: "Đang chờ duyệt",
   Approved: "Đã duyệt",
   Published: "Đã xuất bản",
+  PendingApproval: "Đang chờ phê duyệt",
   Rejected: "Bị từ chối",
   Archived: "Đã lưu trữ",
 };
