@@ -790,7 +790,7 @@ const TeacherApplicationPage: React.FC = () => {
             </Form.Item>
           </InfoSection>
           <InfoSection
-            title="Phòng họp trực tuyến"
+            title="Meeting URL"
             icon={<Link className="w-5 h-5" />}
           >
             <Form.Item
@@ -802,7 +802,7 @@ const TeacherApplicationPage: React.FC = () => {
               ]}
             >
               <Input
-                placeholder="https://zoom.us/j/123456789"
+                placeholder="Ví dụ: https://meet.google.com/abc-defg-hij"
                 className="h-11"
               />
             </Form.Item>
@@ -1049,7 +1049,7 @@ const TeacherApplicationPage: React.FC = () => {
                       icon: <Phone />,
                     },
                     {
-                      label: "Link phòng họp (Meeting URL)",
+                      label: "Meeting URL",
                       value: formData.MeetingUrl ? (
                         <a
                           href={formData.MeetingUrl}
@@ -1066,7 +1066,7 @@ const TeacherApplicationPage: React.FC = () => {
                       icon: <Link />,
                     },
                     {
-                      label: "Mức độ thành thạo",
+                      label: "Trình độ thành thạo",
                       value: formData.proficiencyCode ? (
                         <p>{formData.proficiencyCode}</p>
                       ) : (
