@@ -197,7 +197,7 @@ const WalletHistoryPage: React.FC = () => {
             ) : (
               <FileSpreadsheet className="w-4 h-4 text-green-600" />
             )}
-            {isExporting ? 'Exporting...' : 'Export Excel'}
+            {isExporting ? 'Đang xuất...' : 'Xuất Excel'}
           </Button>
 
           <Button
@@ -279,17 +279,17 @@ const WalletHistoryPage: React.FC = () => {
                     <SelectItem value="all">Tất cả trạng thái</SelectItem>
                     <SelectItem value="Succeeded">
                       <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500" /> Succeeded
+                        <span className="w-2 h-2 rounded-full bg-green-500" /> Thành công
                       </span>
                     </SelectItem>
                     <SelectItem value="Pending">
                       <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-yellow-500" /> Pending
+                        <span className="w-2 h-2 rounded-full bg-yellow-500" /> Đang chờ
                       </span>
                     </SelectItem>
                     <SelectItem value="Failed">
                       <span className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-red-500" /> Failed
+                        <span className="w-2 h-2 rounded-full bg-red-500" /> Thất bại
                       </span>
                     </SelectItem>
                   </SelectContent>

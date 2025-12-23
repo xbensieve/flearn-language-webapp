@@ -1,18 +1,18 @@
 // hooks/useLessons.ts
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createCourseLessonService,
   createExerciseService,
   getLessonsByUnits,
   updateLessonCourseService,
-} from '../../services/course';
-import { notifyError, notifySuccess } from '../../utils/toastConfig';
-import type { ExercisePayload } from '../../services/course/type';
-import type { AxiosError } from 'axios';
+} from "../../services/course";
+import type { ExercisePayload } from "../../services/course/type";
+import type { AxiosError } from "axios";
+import { toast } from "sonner";
 
 export const useLessons = (unitId: string) => {
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['lessons', unitId],
+    queryKey: ["lessons", unitId],
     queryFn: () => getLessonsByUnits({ unitId }),
     enabled: !!unitId,
     retry: 1,
@@ -27,36 +27,45 @@ export const useLessons = (unitId: string) => {
 
 export const useCreateLesson = (unitId: string, onSuccess: () => void) =>
   useMutation({
-    mutationFn: (formData: FormData) => createCourseLessonService(unitId, formData),
+    mutationFn: (formData: FormData) =>
+      createCourseLessonService(unitId, formData),
     onSuccess: () => {
-      notifySuccess('Lesson created successfully!');
+      toast.success("Tạo bài học thành công");
       onSuccess();
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) =>
-      notifyError(error?.response?.data?.errors || 'Failed to create lesson'),
+    onError: (error: any) => {
+      console.error(error);
+      toast.error("Tạo bài học thất bại. Vui lòng thử lại.");
+    },
   });
 
 export const useUpdateLesson = (unitId: string, onSuccess: () => void) =>
   useMutation({
     mutationFn: (data: { id: string; formData: FormData }) =>
-      updateLessonCourseService({ id: data.id, unitId, payload: data.formData }),
+      updateLessonCourseService({
+        id: data.id,
+        unitId,
+        payload: data.formData,
+      }),
     onSuccess: () => {
-      notifySuccess('Lesson updated successfully!');
+      toast.success("Cập nhật bài học thành công");
       onSuccess();
     },
-    onError: () => notifyError('Failed to update lesson'),
+    onError: () => toast.error("Cập nhật bài học thất bại. Vui lòng thử lại."),
   });
 
 export const useCreateExercise = (lessonId: string) => {
   return useMutation({
-    mutationFn: (payload: ExercisePayload) => createExerciseService(lessonId, payload),
+    mutationFn: (payload: ExercisePayload) =>
+      createExerciseService(lessonId, payload),
     onSuccess: () => {
-      notifySuccess('Exercise created successfully!');
+      toast.success("Tạo bài tập thành công");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: AxiosError<any>) => {
-      notifyError(error?.response?.data?.errors || 'Failed to create exercise');
+      console.error(error);
+      toast.error("Tạo bài tập thất bại. Vui lòng thử lại.");
     },
   });
 };

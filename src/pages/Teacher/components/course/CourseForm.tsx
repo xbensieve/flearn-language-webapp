@@ -511,7 +511,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                       <SelectValue placeholder="Chọn chủ đề liên quan" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="max-h-60 overflow-y-auto">
                     {topics.map((t) => (
                       <SelectItem
                         key={t.topicId}
@@ -551,7 +551,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
           <div className="space-y-4 pt-4 border-t">
             <div className="flex justify-between items-center">
               <Label className="text-base font-semibold flex items-center gap-2">
-                Mẫu khóa học
+                Mẫu khóa học (Optional)
               </Label>
               {selectedTemplateId && (
                 <Button
@@ -758,7 +758,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
                           }
-                          min={0}
+                          min={100000}
                           step={1000}
                         />
                         <span className="absolute left-3 top-2 text-gray-400 font-bold text-lg pointer-events-none">
@@ -856,7 +856,7 @@ export const CourseForm: React.FC<CourseFormProps> = ({
               : "Tạo..."
             : isEditMode
             ? "Bạn có chắc chắn muốn lưu các thay đổi cho khóa học này?"
-            : "Sẵn sàng để tạo khóa học mới?"}
+            : "Bạn có chắc chắn muốn tạo khóa học mới này?"}
         </span>
         <Button
           type="submit"

@@ -11,7 +11,6 @@ import {
   Button,
   Form,
   Input,
-  message,
   Tooltip,
   Divider,
   Modal,
@@ -32,7 +31,6 @@ import {
   VideoCameraOutlined,
 } from "@ant-design/icons";
 import type { AxiosError } from "axios";
-import { notifyError, notifySuccess } from "../../utils/toastConfig";
 import {
   ArrowLeft,
   BookOpen,
@@ -40,13 +38,21 @@ import {
   Edit,
   Trash2,
   Users,
-  LayoutDashboard,
   GraduationCap,
   Pencil,
   AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const { Title, Paragraph, Text } = Typography;
+
+const TranslateStatus: Record<string, string> = {
+  Draft: "Bản nháp",
+  Pending: "Chờ duyệt",
+  Approved: "Đã duyệt",
+  Rejected: "Bị từ chối",
+  Published: "Đã xuất bản",
+};
 
 const CourseDetail: React.FC = () => {
   const { id: courseId } = useParams<{ id: string }>();
@@ -54,8 +60,6 @@ const CourseDetail: React.FC = () => {
   const queryClient = useQueryClient();
   const [activeKey, setActiveKey] = useState<string | string[]>("");
   const [form] = Form.useForm();
-
-  // --- State for Edit & Delete ---
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
 
@@ -63,15 +67,11 @@ const CourseDetail: React.FC = () => {
     isOpen: boolean;
     unitId: string | null;
   }>({ isOpen: false, unitId: null });
-
-  // --- Fetch Course Info ---
   const { data: course, isLoading: loadingCourse } = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourseDetailService(courseId!),
     enabled: !!courseId,
   });
-
-  // --- Fetch Units ---
   const {
     data: units,
     isLoading: loadingUnits,
@@ -81,21 +81,18 @@ const CourseDetail: React.FC = () => {
     queryFn: () => getCourseUnitsService({ id: courseId! }),
     enabled: !!courseId,
   });
-
-  // --- Delete Unit Mutation ---
   const deleteUnitMutation = useMutation({
     mutationFn: (unitId: string) => deleteUnitsService({ id: unitId }),
     onSuccess: () => {
-      notifySuccess("Chương đã được xóa thành công!");
+      toast.success("Chương đã được xóa thành công!");
       setDeleteConfirmation({ isOpen: false, unitId: null });
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Thất bại xóa chương");
+      console.log(error);
+      toast.error("Thất bại xóa chương");
     },
   });
-
-  // --- Create Unit Mutation ---
   const createUnitMutation = useMutation({
     mutationFn: (values: {
       id: string;
@@ -110,17 +107,16 @@ const CourseDetail: React.FC = () => {
         isPreview: values.isPreview,
       }),
     onSuccess: () => {
-      message.success("Chương được tạo thành công");
+      toast.success("Chương mới đã được tạo thành công!");
       setActiveKey("");
       queryClient.invalidateQueries({ queryKey: ["course", courseId] });
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Thất bại tạo chương");
+      console.log(error);
+      toast.error("Thất bại tạo chương mới");
     },
   });
-
-  // --- Update Unit Mutation ---
   const updateUnitMutation = useMutation({
     mutationFn: (values: {
       courseId: string;
@@ -130,18 +126,16 @@ const CourseDetail: React.FC = () => {
       isPreview: boolean;
     }) => updateCourseUnitsService(values),
     onSuccess: () => {
-      notifySuccess("Chương được cập nhật thành công!");
+      toast.success("Cập nhật chương thành công!");
       setIsEditModalVisible(false);
       setEditingUnit(null);
       refetchUnits();
     },
     onError: (error: AxiosError<any>) => {
-      notifyError(error.response?.data?.message || "Thất bại cập nhật chương");
+      console.log(error);
+      toast.error("Thất bại cập nhật chương");
     },
   });
-
-  // --- Handlers ---
-
   const handleAddUnit = (values: { title: string; description: string }) => {
     createUnitMutation.mutate({
       id: courseId!,
@@ -202,11 +196,11 @@ const CourseDetail: React.FC = () => {
               <div className="flex flex-col gap-2">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <AlertTriangle className="text-red-600" size={20} />
-                  Bạn có chắc chắn không?
+                  Xác nhận xóa chương
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Không thể hoàn tác hành động này. Thao tác này sẽ xóa vĩnh
-                  viễn chương và xóa nó khỏi máy chủ của chúng tôi.
+                  Bạn có chắc chắn muốn xóa chương này? Hành động này không thể
+                  hoàn tác và sẽ xóa tất cả các bài học bên trong chương.
                 </p>
               </div>
               <div className="flex justify-end gap-3 mt-2">
@@ -218,11 +212,10 @@ const CourseDetail: React.FC = () => {
                 >
                   Thoát
                 </button>
-                <div></div>
                 <button
                   onClick={confirmDelete}
                   disabled={deleteUnitMutation.isPending}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium !text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {deleteUnitMutation.isPending ? "Đang xóa..." : "Tiếp tục"}
                 </button>
@@ -233,11 +226,10 @@ const CourseDetail: React.FC = () => {
       )}
 
       <Modal
-        title="Chỉnh sửa chi tiết chương"
+        title="Chỉnh sửa chương"
         open={isEditModalVisible}
         onCancel={() => setIsEditModalVisible(false)}
         footer={null}
-        destroyOnClose
       >
         <Form
           form={form}
@@ -290,14 +282,14 @@ const CourseDetail: React.FC = () => {
               className="flex items-center gap-2 border-gray-300 shadow-sm"
             >
               <Edit size={16} />
-              Chỉnh sửa thông tin khóa học
+              Chỉnh sửa khóa học
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-md shadow-sm border border-gray-100 overflow-hidden">
               <div className="aspect-video w-full bg-gray-100 relative">
                 <img
                   src={course?.imageUrl || "/default-course.jpg"}
@@ -306,7 +298,7 @@ const CourseDetail: React.FC = () => {
                 />
                 <div className="absolute top-3 right-3">
                   <Tag color="gold" className="m-0 shadow-sm font-medium">
-                    {course?.courseStatus}
+                    {TranslateStatus[course?.courseStatus] || "N/A"}
                   </Tag>
                 </div>
               </div>
@@ -393,7 +385,7 @@ const CourseDetail: React.FC = () => {
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
               <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                <LayoutDashboard size={16} /> Kết quả học tập
+                Mục tiêu khóa học
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
                 {course?.learningOutcome ||
@@ -434,7 +426,7 @@ const CourseDetail: React.FC = () => {
                 }
                 className="bg-gray-900 hover:bg-gray-800 border-none h-10 px-5 shadow-md"
               >
-                {activeKey === "create" ? "Thoát" : "Thêm chương"}
+                {activeKey === "create" ? "Thoát" : "Tạo chương mới"}
               </Button>
             </div>
 
@@ -451,12 +443,12 @@ const CourseDetail: React.FC = () => {
                       { required: true, message: "Vui lòng nhập tên chương" },
                     ]}
                   >
-                    <Input placeholder="e.g. Unit 1" size="large" />
+                    <Input placeholder="Nhập tiêu đề chương" size="large" />
                   </Form.Item>
                   <Form.Item name="description" label="Mô tả">
                     <Input.TextArea
                       rows={3}
-                      placeholder="Học viên sẽ học được gì trong bài học này?"
+                      placeholder="Nhập mô tả chương"
                     />
                   </Form.Item>
                   <div className="flex justify-end gap-3 pt-2">
@@ -491,7 +483,7 @@ const CourseDetail: React.FC = () => {
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={
                     <div className="text-center">
-                      <Text className="text-gray-500">No content yet.</Text>
+                      <Text className="text-gray-500">Chưa có chương nào.</Text>
                       <div className="mt-2">
                         <Button
                           type="dashed"
@@ -528,12 +520,9 @@ const UnitWithLessons: React.FC<{
   const lessons: Lesson[] = lessonsResponse?.data || [];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden group">
       <div className="p-4 flex items-start justify-between bg-white border-b border-gray-100">
         <div className="flex gap-4 items-start">
-          <div className="mt-1 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
-            <BookOpen size={16} />
-          </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h4 className="font-semibold text-gray-900 text-lg leading-tight">
@@ -549,20 +538,20 @@ const UnitWithLessons: React.FC<{
               </Tooltip>
             </div>
             <p className="text-sm text-gray-500 line-clamp-2 max-w-xl">
-              {unit?.description || "No description provided"}
+              {unit?.description || "Chưa có mô tả nào được cung cấp."}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Tooltip title="Quản lý bài học">
+          <Tooltip title="Quản lý nội dung chương">
             <Link to={`unit/${unit?.courseUnitID}`}>
               <Button
                 size="small"
                 icon={<Edit size={14} />}
                 className="flex items-center gap-1"
               >
-                Nội dung
+                Quản lý
               </Button>
             </Link>
           </Tooltip>
@@ -577,12 +566,10 @@ const UnitWithLessons: React.FC<{
           </Tooltip>
         </div>
       </div>
-
-      {/* Quick Lesson Preview (Read Only) */}
       <div className="bg-gray-50/50 p-3 space-y-1">
         {isLoading ? (
           <div className="py-2 text-center text-gray-400 text-xs">
-            Loading lessons...
+            Đang tải bài học...
           </div>
         ) : lessons.length === 0 ? (
           <div className="py-2 pl-12 text-gray-400 text-sm italic">
@@ -592,7 +579,7 @@ const UnitWithLessons: React.FC<{
           lessons.map((lesson, idx) => (
             <div
               key={lesson.lessonID}
-              className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white hover:border-gray-200 border border-transparent transition-all group/lesson"
+              className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white hover:border-gray-200 border border-transparent transition-all group/lesson cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <span className="text-xs font-mono text-gray-400 w-4">

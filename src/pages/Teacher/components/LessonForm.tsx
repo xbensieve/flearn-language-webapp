@@ -5,7 +5,13 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import type { Unit } from "../../../services/course/type";
 import { useCreateLesson } from "../helpers";
-import { Upload as UploadIcon, Video, FileText, Check } from "lucide-react";
+import {
+  Upload as UploadIcon,
+  Video,
+  FileText,
+  Check,
+  Book,
+} from "lucide-react";
 
 interface LessonFormProps {
   unit: Unit;
@@ -37,14 +43,13 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
         className="space-y-8"
         requiredMark="optional"
       >
-        {/* Section 1: General Information */}
         <div className="space-y-4">
           <div className="mt-2">
             <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-              Thông tin chung
+              <Book size={18} className="text-gray-500" /> Thông tin cơ bản
             </h3>
             <p className="text-sm text-gray-500">
-              Thông tin cơ bản về bài học này.
+              Cung cấp các thông tin cơ bản về bài học.
             </p>
           </div>
 
@@ -52,7 +57,9 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
             <Form.Item
               label="Tiêu đề bài học"
               name="title"
-              rules={[{ required: true, message: "Tiêu đề là bắt buộc" }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập tiêu đề bài học" },
+              ]}
             >
               <Input size="large" placeholder="Nhập tiêu đề bài học" />
             </Form.Item>
@@ -60,50 +67,43 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
             <Form.Item
               label="Mô tả ngắn"
               name="description"
-              rules={[{ required: true, message: "Mô tả là bắt buộc" }]}
+              rules={[{ required: true, message: "Vui lòng nhập mô tả ngắn" }]}
             >
               <Input.TextArea
                 rows={3}
-                placeholder="Tổng quan ngắn gọn..."
+                placeholder="Nhập mô tả ngắn về bài học"
                 className="resize-none"
               />
             </Form.Item>
           </div>
         </div>
-
         <Divider />
-
-        {/* Section 2: Educational Content */}
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
               <FileText size={18} className="text-gray-500" /> Nội dung bài học
             </h3>
           </div>
-
           <Form.Item
             name="content"
-            rules={[{ required: true, message: "Nội dung là bắt buộc" }]}
+            rules={[
+              { required: true, message: "Vui lòng nhập nội dung bài học" },
+            ]}
             className="mb-0"
           >
-            <div className="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-              <ReactQuill
-                theme="snow"
-                placeholder="Viết nội dung bài học của bạn ở đây..."
-                className="h-64 mb-12" // mb-12 needed for toolbar spacing
-                onChange={(e) => form.setFieldValue("content", e)}
-              />
-            </div>
+            <ReactQuill
+              theme="snow"
+              placeholder="Nhập nội dung bài học tại đây..."
+              className="h-64 mb-12"
+              onChange={(e) => form.setFieldValue("content", e)}
+            />
           </Form.Item>
         </div>
-
         <Divider />
-
-        {/* Section 3: Attachments */}
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-              <Video size={18} className="text-gray-500" /> Tài nguyên đính kèm
+              <Video size={18} className="text-gray-500" /> Tài nguyên bổ sung
             </h3>
             <p className="text-sm text-gray-500">
               Thêm tài nguyên bổ sung cho bài học của bạn.
@@ -113,10 +113,10 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
           <Row gutter={24}>
             <Col span={12}>
               <Form.Item
-                label="Video bài giảng"
+                label="Video bài học"
                 name="video"
                 valuePropName="file"
-                help="Hỗ trợ: MP4, AVI, MOV"
+                help="Định dạng video được hỗ trợ: MP4, AVI, MOV"
               >
                 <Upload
                   beforeUpload={() => false}
@@ -138,7 +138,7 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
                 label="Tài liệu đính kèm"
                 name="document"
                 valuePropName="file"
-                help="Hỗ trợ: PDF, DOC, DOCX"
+                help="Định dạng tài liệu được hỗ trợ: PDF, DOC, DOCX"
               >
                 <Upload
                   beforeUpload={() => false}
@@ -157,11 +157,9 @@ const LessonForm: React.FC<LessonFormProps> = ({ unit, onSuccess }) => {
             </Col>
           </Row>
         </div>
-
-        {/* Action Bar */}
-        <div className="sticky bottom-0 bg-gray-50 pt-4 pb-2 border-t border-gray-100 flex justify-end gap-3 z-10">
+        <div className="flex justify-end gap-3">
           <Button onClick={() => form.resetFields()} className="text-gray-500">
-            Đặt lại
+            Đặt lại biểu mẫu
           </Button>
           <Button
             type="primary"

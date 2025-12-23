@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Library,
   Users,
-  FilePlus2,
   ClipboardCheck,
   ChevronDown,
   ChevronLeft,
@@ -27,9 +26,9 @@ const TeacherLayout: React.FC = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
-    staleTime: 1000 * 60 * 10, // (10 phút) Dữ liệu profile được coi là mới trong 10 phút, không cần fetch lại
-    gcTime: 1000 * 60 * 30, // (30 phút) Giữ trong cache 30 phút (tên cũ là cacheTime ở v4)
-    refetchOnWindowFocus: false, // Không fetch lại khi click chuột vào lại tab
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
     retry: false,
   });
   useEffect(() => {
@@ -48,7 +47,6 @@ const TeacherLayout: React.FC = () => {
     { to: "", icon: LayoutDashboard, label: "Tổng quan" },
     { to: "/course", icon: Library, label: "Khóa học" },
     { to: "/classes", icon: Users, label: "Lớp học" },
-    { to: "/course/create", icon: FilePlus2, label: "Tạo khóa học" },
     {
       to: "/assignments",
       icon: ClipboardCheck,

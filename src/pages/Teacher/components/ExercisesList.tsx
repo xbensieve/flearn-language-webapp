@@ -23,12 +23,12 @@ import {
 import type { ExerciseData } from "../../../services/course/type";
 import ExerciseForm from "../ExerciseForm";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { notifyError, notifySuccess } from "../../../utils/toastConfig";
 import {
   deleteExercisesByLesson,
   getExercisesByLesson,
 } from "../../../services/course";
 import { ImageIcon } from "lucide-react";
+import { toast } from "sonner";
 
 const { Text, Paragraph } = Typography;
 
@@ -41,6 +41,20 @@ interface ExercisesListProps {
   lessonId: string;
   readonly?: boolean;
 }
+
+const TranslateExerciseType: Record<string, string> = {
+  RepeatAfterMe: "Lặp lại theo mẫu",
+  PictureDescription: "Mô tả tranh ảnh",
+  StoryTelling: "Kể chuyện",
+  Debate: "Tranh luận",
+};
+
+const TranslateDifficulty: Record<string, string> = {
+  Easy: "Dễ",
+  Medium: "Trung bình",
+  Hard: "Khó",
+  Advanced: "Nâng cao",
+};
 
 const ExercisesList: React.FC<ExercisesListProps> = ({
   onDelete,
@@ -61,7 +75,6 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [exerciseToDelete, setExerciseToDelete] = useState<string | null>(null);
 
-  // State để theo dõi ID nào đang bị xóa
   const [deletingExerciseId, setDeletingExerciseId] = useState<string | null>(
     null
   );
@@ -74,26 +87,26 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
 
   const { mutate: deleteExercise, isPending: isDeleting } = useMutation({
     mutationFn: deleteExercisesByLesson,
-    // 1. Khi bắt đầu xóa, lưu ID vào state
     onMutate: (variableId) => {
       setDeletingExerciseId(variableId);
     },
-    // 2. Khi xóa xong (thành công hoặc thất bại), reset state
     onSettled: () => {
       setDeletingExerciseId(null);
     },
     onSuccess: (exerciseId) => {
-      notifySuccess("Bài tập đã được xóa thành công");
+      toast.success("Xóa bài tập thành công");
       queryClient.invalidateQueries({
         queryKey: ["exercises", selectedExercise?.lessonID],
       });
-      onDelete?.(exerciseId); // Lưu ý: check lại xem API trả về ID hay void để truyền đúng
+      onDelete?.(exerciseId);
       handleCloseDrawer();
       setConfirmDeleteVisible(false);
       refetch();
     },
     onError: (error) => {
-      notifyError(`Failed to delete exercise: ${error.message}`);
+      console.error(error);
+      toast.error("Xóa bài tập thất bại. Vui lòng thử lại.");
+      setConfirmDeleteVisible(false);
     },
   });
 
@@ -136,7 +149,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
             active
             avatar
             paragraph={{ rows: 3 }}
-            className="rounded-2xl"
+            className="rounded-md"
           />
         ))}
       </div>
@@ -161,11 +174,10 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
 
   return (
     <div className="p-4 space-y-6">
-      {/* Search */}
       {!readonly && (
         <div className="flex justify-between items-center">
           <Input
-            placeholder="Tìm kiếm bài tập theo tiêu đề..."
+            placeholder="Tìm kiếm bài tập..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-md rounded-md border-gray-200 focus:border-blue-500 text-base"
@@ -174,7 +186,6 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
         </div>
       )}
 
-      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {data
           ?.filter((ex) =>
@@ -191,10 +202,9 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
             >
               <Card
                 hoverable
-                className="group h-full rounded-md shadow-sm hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 overflow-hidden"
+                className="group h-full rounded-md shadow-sm hover:shadow-sm transition-all duration-300 bg-white border border-gray-100 overflow-hidden"
                 bodyStyle={{ padding: 0 }}
               >
-                {/* Header */}
                 <div className="p-5 pb-3">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
@@ -209,13 +219,15 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                           color="blue"
                           className="text-xs font-medium px-2 py-0.5 rounded-md"
                         >
-                          {exercise.exerciseType}
+                          {TranslateExerciseType[exercise.exerciseType] ||
+                            exercise.exerciseType}
                         </Tag>
                         <Tag
                           color="orange"
                           className="text-xs font-medium px-2 py-0.5 rounded-md"
                         >
-                          {exercise.difficulty}
+                          {TranslateDifficulty[exercise.difficulty] ||
+                            exercise.difficulty}
                         </Tag>
                       </Space>
                     </div>
@@ -295,7 +307,6 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                           icon={<DeleteOutlined />}
                           onClick={() => handleDelete(exercise.exerciseID)}
                           className="flex-1 h-12 text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-medium rounded-none"
-                          // 3. Chỉ loading khi ID trùng khớp
                           loading={
                             isDeleting &&
                             deletingExerciseId === exercise.exerciseID
@@ -311,30 +322,23 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
             </div>
           ))}
       </div>
-
-      {/* Delete Modal */}
       <Modal
         open={confirmDeleteVisible}
         onCancel={handleCancelDelete}
         onOk={handleConfirmDelete}
-        okText="Xóa bỏ"
+        okText="Xóa bài tập"
         cancelText="Thoát"
         okButtonProps={{ danger: true, loading: isDeleting }}
         centered
         width={420}
       >
         <div className="text-center py-4">
-          <div className="w-16 h-16 bg-rose-100 rounded-md flex items-center justify-center mx-auto mb-4">
-            <DeleteOutlined className="text-2xl text-rose-600" />
-          </div>
-          <title className="text-gray-900 mb-2">Xóa bài tập?</title>
-          <Text className="text-gray-600">
-            Không thể hoàn tác hành động này.
+          <Text className="text-gray-700 text-lg">
+            Bạn có chắc chắn muốn xóa bài tập này? Hành động này không thể hoàn
+            tác.
           </Text>
         </div>
       </Modal>
-
-      {/* Drawer */}
       <Drawer
         title={
           <div className="flex items-center gap-3">
@@ -344,7 +348,7 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
               <EditOutlined className="text-amber-600" />
             )}
             <span className="font-semibold text-lg">
-              {drawerMode === "preview" ? "Preview" : "Edit"}:{" "}
+              {drawerMode === "preview" ? "Xem trước" : "Chỉnh sửa"}:{" "}
               {selectedExercise?.title}
             </span>
           </div>
@@ -363,7 +367,6 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
           <>
             {drawerMode === "preview" ? (
               <div className="space-y-6">
-                {/* Smart Media Preview - Supports Images + Audio */}
                 {selectedExercise?.mediaUrls &&
                   selectedExercise.mediaUrls.length > 0 && (
                     <div className="space-y-6">
@@ -456,21 +459,21 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                                         }}
                                       >
                                         <source src={url} type="audio/mpeg" />
-                                        Your browser does not support the audio
-                                        element.
+                                        Trình duyệt của bạn không hỗ trợ phát
+                                        audio.
                                       </audio>
                                     </div>
                                     <Text
                                       type="secondary"
                                       className="block text-center mt-3 text-sm"
                                     >
-                                      Click play to listen
+                                      Nhấn phát để nghe audio
                                     </Text>
                                   </div>
                                 ) : (
                                   <div className="text-center py-12 text-gray-500">
                                     <FileOutlined className="text-5xl mb-4 text-gray-400" />
-                                    <Text>Unsupported file type</Text>
+                                    <Text>Loại tệp không được hỗ trợ</Text>
                                   </div>
                                 )}
                               </div>
@@ -480,8 +483,6 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                       </div>
                     </div>
                   )}
-
-                {/* Details */}
                 <Descriptions
                   bordered
                   column={1}
@@ -502,10 +503,10 @@ const ExercisesList: React.FC<ExercisesListProps> = ({
                     </div>
                   </Descriptions.Item>
                   <Descriptions.Item label="Loại" className="py-3">
-                    <Tag color="blue">{selectedExercise.exerciseType}</Tag>
+                    <Tag color="blue">{TranslateExerciseType[selectedExercise.exerciseType]}</Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="Độ khó" className="py-3">
-                    <Tag color="orange">{selectedExercise.difficulty}</Tag>
+                    <Tag color="orange">{TranslateDifficulty[selectedExercise.difficulty]}</Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="Điểm tối đa" className="py-3">
                     <Text strong>{selectedExercise.maxScore}</Text>

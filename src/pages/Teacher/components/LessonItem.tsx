@@ -25,13 +25,14 @@ import {
   Video,
   Trash2,
   Eye,
-  Settings,
   Dumbbell,
   Download,
   PlayCircle,
   AlertCircle,
+  PencilIcon,
+  Book,
 } from "lucide-react";
-
+import { toast } from "sonner";
 interface Props {
   lesson: Lesson;
   onUpdated: () => void;
@@ -53,12 +54,11 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
 
   const [form] = Form.useForm();
   const updateLesson = useUpdateLesson(lesson.courseUnitID, () => {
-    message.success("Lesson updated successfully");
+    toast.success("Cập nhật bài học thành công");
     onUpdated();
     setEditDrawerVisible(false);
   });
 
-  // --- Logic xử lý Form (Giữ nguyên) ---
   const handleOpenEditDrawer = () => {
     form.setFieldsValue({
       title: lesson.title,
@@ -101,7 +101,6 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
     updateLesson.mutate({ id: lesson.lessonID, formData });
   };
 
-  // --- Render Helpers ---
   const renderVideo = (url?: string) => {
     if (!url) return null;
     const yt = url.match(
@@ -113,7 +112,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         {yt ? (
           <iframe
             src={`https://www.youtube.com/embed/${yt[1]}`}
-            title="Lesson Video"
+            title="Video bài học"
             allowFullScreen
             className="w-full h-full"
           />
@@ -161,21 +160,14 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
 
   return (
     <div className="group bg-white border border-gray-200 rounded-md shadow-sm hover:shadow-md transition-all duration-300 mb-6 overflow-hidden">
-      {/* --- HEADER --- */}
       <div className="px-6 py-5 flex items-start justify-between border-b border-gray-100 bg-white">
         <div className="flex gap-4">
-          <div className="flex-shrink-0 mt-1">
-            <div className="w-10 h-10 rounded-sm bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-              {lesson.position}
-            </div>
-          </div>
-
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
+            <h3 className="text-lg font-bold text-gray-900 leading-tight">
               {lesson.title}
             </h3>
             <p className="text-gray-500 text-sm line-clamp-1 max-w-xl">
-              {lesson.description || "No description provided."}
+              {lesson.description || "Chưa có mô tả nào được thêm vào."}
             </p>
             <div className="flex items-center gap-4 pt-1">
               {lesson.videoUrl && (
@@ -209,7 +201,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               type="text"
               shape="circle"
               icon={
-                <Settings
+                <PencilIcon
                   size={18}
                   className="text-gray-500 hover:text-gray-900"
                 />
@@ -218,7 +210,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
             />
           </Tooltip>
           <div className="w-px h-4 bg-gray-200 mx-1"></div>
-          <Tooltip title="Xóa bỏ">
+          <Tooltip title="Xóa bài học">
             <Button
               type="text"
               danger
@@ -231,42 +223,39 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         </div>
       </div>
 
-      {/* --- CONTENT TABS --- */}
       <div className="bg-gray-50/50">
         <Tabs
           defaultActiveKey="content"
           className="custom-tabs"
           tabBarStyle={{
-            padding: "0 24px",
+            padding: "0 16px",
             marginBottom: 0,
             borderBottom: "1px solid #e5e7eb",
-            background: "white",
+            background: "#f9fafb",
           }}
           items={[
             {
               key: "content",
               label: (
                 <span className="flex items-center gap-2 py-2 text-sm font-medium">
-                  <FileText size={16} />
-                  Nội dung học tập
+                  Nội dung
                 </span>
               ),
               children: (
                 <div className="p-8 bg-white min-h-[200px]">
                   {lesson.videoUrl && (
-                    <div className="max-w-3xl mb-8">
+                    <div className="max-w-3xl mb-8 justify-center">
                       <div className="flex items-center gap-2 mb-3">
                         <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md">
                           <Video size={16} />
                         </div>
-                        <span className="font-semibold text-gray-900">
+                        <h1 className="font-semibold text-gray-900">
                           Bài giảng video
-                        </span>
+                        </h1>
                       </div>
                       {renderVideo(lesson.videoUrl)}
                     </div>
                   )}
-
                   <div
                     className="prose prose-slate prose-sm md:prose-base max-w-none 
                             prose-headings:font-bold prose-headings:text-gray-900 
@@ -276,17 +265,26 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                             prose-strong:text-gray-900 prose-strong:font-bold"
                   >
                     {lesson.content ? (
-                      <div
-                        dangerouslySetInnerHTML={{ __html: lesson.content }}
-                      />
+                      <>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md">
+                            <Book size={16} />
+                          </div>
+                          <h1 className="font-semibold text-gray-900">
+                            Nội dung bài học
+                          </h1>
+                        </div>
+                        <div
+                          className="bg-gray-50/50 p-6 rounded-md border border-gray-100 overflow-auto max-h-[400px] w-full"
+                          dangerouslySetInnerHTML={{ __html: lesson.content }}
+                        />
+                      </>
                     ) : (
                       <div className="text-center py-8 text-gray-400 italic">
                         Chưa có nội dung nào được thêm vào.
                       </div>
                     )}
                   </div>
-
-                  {/* Document Section */}
                   {renderDocument(lesson.documentUrl)}
                 </div>
               ),
@@ -295,7 +293,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               key: "exercises",
               label: (
                 <span className="flex items-center gap-2 py-2 text-sm font-medium">
-                  <Dumbbell size={16} /> Bài tập
+                  Bài tập
                   {lesson.totalExercises > 0 && (
                     <Badge
                       count={lesson.totalExercises}
@@ -313,11 +311,11 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                 <div className="p-6 bg-gray-50/50 min-h-[200px]">
                   <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h4 className="font-bold text-gray-900">
+                      <h3 className="font-bold text-gray-900">
                         Bài tập thực hành
-                      </h4>
+                      </h3>
                       <p className="text-sm text-gray-500">
-                        Bài kiểm tra và bài tập.
+                        Quản lý các bài tập liên quan đến bài học này.
                       </p>
                     </div>
                     <Button
@@ -326,7 +324,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
                       onClick={() => setExerciseDrawerVisible(true)}
                       className="bg-gray-900 hover:bg-gray-800 border-none shadow-lg shadow-gray-200"
                     >
-                      Thêm bài tập
+                      Thêm bài tập mới
                     </Button>
                   </div>
                   <ExercisesList lessonId={lesson.lessonID} />
@@ -336,12 +334,10 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           ]}
         />
       </div>
-
-      {/* --- 1. EDIT DRAWER --- */}
       <Drawer
         title={
           <div className="flex items-center gap-2 text-gray-900">
-            <Settings className="w-5 h-5 text-blue-600" /> Chỉnh sửa bài học
+            Chỉnh sửa bài học
           </div>
         }
         width={720}
@@ -353,7 +349,7 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
               onClick={() => setEditDrawerVisible(false)}
               className="rounded-md h-10 px-6"
             >
-              Thoát
+              Hủy bỏ
             </Button>
             <Button
               type="primary"
@@ -367,34 +363,37 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         }
       >
         <Form form={form} layout="vertical" className="space-y-6">
-          <div className="bg-blue-50/50 p-4 rounded-md border border-blue-100">
-            <Form.Item
-              name="title"
-              label="Tiêu đề bài học"
-              rules={[{ required: true }]}
-            >
-              <Input size="large" className="rounded-md" />
-            </Form.Item>
-            <Form.Item name="description" label="Mô tả ngắn" className="mb-0">
-              <Input.TextArea rows={2} className="rounded-md" />
-            </Form.Item>
-          </div>
-
+          <Form.Item
+            name="title"
+            label="Tiêu đề bài học"
+            rules={[
+              { required: true, message: "Vui lòng nhập tiêu đề bài học" },
+            ]}
+          >
+            <Input size="large" className="rounded-md" />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Mô tả ngắn"
+            className="mb-0"
+            rules={[{ required: true, message: "Vui lòng nhập mô tả ngắn" }]}
+          >
+            <Input.TextArea rows={2} className="rounded-md" />
+          </Form.Item>
           <Form.Item
             name="content"
             label="Nội dung"
-            rules={[{ required: true }]}
+            className="mb-0"
+            rules={[
+              { required: true, message: "Vui lòng nhập nội dung bài học" },
+            ]}
           >
-            <ReactQuill
-              theme="snow"
-              className="h-64 mb-12 border border-gray-200 rounded-md overflow-hidden bg-white"
-            />
+            <ReactQuill theme="snow" className="h-64 mb-12 rounded-md" />
           </Form.Item>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Form.Item
               name="video"
-              label="Video bài giảng"
+              label="Video bài học"
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
@@ -431,8 +430,6 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           </div>
         </Form>
       </Drawer>
-
-      {/* --- 2. PREVIEW MODAL (ĐÃ CÓ DOCUMENT) --- */}
       <Modal
         title={null}
         open={previewVisible}
@@ -449,13 +446,10 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         }
         width={900}
         centered
-        className="rounded-md overflow-hidden"
+        className="rounded-sm overflow-hidden"
       >
         <div className="p-2">
           <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
-            <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-              {lesson.position}
-            </div>
             <div>
               <h2 className="text-xl font-bold text-gray-900 m-0">
                 {lesson.title}
@@ -465,21 +459,22 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           </div>
 
           <div className="space-y-6">
-            {/* Video in Preview */}
             {lesson.videoUrl && (
-              <div className="bg-black rounded-md overflow-hidden shadow-lg">
+              <>
+                <h3 className="text-black p-2">Video bài học</h3>
                 {renderVideo(lesson.videoUrl)}
-              </div>
+              </>
             )}
-
-            {/* Content in Preview */}
-            <div className="prose prose-slate max-w-none bg-gray-50/50 p-6 rounded-md border border-gray-100">
-              <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
-            </div>
-
-            {/* Document in Preview (NEW ADDITION) */}
+            {lesson.content && (
+              <>
+                <h3 className="text-black p-2">Nội dung bài học</h3>
+                <div
+                  className="bg-gray-50/50 p-6 rounded-md border border-gray-100 overflow-auto max-h-[400px] w-full"
+                  dangerouslySetInnerHTML={{ __html: lesson.content }}
+                />
+              </>
+            )}
             {lesson.documentUrl && renderDocument(lesson.documentUrl)}
-
             {!lesson.documentUrl && !lesson.videoUrl && !lesson.content && (
               <div className="text-center py-10 text-gray-400">
                 <AlertCircle className="w-10 h-10 mx-auto mb-2 opacity-50" />
@@ -489,10 +484,8 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           </div>
         </div>
       </Modal>
-
-      {/* --- 3. EXERCISE DRAWER --- */}
       <Drawer
-        title="Tạo bài tập"
+        title="Thêm bài tập mới"
         width={800}
         open={exerciseDrawerVisible}
         onClose={() => setExerciseDrawerVisible(false)}
@@ -506,12 +499,10 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
           }}
         />
       </Drawer>
-
-      {/* --- 4. DELETE MODAL --- */}
       <Modal
         title={
           <span className="flex items-center gap-2 text-red-600">
-            <AlertCircle size={20} /> Confirm Delete
+            <AlertCircle size={20} /> Xác nhận xóa bài học
           </span>
         }
         open={confirmDeleteVisible}
@@ -522,12 +513,11 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
         onCancel={() => setConfirmDeleteVisible(false)}
         okButtonProps={{ danger: true, className: "bg-red-600" }}
         okText="Xóa bài học"
+        cancelText="Hủy bỏ"
       >
         <p className="text-gray-600 mt-2">
-          Bạn có chắc chắn muốn xóa không? <strong>{lesson.title}</strong>?
-          <br />
-          Không thể hoàn tác hành động này và sẽ xóa tất cả các bài tập liên
-          quan.
+          Bạn có chắc chắn muốn xóa bài học này? Hành động này không thể hoàn
+          tác.
         </p>
       </Modal>
     </div>

@@ -42,6 +42,20 @@ import {
 } from "@/services/teacher/applicationService";
 import { toast } from "sonner";
 
+// Helper function để dịch trạng thái
+const translateStatus = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "Đã duyệt";
+    case "Rejected":
+      return "Bị từ chối";
+    case "Pending":
+      return "Đang chờ duyệt";
+    default:
+      return status;
+  }
+};
+
 export default function ApplicationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -74,7 +88,6 @@ export default function ApplicationDetail() {
     };
     fetchDetail();
   }, [id]);
-
 
   const handleApprove = async () => {
     if (!application) return;
@@ -183,7 +196,7 @@ export default function ApplicationDetail() {
             </h2>
             <p className="text-gray-600 max-w-md">
               {error ||
-                "The application may have been removed or the link is invalid."}
+                "Đơn đăng ký có thể đã bị xóa hoặc liên kết không hợp lệ."}
             </p>
             <Button
               variant="outline"
@@ -273,7 +286,8 @@ export default function ApplicationDetail() {
                         className={`${status.color} px-3 py-1 font-medium hover:bg-yellow-300`}
                       >
                         <StatusIcon className="w-3.5 h-3.5 mr-1.5" />
-                        {application.status}
+                        {/* SỬ DỤNG HÀM DỊCH Ở ĐÂY */}
+                        {translateStatus(application.status)}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -467,7 +481,8 @@ export default function ApplicationDetail() {
                           </div>
                           <div className="flex-1">
                             <p className="font-semibold text-sm text-gray-900">
-                              {application.status}
+                              {/* SỬ DỤNG HÀM DỊCH Ở ĐÂY */}
+                              {translateStatus(application.status)}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
                               {application.reviewedAt
