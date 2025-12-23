@@ -37,6 +37,7 @@ export default function AntdDateRangePicker({ dateRange, setDateRange }: any) {
           dateRange.from ? dayjs(dateRange.from) : null,
           dateRange.to ? dayjs(dateRange.to) : null,
         ]}
+        placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
         onChange={handleChange}
         format="DD/MM/YYYY"
         allowClear

@@ -7,17 +7,13 @@ import {
   Plus,
   Filter,
   MoreHorizontal,
-  BookOpen,
   Users,
   ArrowUpDown,
   LayoutGrid,
   Trash2,
   AlertTriangle,
   Loader2,
-  BarChart3,
 } from "lucide-react";
-
-// --- Services & Utils ---
 import {
   getTeacherCoursesService,
   deleteCourseService,
@@ -53,33 +49,32 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// --- Constants ---
 const STATUS_CONFIG: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
   Draft: {
-    label: "Draft",
+    label: "Bản nháp",
     color: "text-orange-700",
     bg: "bg-orange-50 border-orange-200",
   },
   PendingApproval: {
-    label: "Pending",
+    label: "Đang chờ phê duyệt",
     color: "text-blue-700",
     bg: "bg-blue-50 border-blue-200",
   },
   Published: {
-    label: "Published",
+    label: "Đã xuất bản",
     color: "text-green-700",
     bg: "bg-green-50 border-green-200",
   },
   Rejected: {
-    label: "Rejected",
+    label: "Đã từ chối",
     color: "text-red-700",
     bg: "bg-red-50 border-red-200",
   },
   Archived: {
-    label: "Archived",
+    label: "Đã lưu trữ",
     color: "text-gray-700",
     bg: "bg-gray-100 border-gray-200",
   },
@@ -96,11 +91,7 @@ export default function MyCourses() {
   const [sortOrder, setSortOrder] = useState<
     "default" | "price_asc" | "price_desc"
   >("default");
-
-  // State quản lý việc xóa
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  // --- QUERIES ---
   const { data, isLoading } = useQuery({
     queryKey: ["courses", status === "ALL" ? "" : status, page, pageSize],
     queryFn: () =>
@@ -113,25 +104,22 @@ export default function MyCourses() {
     retry: 1,
   });
 
-  // --- MUTATIONS ---
   const { mutate: deleteCourse, isPending: isDeleting } = useMutation({
     mutationFn: (id: string) => deleteCourseService(id),
     onSuccess: () => {
       toast.success("Khóa học đã được xóa thành công!");
-      // Refresh lại list sau khi xóa
       queryClient.invalidateQueries({ queryKey: ["courses"] });
       setDeleteId(null);
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Thất bại khi xóa khóa học";
-      toast.error(msg);
+      console.error("Delete course error:", err);
+      toast.error("Thất bại khi xóa khóa học");
     },
   });
 
-  // --- DATA PROCESSING ---
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const rawCourses = data?.data || [];
-  const totalItems = data?.meta?.totalItems || 0;
 
   const processedCourses = useMemo(() => {
     let result = [...rawCourses];
@@ -170,7 +158,6 @@ export default function MyCourses() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 p-6 md:p-8 space-y-8 font-sans text-slate-900">
-      {/* HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
@@ -188,8 +175,6 @@ export default function MyCourses() {
           Tạo khóa học
         </Button>
       </div>
-
-      {/* FILTERS */}
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between bg-white p-4 rounded-md border border-slate-200 shadow-sm sticky top-4 z-20">
         <div className="relative w-full lg:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -218,13 +203,13 @@ export default function MyCourses() {
             <SelectContent>
               <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
               <SelectItem value="Draft">Bản nháp</SelectItem>
-              <SelectItem value="PendingApproval">Chưa giải quyết</SelectItem>
+              <SelectItem value="PendingApproval">
+                Đang chờ phê duyệt
+              </SelectItem>
               <SelectItem value="Published">Đã xuất bản</SelectItem>
               <SelectItem value="Rejected">Bị từ chối</SelectItem>
             </SelectContent>
           </Select>
-
-          {/* Price Sort */}
           <Select
             value={sortOrder}
             onValueChange={(val: "default" | "price_asc" | "price_desc") =>
@@ -245,8 +230,6 @@ export default function MyCourses() {
           </Select>
         </div>
       </div>
-
-      {/* --- CONTENT GRID --- */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -282,7 +265,6 @@ export default function MyCourses() {
                   key={course.courseId}
                   className="group flex flex-col overflow-hidden rounded-sm transition-all duration-300 bg-white hover:shadow-lg border border-slate-200 cursor-pointer"
                 >
-                  {/* Image & Badge */}
                   <div className="relative h-48 bg-slate-100 overflow-hidden">
                     <img
                       src={course.imageUrl || "/placeholder.jpg"}
@@ -298,8 +280,6 @@ export default function MyCourses() {
                       </Badge>
                     </div>
                   </div>
-
-                  {/* Body */}
                   <CardContent className="flex-1 p-5 flex flex-col gap-3">
                     <h3 className="font-semibold text-lg leading-tight text-slate-900 line-clamp-2 group-hover:text-blue-700 transition-colors">
                       {course.title}
@@ -339,15 +319,12 @@ export default function MyCourses() {
                       )}
                     </div>
                   </CardContent>
-
-                  {/* Footer / Actions */}
                   <CardFooter className="p-3 bg-slate-50 border-t border-slate-100 flex gap-2">
                     <Button
                       variant="ghost"
                       className="flex-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"
                       onClick={() => navigate(`${course.courseId}`)}
                     >
-                      <BookOpen className="w-4 h-4 mr-2" />
                       Xem
                     </Button>
 
@@ -357,7 +334,7 @@ export default function MyCourses() {
                         className="flex-1 text-slate-600 hover:text-green-600 hover:bg-green-50 cursor-pointer"
                         onClick={() => navigate(`${course.courseId}/edit`)}
                       >
-                        Sửa
+                        Chỉnh sửa
                       </Button>
                     )}
 
@@ -384,7 +361,6 @@ export default function MyCourses() {
                             navigate(`${course.courseId}/statistics`)
                           }
                         >
-                          <BarChart3 className="w-4 h-4 mr-2" />
                           Xem thống kê
                         </DropdownMenuItem>
                         {canEdit && (
@@ -409,13 +385,8 @@ export default function MyCourses() {
               );
             })}
           </div>
-
-          {/* --- Pagination --- */}
           <div className="flex items-center justify-between border-t border-slate-200 pt-6">
-            <p className="text-sm text-slate-500">
-              Đang hiển thị <strong>{processedCourses.length}</strong> của{" "}
-              <strong>{totalItems}</strong> kết quả
-            </p>
+            <p className="text-sm text-slate-500"></p>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -431,13 +402,12 @@ export default function MyCourses() {
                 onClick={() => setPage((p) => p + 1)}
                 disabled={processedCourses.length < pageSize}
               >
-                Tiếp theo
+                Sau
               </Button>
             </div>
           </div>
         </>
       ) : (
-        /* Empty State */
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-md border border-dashed border-slate-300">
           <div className="h-16 w-16 bg-slate-50 rounded-md flex items-center justify-center mb-4">
             <LayoutGrid className="w-8 h-8 text-slate-300" />
@@ -460,8 +430,6 @@ export default function MyCourses() {
           )}
         </div>
       )}
-
-      {/* --- DELETE CONFIRMATION DIALOG --- */}
       <AlertDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
@@ -473,20 +441,21 @@ export default function MyCourses() {
               Xóa khóa học?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn xóa khóa học này không? Thao tác này không
-              thể hoàn tác và tất cả dữ liệu liên quan (bài học, bài tập) sẽ bị
-              xóa vĩnh viễn.
+              Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa khóa
+              học này không?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting} className="cursor-pointer">
+              Hủy
+            </AlertDialogCancel>
             <div></div>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
                 handleConfirmDelete();
               }}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-red-600 hover:bg-red-700 !text-white cursor-pointer"
               disabled={isDeleting}
             >
               {isDeleting ? (

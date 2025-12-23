@@ -26,6 +26,19 @@ import type { CourseSubmission, SubmissionStatus } from "@/types/course";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useQuery } from "@tanstack/react-query";
 
+const translateStatus = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "Đã duyệt";
+    case "Pending":
+      return "Đang chờ duyệt";
+    case "Rejected":
+      return "Bị từ chối";
+    default:
+      return status;
+  }
+};
+
 export default function Courses() {
   const navigate = useNavigate();
 
@@ -42,28 +55,22 @@ export default function Courses() {
   const [levelFilter, setLevelFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
 
-  // --- REFACTOR: Thay thế useEffect/fetchData bằng useQuery ---
   const { data: response, isLoading: loading } = useQuery({
-    queryKey: ["courses-submissions", statusFilter], // Key thay đổi khi filter status đổi
+    queryKey: ["courses-submissions", statusFilter],
     queryFn: () =>
       courseService.getSubmissions({
         Page: 1,
-        PageSize: 500, // Vẫn giữ logic lấy 500 items
+        PageSize: 500,
         status: statusFilter === "all" ? undefined : statusFilter,
       }),
-    staleTime: 5 * 60 * 1000, // Cache 5 phút. Quay lại trang này sẽ hiển thị ngay lập tức.
-    placeholderData: (previousData) => previousData, // Giữ data cũ khi đổi statusFilter để không bị nháy
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
   });
 
   const allSubmissions = response?.data || [];
 
-  // Reset page khi filter đổi (giữ nguyên logic cũ)
-  // Lưu ý: Với useQuery, logic này nên đặt trong useEffect lắng nghe các state filter
   useMemo(() => {
-    // Side effect nhẹ để reset page khi filter đổi
-    // Thực ra tốt hơn là setPage(1) ngay tại sự kiện onChange của các filter input
   }, [searchTerm, levelFilter, priceFilter, sortBy, statusFilter]);
-
 
   useEffect(() => {
     setPage(1);
@@ -249,7 +256,7 @@ export default function Courses() {
                   <SelectItem value="all">Tất cả trạng thái</SelectItem>
                   <SelectItem value="Pending">Đang xét duyệt</SelectItem>
                   <SelectItem value="Approved">Đã duyệt</SelectItem>
-                  <SelectItem value="Rejected">Từ chối</SelectItem>
+                  <SelectItem value="Rejected">Bị từ chối</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -347,7 +354,7 @@ export default function Courses() {
                         item.submissionStatus
                       )} border shadow-sm font-semibold px-3 py-1 rounded-full uppercase text-[10px] tracking-wide`}
                     >
-                      {item.submissionStatus}
+                      {translateStatus(item.submissionStatus)}
                     </Badge>
                   </div>
                 </div>

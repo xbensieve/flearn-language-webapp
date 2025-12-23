@@ -67,6 +67,19 @@ const useFlattenedLessons = (units: CourseDetail["units"]) => {
   }, [units]);
 };
 
+const translateStatus = (status: string) => {
+  switch (status) {
+    case "Approved":
+      return "Đã duyệt";
+    case "Pending":
+      return "Đang chờ duyệt";
+    case "Rejected":
+      return "Bị từ chối";
+    default:
+      return status;
+  }
+};
+
 export default function CourseLearningViewer({
   course,
   submissionId,
@@ -325,16 +338,16 @@ export default function CourseLearningViewer({
       case "Published":
       case "Approved":
         classes += "bg-green-100 text-green-800";
-        text = "Approved";
+        text =  translateStatus("Approved");
         break;
       case "PendingApproval":
       case "Pending":
         classes += "bg-red-100 text-red-800";
-        text = "Awaiting Approval";
+        text = "Đang chờ duyệt";
         break;
       default:
         classes += "bg-yellow-100 text-yellow-800";
-        text = "Rejected";
+        text = translateStatus("Rejected");
         break;
     }
     return <span className={classes}>{text}</span>;

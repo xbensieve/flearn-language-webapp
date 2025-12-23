@@ -3,9 +3,7 @@ import { z } from "zod";
 export const courseSchema = z
   .object({
     title: z.string().min(5, "Tiêu đề phải có ít nhất 5 ký tự"),
-    description: z
-      .string()
-      .min(20, "Mô tả phải có ít nhất 20 ký tự"),
+    description: z.string().min(20, "Mô tả phải có ít nhất 20 ký tự"),
     levelId: z.string().min(1, "Vui lòng chọn chương trình & cấp độ"),
     templateId: z.string().optional(),
 
@@ -32,12 +30,19 @@ export const courseSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
-    // Logic Validate chéo
-    // CHECK LOGIC GIÁ TIỀN >= 5000
     if (data.courseType === 2 && data.price < 100000) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Giá phải ít nhất 100.000 VND đối với khóa học trả phí",
+        path: ["price"],
+      });
+    }
+
+    if (data.courseType === 2 && data.price > 5000000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Giá không được vượt quá 5.000.000 VND đối với khóa học trả phí",
         path: ["price"],
       });
     }
@@ -61,7 +66,8 @@ export const courseSchema = z
     if (data.courseType === 2 && data.gradingType !== "2") {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Khóa học trả phí phải sử dụng chấm điểm bán tự động (Giáo viên + AI)",
+        message:
+          "Khóa học trả phí phải sử dụng chấm điểm bán tự động (Giáo viên + AI)",
         path: ["gradingType"],
       });
     }

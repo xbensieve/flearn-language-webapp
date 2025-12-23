@@ -28,12 +28,11 @@ import {
   Trash2,
   RefreshCcw,
 } from "lucide-react";
-import { notifyError, notifySuccess } from "../../utils/toastConfig";
 import type { UploadFile } from "antd/es/upload/interface";
+import { toast } from "sonner";
 
 const { Text } = Typography;
 
-// --- 1. Cập nhật Interface theo yêu cầu ---
 export interface ExerciseData {
   exerciseID: string;
   title: string;
@@ -44,8 +43,8 @@ export interface ExerciseData {
   mediaUrls: string[];
   mediaPublicIds: string[];
   position: number;
-  exerciseType: string; // Đã đổi thành string
-  difficulty: string; // Đã đổi thành string
+  exerciseType: string;
+  difficulty: string;
   maxScore: number;
   passScore: number;
   feedbackCorrect: string;
@@ -66,8 +65,6 @@ interface Props {
   exercise?: ExerciseData;
 }
 
-// --- Helper Maps: String <-> Number ---
-// Bạn cần đảm bảo các chuỗi case khớp chính xác với DB trả về
 const getExerciseTypeId = (typeStr: string): number => {
   switch (typeStr) {
     case "RepeatAfterMe":
@@ -98,15 +95,11 @@ const getDifficultyId = (diffStr: string): number => {
   }
 };
 
-// Nếu API tạo/sửa yêu cầu gửi String thì dùng hàm này, nếu API nhận số thì bỏ qua
-// (Trong ví dụ này tôi giả định API nhận số int ở payload như code cũ, nếu nhận string thì báo tôi sửa lại payload)
-
 const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const exerciseType = Form.useWatch("type", form);
 
-  // --- Audio Recording State ---
   const [audioSource, setAudioSource] = useState<"upload" | "record">("upload");
   const [isRecording, setIsRecording] = useState(false);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
@@ -139,7 +132,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
           accept: "audio/*",
           label: "Tệp âm thanh đính kèm",
           isRequired: false,
-          typeError: "Chỉ cho phép sử dụng tệp âm thanh (MP3, WAV)!",
+          typeError: "Chỉ được phép sử dụng tệp âm thanh cho loại bài tập này!",
           requiredError: "Bạn phải tải lên hoặc ghi âm một tệp âm thanh!",
         };
       case 2: // Picture Description
@@ -170,7 +163,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     }
   }, [exerciseType]);
 
-  // --- Recording Logic (Giữ nguyên) ---
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -194,8 +186,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       startTimer();
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      message.error(
-        "Không thể truy cập micro. Vui lòng kiểm tra quyền truy cập."
+      toast.error(
+        "Không thể truy cập micro. Vui lòng kiểm tra cài đặt trình duyệt."
       );
     }
   };
@@ -244,12 +236,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     mutationFn: (payload: ExercisePayload) =>
       createExerciseService(lessonId, payload),
     onSuccess: () => {
-      notifySuccess("Đã tạo bài tập thành công!");
+      toast.success("Đã tạo bài tập thành công!");
       queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
       resetForm();
       onCreated?.();
     },
-    onError: () => message.error("Không tạo được bài tập!"),
+    onError: () => toast.error("Không tạo được bài tập!"),
   });
 
   const updateMutation = useMutation({
@@ -260,18 +252,13 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         payload,
       }),
     onSuccess: () => {
-      notifySuccess("Đã cập nhật bài tập thành công!");
+      toast.success("Cập nhật bài tập thành công!");
       queryClient.invalidateQueries({ queryKey: ["exercises", lessonId] });
       onCreated?.();
     },
     onError: (error: any) => {
-      const errorMsg =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        "Thất bại khi cập nhật bài tập";
-      message.error(errorMsg);
-      notifyError(errorMsg);
+      console.error(error);
+      toast.error("Thât bại khi cập nhật bài tập. Vui lòng thử lại");
     },
   });
 
@@ -283,7 +270,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
     setExistingAudioUrl(null);
   };
 
-  // --- 2. Initial Data Loading (FIXED) ---
   useEffect(() => {
     if (exercise) {
       const existingMedia = exercise.mediaUrls
@@ -300,7 +286,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
           })
         : [];
 
-      // Convert String -> Number cho Form
       const mappedType = getExerciseTypeId(exercise.exerciseType);
       const mappedDifficulty = getDifficultyId(exercise.difficulty);
 
@@ -310,8 +295,8 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         hints: exercise.hints,
         content: exercise.content,
         expectedAnswer: exercise.expectedAnswer,
-        type: mappedType, // Sử dụng ID đã map
-        difficulty: mappedDifficulty, // Sử dụng ID đã map
+        type: mappedType,
+        difficulty: mappedDifficulty,
         maxScore: exercise.maxScore ?? 100,
         passScore: exercise.passScore ?? 40,
         feedbackCorrect: exercise.feedbackCorrect,
@@ -319,7 +304,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         media: existingMedia,
       });
 
-      // Logic Repeat After Me
       if (mappedType === 1) {
         setAudioSource("upload");
         deleteRecording();
@@ -385,7 +369,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         } else if (exercise && existingAudioUrl) {
           finalFiles = [];
         } else {
-          message.error("Vui lòng ghi âm một đoạn âm thanh!");
+          toast.error("Vui lòng ghi âm một đoạn âm thanh!");
           return;
         }
       } else {
@@ -400,9 +384,6 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         .filter((f: UploadFile) => f.originFileObj)
         .map((f: UploadFile) => f.originFileObj);
     }
-
-    // Nếu API CẦN NHẬN STRING, bạn cần map ngược lại ở đây.
-    // Nếu API vẫn nhận Int (1,2,3) thì giữ nguyên values.type
     const payload: ExercisePayload = {
       FeedbackIncorrect: values.feedbackIncorrect,
       PassScore: Number(values.passScore) || 40,
@@ -414,7 +395,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       ExpectedAnswer: values.expectedAnswer,
       Title: values.title,
       Content: values.content,
-      Type: values.type, // Lưu ý: Đang gửi số (1,2,3). Nếu cần gửi string thì sửa dòng này.
+      Type: values.type,
       Difficulty: values.difficulty,
     };
 
@@ -499,26 +480,35 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
       >
         <div className="bg-gray-50/50 p-6 rounded-md border border-gray-100">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            Thông tin cơ bản về bài tập
+            <HelpCircle size={18} className="text-gray-500" /> Thông tin chung
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Form.Item
               name="title"
-              label="Tiêu đề bài tập"
+              label={
+                <span>
+                  Tiêu đề bài tập <span className="text-red-500">*</span>
+                </span>
+              }
               rules={[
                 { required: true, message: "Vui lòng nhập tiêu đề bài tập" },
               ]}
               className="md:col-span-2"
             >
-              <Input placeholder="e.g. Grammar Check #1" />
+              <Input placeholder="Nhập tiêu đề bài tập" />
             </Form.Item>
             <Form.Item
               name="type"
-              label="Loại bài tập"
+              label={
+                <span>
+                  Loại bài tập <span className="text-red-500">*</span>
+                </span>
+              }
               rules={[{ required: true }]}
             >
               <Select
                 onChange={handleTypeChange}
+                placeholder="Chọn loại bài tập"
                 options={[
                   { label: "Lặp lại theo mẫu (Âm thanh)", value: 1 },
                   { label: "Mô tả hình ảnh (Yêu cầu hình ảnh)", value: 2 },
@@ -529,10 +519,15 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             </Form.Item>
             <Form.Item
               name="difficulty"
-              label="Mức độ khó"
-              rules={[{ required: true }]}
+              label={
+                <span>
+                  Độ khó <span className="text-red-500">*</span>
+                </span>
+              }
+              rules={[{ required: true, message: "Vui lòng chọn độ khó" }]}
             >
               <Select
+                placeholder="Chọn độ khó"
                 options={[
                   { label: "Dễ", value: 1 },
                   { label: "Trung bình", value: 2 },
@@ -543,44 +538,67 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             </Form.Item>
           </div>
         </div>
-
-        {/* ... Phần còn lại của Form giữ nguyên như cũ ... */}
-        {/* Để tiết kiệm không gian, tôi chỉ liệt kê các phần logic quan trọng đã thay đổi ở trên */}
-
         <div className="space-y-4">
           <Form.Item
             name="prompt"
-            label="Hướng dẫn cho học viên"
-            rules={[{ required: true, message: "Cần có hướng dẫn" }]}
+            label={
+              <span>
+                Hướng dẫn chung cho bài tập{" "}
+                <span className="text-red-500">*</span>
+              </span>
+            }
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập hướng dẫn chung cho bài tập",
+              },
+            ]}
           >
             <Input.TextArea
               rows={2}
-              placeholder="Ví dụ: Vui lòng lặp lại câu sau hoặc mô tả hình ảnh..."
+              placeholder="Nhập hướng dẫn chung cho bài tập"
               className="bg-white"
             />
           </Form.Item>
           <Form.Item
             name="content"
-            label="Nội dung bài tập"
-            rules={[{ required: true, message: "Nội dung là bắt buộc" }]}
+            label={
+              <span>
+                Nội dung bài tập <span className="text-red-500">*</span>
+              </span>
+            }
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập nội dung bài tập",
+              },
+            ]}
           >
-            <Input.TextArea
-              rows={4}
-              placeholder="Nhập nội dung bài tập ở đây..."
-            />
+            <Input.TextArea rows={4} placeholder="Nhập nội dung bài tập" />
           </Form.Item>
           <Form.Item
             name="expectedAnswer"
-            label="Câu trả lời mẫu / Kỳ vọng"
-            rules={[{ required: true, message: "Câu trả lời là bắt buộc" }]}
+            label={
+              <span>
+                Câu trả lời mẫu / Kỳ vọng{" "}
+                <span className="text-red-500">*</span>
+              </span>
+            }
+            rules={[
+              {
+                required: true,
+                message: "Vui lòng nhập câu trả lời mẫu hoặc kỳ vọng",
+              },
+            ]}
           >
-            <Input.TextArea rows={2} className="font-mono text-sm bg-gray-50" />
+            <Input.TextArea
+              rows={2}
+              className="font-mono text-sm bg-gray-50"
+              placeholder="Nhập câu trả lời mẫu hoặc kỳ vọng"
+            />
           </Form.Item>
         </div>
-
         <Divider />
-
-        {/* --- Media Section --- */}
         <div className="border border-dashed border-gray-300 rounded-md p-6 bg-gray-50/30">
           <div className="flex justify-between items-center mb-4">
             <label className="text-gray-700 font-medium">
@@ -625,13 +643,13 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                   </div>
                 ) : recordedUrl ? (
                   <Text type="success" className="font-medium">
-                    Bản ghi âm mới đã sẵn sàng để gửi
+                    Đã ghi âm xong!
                   </Text>
                 ) : (
                   <Text type="secondary">
                     {existingAudioUrl
-                      ? "Nhấp vào micrô để thay thế âm thanh hiện tại"
-                      : "Nhấp vào micrô để bắt đầu ghi âm"}
+                      ? "Ghi âm mới sẽ thay thế âm thanh hiện tại"
+                      : "Nhấn nút ghi âm để bắt đầu"}
                   </Text>
                 )}
 
@@ -705,12 +723,12 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
                   <InboxOutlined />
                 </p>
                 <p className="ant-upload-text">
-                  Nhấp hoặc kéo tệp vào đây để tải lên
+                  Kéo và thả tệp vào đây hoặc nhấp để chọn tệp
                 </p>
                 <p className="ant-upload-hint">
                   {exerciseType === 1
                     ? "Tải lên tệp âm thanh (MP3, WAV)"
-                    : "Tải lên tệp hình ảnh (JPG, PNG)"}
+                    : "Tải lên hình ảnh (JPG, PNG)"}
                 </p>
               </Upload.Dragger>
             </Form.Item>
@@ -719,7 +737,11 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">Điểm</h4>
+            <h4 className="font-medium text-gray-900 mb-3">
+              <span>
+                Điểm số <span className="text-red-500">*</span>
+              </span>
+            </h4>
             <div className="flex gap-4">
               <Form.Item
                 name="maxScore"
@@ -751,6 +773,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
             <Form.Item name="hints" label="Gợi ý cho học viên">
               <Input
                 prefix={<HelpCircle size={14} className="text-gray-400" />}
+                placeholder="Nhập gợi ý cho học viên"
               />
             </Form.Item>
           </div>
@@ -758,7 +781,7 @@ const ExerciseForm: React.FC<Props> = ({ lessonId, onCreated, exercise }) => {
         <div className="flex justify-end pt-4 gap-3">
           {onCreated && (
             <Button onClick={onCreated} className="h-10 px-6 rounded-md">
-              Thoát
+              Hủy
             </Button>
           )}
           <Button

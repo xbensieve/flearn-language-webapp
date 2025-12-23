@@ -1,13 +1,12 @@
-import React from 'react';
-import { Empty, Spin } from 'antd';
-import type { Unit } from '../../../services/course/type';
-import { useLessons } from '../helpers';
-import LessonItem from './LessonItem';
-
-const LessonsList: React.FC<{ unit: Unit; onDeleted: (id: string) => void }> = ({
-  unit,
-  onDeleted,
-}) => {
+import React from "react";
+import { Empty, Spin } from "antd";
+import type { Unit } from "../../../services/course/type";
+import { useLessons } from "../helpers";
+import LessonItem from "./LessonItem";
+const LessonsList: React.FC<{
+  unit: Unit;
+  onDeleted: (id: string) => void;
+}> = ({ unit, onDeleted }) => {
   const { lessons, isLoading, refetch } = useLessons(unit.courseUnitID);
 
   if (isLoading)
@@ -20,7 +19,7 @@ const LessonsList: React.FC<{ unit: Unit; onDeleted: (id: string) => void }> = (
   if (!lessons.length)
     return (
       <Empty
-        description="No lessons yet"
+        description="Chưa có bài học nào trong chương này"
         image={Empty.PRESENTED_IMAGE_SIMPLE}
         className="py-6"
       />
