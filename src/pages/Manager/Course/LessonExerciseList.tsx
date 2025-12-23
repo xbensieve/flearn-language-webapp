@@ -26,6 +26,20 @@ interface Props {
   lessonId: string;
 }
 
+const TranslatedDifficulties: Record<string, string> = {
+  Easy: "Dễ",
+  Medium: "Trung bình",
+  Hard: "Khó",
+  Advanced: "Nâng cao",
+};
+
+const TranslatedExerciseTypes: Record<string, string> = {
+  RepeatAfterMe: "Lặp lại theo mẫu",
+  PictureDescription: "Mô tả hình ảnh",
+  StoryTelling: "Kể chuyện",
+  Debate: "Tranh luận",
+};
+
 export default function LessonExerciseList({ lessonId }: Props) {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [meta, setMeta] = useState<MetaData | null>(null);
@@ -173,7 +187,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
                     )}
                     variant="outline"
                   >
-                    {ex.difficulty}
+                    {TranslatedDifficulties[ex.difficulty] || ex.difficulty}
                   </Badge>
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 leading-tight">
@@ -187,7 +201,7 @@ export default function LessonExerciseList({ lessonId }: Props) {
               >
                 {getTypeIcon(ex.exerciseType)}
                 <span className="font-medium">
-                  {ex.exerciseType.replace(/([A-Z])/g, " $1").trim()}
+                  {TranslatedExerciseTypes[ex.exerciseType] || ex.exerciseType}
                 </span>
               </Badge>
             </div>
@@ -255,22 +269,6 @@ export default function LessonExerciseList({ lessonId }: Props) {
                         <p className="text-base font-medium">
                           {ex.expectedAnswer}
                         </p>
-                      </div>
-                    </div>
-
-                    {/* Feedback Preview */}
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="p-2 rounded bg-white border text-gray-500">
-                        <span className="font-bold text-green-600 block mb-1">
-                          Đúng:
-                        </span>
-                        {ex.feedbackCorrect}
-                      </div>
-                      <div className="p-2 rounded bg-white border text-gray-500">
-                        <span className="font-bold text-red-500 block mb-1">
-                          Sai:
-                        </span>
-                        {ex.feedbackIncorrect}
                       </div>
                     </div>
                   </AccordionContent>
