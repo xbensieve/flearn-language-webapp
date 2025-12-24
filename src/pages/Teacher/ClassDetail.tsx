@@ -448,7 +448,10 @@ const ClassDetail: React.FC = () => {
                     {normalizedStatus === "draft" && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button disabled={updating} className="!text-white cursor-pointer">
+                          <Button
+                            disabled={updating}
+                            className="!text-white cursor-pointer bg-blue-700 hover:bg-blue-500"
+                          >
                             {updating ? (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
@@ -469,7 +472,10 @@ const ClassDetail: React.FC = () => {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction onClick={handlePublish}>
+                            <AlertDialogAction
+                              onClick={handlePublish}
+                              className="!text-white bg-blue-700 hover:bg-blue-500 cursor-pointer"
+                            >
                               Xác nhận
                             </AlertDialogAction>
                           </AlertDialogFooter>
