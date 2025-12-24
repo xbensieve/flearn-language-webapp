@@ -87,6 +87,12 @@ const translateAssignmentStatus = (status: string): string => {
   }
 };
 
+const TranslateExerciseType: Record<string, string> = {
+  StoryTelling: "Kể chuyện",
+  Debate: "Tranh luận",
+};
+
+
 // Hook useDebounce đơn giản để tránh gọi API quá nhiều khi search
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -549,7 +555,7 @@ export default function ExerciseGradingPage() {
                       <div className="text-xs text-gray-500 mt-1">
                         Loại:{" "}
                         <span className="font-semibold">
-                          {item.exerciseType}
+                          {TranslateExerciseType[item.exerciseType] || item.exerciseType}
                         </span>
                       </div>
                     </TableCell>
