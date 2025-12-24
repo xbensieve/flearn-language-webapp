@@ -13,6 +13,7 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
+  Info,
 } from "lucide-react";
 import {
   getTeacherCoursesService,
@@ -256,6 +257,7 @@ export default function MyCourses() {
               const statusConfig =
                 STATUS_CONFIG[course.courseStatus] || STATUS_CONFIG.Archived;
               const isFree = Number(course.price) === 0;
+              const isRejected = course.courseStatus === "Rejected";
               const canEdit = ["Draft", "Rejected", "PendingApproval"].includes(
                 course.courseStatus
               );
@@ -281,6 +283,17 @@ export default function MyCourses() {
                     </div>
                   </div>
                   <CardContent className="flex-1 p-5 flex flex-col gap-3">
+                    {isRejected && (course as any).rejectionReason && (
+                      <div className="bg-red-50 border border-red-100 rounded-md p-3 text-xs text-red-700 flex items-start gap-2">
+                        <Info className="w-4 h-4 mt-0.5 shrink-0" />
+                        <div>
+                          <span className="font-semibold block mb-0.5">
+                            Lý do từ chối:
+                          </span>
+                          {(course as any).rejectionReason}
+                        </div>
+                      </div>
+                    )}
                     <h3 className="font-semibold text-lg leading-tight text-slate-900 line-clamp-2 group-hover:text-blue-700 transition-colors">
                       {course.title}
                     </h3>

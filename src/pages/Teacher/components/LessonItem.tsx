@@ -32,7 +32,6 @@ import {
   PencilIcon,
   Book,
 } from "lucide-react";
-import { toast } from "sonner";
 interface Props {
   lesson: Lesson;
   onUpdated: () => void;
@@ -54,7 +53,6 @@ const LessonItem: React.FC<Props> = ({ lesson, onUpdated, onDeleted }) => {
 
   const [form] = Form.useForm();
   const updateLesson = useUpdateLesson(lesson.courseUnitID, () => {
-    toast.success("Cập nhật bài học thành công");
     onUpdated();
     setEditDrawerVisible(false);
   });
