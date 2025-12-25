@@ -53,6 +53,11 @@ export const deleteClassService = async (classId: string, reason: string) => {
   return res.data;
 };
 
+export const deleteDraftClassService = async (classId: string) => {
+  const res = await api.delete(`teacher/classes/${classId}/draft`);
+  return res.data;
+};
+
 export const getClassEnrollmentsService = async (classId: string) => {
   const res = await api.get<ClassEnrollmentResponse>(`teacher/classes/${classId}/enrollments`);
   return res.data;

@@ -12,6 +12,7 @@ import {
   getClassAssignmentsService,
   publishClassService,
   requestCancelClassService,
+  deleteDraftClassService,
 } from "../../services/class";
 
 import { Button } from "@/components/ui/button";
@@ -155,7 +156,6 @@ const ClassDetail: React.FC = () => {
 
   // Delete modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deleteReason, setDeleteReason] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   // Cancel modal state
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -198,25 +198,21 @@ const ClassDetail: React.FC = () => {
   };
 
   const programLabel =
-    getProgramLabel((classData as any)?.programAssignmentId) ||
-    (classData as any)?.programName
+    (classData as any)?.program ??
+    getProgramLabel((classData as any)?.programAssignmentId) ??
+    ((classData as any)?.programName
       ? `${(classData as any).programName}${
           (classData as any).levelName
             ? " - " + (classData as any).levelName
             : ""
         }`
-      : null;
+      : null);
 
   // Handle delete class
   const handleDeleteClass = async () => {
-    if (!deleteReason.trim()) {
-      toast.error("Vui lòng nhập lý do xóa lớp.");
-      return;
-    }
-
     setIsDeleting(true);
     try {
-      const res = await deleteClassService(id!, deleteReason);
+      const res = await deleteDraftClassService(id!);
       toast.success(res.message || "Xóa lớp học thành công!");
       setIsDeleteModalOpen(false);
       navigate("/teacher/classes");
@@ -397,7 +393,13 @@ const ClassDetail: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center border-t pt-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center border-t pt-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Chương trình</p>
+                    <p className="text-xl font-bold truncate" title={programLabel || ""}>
+                      {programLabel || "..."}
+                    </p>
+                  </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Học viên</p>
                     <p className="text-xl font-bold">
@@ -407,13 +409,13 @@ const ClassDetail: React.FC = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Ngày học</p>
                     <p className="text-xl font-bold">
-                      {dayjs(classData.startDateTime).format("DD/MM")}
+                      {dayjs(classData.startDateTime).format("DD/MM/YYYY")}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Thời gian</p>
                     <p className="text-xl font-bold">
-                      {dayjs(classData.startDateTime).format("HH:mm")}
+                      {dayjs(classData.startDateTime).format("HH:mm")} - {dayjs(classData.endDateTime).format("HH:mm")}
                     </p>
                   </div>
                   <div>
@@ -522,6 +524,7 @@ const ClassDetail: React.FC = () => {
                         <Button
                           onClick={handleCancelRequest}
                           disabled={isCancelling}
+                          className="bg-white text-black border border-gray-200 hover:bg-gray-100"
                         >
                           {isCancelling ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -538,6 +541,10 @@ const ClassDetail: React.FC = () => {
                   onSubmit={handleEditSubmit}
                   initialValues={classData || {}}
                   loading={updating}
+                  onDelete={() => {
+                    setEditModal(false);
+                    setIsDeleteModalOpen(true);
+                  }}
                 />
               </CardContent>
             </Card>
@@ -553,14 +560,6 @@ const ClassDetail: React.FC = () => {
                     {classData.languageName}
                   </span>
                 </div>
-                {programLabel && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Chương trình</span>
-                    <span className="font-semibold text-right">
-                      {programLabel}
-                    </span>
-                  </div>
-                )}
                 {classData.googleMeetLink && (
                   <div className="space-y-2 pt-2 border-t">
                     <p className="text-muted-foreground">Link phòng học</p>
@@ -588,12 +587,6 @@ const ClassDetail: React.FC = () => {
               Hành động này không thể hoàn tác. Lớp học sẽ bị xóa vĩnh viễn.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <Textarea
-            rows={4}
-            value={deleteReason}
-            onChange={(e) => setDeleteReason(e.target.value)}
-            placeholder="Lý do xóa..."
-          />
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction

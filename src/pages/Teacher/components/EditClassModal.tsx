@@ -32,22 +32,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { GraduationCap, CalendarIcon, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Trash2 } from "lucide-react";
 import type { Class } from "@/services/class/type";
 import { getClassAssignmentsService } from "../../../services/class";
 import type { ProgramAssignment } from "@/types/createCourse";
@@ -57,6 +49,7 @@ interface EditClassModalProps {
   onClose: () => void;
   onSubmit: (values: Partial<Class>) => Promise<any>;
   initialValues: Partial<Class>;
+  onDelete?: () => void;
   loading?: boolean;
 }
 
@@ -68,12 +61,12 @@ const formSchema = z
     startDateTime: z
       .any()
       .refine((val) => val, { message: "Vui lòng chọn ngày bắt đầu" }),
-    endDateTime: z
-      .any()
-      .refine((val) => val, { message: "Vui lòng chọn ngày kết thúc" }),
     minStudents: z.number().min(1, "Tối thiểu 1 học viên"),
     capacity: z.number().min(1, "Tối thiểu 1 học viên"),
-    pricePerStudent: z.number().min(0, "Học phí không được âm"),
+    pricePerStudent: z
+      .number()
+      .min(100000, "Tối thiểu 100.000 VNĐ")
+      .max(5000000, "Tối đa 5.000.000 VNĐ"),
     durationMinutes: z.number().min(1, "Thời lượng phải lớn hơn 0"),
     googleMeetLink: z
       .string()
@@ -81,34 +74,37 @@ const formSchema = z
       .optional()
       .or(z.literal("")),
   })
-  .refine((data) => data.endDateTime > data.startDateTime, {
-    message: "Ngày kết thúc phải sau ngày bắt đầu",
-    path: ["endDateTime"],
-  })
   .refine((data) => dayjs(data.startDateTime).isAfter(dayjs().add(6, "day")), {
     message: "Ngày bắt đầu phải cách ít nhất 7 ngày",
     path: ["startDateTime"],
   });
+
+const normalizeDate = (date: any) => {
+  if (!date) return undefined;
+  const d = dayjs(date);
+  const m = d.minute();
+  const roundedM = Math.round(m / 15) * 15;
+  return d.minute(roundedM).second(0).toDate();
+};
 
 const EditClassModal: React.FC<EditClassModalProps> = ({
   visible,
   onClose,
   onSubmit,
   initialValues,
+  onDelete,
   loading,
 }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       ...initialValues,
       title: initialValues.title || "",
       description: initialValues.description || "",
-      programAssignmentId: initialValues.programAssignmentId || "",
+      programAssignmentId: initialValues.programAssignmentId ? String(initialValues.programAssignmentId) : "",
       startDateTime: initialValues.startDateTime
-        ? new Date(initialValues.startDateTime)
-        : undefined,
-      endDateTime: initialValues.endDateTime
-        ? new Date(initialValues.endDateTime)
+        ? normalizeDate(initialValues.startDateTime)
         : undefined,
       minStudents: initialValues.minStudents || 1,
       capacity: initialValues.capacity || 1,
@@ -124,12 +120,9 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
         ...initialValues,
         title: initialValues.title || "",
         description: initialValues.description || "",
-        programAssignmentId: initialValues.programAssignmentId || "",
+        programAssignmentId: initialValues.programAssignmentId ? String(initialValues.programAssignmentId) : "",
         startDateTime: initialValues.startDateTime
-          ? new Date(initialValues.startDateTime)
-          : undefined,
-        endDateTime: initialValues.endDateTime
-          ? new Date(initialValues.endDateTime)
+          ? normalizeDate(initialValues.startDateTime)
           : undefined,
         minStudents: initialValues.minStudents || 1,
         capacity: initialValues.capacity || 1,
@@ -152,7 +145,58 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
         setIsLoadingPrograms(true);
         const res = await getClassAssignmentsService();
         if (!mounted) return;
-        setProgramsRes(res.data || []);
+        let programs = res.data || [];
+        let currentId = initialValues.programAssignmentId ? String(initialValues.programAssignmentId) : "";
+
+        // Nếu không có ID nhưng có tên chương trình (dạng chuỗi), thử tìm trong danh sách để set ID cho form
+        const initAny = initialValues as any;
+        if (!currentId && initAny.program && typeof initAny.program === 'string') {
+          const found = programs.find((p: any) => 
+             `${p.programName} - ${p.levelName}` === initAny.program || 
+             p.programName === initAny.program
+          );
+          if (found) {
+              currentId = String(found.programAssignmentId);
+              form.setValue('programAssignmentId', currentId);
+          }
+        }
+        
+        // Nếu vẫn chưa có ID nhưng có tên chương trình (dạng chuỗi), tạo một option ảo để hiển thị
+        if (!currentId && initAny.program && typeof initAny.program === 'string') {
+             currentId = "legacy_option";
+             form.setValue('programAssignmentId', currentId);
+        }
+
+        if (
+          currentId &&
+          !programs.find((p: any) => String(p.programAssignmentId) === currentId)
+        ) {
+          // Kiểm tra tên chương trình ở nhiều vị trí (trực tiếp hoặc lồng trong object program)
+          const pName = 
+            initAny.programName || 
+            initAny.ProgramName ||  
+            initAny.program?.programName || 
+            initAny.program?.name || 
+            initAny.program?.title ||
+            (typeof initAny.program === 'string' ? initAny.program : 'Chương trình hiện tại');
+
+          const lName = 
+            initAny.levelName || 
+            initAny.LevelName || 
+            initAny.program?.level?.name || 
+            initAny.level?.name || 
+            initAny.program?.levelName ||
+            '';
+          
+          if (pName) {
+            programs = [{
+              programAssignmentId: currentId,
+              programName: pName,
+              levelName: lName,
+            } as any, ...programs];
+          }
+        }
+        setProgramsRes(programs);
       } catch (err) {
         console.error("Failed to load programs", err);
       } finally {
@@ -162,15 +206,24 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
     return () => {
       mounted = false;
     };
-  }, [visible]);
+  }, [visible, initialValues]);
 
   const handleFormSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      const start = normalizeDate(values.startDateTime) || new Date(values.startDateTime);
+      const end = dayjs(start).add(values.durationMinutes, "minute").toDate();
+
       const payload: Partial<Class> = {
         ...values,
-        startDateTime: values.startDateTime.toISOString(),
-        endDateTime: values.endDateTime.toISOString(),
+        startDateTime: start.toISOString(),
+        endDateTime: end.toISOString(),
       };
+
+      // Nếu người dùng không thay đổi chương trình (vẫn là option ảo), thì không gửi field này lên
+      if (payload.programAssignmentId === "legacy_option") {
+        delete payload.programAssignmentId;
+      }
+
       await onSubmit(payload);
       onClose();
     } catch (err: any) {
@@ -195,6 +248,8 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
   const formValues = form.watch();
   const estimatedRevenue =
     (formValues.pricePerStudent || 0) * (formValues.capacity || 0);
+
+  const isDraft = (initialValues.status || "").toString().toLowerCase() === "draft";
 
   return (
     <Dialog open={visible} onOpenChange={onClose}>
@@ -250,6 +305,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                   <FormItem>
                     <FormLabel>Chương trình giảng dạy</FormLabel>
                     <Select
+                      key={programsRes.length}
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
@@ -263,7 +319,7 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                         {programsRes.map((p) => (
                           <SelectItem
                             key={p.programAssignmentId}
-                            value={p.programAssignmentId}
+                            value={String(p.programAssignmentId)}
                           >
                             {p.programName} - {p.levelName}
                           </SelectItem>
@@ -274,84 +330,97 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="startDateTime"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Ngày bắt đầu</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+              <FormField
+                control={form.control}
+                name="startDateTime"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Thời gian bắt đầu</FormLabel>
+                    <div className="flex gap-2">
+                      <FormControl className="flex-1">
+                        <Input
+                          type="date"
+                          value={
+                            field.value
+                              ? dayjs(field.value).format("YYYY-MM-DD")
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const datePart = e.target.value;
+                            if (!datePart) return;
+                            const timePart = field.value
+                              ? dayjs(field.value).format("HH:mm")
+                              : "00:00";
+                            field.onChange(
+                              dayjs(`${datePart}T${timePart}`).toDate()
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      <div className="flex gap-2 w-[160px]">
+                        <Select
+                          value={
+                            field.value
+                              ? dayjs(field.value).hour().toString()
+                              : "0"
+                          }
+                          onValueChange={(val) => {
+                            const current = field.value
+                              ? dayjs(field.value)
+                              : dayjs().startOf("day");
+                            field.onChange(
+                              current.hour(parseInt(val)).toDate()
+                            );
+                          }}
+                        >
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                dayjs(field.value).format("DD/MM/YYYY")
-                              ) : (
-                                <span>Chọn ngày</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Giờ" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="endDateTime"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Ngày kết thúc</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                          <SelectContent className="max-h-[200px]">
+                            {Array.from({ length: 24 }).map((_, i) => (
+                              <SelectItem key={i} value={i.toString()}>
+                                {i.toString().padStart(2, "0")}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="flex items-center font-bold">:</span>
+                        <Select
+                          value={
+                            field.value
+                              ? dayjs(field.value).minute().toString()
+                              : "0"
+                          }
+                          onValueChange={(val) => {
+                            const current = field.value
+                              ? dayjs(field.value)
+                              : dayjs().startOf("day");
+                            field.onChange(
+                              current.minute(parseInt(val)).toDate()
+                            );
+                          }}
+                        >
                           <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                dayjs(field.value).format("DD/MM/YYYY")
-                              ) : (
-                                <span>Chọn ngày</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Phút" />
+                            </SelectTrigger>
                           </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                          <SelectContent>
+                            {[0, 15, 30, 45].map((m) => (
+                              <SelectItem key={m} value={m.toString()}>
+                                {m.toString().padStart(2, "0")}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -401,11 +470,15 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                       <FormLabel>Học phí (VNĐ)</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          type="text"
+                          placeholder="Nhập học phí"
+                          value={field.value ? String(field.value).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : ""}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[,.]/g, '');
+                            if (raw === '' || /^\d+$/.test(raw)) {
+                              field.onChange(Number(raw));
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -417,16 +490,24 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                   name="durationMinutes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Thời lượng (phút)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
+                      <FormLabel>Thời lượng</FormLabel>
+                      <Select
+                        onValueChange={(val) => field.onChange(Number(val))}
+                        value={field.value ? String(field.value) : "60"}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn thời lượng" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="30">30 phút</SelectItem>
+                          <SelectItem value="45">45 phút</SelectItem>
+                          <SelectItem value="60">60 phút</SelectItem>
+                          <SelectItem value="90">90 phút</SelectItem>
+                          <SelectItem value="120">120 phút</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -471,16 +552,17 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                       </span>{" "}
                       {programsRes.find(
                         (p) =>
-                          p.programAssignmentId ===
-                          formValues.programAssignmentId
-                      )?.programName || "..."}
+                          String(p.programAssignmentId) === 
+                          String(formValues.programAssignmentId)
+                      )?.programName || 
+                      ((initialValues as any).program && typeof (initialValues as any).program === 'string' ? (initialValues as any).program : "...")}
                     </p>
                     <p>
                       <span className="font-medium text-muted-foreground">
                         Ngày bắt đầu:
                       </span>{" "}
                       {formValues.startDateTime
-                        ? dayjs(formValues.startDateTime).format("DD/MM/YYYY")
+                        ? dayjs(formValues.startDateTime).format("DD/MM/YYYY HH:mm") // Hiển thị Preview theo định dạng 24h
                         : "..."}
                     </p>
                     <p>
@@ -509,27 +591,32 @@ const EditClassModal: React.FC<EditClassModalProps> = ({
                   </div>
                 </CardContent>
               </Card>
-              <Alert>
-                <GraduationCap className="h-4 w-4" />
-                <AlertTitle>Lưu ý</AlertTitle>
-                <AlertDescription>
-                  Nếu lớp đang ở trạng thái "Đã hủy", sau khi cập nhật sẽ chuyển
-                  về "Bản nháp".
-                </AlertDescription>
-              </Alert>
+           
             </div>
-            <DialogFooter className="md:col-span-3">
-              <Button type="button" variant="ghost" onClick={onClose}>
-                Hủy
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="!text-white bg-blue-700 hover:bg-blue-500 cursor-pointer"
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Cập nhật
-              </Button>
+            <DialogFooter className="md:col-span-3 sm:justify-between gap-4">
+              {isDraft && onDelete ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={onDelete}
+                  className="mr-auto"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Xóa lớp
+                </Button>
+              ) : <div />}
+              <div className="flex gap-2">
+                <Button type="button" variant="ghost" onClick={onClose}>
+                  Hủy
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="!text-white bg-blue-700 hover:bg-blue-500 cursor-pointer"
+                >
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Cập nhật
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>
