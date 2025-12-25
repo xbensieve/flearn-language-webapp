@@ -439,7 +439,7 @@ const CreateClassForm: React.FC<CreateClassFormProps> = ({ visible, onClose, onC
                     }
                     rules={[
                       { required: true, message: 'Bắt buộc' },
-                      { type: 'number', min: 10000, message: 'Tối thiểu 10.000đ' },
+                      { type: 'number', min: 100000, message: 'Tối thiểu 100.000đ' },
                     ]}
                   >
                     <InputNumber<number>
