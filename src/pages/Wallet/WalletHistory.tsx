@@ -38,7 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { notifyError } from "@/utils/toastConfig";
-
+import { useAuth } from "@/utils/AuthContext";
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -83,6 +83,8 @@ export const translateProcessStatus = (status: string): string => {
 };
 
 const WalletHistoryPage: React.FC = () => {
+  const { auth } = useAuth();
+  const isAdmin = auth.roles?.includes("admin");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [transactionType, setTransactionType] = useState<string>("all");
@@ -231,12 +233,14 @@ const WalletHistoryPage: React.FC = () => {
             {isExporting ? "Đang xuất..." : "Xuất Excel"}
           </Button>
 
-          <Button
-            onClick={() => navigate("/teacher/payout-request")}
-            className="bg-blue-600 hover:bg-blue-700 !text-white gap-2 shadow-md cursor-pointer"
-          >
-            <Wallet className="w-4 h-4" /> Rút tiền
-          </Button>
+          {!isAdmin && (
+            <Button
+              onClick={() => navigate("/teacher/payout-request")}
+              className="bg-blue-600 hover:bg-blue-700 !text-white gap-2 shadow-md cursor-pointer"
+            >
+              <Wallet className="w-4 h-4" /> Rút tiền
+            </Button>
+          )}
         </div>
       </div>
 
